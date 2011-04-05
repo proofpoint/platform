@@ -1,6 +1,22 @@
+/*
+ * Copyright 2011 Proofpoint, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.proofpoint.testing;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import org.testng.Assert;
@@ -18,19 +34,19 @@ import static org.testng.Assert.fail;
 
 
 /**
- * A collection of static methods to exercise Javabean properties.  These assertion methods simplifies
- * testing Configuration Javabean classes using the platform configuration module, and improves
- * consistency of testing the configuratin values.<p/>
- *
- * Notable methods are: <p/>
+ * A collection of static methods to exercise Javabean properties.  These assertion methods simplify
+ * testing Configuration Javabean classes used with the platform configuration module.<p/>
  *
  * <ul>
  *     <li>assertSetAndGet -- verify that getter returns the same value set by setter.</li>
  *     <li>assertNotValid -- verify that setter raises specific exception on invalid input</li>
  *     <li>assertNotNull -- non-null property setter returns NullPointerException on null argument.</li>
  *     <li>assertBetweenRangeInclusive -- numerical range check</li>
- *     <li>assertGreaterThanZero -- lazy alias to test [0, Type.Max]</li>
+ *     <li>assertGreaterThanZero -- lazy alias to test [0, Type.MAX_VALUE]</li>
  * </ul>
+ *
+ * In addition, any of the AssertBean methods check for bean property implementation consistency,
+ * such as having both setter and getter, and that the getter return type matches setter argument, etc.<p/>
  *
  * Note 1: These methods can only be applied to Read/Writable Javabean properties that implements
  * both getter and setter.  Attempts to call these methods with Javabean properties that do not support
@@ -44,9 +60,13 @@ import static org.testng.Assert.fail;
 public class AssertBean
 {
     private static final Map<String, Map<String, PropertyDescriptor>> propertyDescriptorCache = Maps.newHashMap();
+    private static final double MARGIN = 0.001;
+    private static final int STEPS = 10;
+
 
     /**
-     * Assert that a bean property only accepts non-null values
+     * Verify that a bean property only accepts non-null values.  A null
+     * value results in NullPointerException.
      */
     public static void assertNotNull(Object bean, String propertyName)
             throws Exception
@@ -56,124 +76,199 @@ public class AssertBean
 
 
     /**
-     * Assert that a bean property only accepts values within range inclusively.
-     * Setting bean values outside of the range results in error.
+     * Verify that a bean property accepts value of matching Java numerical values,
+     * and that a value is accepted if an only if it is within the specified range
+     * inclusively.
      */
-    public static <T extends Number> void assertBetweenRangeInclusive(
-            Object bean, String propertyName, T lowerBound, T upperBound)
+    public static void assertBetweenRangeInclusive(
+            Object bean, String propertyName, Integer lowerBound, Integer upperBound)
             throws Exception
     {
         PropertyDescriptor propertyDescriptor = lookupPropertyDescriptor(bean, propertyName);
         Class<?> propertyType = propertyDescriptor.getPropertyType();
 
         if (propertyType.isAssignableFrom(Integer.class) || propertyType.isAssignableFrom(int.class)) {
-            Assertions.assertLessThan((Integer) lowerBound, (Integer) upperBound);
-            Integer margin = 1;
-            if ((Integer) lowerBound > Integer.MIN_VALUE) {
-                assertNotValid(bean, propertyName,
-                               Integer.valueOf((Integer) lowerBound - margin),
+            Assertions.assertLessThan(lowerBound, upperBound);
+            int margin = 1;
+            if (lowerBound > Integer.MIN_VALUE) {
+                assertNotValid(bean, propertyName, Integer.valueOf(lowerBound - margin),
                                IllegalArgumentException.class);
             }
-            if ((Integer) upperBound < Integer.MAX_VALUE) {
-                assertNotValid(bean, propertyName,
-                               Integer.valueOf((Integer) upperBound + margin),
+            if (upperBound < Integer.MAX_VALUE) {
+                assertNotValid(bean, propertyName, Integer.valueOf(upperBound + margin),
                                IllegalArgumentException.class);
             }
 
-            assertSetAndGet(bean, propertyName, lowerBound);
-            assertSetAndGet(bean, propertyName, upperBound);
+            try {
+                assertSetAndGet(bean, propertyName, lowerBound);
+                assertSetAndGet(bean, propertyName, upperBound);
 
-            Integer stepsSize = ((Integer) upperBound - (Integer) lowerBound) / 10;
-            if (stepsSize > 0) {
-                Integer value = (Integer) lowerBound;
-                for (int i = 0; i < 100 && value <= (Integer) upperBound; i++) {
-                    assertSetAndGet(bean, propertyName, value);
-                    value += stepsSize;
+                Integer stepsSize = (upperBound - lowerBound) / STEPS;
+                if (stepsSize > 0) {
+                    Integer value = lowerBound;
+                    for (int i = 0; i < STEPS && value <= upperBound; i++) {
+                        assertSetAndGet(bean, propertyName, value);
+                        value += stepsSize;
+                    }
                 }
             }
-        }
-        else if (propertyType.isAssignableFrom(Long.class) || propertyType.isAssignableFrom(long.class)) {
-            Assertions.assertLessThan((Long) lowerBound, (Long) upperBound);
-            Long margin = (long) 1;
-            if ((Long) lowerBound > Long.MIN_VALUE) {
-                assertNotValid(bean, propertyName,
-                               Long.valueOf((Long) lowerBound - margin),
-                               IllegalArgumentException.class);
-            }
-            if ((Long) upperBound < Long.MAX_VALUE) {
-                assertNotValid(bean, propertyName,
-                               Long.valueOf((Long) upperBound + margin),
-                               IllegalArgumentException.class);
-            }
-
-            assertSetAndGet(bean, propertyName, lowerBound);
-            assertSetAndGet(bean, propertyName, upperBound);
-
-            Long stepsSize = ((Long) upperBound - (Long) lowerBound) / 10;
-            if (stepsSize > 0) {
-                Long value = (Long) lowerBound;
-                for (int i = 0; i < 100 && value <= (Long) upperBound; i++) {
-                    assertSetAndGet(bean, propertyName, value);
-                    value += stepsSize;
-                }
-            }
-        }
-        else if (propertyType.isAssignableFrom(Double.class) || propertyType.isAssignableFrom(double.class)) {
-            Assertions.assertLessThan((Double) lowerBound, (Double) upperBound);
-            Double margin = 0.001;
-            if ((Double) lowerBound > Double.MIN_VALUE) {
-                assertNotValid(bean, propertyName,
-                               Double.valueOf((Double) lowerBound - margin),
-                               IllegalArgumentException.class);
-            }
-            if ((Double) upperBound < Double.MAX_VALUE) {
-                assertNotValid(bean, propertyName,
-                               Double.valueOf((Double) upperBound + margin),
-                               IllegalArgumentException.class);
-            }
-
-            assertSetAndGet(bean, propertyName, lowerBound);
-            assertSetAndGet(bean, propertyName, upperBound);
-
-            Double stepsSize = ((Double) upperBound - (Double) lowerBound) / 10;
-            if (stepsSize > 0) {
-                Double value = (Double) lowerBound;
-                for (int i = 0; i < 100 && value <= (Double) upperBound; i++) {
-                    assertSetAndGet(bean, propertyName, value);
-                    value += stepsSize;
-                }
-            }
-        }
-        else if (propertyType.isAssignableFrom(Float.class) || propertyType.isAssignableFrom(float.class)) {
-            Assertions.assertLessThan((Float) lowerBound, (Float) upperBound);
-            Float margin = (float) 0.001;
-            if ((Float) lowerBound > Float.MIN_VALUE) {
-                assertNotValid(bean, propertyName,
-                               Float.valueOf((Float) lowerBound - margin),
-                               IllegalArgumentException.class);
-            }
-            if ((Float) upperBound < Float.MAX_VALUE) {
-                assertNotValid(bean, propertyName,
-                               Float.valueOf((Float) upperBound + margin),
-                               IllegalArgumentException.class);
-            }
-
-            assertSetAndGet(bean, propertyName, lowerBound);
-            assertSetAndGet(bean, propertyName, upperBound);
-
-            Float stepsSize = ((Float) upperBound - (Float) lowerBound) / 10;
-            if (stepsSize > 0) {
-                Float value = (Float) lowerBound;
-                for (int i = 0; i < 100 && value <= (Float) upperBound; i++) {
-                    assertSetAndGet(bean, propertyName, value);
-                    value += stepsSize;
-                }
+            catch (IllegalArgumentException e) {
+                throw new AssertionError(String.format("%s: %s",
+                                                       e.getClass().getName(), Strings.nullToEmpty(e.getMessage())));
             }
         }
         else {
-            fail("Don't know how to handle class: " + propertyType.getSimpleName());
+            fail(String.format("Incompatible property type: %s.  Expecting %s.",
+                               propertyType.getName(), lowerBound.getClass().getName()));
         }
     }
+
+
+    /**
+     * Verify that a bean property accepts value of matching Java numerical values,
+     * and that a value is accepted if an only if it is within the specified range
+     * inclusively.
+     */
+    public static void assertBetweenRangeInclusive(
+            Object bean, String propertyName, Long lowerBound, Long upperBound)
+            throws Exception
+    {
+        PropertyDescriptor propertyDescriptor = lookupPropertyDescriptor(bean, propertyName);
+        Class<?> propertyType = propertyDescriptor.getPropertyType();
+
+        if (propertyType.isAssignableFrom(Long.class) || propertyType.isAssignableFrom(long.class)) {
+            Assertions.assertLessThan(lowerBound, upperBound);
+            int margin = 1;
+            if (lowerBound > Long.MIN_VALUE) {
+                assertNotValid(bean, propertyName, Long.valueOf(lowerBound - margin),
+                               IllegalArgumentException.class);
+            }
+            if (upperBound < Long.MAX_VALUE) {
+                assertNotValid(bean, propertyName, Long.valueOf(upperBound + margin),
+                               IllegalArgumentException.class);
+            }
+
+            try {
+                assertSetAndGet(bean, propertyName, lowerBound);
+                assertSetAndGet(bean, propertyName, upperBound);
+
+                Long stepsSize = (upperBound - lowerBound) / STEPS;
+                if (stepsSize > 0) {
+                    Long value = lowerBound;
+                    for (int i = 0; i < STEPS && value <= upperBound; i++) {
+                        assertSetAndGet(bean, propertyName, value);
+                        value += stepsSize;
+                    }
+                }
+            }
+            catch (IllegalArgumentException e) {
+                throw new AssertionError(String.format("%s: %s", e.getClass().getName(), e.getMessage()));
+            }
+        }
+        else {
+            fail(String.format("Incompatible property type: %s.  Expecting %s.",
+                               propertyType.getName(), lowerBound.getClass().getName()));
+        }
+    }
+
+
+    /**
+     * Verify that a bean property accepts value of matching Java numerical values,
+     * and that a value is accepted if an only if it is within the specified range
+     * inclusively.
+     */
+    public static void assertBetweenRangeInclusive(
+            Object bean, String propertyName, Double lowerBound, Double upperBound)
+            throws Exception
+    {
+        PropertyDescriptor propertyDescriptor = lookupPropertyDescriptor(bean, propertyName);
+        Class<?> propertyType = propertyDescriptor.getPropertyType();
+
+        if (propertyType.isAssignableFrom(Double.class) || propertyType.isAssignableFrom(double.class)) {
+            Assertions.assertLessThan(lowerBound, upperBound);
+            double margin = MARGIN;
+            if (lowerBound > Double.MIN_VALUE) {
+                assertNotValid(bean, propertyName, Double.valueOf(lowerBound - margin),
+                               IllegalArgumentException.class);
+            }
+            if (upperBound < Double.MAX_VALUE) {
+                assertNotValid(bean, propertyName, Double.valueOf(upperBound + margin),
+                               IllegalArgumentException.class);
+            }
+
+            try {
+                assertSetAndGet(bean, propertyName, lowerBound);
+                assertSetAndGet(bean, propertyName, upperBound);
+
+                Double stepsSize = (upperBound - lowerBound) / STEPS;
+                if (stepsSize > 0) {
+                    Double value = lowerBound;
+                    for (int i = 0; i < STEPS && value <= upperBound; i++) {
+                        assertSetAndGet(bean, propertyName, value);
+                        value += stepsSize;
+                    }
+                }
+            }
+            catch (IllegalArgumentException e) {
+                throw new AssertionError(String.format("%s: %s", e.getClass().getName(), e.getMessage()));
+            }
+        }
+        else {
+            fail(String.format("Incompatible property type: %s.  Expecting %s.",
+                               propertyType.getName(), lowerBound.getClass().getName()));
+        }
+    }
+
+
+    /**
+     * Verify that a bean property accepts value of matching Java numerical values,
+     * and that a value is accepted if an only if it is within the specified range
+     * inclusively.
+     */
+    public static void assertBetweenRangeInclusive(
+            Object bean, String propertyName, Float lowerBound, Float upperBound)
+            throws Exception
+    {
+        PropertyDescriptor propertyDescriptor = lookupPropertyDescriptor(bean, propertyName);
+        Class<?> propertyType = propertyDescriptor.getPropertyType();
+
+        if (propertyType.isAssignableFrom(Float.class) || propertyType.isAssignableFrom(float.class)) {
+            Assertions.assertLessThan(lowerBound, upperBound);
+            float margin = (float) MARGIN;
+            if (lowerBound > Float.MIN_VALUE) {
+                assertNotValid(bean, propertyName, Float.valueOf(lowerBound - margin),
+                               IllegalArgumentException.class);
+            }
+            if (upperBound < Float.MAX_VALUE) {
+                assertNotValid(bean, propertyName, Float.valueOf(upperBound + margin),
+                               IllegalArgumentException.class);
+            }
+
+            try {
+                assertSetAndGet(bean, propertyName, lowerBound);
+                assertSetAndGet(bean, propertyName, upperBound);
+
+                Float stepsSize = (upperBound - lowerBound) / STEPS;
+                if (stepsSize > 0) {
+                    Float value = lowerBound;
+                    for (int i = 0; i < STEPS && value <= upperBound; i++) {
+                        assertSetAndGet(bean, propertyName, value);
+                        value += stepsSize;
+                    }
+                }
+            }
+            catch (IllegalArgumentException e) {
+                throw new AssertionError(String.format("%s: %s", e.getClass().getName(), e.getMessage()));
+            }
+        }
+        else {
+            fail(String.format("Incompatible property type: %s.  Expecting %s.",
+                               propertyType.getName(), lowerBound.getClass().getName()));
+        }
+    }
+
+
+
 
     /**
      * Assert that a bean property only accepts positive non-zero value
@@ -185,19 +280,19 @@ public class AssertBean
         Class<?> propertyType = propertyDescriptor.getPropertyType();
 
         if (propertyType.isAssignableFrom(Integer.class) || propertyType.isAssignableFrom(int.class)) {
-            assertBetweenRangeInclusive(bean, propertyName, Integer.valueOf(0), Integer.MAX_VALUE);
+            assertBetweenRangeInclusive(bean, propertyName, Integer.valueOf(1), Integer.MAX_VALUE);
         }
         else if (propertyType.isAssignableFrom(Long.class) || propertyType.isAssignableFrom(long.class)) {
-            assertBetweenRangeInclusive(bean, propertyName, Long.valueOf(0), Long.MAX_VALUE);
+            assertBetweenRangeInclusive(bean, propertyName, Long.valueOf(1), Long.MAX_VALUE);
         }
         else if (propertyType.isAssignableFrom(Double.class) || propertyType.isAssignableFrom(double.class)) {
-            assertBetweenRangeInclusive(bean, propertyName, Double.valueOf(0), Double.MAX_VALUE);
+            assertBetweenRangeInclusive(bean, propertyName, Double.valueOf(MARGIN), Double.MAX_VALUE);
         }
         else if (propertyType.isAssignableFrom(Float.class) || propertyType.isAssignableFrom(float.class)) {
-            assertBetweenRangeInclusive(bean, propertyName, Float.valueOf(0), Float.MAX_VALUE);
+            assertBetweenRangeInclusive(bean, propertyName, Float.valueOf((float)MARGIN), Float.MAX_VALUE);
         }
         else {
-            fail("Don't know how to handle class: " + propertyType.getSimpleName());
+            fail("Don't know how to handle value of type: " + propertyType.getSimpleName());
         }
     }
 
@@ -264,20 +359,23 @@ public class AssertBean
 
         PropertyDescriptor propertyDescriptor = lookupPropertyDescriptor(bean, propertyName);
 
-        Method readMethod = propertyDescriptor.getReadMethod();
-        Assert.assertNotNull(readMethod, "There is no getter available for property name: " + propertyName);
-
-        Method writeMethod = propertyDescriptor.getWriteMethod();
-        Assert.assertNotNull(writeMethod, "There is no setter available for property name: " + propertyName);
+        Method getter = propertyDescriptor.getReadMethod();
+        Method setter = propertyDescriptor.getWriteMethod();
 
         try {
-            writeMethod.invoke(bean, value);
-            Object getResult = readMethod.invoke(bean);
+            setter.invoke(bean, value);
+            Object getResult = getter.invoke(bean);
 
-            Assertions.assertInstanceOf(value, getResult.getClass());
+            // Better to get class from getResult due to auto-boxing
+            Class<?> expectedType = getResult != null? getResult.getClass(): getter.getReturnType();
+            Assertions.assertInstanceOf(value, expectedType);
             assertEquals(getResult, value);
         }
         catch (InvocationTargetException e) {
+            // Unexpected exception probably due to invalid bean property definition.
+            // This is not a part of the assert check in this method, and there is
+            // no reason to mask it with an AssertError.  Simply let this exception
+            // propagate.
             if (e.getTargetException() instanceof Exception) {
                 throw (Exception) e.getTargetException();
             }
@@ -317,6 +415,17 @@ public class AssertBean
         Assert.assertNotNull(propertyDescriptor,
                       String.format("Bean class %s does not have property with name: %s",
                                     bean.getClass().getSimpleName(), propertyName));
+
+        Method getter = propertyDescriptor.getReadMethod();
+        Assert.assertNotNull(getter, "There is no getter available for property name: " + propertyName);
+
+        Method setter = propertyDescriptor.getWriteMethod();
+        Assert.assertNotNull(setter, "There is no setter available for property name: " + propertyName);
+
+        // Verify that the return type of the getter matches the argument type of the setter.
+        // for introspection to work, this already has exactly one argument
+        Class<?> [] setterParams = setter.getParameterTypes();
+        assertEquals(getter.getReturnType(), setterParams[0]);
 
         return propertyDescriptor;
     }
