@@ -20,7 +20,7 @@ import com.google.common.io.Files;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
 import com.ning.http.util.Base64;
-import org.eclipse.jetty.server.Server;
+import com.proofpoint.node.NodeInfo;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -29,24 +29,30 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.util.concurrent.ExecutionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-public class TestJettyProvider
+public class TestHttpServerProvider
 {
-    private Server server;
+    private HttpServer server;
     private File tempDir;
+    private NodeInfo nodeInfo;
+    private HttpServerConfig config;
+    private HttpServerInfo httpServerInfo;
 
     @BeforeMethod
     public void setup()
             throws IOException
     {
         tempDir = Files.createTempDir().getCanonicalFile(); // getCanonicalFile needed to get around Issue 365 (http://code.google.com/p/guava-libraries/issues/detail?id=365)
+        config = new HttpServerConfig()
+                .setHttpPort(0)
+                .setLogPath(new File(tempDir, "http-request.log").getAbsolutePath());
+        nodeInfo = new NodeInfo();
+        httpServerInfo = new HttpServerInfo(config, nodeInfo);
     }
 
     @AfterMethod
@@ -67,13 +73,11 @@ public class TestJettyProvider
     public void testHttp()
             throws Exception
     {
-        HttpServerConfig config = makeBaseConfig();
-
-        createServer(config);
+        createServer();
         server.start();
 
         AsyncHttpClient client = new AsyncHttpClient();
-        Response response = client.prepareGet("http://localhost:" + config.getHttpPort() + "/")
+        Response response = client.prepareGet(httpServerInfo.getHttpUri().toString())
                 .execute()
                 .get();
 
@@ -84,10 +88,9 @@ public class TestJettyProvider
     public void testHttpIsDisabled()
             throws Exception
     {
-        HttpServerConfig config = makeBaseConfig()
-                .setHttpEnabled(false);
+        config.setHttpEnabled(false);
 
-        createServer(config);
+        createServer();
         server.start();
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -117,14 +120,13 @@ public class TestJettyProvider
         File file = File.createTempFile("auth", ".properties", tempDir);
         Files.write("user: password", file, Charsets.UTF_8);
 
-        HttpServerConfig config = makeBaseConfig()
-                .setUserAuthFile(file.getAbsolutePath());
+        config.setUserAuthFile(file.getAbsolutePath());
 
-        createServer(config);
+        createServer();
         server.start();
 
         AsyncHttpClient client = new AsyncHttpClient();
-        Response response = client.prepareGet("http://localhost:" + config.getHttpPort() + "/")
+        Response response = client.prepareGet(httpServerInfo.getHttpUri().toString())
                 .addHeader("Authorization", "Basic " + Base64.encode("user:password".getBytes()))
                 .execute()
                 .get();
@@ -163,29 +165,11 @@ public class TestJettyProvider
         // TODO
     }
 
-    private void createServer(HttpServerConfig config)
+    private void createServer()
     {
         HashLoginServiceProvider loginServiceProvider = new HashLoginServiceProvider(config);
-        JettyProvider provider = new JettyProvider(config, new DummyServlet());
-        provider.setLoginService(loginServiceProvider.get());
-        server = provider.get();
-    }
-
-    private HttpServerConfig makeBaseConfig()
-            throws IOException
-    {
-        // TODO: replace with NetUtils.findUnusedPort()
-        ServerSocket socket = new ServerSocket();
-        try {
-            socket.bind(new InetSocketAddress(0));
-            final int port = socket.getLocalPort();
-
-            return new HttpServerConfig()
-                    .setHttpPort(port)
-                    .setLogPath(new File(tempDir, "http-request.log").getAbsolutePath());
-        }
-        finally {
-            socket.close();
-        }
+        HttpServerProvider serverProvider = new HttpServerProvider(httpServerInfo, nodeInfo, config, new DummyServlet());
+        serverProvider.setLoginService(loginServiceProvider.get());
+        server = serverProvider.get();
     }
 }

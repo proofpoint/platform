@@ -15,8 +15,9 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.proofpoint.node.NodeInfo;
 import org.eclipse.jetty.http.security.Constraint;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -37,93 +38,68 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
-import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.management.MBeanServer;
 import javax.servlet.Servlet;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 
-/**
- * Provides an instance of a Jetty server ready to be configured with
- * com.google.inject.servlet.ServletModule
- */
-public class JettyProvider
-        implements Provider<Server>
+public class HttpServer
 {
-    private MBeanServer mbeanServer;
-    private HttpServerConfig config;
-    private final Servlet theServlet;
-    private LoginService loginService;
-    private Map<String, String> servletInitParameters = Collections.emptyMap();
+    private final Server server;
 
-    @Inject
-    public JettyProvider(HttpServerConfig config, @TheServlet Servlet theServlet)
+    public HttpServer(HttpServerInfo httpServerInfo, NodeInfo nodeInfo, HttpServerConfig config, Servlet theServlet, Map<String, String> parameters, MBeanServer mbeanServer, LoginService loginService)
+            throws IOException
     {
-        this.config = config;
-        this.theServlet = theServlet;
-    }
-
-    @Inject(optional = true)
-    public void setServletInitParameters(@TheServlet Map<String, String> parameters)
-    {
-        this.servletInitParameters = parameters;
-    }
-
-    @Inject(optional = true)
-    public void setMBeanServer(MBeanServer server)
-    {
-        mbeanServer = server;
-    }
-
-    @Inject(optional = true)
-    public void setLoginService(@Nullable LoginService loginService)
-    {
-        this.loginService = loginService;
-    }
-
-    public Server get()
-    {
-        String ip = config.getIp();
+        Preconditions.checkNotNull(httpServerInfo, "httpServerInfo is null");
+        Preconditions.checkNotNull(nodeInfo, "nodeInfo is null");
+        Preconditions.checkNotNull(config, "config is null");
+        Preconditions.checkNotNull(theServlet, "theServlet is null");
 
         Server server = new Server();
 
         if (mbeanServer != null) {
             // export jmx mbeans if a server was provided
-            MBeanContainer mbeanContainer = new MBeanContainer(mbeanServer);
+            MBeanContainer mbeanContainer = new MBeanContainer(mbeanServer) {
+                @Override
+                public void doStart()
+                {
+                    // jetty registers a shutdown hook that can cause a deadlock
+                }
+            };
             server.getContainer().addEventListener(mbeanContainer);
         }
 
         // set up NIO-based HTTP connector
+        SelectChannelConnector httpConnector;
         if (config.isHttpEnabled()) {
-            SelectChannelConnector connector = new SelectChannelConnector();
-            connector.setPort(config.getHttpPort());
-            connector.setMaxIdleTime((int) config.getNetworkMaxIdleTime().convertTo(TimeUnit.MILLISECONDS));
-            connector.setStatsOn(true);
-            if (ip != null) {
-                connector.setHost(ip);
-            }
+            httpConnector = new SelectChannelConnector();
+            httpConnector.setPort(httpServerInfo.getHttpUri().getPort());
+            httpConnector.setMaxIdleTime((int) config.getNetworkMaxIdleTime().convertTo(TimeUnit.MILLISECONDS));
+            httpConnector.setStatsOn(true);
+            httpConnector.setHost(nodeInfo.getBindIp().getHostAddress());
 
-            server.addConnector(connector);
+            server.addConnector(httpConnector);
         }
 
+        // set up NIO-based HTTPS connector
+        SslSelectChannelConnector httpsConnector;
         if (config.isHttpsEnabled()) {
-            SslSelectChannelConnector sslConnector = new SslSelectChannelConnector();
-            sslConnector.setPort(config.getHttpsPort());
-            sslConnector.setStatsOn(true);
-            sslConnector.setKeystore(config.getKeystorePath());
-            sslConnector.setPassword(config.getKeystorePassword());
-            sslConnector.setMaxIdleTime((int) config.getNetworkMaxIdleTime().convertTo(TimeUnit.MILLISECONDS));
-            if (ip != null) {
-                sslConnector.setHost(ip);
-            }
+            httpsConnector = new SslSelectChannelConnector();
+            httpsConnector.setPort(httpServerInfo.getHttpsUri().getPort());
+            httpsConnector.setStatsOn(true);
+            httpsConnector.setKeystore(config.getKeystorePath());
+            httpsConnector.setPassword(config.getKeystorePassword());
+            httpsConnector.setMaxIdleTime((int) config.getNetworkMaxIdleTime().convertTo(TimeUnit.MILLISECONDS));
+            httpsConnector.setHost(nodeInfo.getBindIp().getHostAddress());
 
-            server.addConnector(sslConnector);
+            server.addConnector(httpsConnector);
         }
 
         QueuedThreadPool threadPool = new QueuedThreadPool(config.getMaxThreads());
@@ -140,44 +116,41 @@ public class JettyProvider
          *           |       |--- gzip response filter
          *           |       |--- gzip request filter
          *           |       |--- security handler
-         *           |       |--- guice filter
-         *           |       |--- default servlet (no op, as all requests are handled by filter)
+         *           |       |--- the servlet (normally GuiceContainer)
          *           |--- log handler
          */
         HandlerCollection handlers = new HandlerCollection();
-        handlers.addHandler(getContextHandler());
-        try {
-            handlers.addHandler(getLogHandler());
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        handlers.addHandler(createServletContext(theServlet, parameters, loginService));
+        handlers.addHandler(createLogHandler(config));
 
+        // add handlers to Jetty
         StatisticsHandler statsHandler = new StatisticsHandler();
         statsHandler.setHandler(handlers);
         server.setHandler(statsHandler);
 
-        return server;
+        this.server = server;
     }
 
-    private ServletContextHandler getContextHandler()
+    private static ServletContextHandler createServletContext(Servlet theServlet, Map<String, String> parameters, LoginService loginService)
     {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+        // -- gzip response filter
         context.addFilter(GzipFilter.class, "/*", FilterMapping.DEFAULT);
+        // -- gzip request filter
         context.addFilter(GZipRequestFilter.class, "/*", FilterMapping.DEFAULT);
-
-        ServletHolder servletHolder = new ServletHolder(theServlet);
-        servletHolder.setInitParameters(servletInitParameters);
-        context.addServlet(servletHolder, "/*");
-
+        // -- security handler
         if (loginService != null) {
-            context.setSecurityHandler(getSecurityHandler());
+            SecurityHandler securityHandler = createSecurityHandler(loginService);
+            context.setSecurityHandler(securityHandler);
         }
-
+        // -- the servlet
+        ServletHolder servletHolder = new ServletHolder(theServlet);
+        servletHolder.setInitParameters(ImmutableMap.copyOf(parameters));
+        context.addServlet(servletHolder, "/*");
         return context;
     }
 
-    private SecurityHandler getSecurityHandler()
+    private static SecurityHandler createSecurityHandler(LoginService loginService)
     {
         Constraint constraint = new Constraint();
         constraint.setAuthenticate(false);
@@ -195,7 +168,7 @@ public class JettyProvider
         return securityHandler;
     }
 
-    private RequestLogHandler getLogHandler()
+    private static RequestLogHandler createLogHandler(HttpServerConfig config)
             throws IOException
     {
         // TODO: use custom (more easily-parseable) format
@@ -217,5 +190,20 @@ public class JettyProvider
         logHandler.setRequestLog(requestLog);
 
         return logHandler;
+    }
+
+    @PostConstruct
+    public void start()
+            throws Exception
+    {
+        server.start();
+        Preconditions.checkState(server.isRunning(), "server is not running");
+    }
+
+    @PreDestroy
+    public void stop()
+            throws Exception
+    {
+        server.stop();
     }
 }

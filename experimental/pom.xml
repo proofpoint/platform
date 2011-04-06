@@ -3,21 +3,21 @@
     <parent>
         <artifactId>platform</artifactId>
         <groupId>com.proofpoint.platform</groupId>
-        <version>0.37-SNAPSHOT</version>
+        <version>0.38-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.proofpoint.platform</groupId>
     <artifactId>experimental</artifactId>
     <packaging>jar</packaging>
-    <version>0.37-SNAPSHOT</version>
+    <version>0.38-SNAPSHOT</version>
 
 
     <dependencies>
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
             <artifactId>jaxrs</artifactId>
-            <version>0.37-SNAPSHOT</version>
+            <version>0.38-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>r07</version>
+            <version>r08</version>
         </dependency>
 
     </dependencies>
