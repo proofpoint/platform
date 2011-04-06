@@ -34,15 +34,16 @@ import static org.testng.Assert.fail;
 
 
 /**
- * A collection of static methods to exercise Javabean properties.  These assertion methods simplify
- * testing Configuration Javabean classes used with the platform configuration module.<p/>
+ * A collection of static methods to exercise correctness Javabean properties implementation.  
+ * These assertion methods simplify testing Configuration Javabean classes used with the platform 
+ * configuration module.<p/>
  *
  * <ul>
  *     <li>assertSetAndGet -- verify that getter returns the same value set by setter.</li>
  *     <li>assertNotValid -- verify that setter raises specific exception on invalid input</li>
  *     <li>assertNotNull -- non-null property setter returns NullPointerException on null argument.</li>
  *     <li>assertBetweenRangeInclusive -- numerical range check</li>
- *     <li>assertGreaterThanZero -- lazy alias to test [0, Type.MAX_VALUE]</li>
+ *     <li>assertGreaterThanZero -- lazy alias to test (0, Type.MAX_VALUE]</li>
  * </ul>
  *
  * In addition, any of the AssertBean methods check for bean property implementation consistency,
@@ -65,8 +66,9 @@ public class AssertBean
 
 
     /**
-     * Verify that a bean property only accepts non-null values.  A null
-     * value results in NullPointerException.
+     * Verify that a bean property only accepts non-null values.  This method
+     * attempts to set a null value to the setter.  It raises an assertion if
+     * no NullPointerException occurs.
      */
     public static void assertNotNull(Object bean, String propertyName)
             throws Exception
@@ -78,7 +80,8 @@ public class AssertBean
     /**
      * Verify that a bean property accepts value of matching Java numerical values,
      * and that a value is accepted if an only if it is within the specified range
-     * inclusively.
+     * inclusively.  It raises an AssertError if setting an out of range value
+     * to a bean property does not cause an IllegalArgumentException.
      */
     public static void assertBetweenRangeInclusive(
             Object bean, String propertyName, Integer lowerBound, Integer upperBound)
@@ -127,7 +130,8 @@ public class AssertBean
     /**
      * Verify that a bean property accepts value of matching Java numerical values,
      * and that a value is accepted if an only if it is within the specified range
-     * inclusively.
+     * inclusively.  It raises an AssertError if setting an out of range value
+     * to a bean property does not cause an IllegalArgumentException.
      */
     public static void assertBetweenRangeInclusive(
             Object bean, String propertyName, Long lowerBound, Long upperBound)
@@ -175,7 +179,8 @@ public class AssertBean
     /**
      * Verify that a bean property accepts value of matching Java numerical values,
      * and that a value is accepted if an only if it is within the specified range
-     * inclusively.
+     * inclusively.  It raises an AssertError if setting an out of range value
+     * to a bean property does not cause an IllegalArgumentException.
      */
     public static void assertBetweenRangeInclusive(
             Object bean, String propertyName, Double lowerBound, Double upperBound)
@@ -223,7 +228,8 @@ public class AssertBean
     /**
      * Verify that a bean property accepts value of matching Java numerical values,
      * and that a value is accepted if an only if it is within the specified range
-     * inclusively.
+     * inclusively.  It raises an AssertError if setting an out of range value
+     * to a bean property does not cause an IllegalArgumentException.
      */
     public static void assertBetweenRangeInclusive(
             Object bean, String propertyName, Float lowerBound, Float upperBound)
@@ -271,7 +277,9 @@ public class AssertBean
 
 
     /**
-     * Assert that a bean property only accepts positive non-zero value
+     * Assert that a bean property only accepts positive non-zero value. Raise an Assertion
+     * error if setting an out-of-range value to a bean property does not result in an
+     * IllegalArgumentException.<p/>
      */
     public static void assertGreaterThanZero(Object bean, String propertyName)
             throws Exception
@@ -298,7 +306,12 @@ public class AssertBean
 
 
     /**
-     * Assert that a bean property rejects an invalid value and raised expected exception
+     * This method sets a supposedly illegal value to a bean property and warches for a
+     * specified expectedException.  It raises an AssertError if the expectedException
+     * did not occur.<p/>
+     *
+     * This method is typically used (but not limited) to verify that a setter raises
+     * IllegalArgumentException for a given illegal input value.
      */
     public static void assertNotValid(
             Object bean, String propertyName, Object value, Class<? extends Exception> expectedException)
@@ -322,7 +335,9 @@ public class AssertBean
 
 
     /**
-     * Assert that a bean property getter returns the same value set by the setter
+     * Assert that a bean property getter returns the same value set by the setter. It
+     * raises an exception if the getter returns a different value than the value
+     * received by the setter.<p/>
      */
     public static void assertSetAndGet(Object bean, String propertyName, File directory)
             throws Exception {
@@ -352,7 +367,9 @@ public class AssertBean
 
 
     /**
-     * Assert that a bean property getter returns the same value set by the setter
+     * Assert that a bean property getter returns the same value set by the setter. It
+     * raises an exception if the getter returns a different value than the value
+     * received by the setter.<p/>
      */
     public static void assertSetAndGet(Object bean, String propertyName, Object value)
             throws Exception {
