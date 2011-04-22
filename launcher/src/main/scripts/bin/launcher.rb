@@ -200,6 +200,11 @@ def stop(options)
   return :success, "Stopped #{pid}"
 end
 
+def restart(options)
+  stop(options)
+  return start(options)
+end
+
 def kill(options)
   pid_file = Pid.new(options[:pid_file])
 
@@ -234,7 +239,7 @@ def status(options)
   end
 end
 
-commands = [:run, :start, :stop, :kill, :status]
+commands = [:run, :start, :stop, :restart, :kill, :status]
 install_path = Pathname.new(__FILE__).parent.parent.expand_path
 
 # initialize defaults
