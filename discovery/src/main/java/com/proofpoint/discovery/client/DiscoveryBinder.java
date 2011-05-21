@@ -21,6 +21,7 @@ public class DiscoveryBinder
     }
 
     private final Multibinder<ServiceAnnouncement> serviceAnnouncementBinder;
+    private final Multibinder<ServiceSelector> serviceSelectorSetBinder;
     private final Binder binder;
 
     protected DiscoveryBinder(Binder binder)
@@ -28,6 +29,7 @@ public class DiscoveryBinder
         Preconditions.checkNotNull(binder, "binder is null");
         this.binder = binder;
         this.serviceAnnouncementBinder = Multibinder.newSetBinder(binder, ServiceAnnouncement.class);
+        this.serviceSelectorSetBinder = Multibinder.newSetBinder(binder, ServiceSelector.class);
     }
 
     public void bindSelector(String type)
@@ -40,7 +42,10 @@ public class DiscoveryBinder
     {
         Preconditions.checkNotNull(serviceType, "serviceType is null");
         bindConfig(binder).annotatedWith(serviceType).prefixedWith("discovery." + serviceType.value()).to(ServiceSelectorConfig.class);
-        binder.bind(ServiceSelector.class).annotatedWith(serviceType).toProvider(new ServiceSelectorProvider(serviceType.value()));
+
+        ServiceSelectorProvider provider = new ServiceSelectorProvider(serviceType.value());
+        binder.bind(ServiceSelector.class).annotatedWith(serviceType).toProvider(provider);
+        serviceSelectorSetBinder.addBinding().toProvider(provider);
     }
 
     public void bindServiceAnnouncement(ServiceAnnouncement announcement)
