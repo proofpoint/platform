@@ -30,7 +30,8 @@ import java.util.Set;
 
 import static org.testng.AssertJUnit.assertEquals;
 
-public class TestRackServletConfig {
+public class TestRackServletConfig
+{
     @Test
     public void testDefaults()
     {

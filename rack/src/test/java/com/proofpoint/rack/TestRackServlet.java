@@ -67,7 +67,7 @@ public class TestRackServlet
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
-    public void testBadConfigThrows() throws IOException
+    public void testServletThrowsIfItCantFindTheUnderlyingRackScriptAtConstruction() throws IOException
     {
         new RackServlet(new RackServletConfig().setRackConfigPath("SomeBigFileNameThatShouldntEverExistOnTheClassPathIMeanReallyThisIsABigNameTotally.ru"));
     }

@@ -16,7 +16,6 @@
 package com.proofpoint.rack;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterators;
 import com.google.common.io.Resources;
 import com.proofpoint.log.Logger;
 import org.jruby.Ruby;
@@ -107,7 +106,7 @@ public class RackServlet
         Preconditions.checkNotNull(response);
 
         Preconditions.checkArgument((request instanceof HttpServletRequest), "Expected a servlet request that implements HttpServletRequest, this servlet only supports Http(s)");
-        Preconditions.checkArgument((response instanceof HttpServletResponse), "Expected a servlet response that implements HttpServletReponse, this servlet only supports Http(s)");
+        Preconditions.checkArgument((response instanceof HttpServletResponse), "Expected a servlet response that implements HttpServletResponse, this servlet only supports Http(s)");
 
         adapter.callMethod(rackApplication, "call",
                 new IRubyObject[] {

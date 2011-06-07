@@ -16,18 +16,23 @@
 package com.proofpoint.rack;
 
 import com.proofpoint.configuration.Config;
+import com.proofpoint.configuration.ConfigDescription;
+
+import javax.validation.constraints.NotNull;
 
 public class RackServletConfig
 {
     //Finds the one and only config.ru if you only have one, otherwise, you gotta set this.
     private String rackConfigPath = "config.ru";
 
+    @NotNull
     public String getRackConfigPath()
     {
         return rackConfigPath;
     }
 
     @Config("rackserver.rack_config_path")
+    @ConfigDescription("A path segment to the rack application configuration file, uses Resources, so a partial path that is unique is valid (e.g. proofpoint/app/config.ru)")
     public RackServletConfig setRackConfigPath(String rackConfigPath)
     {
         this.rackConfigPath = rackConfigPath;

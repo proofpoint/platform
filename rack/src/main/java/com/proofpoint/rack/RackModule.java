@@ -24,7 +24,6 @@ import com.proofpoint.http.server.TheServlet;
 
 import javax.servlet.Servlet;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 public class RackModule implements Module
@@ -39,7 +38,11 @@ public class RackModule implements Module
         ConfigurationModule.bindConfig(binder).to(RackServletConfig.class);
     }
 
-        @Provides
+    /**
+     * This is a provider that is expected by our http-server module, so it doesn't serve any purpose for us right now, it just allows Guice to create it's bindings.
+     * @return an empty map
+     */
+    @Provides
     @TheServlet
     public Map<String, String> createTheServletParams()
     {
