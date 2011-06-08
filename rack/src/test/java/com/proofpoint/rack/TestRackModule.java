@@ -65,8 +65,8 @@ public class TestRackModule
                 .execute()
                 .get();
 
-        assertEquals(200, response.getStatusCode()); //Avoiding a dependency on jax-rs for the Status enum.
-        assertEquals(expected, response.getResponseBody());
+        assertEquals(response.getStatusCode(), 200); //Avoiding a dependency on jax-rs for the Status enum.
+        assertEquals(response.getResponseBody(), expected);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class TestRackModule
                 .execute()
                 .get();
 
-        assertEquals(404, response.getStatusCode()); //Avoiding a dependency on jax-rs for the Status enum.
+        assertEquals(response.getStatusCode(), 404); //Avoiding a dependency on jax-rs for the Status enum.
     }
 
     @Test
@@ -90,7 +90,7 @@ public class TestRackModule
                 .execute()
                 .get();
 
-        assertEquals(200, response.getStatusCode()); //Avoiding a dependency on jax-rs for the Status enum.
+        assertEquals(response.getStatusCode(), 200); //Avoiding a dependency on jax-rs for the Status enum.
         assertEquals(response.getResponseBody(), "{\"Cookie1\"=>\"Value1\", \"Cookie2\"=>\"Value2\"}");
     }
 
@@ -105,14 +105,14 @@ public class TestRackModule
                 .execute()
                 .get();
 
-        assertEquals(201, responsePost.getStatusCode()); //Avoiding a dependency on jax-rs for the Status enum.
-        assertEquals("", responsePost.getResponseBody());
+        assertEquals(responsePost.getStatusCode(), 201); //Avoiding a dependency on jax-rs for the Status enum.
+        assertEquals(responsePost.getResponseBody(), "");
 
         Response responseGet = client.prepareGet(server.getBaseUrl().resolve("/temp-store").toString())
                 .execute()
                 .get();
 
-        assertEquals(200, responseGet.getStatusCode()); //Avoiding a dependency on jax-rs for the Status enum.
-        assertEquals(expected, responseGet.getResponseBody());
+        assertEquals(responseGet.getStatusCode(), 200); //Avoiding a dependency on jax-rs for the Status enum.
+        assertEquals(responseGet.getResponseBody(), expected);
     }
 }
