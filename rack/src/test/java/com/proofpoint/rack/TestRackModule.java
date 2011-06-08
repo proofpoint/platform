@@ -81,6 +81,20 @@ public class TestRackModule
     }
 
     @Test
+    public void testSettingCookiesResultsInACookieHashInRuby()
+            throws Throwable
+    {
+        Response response = client.prepareGet(server.getBaseUrl().resolve("/header-list-test").toString())
+                .addHeader("COOKIE", "Cookie1=Value1")
+                .addHeader("COOKIE", "Cookie2=Value2")
+                .execute()
+                .get();
+
+        assertEquals(200, response.getStatusCode()); //Avoiding a dependency on jax-rs for the Status enum.
+        assertEquals(response.getResponseBody(), "{\"Cookie1\"=>\"Value1\", \"Cookie2\"=>\"Value2\"}");
+    }
+
+    @Test
     public void testPostAndGet()
             throws Throwable
     {

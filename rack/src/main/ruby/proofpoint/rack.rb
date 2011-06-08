@@ -56,9 +56,16 @@ module Proofpoint
         # header_names is an Enumeration, so this sucks, but it's the lesser of all evils imho.
         request_header_names = servlet_request.header_names
         unless request_header_names.nil?
-          while request_header_names.has_more_elements do
+          while request_header_names.has_more_elements
             header_name = request_header_names.next_element
-            rack_env["HTTP_#{header_name.upcase.gsub(/-/, '_')}"] = servlet_request.get_header(header_name) unless header_name =~ /^Content-(Type|Length)$/i
+            unless header_name =~ /^Content-(Type|Length)$/i
+              header_values = servlet_request.get_headers(header_name)
+              header_value_array = Array.new
+              while header_values.has_more_elements
+                header_value_array.push(header_values.next_element)
+              end
+              rack_env["HTTP_#{header_name.upcase.gsub(/-/,'_')}"] = header_value_array.join(',')
+            end
           end
         end
 
@@ -72,7 +79,7 @@ module Proofpoint
             when /^Content-Length$/i
               servlet_response.content_length = header_value.to_i
             else
-              servlet_response.add_header(header_name.to_s, header_value.to_s)
+              header_value.to_s.split("\n").each { |split_value| servlet_response.add_header(header_name.to_s, split_value) }
           end
         end
 

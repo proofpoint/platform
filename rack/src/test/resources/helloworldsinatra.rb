@@ -22,9 +22,13 @@ end
 post "/temp-store" do
   @@tmp = request.body.read
   status 201
-  return ""
+  return ''
 end
 
 get "/temp-store" do
   return @@tmp
+end
+
+get "/header-list-test" do
+  return request.cookies.inspect
 end
