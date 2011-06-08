@@ -46,7 +46,8 @@ public class RackServlet
     private final IRubyObject rackApplication;
     private final Ruby runtime;
     private final RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
-    private static final Logger rackLogger = Logger.get(RackServlet.class.toString() + " Rack Application");
+    //Passed into the underlying application that rack starts up.
+    private static final Logger rackApplicationLogger = Logger.get(RackServlet.class.toString() + " Rack Application");
 
     @Inject
     public RackServlet(RackServletConfig config)
@@ -70,7 +71,7 @@ public class RackServlet
 
         rackApplication = adapter.callMethod(builder, "build", new IRubyObject[] {
                 javaToRuby(runtime, rackScriptLocation.getPath()),
-                javaToRuby(runtime, rackLogger)
+                javaToRuby(runtime, rackApplicationLogger)
         });
     }
 

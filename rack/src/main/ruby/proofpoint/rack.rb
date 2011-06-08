@@ -23,7 +23,7 @@ module Proofpoint
     class Builder
       def build(filename, logger)
         rack_app, options_ignored = Rack::Builder.parse_file filename
-        ServletAdapter.new(rack_app, logger)
+        return ServletAdapter.new(rack_app, logger)
       end
     end
 
