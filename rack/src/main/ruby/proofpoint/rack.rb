@@ -16,6 +16,7 @@
 require 'rubygems'
 require 'rack'
 require 'rack/rewindable_input'
+require 'forwardable'
 
 module Proofpoint
   module RackServer
@@ -90,28 +91,15 @@ module Proofpoint
     end
 
     class RackLogger
+
+      extend Forwardable
+
+      def_delegators :@logger,:debug,:info,:warn,:error
+
+      alias_method :fatal,:error
+
       def initialize(logger)
         @logger = logger
-      end
-
-      def debug(message)
-        @logger.debug(message)
-      end
-
-      def info(message)
-        @logger.info(message)
-      end
-
-      def warn(message)
-        @logger.warn(message)
-      end
-
-      def error(message)
-        @logger.error(message)
-      end
-
-      def fatal(message)
-        @logger.error(message)
       end
     end
   end

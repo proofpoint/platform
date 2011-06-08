@@ -46,8 +46,7 @@ public class RackServlet
     private final IRubyObject rackApplication;
     private final Ruby runtime;
     private final RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
-    private final Logger rackLogger = Logger.get(RackServlet.class);
-    private static final Logger log = Logger.get(RackServlet.class);
+    private static final Logger rackLogger = Logger.get(RackServlet.class.toString() + " Rack Application");
 
     @Inject
     public RackServlet(RackServletConfig config)
