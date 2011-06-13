@@ -21,7 +21,7 @@ require 'forwardable'
 module Proofpoint
   module RackServer
     class Builder
-      def build(filename, logger)
+      def build(filename)
         rack_app, options_ignored = Rack::Builder.parse_file filename
         # Sets up the logger for rails apps
         if rack_app.respond_to? :configure
@@ -31,12 +31,12 @@ module Proofpoint
             # Ignore exceptions here, if we can't set the logger like this, it isn't rails, and therefore it will properly use the rack logger.
           end
         end
-        return ServletAdapter.new(rack_app, logger)
+        return ServletAdapter.new(rack_app)
       end
     end
 
     class ServletAdapter
-      def initialize(app, logger)
+      def initialize(app)
         @app = app
         @logger = RackLogger.new
         @errors = java::lang::System::err.to_io # TODO: write to logger
