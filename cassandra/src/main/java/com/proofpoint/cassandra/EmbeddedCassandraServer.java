@@ -18,6 +18,8 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +29,6 @@ import static java.util.Arrays.asList;
 public class EmbeddedCassandraServer
 {
     private final CassandraDaemon cassandra;
-    private final Thread thread;
     private final InetAddress rpcAddress;
     private final int rpcPort;
 
@@ -83,33 +84,51 @@ public class EmbeddedCassandraServer
 
         cassandra = new EmbeddedCassandraDaemon();
         cassandra.init(null);
-
-        thread = new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                try {
-                    cassandra.start();
-                }
-                catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }, "EmbeddedCassandra");
-        thread.setDaemon(true);
     }
 
     @PostConstruct
     public void start()
     {
-        thread.start();
+        try {
+            cassandra.start();
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        waitForListener(false);
+    }
+
+    void waitForListener(boolean throwOnFail)
+    {
+        InetSocketAddress testAddress = new InetSocketAddress(rpcAddress, rpcPort);
+        int remainingSeconds = 5;
+        final long giveUpTime = System.currentTimeMillis() + remainingSeconds * 1000L;
+        do {
+            try {
+                Socket s = new Socket();
+                s.connect(testAddress, remainingSeconds);
+                s.close();
+                return;
+            }
+            catch (IOException e) {
+                try {
+                    Thread.sleep(100L);
+                }
+                catch (InterruptedException interrupted) {
+                    throw new RuntimeException(interrupted);
+                }
+            }
+        } while ((remainingSeconds = (int)((500 + giveUpTime - System.currentTimeMillis())) / 1000) > 0);
+
+        if (throwOnFail) {
+            throw new RuntimeException(rpcAddress + ":" + rpcPort + " listener not up");
+        }
     }
 
     @PreDestroy
     public void stop()
     {
-        thread.interrupt();
         cassandra.stop();
     }
 
