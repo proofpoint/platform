@@ -96,19 +96,19 @@ public class EmbeddedCassandraServer
             throw new RuntimeException(e);
         }
 
-        waitForListener(false);
+        waitForListener();
     }
 
-    void waitForListener(boolean throwOnFail)
+    void waitForListener()
     {
         InetSocketAddress testAddress = new InetSocketAddress(rpcAddress, rpcPort);
-        int remainingSeconds = 5;
-        final long giveUpTime = System.currentTimeMillis() + remainingSeconds * 1000L;
+        int remainingMilliseconds = 5000;
+        final long deadline = System.nanoTime() + 1000000L*remainingMilliseconds;
         do {
             try {
-                Socket s = new Socket();
-                s.connect(testAddress, remainingSeconds);
-                s.close();
+                Socket testSocket = new Socket();
+                testSocket.connect(testAddress, remainingMilliseconds);
+                testSocket.close();
                 return;
             }
             catch (IOException e) {
@@ -116,14 +116,12 @@ public class EmbeddedCassandraServer
                     Thread.sleep(100L);
                 }
                 catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
                     throw new RuntimeException(interrupted);
                 }
             }
-        } while ((remainingSeconds = (int)((500 + giveUpTime - System.currentTimeMillis())) / 1000) > 0);
-
-        if (throwOnFail) {
-            throw new RuntimeException(rpcAddress + ":" + rpcPort + " listener not up");
-        }
+            remainingMilliseconds = (int)((deadline - System.nanoTime()) / 1000000);
+        } while (remainingMilliseconds > 0);
     }
 
     @PreDestroy
