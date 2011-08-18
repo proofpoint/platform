@@ -22,6 +22,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -103,7 +104,7 @@ public class EmbeddedCassandraServer
     {
         InetSocketAddress testAddress = new InetSocketAddress(rpcAddress, rpcPort);
         int remainingMilliseconds = 5000;
-        final long deadline = System.nanoTime() + 1000000L*remainingMilliseconds;
+        final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(remainingMilliseconds);
         do {
             try {
                 Socket testSocket = new Socket();
@@ -113,14 +114,14 @@ public class EmbeddedCassandraServer
             }
             catch (IOException e) {
                 try {
-                    Thread.sleep(100L);
+                    TimeUnit.MILLISECONDS.sleep(100);
                 }
                 catch (InterruptedException interrupted) {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException(interrupted);
                 }
             }
-            remainingMilliseconds = (int)((deadline - System.nanoTime()) / 1000000);
+            remainingMilliseconds = (int)(TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime()));
         } while (remainingMilliseconds > 0);
     }
 
