@@ -65,10 +65,11 @@ def load_lines(file)
   end
 end
 
-def load_properties(file)
-  Hash[* load_lines(file).
-          map { |line| k, v = line.split(/=/); [k, v] }.# need to make k, v explicit so that we can handle "key=". Otherwise, split returns a single element.
-  flatten]
+def load_node_config(file)
+  entries = load_lines(file).map do |line|
+    k, v = line.split('=', 2).map(&:strip)
+  end
+  Hash[entries]
 end
 
 def strip(string)
@@ -124,15 +125,20 @@ def build_cmd_line(options)
   install_path = Pathname.new(__FILE__).parent.parent.expand_path
 
   log_option = if options[:daemon]
-    "-Dlog.output-file=#{options[:log_path]}"
+    "'-Dlog.output-file=#{options[:log_path]}'"
   else
     ""
   end
 
   log_levels_option = if File.exists?(options[:log_levels_path])
-    "-Dlog.levels-file=#{options[:log_levels_path]}"
+    "'-Dlog.levels-file=#{options[:log_levels_path]}'"
   else
     "" # ignore if levels file does not exist. TODO: should only ignore if using default & complain if user-provided file does not exist or has issues
+  end
+
+  node_config_path = options[:node_config_path]
+  if File.exists?(node_config_path)
+    load_node_config(node_config_path).map { |k, v| options[:system_properties][k] ||= v }
   end
 
   config_path = options[:config_path]
@@ -145,8 +151,16 @@ def build_cmd_line(options)
 
   jar_path = File.join(install_path, 'lib', 'main.jar')
 
+  system_properties = options[:system_properties].map do |k, v|
+    s = "-D#{k}=#{v}"
+    s = s.gsub("'","\'\\\\'\'")
+    "'#{s}'"
+  end
+  system_properties = system_properties.join(' ')
+
+  # TODO: fix lack of escape handling by building an array
   command =<<-CMD
-    java #{jvm_properties} #{options[:system_properties].join(" ")} -Dconfig=#{config_path} #{log_option} #{log_levels_option} -jar #{jar_path}
+    java #{jvm_properties} #{system_properties} '-Dconfig=#{config_path}' #{log_option} #{log_levels_option} -jar '#{jar_path}'
   CMD
 
   puts command if options[:verbose]
@@ -251,12 +265,13 @@ install_path = Pathname.new(__FILE__).parent.parent.expand_path
 
 # initialize defaults
 options = {
+        :node_config_path => File.join(install_path, 'env', 'node.config'),
         :jvm_config_path => File.join(install_path, 'etc', 'jvm.config'),
         :config_path => File.join(install_path, 'etc', 'config.properties'),
         :data_dir => install_path,
         :log_levels_path => File.join(install_path, 'etc', 'log.config'),
         :install_path => install_path,
-        :system_properties => []
+        :system_properties => {},
         }
 
 option_parser = OptionParser.new(:unknown_options_action => :collect) do |opts|
@@ -272,6 +287,10 @@ option_parser = OptionParser.new(:unknown_options_action => :collect) do |opts|
 
   opts.on("-v", "--verbose", "Run verbosely") do |v|
     options[:verbose] = true
+  end
+
+  opts.on("--node-config FILE", "Defaults to INSTALL_PATH/env/node.config") do |v|
+    options[:node_config_path] = Pathname.new(v).expand_path
   end
 
   opts.on("--jvm-config FILE", "Defaults to INSTALL_PATH/etc/jvm.config") do |v|
@@ -302,7 +321,8 @@ option_parser = OptionParser.new(:unknown_options_action => :collect) do |opts|
     if v.start_with?("config=") then
       raise("Config can not be passed in a -D argument.  Use --config instead")
     end
-    options[:system_properties] << "-D#{v}"
+    property_key, property_value = v.split('=', 2).map(&:strip)
+    options[:system_properties][property_key] = property_value
   end
 
   opts.on('-h', '--help', 'Display this screen') do
