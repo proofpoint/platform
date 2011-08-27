@@ -360,7 +360,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, Boolean.class);
-                        jsonGenerator.writeBoolean((Boolean) value);
+                        if (value != null) {
+                            jsonGenerator.writeBoolean((Boolean)value);
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -370,7 +375,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, Byte.class);
-                        jsonGenerator.writeNumber((Byte) value);
+                        if (value != null) {
+                            jsonGenerator.writeNumber((Byte) value);
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -380,7 +390,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, Short.class);
-                        jsonGenerator.writeNumber((Short) value);
+                        if (value != null) {
+                            jsonGenerator.writeNumber((Short) value);
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -390,7 +405,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, Integer.class);
-                        jsonGenerator.writeNumber((Integer) value);
+                        if (value != null) {
+                            jsonGenerator.writeNumber((Integer) value);
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -400,7 +420,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, Long.class);
-                        jsonGenerator.writeNumber((Long) value);
+                        if (value != null) {
+                            jsonGenerator.writeNumber((Long) value);
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }                        
                     }
                 },
 
@@ -410,7 +435,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, Float.class);
-                        jsonGenerator.writeNumber((Float) value);
+                        if (value != null) {
+                            jsonGenerator.writeNumber((Float) value);
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -420,7 +450,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, Double.class);
-                        jsonGenerator.writeNumber((Double) value);
+                        if (value != null) {
+                            jsonGenerator.writeNumber((Double) value);
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -430,7 +465,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, BigDecimal.class);
-                        jsonGenerator.writeNumber((BigDecimal) value);
+                        if (value != null) {
+                            jsonGenerator.writeNumber((BigDecimal) value);
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -440,7 +480,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, BigInteger.class);
-                        jsonGenerator.writeNumber(new BigDecimal((BigInteger) value));
+                        if (value != null) {
+                            jsonGenerator.writeNumber(new BigDecimal((BigInteger) value));
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -450,7 +495,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, DateTime.class);
-                        jsonGenerator.writeString(ISODateTimeFormat.dateTime().print((DateTime) value));
+                        if (value != null) {
+                            jsonGenerator.writeString(ISODateTimeFormat.dateTime().print((DateTime) value));
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -460,7 +510,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, Enum.class);
-                        jsonGenerator.writeString(value.toString());
+                        if (value != null) {
+                            jsonGenerator.writeString(value.toString());
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -470,7 +525,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, InetAddress.class);
-                        jsonGenerator.writeString(((InetAddress) value).getHostAddress());
+                        if (value != null) {
+                            jsonGenerator.writeString(((InetAddress) value).getHostAddress());
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },
 
@@ -480,7 +540,12 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, java.util.UUID.class);
-                        jsonGenerator.writeString(value.toString());
+                        if (value != null) {
+                            jsonGenerator.writeString(value.toString());
+                        }
+                        else {
+                            jsonGenerator.writeNull();
+                        }
                     }
                 },;
 
