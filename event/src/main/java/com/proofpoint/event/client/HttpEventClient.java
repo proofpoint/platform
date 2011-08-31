@@ -118,7 +118,7 @@ public class HttpEventClient implements EventClient
                 return new FutureResponse(client.prepareRequest(request).execute(), uriString);
             }
             catch (Exception e) {
-                log.warn(e, "Posting event failed");
+                log.debug(e, "Posting event failed");
             }
         }
 
@@ -196,23 +196,18 @@ public class HttpEventClient implements EventClient
                 int statusCode = response.getStatusCode();
                 if (statusCode != HttpServletResponse.SC_OK && statusCode != HttpServletResponse.SC_ACCEPTED) {
                     try {
-                        log.warn("Posting event to %s failed: status_code=%d status_line=%s body=%s", uri, statusCode, response.getStatusText(), response.getResponseBody());
+                        log.debug("Posting event to %s failed: status_code=%d status_line=%s body=%s", uri, statusCode, response.getStatusText(), response.getResponseBody());
                     }
                     catch (IOException bodyError) {
-                        log.warn("Posting event to %s failed: status_code=%d status_line=%s error=%s", uri, statusCode, response.getStatusText(), bodyError.getMessage());
+                        log.debug("Posting event to %s failed: status_code=%d status_line=%s error=%s", uri, statusCode, response.getStatusText(), bodyError.getMessage());
                     }
                 }
             }
             catch (ExecutionException executionException) {
-                if (log.isDebugEnabled()) {
-                    log.warn(executionException, "Posting event to %s failed", uri);
-                }
-                else {
-                    log.warn("Posting event to %s failed: %s", uri, executionException.getCause().getMessage());
-                }
+                log.debug(executionException, "Posting event to %s failed", uri);
             }
             catch (Exception unexpectedError) {
-                log.warn(unexpectedError, "Posting event to %s failed", uri);
+                log.debug(unexpectedError, "Posting event to %s failed", uri);
             }
         }
 
