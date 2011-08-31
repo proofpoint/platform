@@ -3,16 +3,15 @@ package com.proofpoint.event.client;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Inject;
 import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Request;
 import com.ning.http.client.Request.EntityWriter;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
 import com.proofpoint.discovery.client.HttpServiceSelector;
 import com.proofpoint.discovery.client.ServiceType;
-import com.proofpoint.log.Logger;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
@@ -28,20 +27,15 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HttpEventClient implements EventClient
 {
-    private static final Logger log = Logger.get(HttpEventClient.class);
-
     private final ObjectMapper objectMapper;
     private final HttpServiceSelector serviceSelector;
     private final AsyncHttpClient client;
     private final Set<Class<?>> registeredTypes;
-    private final AtomicBoolean eventServiceIsUp = new AtomicBoolean(true);
 
     @Inject
     public HttpEventClient(HttpEventClientConfig config,
@@ -72,7 +66,7 @@ public class HttpEventClient implements EventClient
     }
 
     @Override
-    public <T> Future<Void> post(T... event)
+    public <T> ListenableFuture<Void> post(T... event)
             throws IllegalArgumentException
     {
         Preconditions.checkNotNull(event, "event is null");
@@ -80,7 +74,7 @@ public class HttpEventClient implements EventClient
     }
 
     @Override
-    public <T> Future<Void> post(final Iterable<T> events)
+    public <T> ListenableFuture<Void> post(final Iterable<T> events)
             throws IllegalArgumentException
     {
         Preconditions.checkNotNull(events, "eventsSupplier is null");
@@ -98,7 +92,7 @@ public class HttpEventClient implements EventClient
     }
 
     @Override
-    public <T> Future<Void> post(EventGenerator<T> eventGenerator)
+    public <T> ListenableFuture<Void> post(EventGenerator<T> eventGenerator)
     {
         Preconditions.checkNotNull(eventGenerator, "eventGenerator is null");
 
@@ -107,9 +101,6 @@ public class HttpEventClient implements EventClient
         for (URI uri : serviceSelector.selectHttpService()) {
             try {
                 String uriString = uri.toString();
-                if (eventServiceIsUp.compareAndSet(false, true)) {
-                    log.info("Posting to event collection service");
-                }
                 Request request = new RequestBuilder("POST")
                         .setUrl(uriString)
                         .setHeader("Content-Type", "application/json")
@@ -118,45 +109,30 @@ public class HttpEventClient implements EventClient
                 return new FutureResponse(client.prepareRequest(request).execute(), uriString);
             }
             catch (Exception e) {
-                log.warn(e, "Posting event failed");
+                return Futures.immediateFailedFuture(e);
             }
         }
 
-        if (eventServiceIsUp.compareAndSet(true, false)) {
-            log.warn("No event collection service");
-        }
-        else {
-            log.debug("No event collection service");
-        }
-        return Futures.immediateFuture(null);
+        return Futures.immediateFailedFuture(new DiscoveryException(serviceSelector));
     }
 
-    private static class FutureResponse implements Future<Void>, Runnable
+    /** Convert Ning ListenableFuture to Guava ListenableFuture and improve the error message */
+    private static class FutureResponse implements ListenableFuture<Void>
     {
-        private static final Executor statusLoggerExecutor = new Executor()
-        {
-            @Override
-            public void execute(Runnable command)
-            {
-                command.run();
-            }
-        };
-        
-        private final ListenableFuture<Response> delegate;
+        private final com.ning.http.client.ListenableFuture<Response> delegate;
         private final String uri;
 
-        public FutureResponse(ListenableFuture<Response> delegate, String uri)
+        public FutureResponse(com.ning.http.client.ListenableFuture<Response> delegate, String uri)
         {
             this.delegate = delegate;
             this.uri = uri;
-            delegate.addListener(this, statusLoggerExecutor);
         }
 
         @Override
         public Void get()
                 throws InterruptedException, ExecutionException
         {
-            delegate.get();
+            checkError();
             return null;
         }
 
@@ -164,7 +140,7 @@ public class HttpEventClient implements EventClient
         public Void get(long timeout, TimeUnit unit)
                 throws InterruptedException, ExecutionException, TimeoutException
         {
-            delegate.get(timeout, unit);
+            checkError(timeout, unit);
             return null;
         }
 
@@ -186,40 +162,78 @@ public class HttpEventClient implements EventClient
             return delegate.isDone();
         }
         
-        //Invoked as a result of ListenableFuture.addListener(...)
-        //Expected to execute quickly on a Future<Response> that has completed.
-        @Override
-        public void run()
-        {
-            try {
-                Response response = delegate.get();
-                int statusCode = response.getStatusCode();
-                if (statusCode != HttpServletResponse.SC_OK && statusCode != HttpServletResponse.SC_ACCEPTED) {
-                    try {
-                        log.warn("Posting event to %s failed: status_code=%d status_line=%s body=%s", uri, statusCode, response.getStatusText(), response.getResponseBody());
-                    }
-                    catch (IOException bodyError) {
-                        log.warn("Posting event to %s failed: status_code=%d status_line=%s error=%s", uri, statusCode, response.getStatusText(), bodyError.getMessage());
-                    }
-                }
-            }
-            catch (ExecutionException executionException) {
-                if (log.isDebugEnabled()) {
-                    log.warn(executionException, "Posting event to %s failed", uri);
-                }
-                else {
-                    log.warn("Posting event to %s failed: %s", uri, executionException.getCause().getMessage());
-                }
-            }
-            catch (Exception unexpectedError) {
-                log.warn(unexpectedError, "Posting event to %s failed", uri);
-            }
-        }
-
         @Override
         public String toString()
         {
             return "Event post to " + uri + (isDone() ? " (done)" : "");
+        }
+
+        @Override
+        public void addListener(Runnable listener, Executor executor)
+        {
+            delegate.addListener(listener, executor);
+        }
+        
+        private void checkError ()
+            throws ExecutionException, InterruptedException
+        {
+            Response response;
+            try {
+                response = delegate.get();
+            }
+            catch (ExecutionException executionException) {
+                throw rebuildExecutionException (executionException);
+            }
+            checkStatus (response);
+        }
+        
+        private void checkError (long timeout, TimeUnit unit)
+            throws ExecutionException, InterruptedException, TimeoutException
+        {
+            Response response;
+            try {
+                response = delegate.get(timeout, unit);
+            }
+            catch (ExecutionException executionException) {
+                throw rebuildExecutionException (executionException);
+            }
+            checkStatus (response);
+        }
+        
+        private void checkStatus (Response response)
+            throws ExecutionException
+        {
+            int statusCode = response.getStatusCode();
+            if ((statusCode != HttpServletResponse.SC_OK) && (statusCode != HttpServletResponse.SC_ACCEPTED)) {
+                try {
+                    throw new ExecutionException(String.format("Posting event to %s failed: status_code=%d status_line=%s", uri, statusCode, response.getStatusText()), new HttpBodyException(response.getResponseBody()));
+                }
+                catch (IOException bodyError) {
+                    throw new ExecutionException(String.format("Posting event to %s failed: status_code=%d status_line=%s", uri, statusCode, response.getStatusText()), bodyError);
+                }
+            }
+        }
+        
+        private ExecutionException rebuildExecutionException (ExecutionException executionException)
+        {
+            Throwable cause = executionException.getCause();
+            return new ExecutionException(String.format("Posting event to %s failed : %s", uri, cause.getMessage()), cause);
+        }
+    }
+    
+    private static class DiscoveryException extends RuntimeException
+    {
+        DiscoveryException(HttpServiceSelector serviceSelector)
+        {
+            super("No '" + serviceSelector.getType() + "' service is available");
+        }
+    }
+    
+    private static class HttpBodyException extends RuntimeException
+    {
+        HttpBodyException(String message)
+        {
+            super(message);
         }
     }
 
