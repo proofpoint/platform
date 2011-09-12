@@ -6,15 +6,14 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
 
-class EventJsonSerializerV2<T> extends JsonSerializer<T>
+class EventJsonSerializerV2<T>
+        extends JsonSerializer<T>
 {
     private final EventTypeMetadata<T> eventTypeMetadata;
     private final String hostName;
@@ -36,7 +35,8 @@ class EventJsonSerializerV2<T> extends JsonSerializer<T>
             catch (UnknownHostException e) {
                 throw new IllegalArgumentException("Unable to determine local host name");
             }
-        } else {
+        }
+        else {
             hostName = null;
         }
     }
@@ -56,38 +56,34 @@ class EventJsonSerializerV2<T> extends JsonSerializer<T>
         jsonGenerator.writeStringField("type", eventTypeMetadata.getTypeName());
 
         if (eventTypeMetadata.getUuidField() != null) {
-            writeJsonField(eventTypeMetadata.getUuidField(), jsonGenerator, event);
-        } else {
+            eventTypeMetadata.getUuidField().writeField(jsonGenerator, event);
+        }
+        else {
             jsonGenerator.writeStringField("uuid", UUID.randomUUID().toString());
         }
 
         if (eventTypeMetadata.getHostField() != null) {
-            writeJsonField(eventTypeMetadata.getHostField(), jsonGenerator, event);
-        } else {
+            eventTypeMetadata.getHostField().writeField(jsonGenerator, event);
+        }
+        else {
             jsonGenerator.writeStringField("host", hostName);
         }
 
         if (eventTypeMetadata.getTimestampField() != null) {
-            writeJsonField(eventTypeMetadata.getTimestampField(), jsonGenerator, event);
+            eventTypeMetadata.getTimestampField().writeField(jsonGenerator, event);
         }
         else {
-            jsonGenerator.writeStringField("timestamp", ISODateTimeFormat.dateTime().print(new DateTime().withZone(DateTimeZone.UTC)));
+            jsonGenerator.writeFieldName("timestamp");
+            EventTypeMetadata.EventDataType.DATETIME.writeFieldValue(jsonGenerator, new DateTime());
         }
 
         jsonGenerator.writeObjectFieldStart("data");
         for (EventFieldMetadata field : eventTypeMetadata.getFields().values()) {
-            writeJsonField(field, jsonGenerator, event);
+            field.writeField(jsonGenerator, event);
         }
         jsonGenerator.writeEndObject();
 
         jsonGenerator.writeEndObject();
         jsonGenerator.flush();
-    }
-
-    private void writeJsonField(EventFieldMetadata fieldMetadata, JsonGenerator jsonGenerator, Object event)
-            throws IOException
-    {
-        jsonGenerator.writeFieldName(fieldMetadata.getName());
-        fieldMetadata.writeFieldValue(jsonGenerator, event);
     }
 }

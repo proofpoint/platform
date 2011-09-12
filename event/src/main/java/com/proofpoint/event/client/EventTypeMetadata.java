@@ -4,11 +4,13 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Primitives;
-import com.google.inject.ConfigurationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.IOException;
@@ -22,30 +24,37 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
 
 class EventTypeMetadata<T>
 {
-    static <T> EventTypeMetadata<T> getValidEventTypeMetadata(Class<T> eventClass) throws ConfigurationException
+    public static Set<EventTypeMetadata<?>> getValidEventTypeMetaDataSet(Class<?>... eventClasses)
+    {
+        ImmutableSet.Builder<EventTypeMetadata<?>> set = ImmutableSet.builder();
+        for (Class<?> eventClass : eventClasses) {
+            set.add(getValidEventTypeMetadata(eventClass));
+        }
+        return set.build();
+    }
+
+    public static <T> EventTypeMetadata<T> getValidEventTypeMetadata(Class<T> eventClass)
     {
         EventTypeMetadata<T> metadata = getEventTypeMetadata(eventClass);
-
-        List<String> errors = metadata.getErrors();
-        if (!errors.isEmpty()) {
-            throw new IllegalArgumentException(String.format("Invalid event class [%s]:%n%s", eventClass.getName(), Joiner.on('\n').join(errors)));
+        if (!metadata.getErrors().isEmpty()) {
+            String errors = Joiner.on('\n').join(metadata.getErrors());
+            throw new IllegalArgumentException(String.format("Invalid event class [%s]:%n%s", eventClass.getName(), errors));
         }
-
         return metadata;
     }
 
-    static <T> EventTypeMetadata<T> getEventTypeMetadata(Class<T> eventClass)
+    public static <T> EventTypeMetadata<T> getEventTypeMetadata(Class<T> eventClass)
     {
         return new EventTypeMetadata<T>(eventClass);
     }
 
-    
     private final Class<T> eventClass;
     private final String typeName;
     private final EventFieldMetadata uuidField;
@@ -56,11 +65,9 @@ class EventTypeMetadata<T>
 
     private EventTypeMetadata(Class<T> eventClass)
     {
-        Preconditions.checkNotNull(eventClass, "type is null");
+        Preconditions.checkNotNull(eventClass, "eventClass is null");
 
         this.eventClass = eventClass;
-
-        // validate event class
 
         // get type name from annotation or class name
         String typeName = eventClass.getSimpleName();
@@ -87,31 +94,44 @@ class EventTypeMetadata<T>
                 continue;
             }
             EventDataType eventDataType = EventDataType.byType.get(method.getReturnType());
-            if (eventDataType == null)
-            {
+            if (eventDataType == null) {
                 addError("@%s method [%s] return type [%s] is not supported", EventField.class.getSimpleName(), method.toGenericString(), method.getReturnType());
                 continue;
             }
 
             EventField eventField = method.getAnnotation(EventField.class);
             String fieldName = eventField.value();
-            if (fieldName.isEmpty()) {
-                String methodName = method.getName();
-                if (methodName.length() > 3 && methodName.startsWith("get")) {
-                    fieldName = methodName.substring(3);
+            String v1FieldName = null;
+            if (eventField.fieldMapping() != EventField.EventFieldMapping.DATA) {
+                // validate special fields
+                if (!fieldName.isEmpty()) {
+                    addError("@%s method [%s] has a value and non-DATA fieldMapping (%s)", EventField.class.getSimpleName(), method.toGenericString(), eventField.fieldMapping());
                 }
-                else if (methodName.length() > 2 && methodName.startsWith("is")) {
-                    fieldName = methodName.substring(2);
+                fieldName = eventField.fieldMapping().name().toLowerCase();
+            }
+            else {
+                if (fieldName.isEmpty()) {
+                    String methodName = method.getName();
+                    if (methodName.length() > 3 && methodName.startsWith("get")) {
+                        fieldName = methodName.substring(3);
+                    }
+                    else if (methodName.length() > 2 && methodName.startsWith("is")) {
+                        fieldName = methodName.substring(2);
+                    }
+                    else {
+                        fieldName = methodName;
+                    }
                 }
-                else {
-                    fieldName = methodName;
+                // always lowercase the first letter, even for user specified names
+                v1FieldName = fieldName;
+                fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
+                if (fields.containsKey(fieldName)) {
+                    addError("Event class [%s] Multiple methods are annotated for @% field [%s]", eventClass.getName(), EventField.class.getSimpleName(), fieldName);
+                    continue;
                 }
             }
-            if (fields.containsKey(fieldName)) {
-                addError("Event class [%s] Multiple methods are annotated for @% field [%s]", eventClass.getName(), EventField.class.getSimpleName(), fieldName);
-                continue;
-            }
-            EventFieldMetadata eventFieldMetadata = new EventFieldMetadata(fieldName, method, EventDataType.byType.get(method.getReturnType()));
+
+            EventFieldMetadata eventFieldMetadata = new EventFieldMetadata(fieldName, v1FieldName, method, EventDataType.byType.get(method.getReturnType()));
             switch (eventField.fieldMapping()) {
                 case HOST:
                     hostFields.add(eventFieldMetadata);
@@ -122,9 +142,11 @@ class EventTypeMetadata<T>
                 case UUID:
                     uuidFields.add(eventFieldMetadata);
                     break;
-                default:
+                case DATA:
                     fields.put(fieldName, eventFieldMetadata);
                     break;
+                default:
+                    throw new AssertionError("unhandled fieldMapping type: " + eventField.fieldMapping());
             }
         }
 
@@ -143,17 +165,17 @@ class EventTypeMetadata<T>
         }
 
         if (!uuidFields.isEmpty() && uuidFields.size() > 1) {
-            addError("Event class [%s] Multiple methods are annotated for @%(fieldMapping=%s)", eventClass.getName(), EventField.class.getSimpleName(), EventField.EventFieldMapping.UUID);
+            addError("Event class [%s] Multiple methods are annotated for @%s(fieldMapping=%s)", eventClass.getName(), EventField.class.getSimpleName(), EventField.EventFieldMapping.UUID);
         }
         this.uuidField = Iterables.getFirst(uuidFields, null);
 
         if (!timestampFields.isEmpty() && timestampFields.size() > 1) {
-            addError("Event class [%s] Multiple methods are annotated for @%(fieldMapping=%s)", eventClass.getName(), EventField.class.getSimpleName(), EventField.EventFieldMapping.TIMESTAMP);
+            addError("Event class [%s] Multiple methods are annotated for @%s(fieldMapping=%s)", eventClass.getName(), EventField.class.getSimpleName(), EventField.EventFieldMapping.TIMESTAMP);
         }
         this.timestampField = Iterables.getFirst(timestampFields, null);
 
         if (!hostFields.isEmpty() && hostFields.size() > 1) {
-            addError("Event class [%s] Multiple methods are annotated for @%(fieldMapping=%s)", eventClass.getName(), EventField.class.getSimpleName(), EventField.EventFieldMapping.HOST);
+            addError("Event class [%s] Multiple methods are annotated for @%s(fieldMapping=%s)", eventClass.getName(), EventField.class.getSimpleName(), EventField.EventFieldMapping.HOST);
         }
         this.hostField = Iterables.getFirst(hostFields, null);
 
@@ -203,6 +225,7 @@ class EventTypeMetadata<T>
      * Find methods that are tagged with a given annotation somewhere in the hierarchy
      *
      * @param configClass the class to analyze
+     * @param annotation the annotation to find
      * @return a map that associates a concrete method to the actual method tagged
      *         (which may belong to a different class in class hierarchy)
      */
@@ -263,6 +286,7 @@ class EventTypeMetadata<T>
         errors.add(message);
     }
 
+    @SuppressWarnings("RedundantIfStatement")
     @Override
     public boolean equals(Object o)
     {
@@ -291,37 +315,23 @@ class EventTypeMetadata<T>
     static class EventFieldMetadata
     {
         private final String name;
+        private final String v1Name;
         private final Method method;
         private final EventDataType eventDataType;
 
-        private EventFieldMetadata(String name, Method method, EventDataType eventDataType)
+        private EventFieldMetadata(String name, String v1Name, Method method, EventDataType eventDataType)
         {
             this.name = name;
+            this.v1Name = v1Name;
             this.method = method;
             this.eventDataType = eventDataType;
         }
 
-        public String getName()
+        private Object getValue(Object event)
+                throws InvalidEventException
         {
-            return name;
-        }
-
-        public Method getMethod()
-        {
-            return method;
-        }
-
-        public EventDataType getEventDataType()
-        {
-            return eventDataType;
-        }
-
-        void writeFieldValue(JsonGenerator jsonGenerator, Object event)
-                throws IOException
-        {
-            Object value;
             try {
-                value = method.invoke(event);
+                return method.invoke(event);
             }
             catch (IllegalAccessException e) {
                 throw new InvalidEventException(e, "Unexpected exception reading event field %s", name);
@@ -332,16 +342,35 @@ class EventTypeMetadata<T>
                     cause = e;
                 }
                 throw new InvalidEventException(cause,
-                        "Unable to get value of event field %s: Exception occurred while invoking %s",
+                        "Unable to get value of event field %s: Exception occurred while invoking [%s]",
                         name,
                         method.toGenericString());
             }
+        }
 
-            getEventDataType().writeFieldValue(jsonGenerator, value);
+        public void writeField(JsonGenerator jsonGenerator, Object event)
+                throws IOException
+        {
+            Object value = getValue(event);
+            if (value != null) {
+                jsonGenerator.writeFieldName(name);
+                eventDataType.writeFieldValue(jsonGenerator, value);
+            }
+        }
+
+        public void writeFieldV1(JsonGenerator jsonGenerator, Object event)
+                throws IOException
+        {
+            Object value = getValue(event);
+            if (value != null) {
+                jsonGenerator.writeStringField("name", v1Name);
+                jsonGenerator.writeFieldName("value");
+                eventDataType.writeFieldValue(jsonGenerator, value);
+            }
         }
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     static enum EventDataType
     {
         STRING(String.class)
@@ -450,7 +479,7 @@ class EventTypeMetadata<T>
                             throws IOException
                     {
                         validateFieldValueType(value, DateTime.class);
-                        jsonGenerator.writeString(ISODateTimeFormat.dateTime().print((DateTime) value));
+                        jsonGenerator.writeString(ISO_DATETIME_FORMAT.print((DateTime) value));
                     }
                 },
 
@@ -482,7 +511,9 @@ class EventTypeMetadata<T>
                         validateFieldValueType(value, java.util.UUID.class);
                         jsonGenerator.writeString(value.toString());
                     }
-                },;
+                };
+
+        private static final DateTimeFormatter ISO_DATETIME_FORMAT = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC);
 
         public static final Map<Class<?>, EventDataType> byType;
 
@@ -512,9 +543,7 @@ class EventTypeMetadata<T>
 
         private static void validateFieldValueType(Object value, Class<?> expectedType)
         {
-            if (value == null) {
-                return;
-            }
+            Preconditions.checkNotNull(value, "value is null");
             Preconditions.checkArgument(expectedType.isInstance(value),
                     "Expected 'value' to be a " + expectedType.getSimpleName() +
                             " but it is a " + value.getClass().getName());
