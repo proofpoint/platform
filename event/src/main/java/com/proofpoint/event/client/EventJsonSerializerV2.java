@@ -1,7 +1,6 @@
 package com.proofpoint.event.client;
 
 import com.google.common.base.Preconditions;
-import com.proofpoint.event.client.EventTypeMetadata.EventFieldMetadata;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
@@ -74,11 +73,11 @@ class EventJsonSerializerV2<T>
         }
         else {
             jsonGenerator.writeFieldName("timestamp");
-            EventTypeMetadata.EventDataType.DATETIME.writeFieldValue(jsonGenerator, new DateTime());
+            EventDataType.DATETIME.writeFieldValue(jsonGenerator, new DateTime());
         }
 
         jsonGenerator.writeObjectFieldStart("data");
-        for (EventFieldMetadata field : eventTypeMetadata.getFields().values()) {
+        for (EventFieldMetadata field : eventTypeMetadata.getFields()) {
             field.writeField(jsonGenerator, event);
         }
         jsonGenerator.writeEndObject();

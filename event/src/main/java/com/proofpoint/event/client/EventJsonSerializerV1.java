@@ -1,7 +1,6 @@
 package com.proofpoint.event.client;
 
 import com.google.common.base.Preconditions;
-import com.proofpoint.event.client.EventTypeMetadata.EventFieldMetadata;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
@@ -67,7 +66,7 @@ class EventJsonSerializerV1<T> extends JsonSerializer<T>
         }
 
         jsonGenerator.writeArrayFieldStart("data");
-        for (EventFieldMetadata field : eventTypeMetadata.getFields().values()) {
+        for (EventFieldMetadata field : eventTypeMetadata.getFields()) {
             jsonGenerator.writeStartObject();
             writeJsonField(field, jsonGenerator, event);
             jsonGenerator.writeEndObject();
