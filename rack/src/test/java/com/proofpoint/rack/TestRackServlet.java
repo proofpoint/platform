@@ -15,11 +15,13 @@
  */
 package com.proofpoint.rack;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.Resources;
 import com.proofpoint.testing.Assertions;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
@@ -52,7 +54,7 @@ public class TestRackServlet
     public void setup()
             throws IOException
     {
-        servlet = new RackServlet(new RackServletConfig().setRackConfigPath("src/test/resources/config.ru"));
+        servlet = new RackServlet(new RackServletConfig().setRackConfigPath(Resources.getResource("config.ru").getPath()));
     }
 
     @Test
@@ -64,6 +66,7 @@ public class TestRackServlet
         OutputStream stream = new ByteArrayOutputStream();
 
         ch.qos.logback.classic.Logger rackLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("helloworldsinatra.rb:HEAD /name-echo");
+        rackLogger.setLevel(Level.ALL);
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
