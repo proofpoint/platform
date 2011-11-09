@@ -44,6 +44,8 @@ public class TestHttpServerConfig
                 .setUserAuthFile(null)
                 .setAdminEnabled(true)
                 .setAdminPort(0)
+                .setJaasConfigFile(null)
+                .setJaasLoginModuleName(null)
         );
     }
 
@@ -66,6 +68,8 @@ public class TestHttpServerConfig
                 .put("http-server.auth.users-file", "/auth")
                 .put("http-server.admin.enabled", "false")
                 .put("http-server.admin.port", "3")
+                .put("http-server.auth.jaas.module", "ldap")
+                .put("http-server.auth.jaas.config-file", "/jaas/config")
                 .build();
 
         HttpServerConfig expected = new HttpServerConfig()
@@ -83,7 +87,9 @@ public class TestHttpServerConfig
                 .setNetworkMaxIdleTime(new Duration(20, TimeUnit.MINUTES))
                 .setUserAuthFile("/auth")
                 .setAdminEnabled(false)
-                .setAdminPort(3);
+                .setAdminPort(3)
+                .setJaasLoginModuleName("ldap")
+                .setJaasConfigFile("/jaas/config");
 
         ConfigAssertions.assertFullMapping(properties, expected);
     }

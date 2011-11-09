@@ -41,6 +41,9 @@ public class HttpServerConfig
 
     private String userAuthFile;
 
+    private String jaasLoginModuleName;
+    private String jaasConfigFile;
+
     private boolean adminEnabled = true;
     private int adminPort = 0;
 
@@ -209,6 +212,30 @@ public class HttpServerConfig
     public HttpServerConfig setUserAuthFile(String userAuthFile)
     {
         this.userAuthFile = userAuthFile;
+        return this;
+    }
+
+    public String getJaasLoginModuleName()
+    {
+        return jaasLoginModuleName;
+    }
+
+    @Config("http-server.auth.jaas.module")
+    public HttpServerConfig setJaasLoginModuleName(String jaasLoginModuleName)
+    {
+        this.jaasLoginModuleName = jaasLoginModuleName;
+        return this;
+    }
+
+    public String getJaasConfigFile()
+    {
+        return jaasConfigFile;
+    }
+
+    @Config("http-server.auth.jaas.config-file")
+    public HttpServerConfig setJaasConfigFile(String jaasConfigFile)
+    {
+        this.jaasConfigFile = jaasConfigFile;
         return this;
     }
 
