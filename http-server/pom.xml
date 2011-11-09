@@ -92,6 +92,11 @@
             <artifactId>jetty-jmx</artifactId>
             <version>8.0.3.v20111011</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-plus</artifactId>
+            <version>8.0.3.v20111011</version>
+        </dependency>
 
         <dependency>
             <groupId>joda-time</groupId>

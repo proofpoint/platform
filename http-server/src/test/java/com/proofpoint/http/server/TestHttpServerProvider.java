@@ -23,6 +23,7 @@ import com.ning.http.client.Response;
 import com.ning.http.util.Base64;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceTokenManager;
+import org.eclipse.jetty.security.LoginService;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -149,9 +150,37 @@ public class TestHttpServerProvider
         assertEquals(response.getResponseBody(), "user");
     }
 
+    @Test
+    public void testJaasAuth()
+            throws Exception
+    {
+        File file = File.createTempFile("jaasauth", ".properties", tempDir);
+        Files.write("dummy { com.proofpoint.http.server.AlwaysSuccessfulLoginModule required; };", file, Charsets.UTF_8);
+
+        config.setJaasConfigFile(file.getAbsolutePath());
+        config.setJaasLoginModuleName("dummy");
+
+        createServerWithLoginService(new JaasLoginServiceProvider(config).get());
+        server.start();
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        Response response = client.prepareGet(httpServerInfo.getHttpUri().toString())
+                .addHeader("Authorization", "Basic " + Base64.encode("testUser:testPassword".getBytes()))
+                .execute()
+                .get();
+
+        assertEquals(response.getStatusCode(), HttpServletResponse.SC_OK);
+        assertEquals(response.getResponseBody(), "testUser");
+    }
+
     private void createServer()
     {
         HashLoginServiceProvider loginServiceProvider = new HashLoginServiceProvider(config);
+        createServerWithLoginService(loginServiceProvider.get());
+    }
+
+    private void createServerWithLoginService(LoginService loginService)
+    {
         HttpServerProvider serverProvider = new HttpServerProvider(httpServerInfo,
                 nodeInfo,
                 config,
@@ -159,7 +188,7 @@ public class TestHttpServerProvider
                 ImmutableSet.<Filter>of(new DummyFilter()),
                 ImmutableSet.<Filter>of(),
                 new RequestStats());
-        serverProvider.setLoginService(loginServiceProvider.get());
+        serverProvider.setLoginService(loginService);
         serverProvider.setTokenManager(new TraceTokenManager());
         server = serverProvider.get();
     }
