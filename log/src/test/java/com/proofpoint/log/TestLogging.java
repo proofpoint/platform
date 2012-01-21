@@ -41,7 +41,10 @@ public class TestLogging
     public void tearDown()
             throws IOException
     {
-        Files.deleteRecursively(tempDir.getCanonicalFile());
+        for(File file : tempDir.listFiles()) {
+            file.delete();
+        }
+        tempDir.delete();
     }
 
     @Test

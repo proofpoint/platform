@@ -45,7 +45,10 @@ public class TestConfigurationLoader
     public void teardown()
             throws IOException
     {
-        Files.deleteRecursively(tempDir);
+        for(File file : tempDir.listFiles()) {
+            file.delete();
+        }
+        tempDir.delete();
     }
 
     @Test

@@ -59,7 +59,10 @@ public class TestHttpServerModule
     public void tearDown()
             throws IOException
     {
-        Files.deleteRecursively(tempDir);
+        for(File file : tempDir.listFiles()) {
+            file.delete();
+        }
+        tempDir.delete();
     }
 
     @Test

@@ -68,7 +68,10 @@ public class TestHttpServerProvider
             }
         }
         finally {
-            Files.deleteRecursively(tempDir);
+            for(File file : tempDir.listFiles()) {
+                file.delete();
+            }
+            tempDir.delete();
         }
     }
 
