@@ -118,13 +118,8 @@ class JsonMapper implements MessageBodyReader<Object>, MessageBodyWriter<Object>
             object = objectMapper.readValue(jsonParser, TypeFactory.type(genericType));
         }
         catch (Exception e) {
-            // EOFException occurs when the input is blank.  We treat that as
-            // null input.
-            if (e instanceof EOFException) {
-                return null;
-            }
             // we want to return a 400 for bad JSON but not for a real IO exception
-            else if (e instanceof IOException && !(e instanceof JsonProcessingException)) {
+            if (e instanceof IOException && !(e instanceof JsonProcessingException) && !(e instanceof EOFException)) {
                 throw (IOException) e;
             }
 
