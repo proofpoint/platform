@@ -142,6 +142,7 @@ public class HttpServer
             adminConnector.setHost(nodeInfo.getBindIp().getHostAddress());
 
             QueuedThreadPool adminThreadPool = new QueuedThreadPool(config.getAdminMaxThreads());
+            adminThreadPool.setName("http-admin-worker");
             adminThreadPool.setMinThreads(config.getAdminMinThreads());
             adminThreadPool.setMaxIdleTimeMs((int) config.getThreadMaxIdleTime().convertTo(TimeUnit.MILLISECONDS));
             adminConnector.setThreadPool(adminThreadPool);
@@ -153,6 +154,7 @@ public class HttpServer
         QueuedThreadPool threadPool = new QueuedThreadPool(config.getMaxThreads());
         threadPool.setMinThreads(config.getMinThreads());
         threadPool.setMaxIdleTimeMs((int) config.getThreadMaxIdleTime().convertTo(TimeUnit.MILLISECONDS));
+        threadPool.setName("http-worker");
         server.setThreadPool(threadPool);
 
         /**

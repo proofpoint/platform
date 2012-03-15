@@ -1,3 +1,7 @@
+* 0.55
+
+- Set names of http server threads to a reasonable value
+
 * 0.54
 
 - [Bug] Don't use doclava in javadoc plugin for servers that use rest-server-base, it's buggy
