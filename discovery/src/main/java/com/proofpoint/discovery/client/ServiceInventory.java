@@ -17,6 +17,7 @@ import com.proofpoint.units.Duration;
 import org.weakref.jmx.Managed;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
@@ -38,7 +39,7 @@ public class ServiceInventory
 
     private final String environment;
     private final URI serviceInventoryUri;
-    private final Duration updateRate;
+    private final Duration updateInterval;
     private final NodeInfo nodeInfo;
     private final JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec;
     private final HttpClient httpClient;
@@ -62,7 +63,7 @@ public class ServiceInventory
         this.nodeInfo = nodeInfo;
         this.environment = nodeInfo.getEnvironment();
         this.serviceInventoryUri = config.getServiceInventoryUri();
-        updateRate = config.getUpdateRate();
+        updateInterval = config.getUpdateInterval();
         this.serviceDescriptorsCodec = serviceDescriptorsCodec;
         this.httpClient = httpClient;
 
@@ -96,10 +97,10 @@ public class ServiceInventory
                     log.error(e, "Unexpected exception from service inventory update");
                 }
             }
-        }, 0, (long) updateRate.toMillis(), TimeUnit.MILLISECONDS);
+        }, (long) updateInterval.toMillis(), (long) updateInterval.toMillis(), TimeUnit.MILLISECONDS);
     }
 
-    @PostConstruct
+    @PreDestroy
     public synchronized void stop()
     {
         if (scheduledFuture != null) {
