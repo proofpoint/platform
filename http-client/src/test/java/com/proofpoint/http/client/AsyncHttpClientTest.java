@@ -1,8 +1,8 @@
 package com.proofpoint.http.client;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -17,19 +17,11 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpUtils;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URI;
-import java.util.Collections;
-import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +37,9 @@ public class AsyncHttpClientTest
             throws Exception
     {
         servlet = new EchoServlet();
-        httpClient = new AsyncHttpClient(new ApacheHttpClient(new HttpClientConfig()), Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).build()));
+        httpClient = new AsyncHttpClient(new ApacheHttpClient(new HttpClientConfig()),
+                Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).build()),
+                ImmutableSet.<HttpRequestFilter>of(new TestingRequestFilter()));
 
         int port;
         ServerSocket socket = new ServerSocket();
@@ -105,6 +99,7 @@ public class AsyncHttpClientTest
         Assert.assertEquals(servlet.requestUri, uri);
         Assert.assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         Assert.assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
+        Assert.assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
     }
 
     @Test
@@ -125,6 +120,7 @@ public class AsyncHttpClientTest
         Assert.assertEquals(servlet.requestUri, uri);
         Assert.assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         Assert.assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
+        Assert.assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
     }
 
     @Test
@@ -145,6 +141,7 @@ public class AsyncHttpClientTest
         Assert.assertEquals(servlet.requestUri, uri);
         Assert.assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         Assert.assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
+        Assert.assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
     }
 
     @Test
@@ -165,6 +162,7 @@ public class AsyncHttpClientTest
         Assert.assertEquals(servlet.requestUri, uri);
         Assert.assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         Assert.assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
+        Assert.assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
     }
 
     @Test
@@ -325,55 +323,6 @@ public class AsyncHttpClientTest
                 .build();
 
         client.execute(request, new ResponseToStringHandler()).checkedGet();
-    }
-
-    private static final class EchoServlet extends HttpServlet
-    {
-        private String requestMethod;
-        private URI requestUri;
-        private final ListMultimap<String, String> requestHeaders = ArrayListMultimap.create();
-
-        private int responseStatusCode = 200;
-        private String responseStatusMessage;
-        private final ListMultimap<String, String> responseHeaders = ArrayListMultimap.create();
-        public String responseBody;
-
-        @Override
-        protected void service(HttpServletRequest request, HttpServletResponse response)
-                throws ServletException, IOException
-        {
-            requestMethod = request.getMethod();
-            requestUri = URI.create(HttpUtils.getRequestURL(request).toString());
-
-            requestHeaders.clear();
-            for (String name : Collections.list(request.getHeaderNames())) {
-                requestHeaders.putAll(name, Collections.list(request.getHeaders(name)));
-            }
-
-            if (responseStatusMessage != null) {
-                response.sendError(responseStatusCode, responseStatusMessage);
-            }
-            else {
-                response.setStatus(responseStatusCode);
-            }
-            for (Entry<String, String> entry : responseHeaders.entries()) {
-                response.addHeader(entry.getKey(), entry.getValue());
-            }
-
-            try {
-                if (request.getParameter("sleep") != null) {
-                    Thread.sleep(Long.parseLong(request.getParameter("sleep")));
-                }
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-
-            if (responseBody != null) {
-                response.getOutputStream().write(responseBody.getBytes(Charsets.UTF_8));
-            }
-        }
     }
 
     private static class ResponseToStringHandler implements ResponseHandler<String, Exception>
