@@ -1,6 +1,7 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
 import org.codehaus.jackson.annotate.JsonCreator;
@@ -80,6 +81,16 @@ public class ServiceDescriptor
     public Map<String, String> getProperties()
     {
         return properties;
+    }
+
+    public boolean isValid()
+    {
+        return (getId() != null) &&
+                !Strings.isNullOrEmpty(getNodeId()) &&
+                !Strings.isNullOrEmpty(getType()) &&
+                !Strings.isNullOrEmpty(getPool()) &&
+                !Strings.isNullOrEmpty(getLocation()) &&
+                (state != null);
     }
 
     @Override

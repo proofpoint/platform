@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -46,14 +45,13 @@ public class ServiceInventory
 
     private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<List<ServiceDescriptor>>(ImmutableList.<ServiceDescriptor>of());
     private final ScheduledExecutorService executorService = newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("service-inventory-%s").setDaemon(true).build());
-    private final AtomicBoolean serverUp = new AtomicBoolean(true);
     private ScheduledFuture<?> scheduledFuture;
 
     @Inject
     public ServiceInventory(ServiceInventoryConfig config,
-            NodeInfo nodeInfo,
-            JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec,
-            @ForDiscoveryClient HttpClient httpClient)
+                            NodeInfo nodeInfo,
+                            JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec,
+                            @ForDiscoveryClient HttpClient httpClient)
     {
         Preconditions.checkNotNull(config, "config is null");
         Preconditions.checkNotNull(nodeInfo, "nodeInfo is null");
@@ -71,11 +69,8 @@ public class ServiceInventory
             String scheme = serviceInventoryUri.getScheme().toLowerCase();
             Preconditions.checkArgument(scheme.equals("http") || scheme.equals("https") || scheme.equals("file"), "Service inventory uri must have a http, https, or file scheme");
 
-            try {
-                updateServiceInventory();
-            }
-            catch (Exception ignored) {
-            }
+            updateServiceInventory();
+            log.info("Loaded ServiceInventory");
         }
     }
 
@@ -94,7 +89,7 @@ public class ServiceInventory
                     updateServiceInventory();
                 }
                 catch (Throwable e) {
-                    log.error(e, "Unexpected exception from service inventory update");
+                    log.error(e, "Error updating ServiceInventory");
                 }
             }
         }, (long) updateInterval.toMillis(), (long) updateInterval.toMillis(), TimeUnit.MILLISECONDS);
@@ -146,8 +141,8 @@ public class ServiceInventory
             return;
         }
 
+        ServiceDescriptorsRepresentation serviceDescriptorsRepresentation;
         try {
-            ServiceDescriptorsRepresentation serviceDescriptorsRepresentation;
             if (serviceInventoryUri.getScheme().toLowerCase().startsWith("http")) {
                 Builder requestBuilder = prepareGet()
                         .setUri(serviceInventoryUri)
@@ -159,28 +154,24 @@ public class ServiceInventory
                 String json = Files.toString(file, Charsets.UTF_8);
                 serviceDescriptorsRepresentation = serviceDescriptorsCodec.fromJson(json);
             }
-
-            if (!environment.equals(serviceDescriptorsRepresentation.getEnvironment())) {
-                logServerError("Expected environment to be %s, but was %s", environment, serviceDescriptorsRepresentation.getEnvironment());
-            }
-
-            List<ServiceDescriptor> descriptors = newArrayList(serviceDescriptorsRepresentation.getServiceDescriptors());
-            Collections.shuffle(descriptors);
-            serviceDescriptors.set(ImmutableList.copyOf(descriptors));
-
-            if (serverUp.compareAndSet(false, true)) {
-                log.info("ServiceInventory connect succeeded");
-            }
         }
         catch (Exception e) {
-            logServerError("Error loading service inventory from %s", serviceInventoryUri.toASCIIString());
+            throw new RuntimeException("Failed to load ServiceInventory from " + serviceInventoryUri, e);
         }
-    }
 
-    private void logServerError(String message, Object... args)
-    {
-        if (serverUp.compareAndSet(true, false)) {
-            log.error(message, args);
+        if (!environment.equals(serviceDescriptorsRepresentation.getEnvironment())) {
+            throw new RuntimeException(String.format("Expected environment to be %s, but was %s",
+                    environment, serviceDescriptorsRepresentation.getEnvironment()));
         }
+
+        List<ServiceDescriptor> descriptors = newArrayList(serviceDescriptorsRepresentation.getServiceDescriptors());
+        for (ServiceDescriptor descriptor : descriptors) {
+            if (!descriptor.isValid()) {
+                throw new RuntimeException("Invalid " + descriptor);
+            }
+        }
+
+        Collections.shuffle(descriptors);
+        serviceDescriptors.set(ImmutableList.copyOf(descriptors));
     }
 }
