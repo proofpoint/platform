@@ -6,12 +6,15 @@ import com.google.common.io.Resources;
 import com.proofpoint.json.JsonCodec;
 import org.testng.annotations.Test;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class TestServiceDescriptor
 {
@@ -38,6 +41,25 @@ public class TestServiceDescriptor
         assertEquals(actual.getPool(), expected.getPool());
         assertEquals(actual.getLocation(), expected.getLocation());
         assertEquals(actual.getProperties(), expected.getProperties());
+    }
+
+    @Test
+    public void testValidator()
+    {
+        UUID uuid = UUID.randomUUID();
+        Map<String, String> properties = ImmutableMap.of("a", "b");
+
+        assertTrue(new ServiceDescriptor(uuid, "node", "type", "pool", "location", ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(null, "node", "type", "pool", "location", ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(uuid, null, "type", "pool", "location", ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(uuid, "", "type", "pool", "location", ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(uuid, "node", null, "pool", "location", ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(uuid, "node", "", "pool", "location", ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(uuid, "node", "type", null, "location", ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(uuid, "node", "type", "", "location", ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(uuid, "node", "type", "pool", null, ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(uuid, "node", "type", "pool", "", ServiceState.RUNNING, properties).isValid());
+        assertFalse(new ServiceDescriptor(uuid, "node", "type", "pool", "location", null, properties).isValid());
     }
 
     @Test

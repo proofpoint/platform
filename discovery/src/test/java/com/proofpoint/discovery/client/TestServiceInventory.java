@@ -122,6 +122,20 @@ public class TestServiceInventory
         }
     }
 
+    @Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = "Invalid ServiceDescriptor.*")
+    public void testInvalidServiceDescriptor()
+    throws Exception
+    {
+        ServiceInventoryConfig serviceInventoryConfig = new ServiceInventoryConfig()
+                .setServiceInventoryUri(Resources.getResource("service-inventory-invalid.json").toURI());
+
+        ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
+                new NodeInfo("test"),
+                JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
+                new ApacheHttpClient());
+        serviceInventory.start();
+    }
+
     private class ServiceInventoryServlet extends HttpServlet
     {
         private final byte[] serviceInventory;
