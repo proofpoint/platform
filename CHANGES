@@ -2,6 +2,7 @@
 
 - [Bug] Add missing HttpEventModule to skeleton-server
 - Enforce use of HttpClientBinder
+- Add testing utility for ScheduledExecutorService
 
 * 0.63
 
