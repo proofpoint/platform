@@ -19,6 +19,16 @@ services. The client will pass the trace token when making requests:
 
     httpClientBinder(binder).bindHttpClient("foo", FooClient.class).withTracing();
 
+* Introduce SerialScheduledExecutorService
+
+This class implements ScheduledExecutorService, providing the caller with control
+over the advance of time inside the executor. After scheduling tasks, the caller
+uses a method interface to advance time by a specified amount. Scheduled tasks
+(which are modelled as instantaneous events), are executed in the caller's 
+thread.  
+
+For usage examples, refer to the test code provided.
+
 Platform 0.63
 
 * Fix bug that prevented sample and skeleton servers from starting
