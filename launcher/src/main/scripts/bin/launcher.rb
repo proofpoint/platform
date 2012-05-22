@@ -137,6 +137,33 @@ def merge_node_properties(options)
   options
 end
 
+def find_java
+    for file in ENV["PATH"].split(':').map { |d| File.join(d, 'java') }
+    	return file if File.executable?(file)
+    end
+    raise CommandError.new(:generic_error, "Cannot find java executable in PATH")
+end
+
+def create_project_link(filename)
+  return "java" if (RUBY_PLATFORM.downcase.include?("mswin"))
+  return filename if File.executable?(filename)
+
+  begin
+    File.unlink(filename)
+  rescue
+    nil
+  end
+    
+  begin
+    File.link(find_java(), filename)
+  rescue
+    # The process name will still show up as "java"
+    File.symlink(find_java(), filename)
+  end
+
+  return filename
+end
+
 def build_cmd_line(options)
   install_path = Pathname.new(__FILE__).parent.parent.expand_path
 
@@ -167,9 +194,12 @@ def build_cmd_line(options)
                          map { |v| escape(v) }.
                          join(' ')
 
+  projectname = load_lines(File.join(install_path, 'projectname'))[0]
+  projectlink = create_project_link(File.join(install_path, 'bin', projectname));
+
   # TODO: fix lack of escape handling by building an array
   command =<<-CMD
-    java #{jvm_properties} #{system_properties} '-Dconfig=#{config_path}' #{log_option} #{log_levels_option} -jar '#{jar_path}'
+    #{projectlink} #{jvm_properties} #{system_properties} '-Dconfig=#{config_path}' #{log_option} #{log_levels_option} -jar '#{jar_path}'
   CMD
 
   puts command if options[:verbose]
