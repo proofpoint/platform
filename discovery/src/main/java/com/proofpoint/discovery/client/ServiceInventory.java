@@ -18,14 +18,17 @@ import org.weakref.jmx.Managed;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -41,41 +44,39 @@ public class ServiceInventory
     private final URI serviceInventoryUri;
     private final Duration updateInterval;
     private final NodeInfo nodeInfo;
-    private final JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec;
+    private final JsonCodec<ServiceDescriptorListRepresentation> serviceDescriptorListRepresentationCodec;
     private final HttpClient httpClient;
+    private final Validator validator;
 
     private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<List<ServiceDescriptor>>(ImmutableList.<ServiceDescriptor>of());
     private final ScheduledExecutorService executorService = newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("service-inventory-%s").setDaemon(true).build());
-    private final AtomicBoolean serverUp = new AtomicBoolean(true);
     private ScheduledFuture<?> scheduledFuture;
 
     @Inject
     public ServiceInventory(ServiceInventoryConfig config,
             NodeInfo nodeInfo,
-            JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec,
+            JsonCodec<ServiceDescriptorListRepresentation> serviceDescriptorListRepresentationCodec,
             @ForDiscoveryClient HttpClient httpClient)
     {
         Preconditions.checkNotNull(config, "config is null");
         Preconditions.checkNotNull(nodeInfo, "nodeInfo is null");
-        Preconditions.checkNotNull(serviceDescriptorsCodec, "serviceDescriptorsCodec is null");
+        Preconditions.checkNotNull(serviceDescriptorListRepresentationCodec, "serviceDescriptorListRepresentationCodec is null");
         Preconditions.checkNotNull(httpClient, "httpClient is null");
 
         this.nodeInfo = nodeInfo;
         this.environment = nodeInfo.getEnvironment();
         this.serviceInventoryUri = config.getServiceInventoryUri();
         updateInterval = config.getUpdateInterval();
-        this.serviceDescriptorsCodec = serviceDescriptorsCodec;
+        this.serviceDescriptorListRepresentationCodec = serviceDescriptorListRepresentationCodec;
         this.httpClient = httpClient;
+        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
 
         if (serviceInventoryUri != null) {
             String scheme = serviceInventoryUri.getScheme().toLowerCase();
             Preconditions.checkArgument(scheme.equals("http") || scheme.equals("https") || scheme.equals("file"), "Service inventory uri must have a http, https, or file scheme");
 
-            try {
-                updateServiceInventory();
-            }
-            catch (Exception ignored) {
-            }
+            updateServiceInventory(false);
+            log.info("Loaded service inventory");
         }
     }
 
@@ -91,7 +92,7 @@ public class ServiceInventory
             public void run()
             {
                 try {
-                    updateServiceInventory();
+                    updateServiceInventory(true);
                 }
                 catch (Throwable e) {
                     log.error(e, "Unexpected exception from service inventory update");
@@ -140,47 +141,78 @@ public class ServiceInventory
     }
 
     @Managed
-    public void updateServiceInventory()
+    public void updateServiceInventory(boolean quiet)
     {
         if (serviceInventoryUri == null) {
             return;
         }
 
+        ServiceDescriptorListRepresentation serviceDescriptorListRepresentation;
         try {
-            ServiceDescriptorsRepresentation serviceDescriptorsRepresentation;
             if (serviceInventoryUri.getScheme().toLowerCase().startsWith("http")) {
                 Builder requestBuilder = prepareGet()
                         .setUri(serviceInventoryUri)
                         .setHeader("User-Agent", nodeInfo.getNodeId());
-                serviceDescriptorsRepresentation = httpClient.execute(requestBuilder.build(), createJsonResponseHandler(serviceDescriptorsCodec));
+                serviceDescriptorListRepresentation = httpClient.execute(requestBuilder.build(),
+                        createJsonResponseHandler(serviceDescriptorListRepresentationCodec));
             }
             else {
                 File file = new File(serviceInventoryUri);
                 String json = Files.toString(file, Charsets.UTF_8);
-                serviceDescriptorsRepresentation = serviceDescriptorsCodec.fromJson(json);
-            }
-
-            if (!environment.equals(serviceDescriptorsRepresentation.getEnvironment())) {
-                logServerError("Expected environment to be %s, but was %s", environment, serviceDescriptorsRepresentation.getEnvironment());
-            }
-
-            List<ServiceDescriptor> descriptors = newArrayList(serviceDescriptorsRepresentation.getServiceDescriptors());
-            Collections.shuffle(descriptors);
-            serviceDescriptors.set(ImmutableList.copyOf(descriptors));
-
-            if (serverUp.compareAndSet(false, true)) {
-                log.info("ServiceInventory connect succeeded");
+                serviceDescriptorListRepresentation = serviceDescriptorListRepresentationCodec.fromJson(json);
             }
         }
         catch (Exception e) {
-            logServerError("Error loading service inventory from %s", serviceInventoryUri.toASCIIString());
+            String message = "Error loading service inventory from " + serviceInventoryUri.toASCIIString();
+            log.error(message);
+            if (quiet) {
+                return;
+            }
+            else {
+                throw new RuntimeException(message);
+            }
         }
-    }
 
-    private void logServerError(String message, Object... args)
-    {
-        if (serverUp.compareAndSet(true, false)) {
-            log.error(message, args);
+        List<ServiceDescriptorRepresentation> descriptors = null;
+        ImmutableList.Builder<String> violationMessagesBuilder = ImmutableList.builder();
+
+        Set<ConstraintViolation<ServiceDescriptorListRepresentation>> listViolations = validator.validate(serviceDescriptorListRepresentation);
+        if (listViolations.size() > 0) {
+            for (ConstraintViolation<ServiceDescriptorListRepresentation> violation : listViolations) {
+                log.error(violation.getMessage());
+                violationMessagesBuilder.add(violation.getMessage());
+            }
+        }
+        else {
+            if (!environment.equals(serviceDescriptorListRepresentation.getEnvironment())) {
+                String message = String.format("Expected service inventory environment to be %s, but was %s", environment,
+                        serviceDescriptorListRepresentation.getEnvironment());
+                log.error(message);
+                violationMessagesBuilder.add(message);
+            }
+
+            descriptors = newArrayList(serviceDescriptorListRepresentation.getServiceDescriptorRepresentations());
+            for (ServiceDescriptorRepresentation descriptor : descriptors) {
+                Set<ConstraintViolation<ServiceDescriptorRepresentation>> violations = validator.validate(descriptor);
+                if (violations.size() > 0) {
+                    for (ConstraintViolation<ServiceDescriptorRepresentation> violation : violations) {
+                        String message = String.format("%s %s", violation.getMessage(), descriptor);
+                        log.error(message);
+                        violationMessagesBuilder.add(message);
+                    }
+                }
+            }
+        }
+
+        List<String> violationMessages = violationMessagesBuilder.build();
+        if (violationMessages.size() == 0) {
+            Collections.shuffle(descriptors);
+            serviceDescriptors.set(serviceDescriptorListRepresentation.getServiceDescriptors());
+            log.info("Updated service inventory");
+        }
+        else if (!quiet) {
+            throw new RuntimeException(String.format("Invalid service inventory from %s %s",
+                    serviceInventoryUri.toASCIIString(), violationMessages));
         }
     }
 }

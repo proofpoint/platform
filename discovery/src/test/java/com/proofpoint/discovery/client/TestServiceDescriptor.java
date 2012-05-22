@@ -15,7 +15,7 @@ import static org.testng.Assert.assertNotNull;
 
 public class TestServiceDescriptor
 {
-    private final JsonCodec<ServiceDescriptor> serviceDescriptorCodec = jsonCodec(ServiceDescriptor.class);
+    private final JsonCodec<ServiceDescriptorRepresentation> serviceDescriptorCodec = jsonCodec(ServiceDescriptorRepresentation.class);
 
     @Test
     public void testJsonDecode()
@@ -29,7 +29,7 @@ public class TestServiceDescriptor
                 ServiceState.RUNNING, ImmutableMap.of("a", "apple", "b", "banana"));
 
         String json = Resources.toString(Resources.getResource("service-descriptor.json"), Charsets.UTF_8);
-        ServiceDescriptor actual = serviceDescriptorCodec.fromJson(json);
+        ServiceDescriptor actual = ServiceDescriptor.from(serviceDescriptorCodec.fromJson(json));
 
         assertEquals(actual, expected);
         assertEquals(actual.getId(), expected.getId());

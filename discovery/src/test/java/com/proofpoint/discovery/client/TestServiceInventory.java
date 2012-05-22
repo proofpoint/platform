@@ -31,11 +31,11 @@ public class TestServiceInventory
     {
         ServiceInventory serviceInventory = new ServiceInventory(new ServiceInventoryConfig(),
                 new NodeInfo("test"),
-                JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
+                JsonCodec.jsonCodec(ServiceDescriptorListRepresentation.class),
                 new ApacheHttpClient());
 
         Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
-        serviceInventory.updateServiceInventory();
+        serviceInventory.updateServiceInventory(false);
         Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
     }
 
@@ -48,13 +48,13 @@ public class TestServiceInventory
 
         ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
                 new NodeInfo("test"),
-                JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
+                JsonCodec.jsonCodec(ServiceDescriptorListRepresentation.class),
                 new ApacheHttpClient());
 
         Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
         Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
         Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
-        serviceInventory.updateServiceInventory();
+        serviceInventory.updateServiceInventory(false);
         Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
         Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
         Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
@@ -104,13 +104,13 @@ public class TestServiceInventory
 
             ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
                     new NodeInfo("test"),
-                    JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
+                    JsonCodec.jsonCodec(ServiceDescriptorListRepresentation.class),
                     new ApacheHttpClient());
 
             Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
             Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
             Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
-            serviceInventory.updateServiceInventory();
+            serviceInventory.updateServiceInventory(false);
             Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
             Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
             Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
@@ -119,6 +119,70 @@ public class TestServiceInventory
             if (server != null) {
                 server.stop();
             }
+        }
+    }
+
+    @Test
+    public void testEmptyServiceList()
+            throws Exception
+    {
+        ServiceInventoryConfig serviceInventoryConfig = new ServiceInventoryConfig()
+                .setServiceInventoryUri(Resources.getResource("service-inventory-empty.json").toURI());
+
+        try {
+            ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
+                    new NodeInfo("test"),
+                    JsonCodec.jsonCodec(ServiceDescriptorListRepresentation.class),
+                    new ApacheHttpClient());
+            Assert.fail("RuntimeException expected");
+        }
+        catch (RuntimeException e) {
+            Assert.assertTrue(e.getMessage().contains("Invalid ServiceDescriptorList: environment is empty"));
+            Assert.assertTrue(e.getMessage().contains("Invalid ServiceDescriptorList: serviceDescriptors is null"));
+        }
+    }
+
+    @Test
+    public void testInvalidEnvironment()
+            throws Exception
+    {
+        ServiceInventoryConfig serviceInventoryConfig = new ServiceInventoryConfig()
+                .setServiceInventoryUri(Resources.getResource("service-inventory.json").toURI());
+
+        try {
+            ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
+                    new NodeInfo("test123"),
+                    JsonCodec.jsonCodec(ServiceDescriptorListRepresentation.class),
+                    new ApacheHttpClient());
+            Assert.fail("RuntimeException expected");
+        }
+        catch (RuntimeException e) {
+            Assert.assertTrue(e.getMessage().contains("Expected service inventory environment to be test123, but was test"));
+        }
+    }
+
+    @Test
+    public void testInvalidDescriptors()
+            throws Exception
+    {
+        ServiceInventoryConfig serviceInventoryConfig = new ServiceInventoryConfig()
+                .setServiceInventoryUri(Resources.getResource("service-inventory-invalid.json").toURI());
+
+        try {
+            ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
+                    new NodeInfo("test"),
+                    JsonCodec.jsonCodec(ServiceDescriptorListRepresentation.class),
+                    new ApacheHttpClient());
+            Assert.fail("RuntimeException expected");
+        }
+        catch (RuntimeException e) {
+            Assert.assertTrue(e.getMessage().contains("Invalid ServiceDescriptor: id is null"));
+            Assert.assertTrue(e.getMessage().contains("Invalid ServiceDescriptor: nodeId is null ServiceDescriptorRepresentation{id=370af416-"));
+            Assert.assertTrue(e.getMessage().contains("Invalid ServiceDescriptor: type is null ServiceDescriptorRepresentation{id=370af416-"));
+            Assert.assertTrue(e.getMessage().contains("Invalid ServiceDescriptor: pool is null ServiceDescriptorRepresentation{id=370af416-"));
+            Assert.assertTrue(e.getMessage().contains("Invalid ServiceDescriptor: location is null ServiceDescriptorRepresentation{id=370af416-"));
+            Assert.assertTrue(e.getMessage().contains("Invalid ServiceDescriptor: state is null ServiceDescriptorRepresentation{id=370af416-"));
+            Assert.assertTrue(e.getMessage().contains("Invalid ServiceDescriptor: properties is null ServiceDescriptorRepresentation{id=370af416-"));
         }
     }
 

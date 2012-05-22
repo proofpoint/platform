@@ -38,24 +38,24 @@ public class HttpDiscoveryLookupClient implements DiscoveryLookupClient
     private final String environment;
     private final Provider<URI> discoveryServiceURI;
     private final NodeInfo nodeInfo;
-    private final JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec;
+    private final JsonCodec<ServiceDescriptorListRepresentation> serviceDescriptorListCodec;
     private final AsyncHttpClient httpClient;
 
     @Inject
     public HttpDiscoveryLookupClient(@ForDiscoveryClient Provider<URI> discoveryServiceURI,
             NodeInfo nodeInfo,
-            JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec,
+            JsonCodec<ServiceDescriptorListRepresentation> serviceDescriptorListCodec,
             @ForDiscoveryClient AsyncHttpClient httpClient)
     {
         Preconditions.checkNotNull(discoveryServiceURI, "discoveryServiceURI is null");
         Preconditions.checkNotNull(nodeInfo, "nodeInfo is null");
-        Preconditions.checkNotNull(serviceDescriptorsCodec, "serviceDescriptorsCodec is null");
+        Preconditions.checkNotNull(serviceDescriptorListCodec, "serviceDescriptorListCodec is null");
         Preconditions.checkNotNull(httpClient, "httpClient is null");
 
         this.nodeInfo = nodeInfo;
         this.environment = nodeInfo.getEnvironment();
         this.discoveryServiceURI = discoveryServiceURI;
-        this.serviceDescriptorsCodec = serviceDescriptorsCodec;
+        this.serviceDescriptorListCodec = serviceDescriptorListCodec;
         this.httpClient = httpClient;
     }
 
@@ -133,15 +133,15 @@ public class HttpDiscoveryLookupClient implements DiscoveryLookupClient
                     throw new DiscoveryException(format("Lookup of %s failed", type), e);
                 }
 
-                ServiceDescriptorsRepresentation serviceDescriptorsRepresentation = serviceDescriptorsCodec.fromJson(json);
-                if (!environment.equals(serviceDescriptorsRepresentation.getEnvironment())) {
-                    throw new DiscoveryException(format("Expected environment to be %s, but was %s", environment, serviceDescriptorsRepresentation.getEnvironment()));
+                ServiceDescriptorListRepresentation serviceDescriptorListRepresentation = serviceDescriptorListCodec.fromJson(json);
+                if (!environment.equals(serviceDescriptorListRepresentation.getEnvironment())) {
+                    throw new DiscoveryException(format("Expected environment to be %s, but was %s", environment, serviceDescriptorListRepresentation.getEnvironment()));
                 }
 
                 return new ServiceDescriptors(
                         type,
                         pool,
-                        serviceDescriptorsRepresentation.getServiceDescriptors(),
+                        serviceDescriptorListRepresentation.getServiceDescriptors(),
                         maxAge,
                         eTag);
             }
