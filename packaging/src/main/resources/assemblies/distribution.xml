@@ -32,6 +32,10 @@
             <source>README.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
+        <file>
+            <source>target/projectname</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
     </files>
     <dependencySets>
         <dependencySet>
