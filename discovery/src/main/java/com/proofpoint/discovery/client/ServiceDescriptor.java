@@ -3,8 +3,6 @@ package com.proofpoint.discovery.client;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Map;
 import java.util.UUID;
@@ -19,17 +17,21 @@ public class ServiceDescriptor
     private final ServiceState state;
     private final Map<String, String> properties;
 
-    @JsonCreator
-    public ServiceDescriptor(
-            @JsonProperty("id") UUID id,
-            @JsonProperty("nodeId") String nodeId,
-            @JsonProperty("type") String type,
-            @JsonProperty("pool") String pool,
-            @JsonProperty("location") String location,
-            @JsonProperty("state") ServiceState state,
-            @JsonProperty("properties") Map<String, String> properties)
+    public static ServiceDescriptor from(ServiceDescriptorRepresentation serviceDescriptorRepresentation)
     {
-        Preconditions.checkNotNull(properties, "properties is null");
+        return new ServiceDescriptor(serviceDescriptorRepresentation.getId(),
+                serviceDescriptorRepresentation.getNodeId(),
+                serviceDescriptorRepresentation.getType(),
+                serviceDescriptorRepresentation.getPool(),
+                serviceDescriptorRepresentation.getLocation(),
+                serviceDescriptorRepresentation.getState(),
+                serviceDescriptorRepresentation.getProperties());
+    }
+
+    public ServiceDescriptor(UUID id, String nodeId, String type, String pool, String location, ServiceState state,
+                             Map<String, String> properties)
+    {
+        Preconditions.checkNotNull(id, "id is null");
 
         this.id = id;
         this.nodeId = nodeId;
@@ -37,46 +39,39 @@ public class ServiceDescriptor
         this.pool = pool;
         this.location = location;
         this.state = state;
-        this.properties = ImmutableMap.copyOf(properties);
+        this.properties = (properties != null) ? ImmutableMap.copyOf(properties) : null;
     }
 
-    @JsonProperty
     public UUID getId()
     {
         return id;
     }
 
-    @JsonProperty
     public String getNodeId()
     {
         return nodeId;
     }
 
-    @JsonProperty
     public String getType()
     {
         return type;
     }
 
-    @JsonProperty
     public String getPool()
     {
         return pool;
     }
 
-    @JsonProperty
     public String getLocation()
     {
         return location;
     }
 
-    @JsonProperty
     public ServiceState getState()
     {
         return state;
     }
 
-    @JsonProperty
     public Map<String, String> getProperties()
     {
         return properties;

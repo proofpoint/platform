@@ -1,0 +1,18 @@
+{
+    "environment": "test",
+    "services": [
+        {
+            "nodeId": "597A741E-9968-40E2-BB4D-7AF26DE18689",
+            "type": "discovery",
+            "pool": "general",
+            "location": "/localhost",
+            "state": "RUNNING",
+            "properties": {
+                "http": "http://localhost:8411"
+            }
+        },
+        {
+            "id": "370AF416-5F44-47D3-BFB6-D93A92676D49"
+        }
+    ]
+}

@@ -31,7 +31,7 @@ public class DiscoveryModule implements Module
         // bind discovery client and dependencies
         binder.bind(DiscoveryLookupClient.class).to(HttpDiscoveryLookupClient.class).in(Scopes.SINGLETON);
         binder.bind(DiscoveryAnnouncementClient.class).to(HttpDiscoveryAnnouncementClient.class).in(Scopes.SINGLETON);
-        jsonCodecBinder(binder).bindJsonCodec(ServiceDescriptorsRepresentation.class);
+        jsonCodecBinder(binder).bindJsonCodec(ServiceDescriptorListRepresentation.class);
         jsonCodecBinder(binder).bindJsonCodec(Announcement.class);
 
         // bind the http client

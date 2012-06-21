@@ -4,6 +4,7 @@
     "type" : "type",
     "pool" : "pool",
     "location" : "location",
+    "state" : "RUNNING",
     "properties" : {
         "a" : "apple",
         "b" : "banana"
