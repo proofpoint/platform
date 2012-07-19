@@ -135,6 +135,94 @@ public class TestEquivalenceTester
     }
 
     @Test
+    public void notSymmetric()
+    {
+        NotSymmetric o1 = new NotSymmetric(1);
+        NotSymmetric o2 = new NotSymmetric(2);
+        NotSymmetric o3 = new NotSymmetric(3);
+        try {
+            equivalenceTester()
+                    .addEquivalentGroup(o1, o3, o2)
+                    .check();
+            fail("Expected EquivalenceAssertionError");
+        } catch (EquivalenceAssertionError e) {
+            assertExpectedFailures(e,
+                    new PairCheckFailure(NOT_EQUAL, 0, 0, o1, 0, 1, o3),
+                    new PairCheckFailure(NOT_EQUAL, 0, 0, o1, 0, 2, o2),
+                    new PairCheckFailure(NOT_EQUAL, 0, 2, o2, 0, 1, o3));
+        }
+    }
+
+    static class NotSymmetric
+    {
+        private int id;
+
+        NotSymmetric(int id) {
+            this.id = id;
+        }
+
+        public boolean equals(Object that)
+        {
+            return that != null && that instanceof NotSymmetric && id >= ((NotSymmetric) that).id;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
+        }
+    }
+
+    @Test
+    public void comparableNotSymmetric()
+    {
+        ComparableNotSymmetric o1 = new ComparableNotSymmetric(1);
+        ComparableNotSymmetric o2 = new ComparableNotSymmetric(2);
+        ComparableNotSymmetric o3 = new ComparableNotSymmetric(3);
+        try {
+            equivalenceTester()
+                    .addEquivalentGroup(o1, o3, o2)
+                    .check();
+            fail("Expected EquivalenceAssertionError");
+        } catch (EquivalenceAssertionError e) {
+            assertExpectedFailures(e,
+                    new PairCheckFailure(COMPARE_NOT_EQUAL, 0, 0, o1, 0, 1, o3),
+                    new PairCheckFailure(COMPARE_NOT_EQUAL, 0, 0, o1, 0, 2, o2),
+                    new PairCheckFailure(COMPARE_NOT_EQUAL, 0, 2, o2, 0, 1, o3));
+        }
+    }
+
+    static class ComparableNotSymmetric implements Comparable<ComparableNotSymmetric>
+    {
+        private int id;
+
+        ComparableNotSymmetric(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public int compareTo(ComparableNotSymmetric that)
+        {
+            Preconditions.checkNotNull(that, "that is null");
+            if (id >= that.id) {
+                return 0;
+            }
+            return -1;
+        }
+
+        public boolean equals(Object that)
+        {
+            return that != null && that instanceof ComparableNotSymmetric;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
+        }
+    }
+
+    @Test
     public void equalsNull()
     {
         EqualsNull equalsNull = new EqualsNull();
