@@ -186,6 +186,44 @@ public class TestServiceInventory
         }
     }
 
+    @Test
+    public void testPartialDescriptors()
+            throws Exception
+    {
+        ServiceInventoryConfig serviceInventoryConfig = new ServiceInventoryConfig()
+                .setServiceInventoryUri(Resources.getResource("service-inventory-partial.json").toURI());
+
+        ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
+                new NodeInfo("test"),
+                JsonCodec.jsonCodec(ServiceDescriptorListRepresentation.class),
+                new ApacheHttpClient());
+
+        Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 1);
+    }
+
+    @Test
+    public void testDescriptorListShuffling()
+            throws Exception
+    {
+        ServiceInventoryConfig serviceInventoryConfig = new ServiceInventoryConfig()
+                .setServiceInventoryUri(Resources.getResource("service-inventory.json").toURI());
+
+        ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
+                new NodeInfo("test"),
+                JsonCodec.jsonCodec(ServiceDescriptorListRepresentation.class),
+                new ApacheHttpClient());
+
+        ServiceDescriptor descriptor = serviceInventory.getServiceDescriptors().iterator().next();
+        for (int i = 0; i < 100; ++i) {
+            serviceInventory.updateServiceInventory(false);
+            if (!descriptor.equals(serviceInventory.getServiceDescriptors().iterator().next())) {
+                return;
+            }
+        }
+
+        Assert.fail("Descriptor list shuffling not detected");
+    }
+
     private class ServiceInventoryServlet extends HttpServlet
     {
         private final byte[] serviceInventory;

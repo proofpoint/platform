@@ -22,7 +22,8 @@ public class ServiceDescriptorListRepresentation
             @JsonProperty("services") List<ServiceDescriptorRepresentation> serviceDescriptorRepresentations)
     {
         this.environment = environment;
-        this.serviceDescriptorRepresentations = serviceDescriptorRepresentations;
+        this.serviceDescriptorRepresentations = (serviceDescriptorRepresentations != null) ?
+                ImmutableList.copyOf(serviceDescriptorRepresentations) : null;
     }
 
     @JsonProperty
@@ -40,7 +41,7 @@ public class ServiceDescriptorListRepresentation
         return serviceDescriptorRepresentations;
     }
 
-    public List<ServiceDescriptor> getServiceDescriptors()
+    public List<ServiceDescriptor> toServiceDescriptorList()
     {
         return ImmutableList.copyOf(Iterables.transform(serviceDescriptorRepresentations, toServiceDescriptor));
     }
@@ -87,7 +88,7 @@ public class ServiceDescriptorListRepresentation
     private static Function<ServiceDescriptorRepresentation, ServiceDescriptor> toServiceDescriptor = new Function<ServiceDescriptorRepresentation, ServiceDescriptor>() {
         @Override
         public ServiceDescriptor apply(ServiceDescriptorRepresentation serviceDescriptorRepresentation) {
-            return ServiceDescriptor.from(serviceDescriptorRepresentation);
+            return serviceDescriptorRepresentation.toServiceDescriptor();
         }
     };
 }

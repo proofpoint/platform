@@ -169,34 +169,35 @@ public class ServiceInventory
                 return;
             }
             else {
-                throw new RuntimeException(message);
+                throw new RuntimeException(message, e);
             }
         }
 
-        List<ServiceDescriptorRepresentation> descriptors = null;
+        List<ServiceDescriptor> descriptors = newArrayList();
         ImmutableList.Builder<String> violationMessagesBuilder = ImmutableList.builder();
 
         Set<ConstraintViolation<ServiceDescriptorListRepresentation>> listViolations = validator.validate(serviceDescriptorListRepresentation);
-        if (listViolations.size() > 0) {
+        if (!listViolations.isEmpty()) {
             for (ConstraintViolation<ServiceDescriptorListRepresentation> violation : listViolations) {
                 log.error(violation.getMessage());
                 violationMessagesBuilder.add(violation.getMessage());
             }
         }
+        else if (!environment.equals(serviceDescriptorListRepresentation.getEnvironment())) {
+            String message = String.format("Expected service inventory environment to be %s, but was %s", environment,
+                    serviceDescriptorListRepresentation.getEnvironment());
+            log.error(message);
+            violationMessagesBuilder.add(message);
+        }
         else {
-            if (!environment.equals(serviceDescriptorListRepresentation.getEnvironment())) {
-                String message = String.format("Expected service inventory environment to be %s, but was %s", environment,
-                        serviceDescriptorListRepresentation.getEnvironment());
-                log.error(message);
-                violationMessagesBuilder.add(message);
-            }
-
-            descriptors = newArrayList(serviceDescriptorListRepresentation.getServiceDescriptorRepresentations());
-            for (ServiceDescriptorRepresentation descriptor : descriptors) {
-                Set<ConstraintViolation<ServiceDescriptorRepresentation>> violations = validator.validate(descriptor);
-                if (violations.size() > 0) {
+            for (ServiceDescriptorRepresentation descriptorRepresentation : serviceDescriptorListRepresentation.getServiceDescriptorRepresentations()) {
+                Set<ConstraintViolation<ServiceDescriptorRepresentation>> violations = validator.validate(descriptorRepresentation);
+                if (violations.isEmpty()) {
+                    descriptors.add(descriptorRepresentation.toServiceDescriptor());
+                }
+                else {
                     for (ConstraintViolation<ServiceDescriptorRepresentation> violation : violations) {
-                        String message = String.format("%s %s", violation.getMessage(), descriptor);
+                        String message = String.format("%s %s", violation.getMessage(), descriptorRepresentation);
                         log.error(message);
                         violationMessagesBuilder.add(message);
                     }
@@ -204,15 +205,14 @@ public class ServiceInventory
             }
         }
 
-        List<String> violationMessages = violationMessagesBuilder.build();
-        if (violationMessages.size() == 0) {
+        if (!descriptors.isEmpty()) {
             Collections.shuffle(descriptors);
-            serviceDescriptors.set(serviceDescriptorListRepresentation.getServiceDescriptors());
+            serviceDescriptors.set(ImmutableList.copyOf(descriptors));
             log.info("Updated service inventory");
         }
         else if (!quiet) {
             throw new RuntimeException(String.format("Invalid service inventory from %s %s",
-                    serviceInventoryUri.toASCIIString(), violationMessages));
+                    serviceInventoryUri.toASCIIString(), violationMessagesBuilder.build()));
         }
     }
 }

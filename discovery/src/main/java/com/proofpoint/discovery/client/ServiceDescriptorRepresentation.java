@@ -1,6 +1,7 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMap;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -46,7 +47,7 @@ public class ServiceDescriptorRepresentation
         this.pool = pool;
         this.location = location;
         this.state = state;
-        this.properties = properties;
+        this.properties = (properties != null) ? ImmutableMap.copyOf(properties) : null;
     }
 
     @JsonProperty
@@ -100,6 +101,11 @@ public class ServiceDescriptorRepresentation
     public Map<String, String> getProperties()
     {
         return properties;
+    }
+
+    public ServiceDescriptor toServiceDescriptor()
+    {
+        return new ServiceDescriptor(id, nodeId, type, pool, location, state, properties);
     }
 
     @Override

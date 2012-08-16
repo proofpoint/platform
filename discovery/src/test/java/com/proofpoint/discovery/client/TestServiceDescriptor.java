@@ -29,7 +29,7 @@ public class TestServiceDescriptor
                 ServiceState.RUNNING, ImmutableMap.of("a", "apple", "b", "banana"));
 
         String json = Resources.toString(Resources.getResource("service-descriptor.json"), Charsets.UTF_8);
-        ServiceDescriptor actual = ServiceDescriptor.from(serviceDescriptorCodec.fromJson(json));
+        ServiceDescriptor actual = serviceDescriptorCodec.fromJson(json).toServiceDescriptor();
 
         assertEquals(actual, expected);
         assertEquals(actual.getId(), expected.getId());

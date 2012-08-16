@@ -141,7 +141,7 @@ public class HttpDiscoveryLookupClient implements DiscoveryLookupClient
                 return new ServiceDescriptors(
                         type,
                         pool,
-                        serviceDescriptorListRepresentation.getServiceDescriptors(),
+                        serviceDescriptorListRepresentation.toServiceDescriptorList(),
                         maxAge,
                         eTag);
             }

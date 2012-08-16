@@ -17,17 +17,6 @@ public class ServiceDescriptor
     private final ServiceState state;
     private final Map<String, String> properties;
 
-    public static ServiceDescriptor from(ServiceDescriptorRepresentation serviceDescriptorRepresentation)
-    {
-        return new ServiceDescriptor(serviceDescriptorRepresentation.getId(),
-                serviceDescriptorRepresentation.getNodeId(),
-                serviceDescriptorRepresentation.getType(),
-                serviceDescriptorRepresentation.getPool(),
-                serviceDescriptorRepresentation.getLocation(),
-                serviceDescriptorRepresentation.getState(),
-                serviceDescriptorRepresentation.getProperties());
-    }
-
     public ServiceDescriptor(UUID id, String nodeId, String type, String pool, String location, ServiceState state,
                              Map<String, String> properties)
     {
