@@ -1,6 +1,7 @@
 package com.proofpoint.event.client;
 
 import com.google.common.base.Preconditions;
+import com.proofpoint.event.api.Event;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
@@ -52,7 +53,14 @@ class EventJsonSerializerV2<T>
     {
         jsonGenerator.writeStartObject();
 
-        jsonGenerator.writeStringField("type", eventTypeMetadata.getTypeName());
+        String type;
+        if (Event.class.isInstance(event)) {
+            type = ((Event) event).getName();
+        }
+        else {
+            type = eventTypeMetadata.getTypeName();
+        }
+        jsonGenerator.writeStringField("type", type);
 
         if (eventTypeMetadata.getUuidField() != null) {
             eventTypeMetadata.getUuidField().writeField(jsonGenerator, event);

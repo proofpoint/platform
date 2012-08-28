@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
+import com.proofpoint.event.api.EventSink;
 
 import java.util.List;
 
@@ -50,6 +51,21 @@ public class EventBinder
             for (String error : eventTypeMetadata.getErrors()) {
                 sourcedBinder.addError(error);
             }
+        }
+    }
+
+    public void bindEventSink(Class<?> eventSinkClass)
+    {
+        Preconditions.checkNotNull(eventSinkClass, "eventSink is null");
+        Preconditions.checkArgument(EventSink.class.isAssignableFrom(eventSinkClass));
+
+        Binder sourcedBinder = binder.withSource(getCaller());
+        Multibinder<EventSink> eventSinkBinder = Multibinder.newSetBinder(binder, new TypeLiteral<EventSink>() {});
+        try {
+            eventSinkBinder.addBinding().to((Class<EventSink>) eventSinkClass);
+        }
+        catch (Exception ex) {
+            sourcedBinder.addError(ex);
         }
     }
 

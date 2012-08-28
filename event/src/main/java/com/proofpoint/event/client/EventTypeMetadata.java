@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
+import com.proofpoint.event.api.Event;
 import com.proofpoint.event.client.EventField.EventFieldMapping;
 
 import java.lang.reflect.Method;
@@ -194,6 +195,10 @@ class EventTypeMetadata<T>
 
     private String extractTypeName(Class<T> eventClass, boolean nestedEvent)
     {
+        if (Event.class.isAssignableFrom(eventClass)) {
+            return "";
+        }
+
         EventType typeAnnotation = eventClass.getAnnotation(EventType.class);
         if (typeAnnotation == null) {
             addClassError("is not annotated with @%s", EventType.class.getSimpleName());
