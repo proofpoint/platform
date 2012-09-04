@@ -112,7 +112,7 @@ public class ConfigurationInspector
                     description = "";
                 }
 
-                builder.add(new ConfigAttribute(attribute.getName(), propertyName, defaultValue, currentValue, description));
+                builder.add(new ConfigAttribute(attribute.getName(), propertyName, defaultValue, currentValue, description, attribute.isSecuritySensitive()));
             }
             attributes = builder.build();
         }
@@ -174,10 +174,11 @@ public class ConfigurationInspector
         private final String defaultValue;
         private final String currentValue;
         private final String description;
+        private final boolean securitySensitive;
 
         // todo this class needs to be updated to include the concept of deprecated property names
 
-        private ConfigAttribute(String attributeName, String propertyName, String defaultValue, String currentValue, String description)
+        private ConfigAttribute(String attributeName, String propertyName, String defaultValue, String currentValue, String description, boolean securitySensitive)
         {
             Preconditions.checkNotNull(attributeName, "attributeName");
             Preconditions.checkNotNull(propertyName, "propertyName");
@@ -190,6 +191,7 @@ public class ConfigurationInspector
             this.defaultValue = defaultValue;
             this.currentValue = currentValue;
             this.description = description;
+            this.securitySensitive = securitySensitive;
         }
 
         public String getAttributeName()
@@ -215,6 +217,11 @@ public class ConfigurationInspector
         public String getDescription()
         {
             return description;
+        }
+
+        public boolean isSecuritySensitive()
+        {
+            return securitySensitive;
         }
 
         @Override
@@ -253,6 +260,7 @@ public class ConfigurationInspector
                     .add("defaultValue", defaultValue)
                     .add("currentValue", currentValue)
                     .add("description", description)
+                    .add("securitySensitive", securitySensitive)
                     .toString();
         }
     }
