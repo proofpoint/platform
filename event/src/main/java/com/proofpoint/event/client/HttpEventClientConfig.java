@@ -18,6 +18,7 @@ public class HttpEventClientConfig
     private Duration requestTimeout = new Duration(60, SECONDS);
     private boolean compress;
     private int jsonVersion = 2;
+    private ServiceType serviceType;
 
     public int getMaxConnections()
     {
@@ -91,6 +92,30 @@ public class HttpEventClientConfig
     public HttpEventClientConfig setJsonVersion(int jsonVersion)
     {
         this.jsonVersion = jsonVersion;
+        return this;
+    }
+
+    public enum ServiceType
+    {
+        EVENT,
+        COLLECTOR
+    }
+
+    public ServiceType getServiceType()
+    {
+        if (serviceType != null) {
+            return serviceType;
+        }
+        else {
+            return (jsonVersion == 1) ? ServiceType.EVENT : ServiceType.COLLECTOR;
+        }
+    }
+
+    @Config("collector.service-type")
+    @ConfigDescription("Collector service type (default is EVENT for V1, COLLECTOR for V2)")
+    public HttpEventClientConfig setServiceType(ServiceType serviceType)
+    {
+        this.serviceType = serviceType;
         return this;
     }
 }

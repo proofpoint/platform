@@ -36,36 +36,30 @@ public class HttpEventClient
     private static final Logger log = Logger.get(HttpEventClient.class);
 
     private final HttpServiceSelector serviceSelector;
+    private final String eventResource;
     private final JsonEventWriter eventWriter;
-    private final int version;
     private final AsyncHttpClient httpClient;
     private final NodeInfo nodeInfo;
 
     @Inject
     public HttpEventClient(
-            @ServiceType("event") HttpServiceSelector v1ServiceSelector,
-            @ServiceType("collector") HttpServiceSelector serviceSelector,
+            @ServiceType("event") HttpServiceSelector eventServiceSelector,
+            @ServiceType("collector") HttpServiceSelector collectorServiceSelector,
             JsonEventWriter eventWriter,
             NodeInfo nodeInfo,
             HttpEventClientConfig config,
             @ForEventClient AsyncHttpClient httpClient)
     {
-        Preconditions.checkNotNull(serviceSelector, "serviceSelector is null");
-        Preconditions.checkNotNull(v1ServiceSelector, "v1ServiceSelector is null");
+        Preconditions.checkNotNull(eventServiceSelector, "eventServiceSelector is null");
+        Preconditions.checkNotNull(collectorServiceSelector, "collectorServiceSelector is null");
         Preconditions.checkNotNull(nodeInfo, "nodeInfo is null");
         Preconditions.checkNotNull(httpClient, "httpClient is null");
 
+        this.serviceSelector = (config.getServiceType() == HttpEventClientConfig.ServiceType.EVENT) ? eventServiceSelector : collectorServiceSelector;
+        this.eventResource = String.format("v%d/event", config.getJsonVersion());
         this.eventWriter = eventWriter;
-        this.version = config.getJsonVersion();
         this.nodeInfo = nodeInfo;
         this.httpClient = httpClient;
-
-        if (version == 1) {
-            this.serviceSelector = v1ServiceSelector;
-        }
-        else {
-            this.serviceSelector = serviceSelector;
-        }
 
         int workerThreads = config.getMaxConnections();
         if (workerThreads <= 0) {
@@ -119,21 +113,12 @@ public class HttpEventClient
 
         // todo this doesn't really work due to returning the future which can fail without being retried
         Request request = preparePost()
-                .setUri(resolveUri(uris.get(0)))
+                .setUri(uris.get(0).resolve(eventResource))
                 .setHeader("User-Agent", nodeInfo.getNodeId())
                 .setHeader("Content-Type", MediaType.APPLICATION_JSON)
                 .setBodyGenerator(new JsonEntityWriter<T>(eventWriter, eventGenerator))
                 .build();
         return httpClient.execute(request, new EventResponseHandler(serviceSelector.getType(), serviceSelector.getPool()));
-    }
-
-    private URI resolveUri(URI uri)
-    {
-        if (version == 1) {
-            return uri;
-        }
-
-        return uri.resolve("/v2/event");
     }
 
     private static class JsonEntityWriter<T>
