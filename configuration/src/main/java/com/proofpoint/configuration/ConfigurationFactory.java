@@ -16,13 +16,14 @@
 package com.proofpoint.configuration;
 
 import com.google.common.annotations.Beta;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.MapMaker;
 import com.google.inject.Binding;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Module;
@@ -32,6 +33,7 @@ import com.google.inject.spi.Element;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.ProviderInstanceBinding;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
+import com.proofpoint.configuration.Problems.Monitor;
 import org.apache.bval.jsr303.ApacheValidationProvider;
 
 import javax.validation.ConstraintViolation;
@@ -40,6 +42,7 @@ import javax.validation.Validator;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,35 +53,40 @@ import java.util.concurrent.ConcurrentMap;
 import static com.proofpoint.configuration.Problems.exceptionFor;
 import static java.lang.String.format;
 
-public class ConfigurationFactory
+public final class ConfigurationFactory
 {
     private static final Validator VALIDATOR = Validation.byProvider(ApacheValidationProvider.class).configure().buildValidatorFactory().getValidator();
 
     private final Map<String, String> properties;
     private final Problems.Monitor monitor;
-    private final ConcurrentMap<Class<?>, ConfigurationMetadata<?>> metadataCache;
-    private final ConcurrentMap<ConfigurationProvider<?>, Object> instanceCache = new ConcurrentHashMap<ConfigurationProvider<?>, Object>();
+    private final Set<String> unusedProperties = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+    private final Collection<String> initialErrors;
+    private final LoadingCache<Class<?>, ConfigurationMetadata<?>> metadataCache;
+    private final ConcurrentMap<ConfigurationProvider<?>, Object> instanceCache = new ConcurrentHashMap<>();
     private final Set<String> usedProperties = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     private final Set<ConfigurationProvider<?>> registeredProviders = Collections.newSetFromMap(new ConcurrentHashMap<ConfigurationProvider<?>, Boolean>());
 
     public ConfigurationFactory(Map<String, String> properties)
     {
-        this(properties, Problems.NULL_MONITOR);
+        this(properties, Collections.<String>emptySet(), ImmutableList.<String>of(), Problems.NULL_MONITOR);
     }
 
-    ConfigurationFactory(Map<String, String> properties, final Problems.Monitor monitor)
+    ConfigurationFactory(Map<String, String> properties, Set<String> expectToUse, Collection<String> errors, final Monitor monitor)
     {
         this.monitor = monitor;
         this.properties = ImmutableMap.copyOf(properties);
+        unusedProperties.addAll(expectToUse);
+        initialErrors = ImmutableList.copyOf(errors);
 
-        metadataCache = new MapMaker().weakKeys().weakValues().makeComputingMap(new Function<Class<?>, ConfigurationMetadata<?>>()
-        {
-            @Override
-            public ConfigurationMetadata<?> apply(Class<?> configClass)
-            {
-                return ConfigurationMetadata.getConfigurationMetadata(configClass, monitor);
-            }
-        });
+        metadataCache = CacheBuilder.newBuilder().weakKeys().weakValues()
+                .build(new CacheLoader<Class<?>, ConfigurationMetadata<?>>()
+                {
+                    @Override
+                    public ConfigurationMetadata<?> load(Class<?> configClass)
+                    {
+                        return ConfigurationMetadata.getConfigurationMetadata(configClass, monitor);
+                    }
+                });
     }
 
     public Map<String, String> getProperties()
@@ -94,11 +102,29 @@ public class ConfigurationFactory
     {
         Preconditions.checkNotNull(property, "property is null");
         usedProperties.add(property);
+        unusedProperties.remove(property);
     }
 
+    @Deprecated
     public Set<String> getUsedProperties()
     {
         return ImmutableSortedSet.copyOf(usedProperties);
+    }
+
+    Set<String> getUnusedProperties()
+    {
+
+        return ImmutableSortedSet.copyOf(unusedProperties);
+    }
+
+    Monitor getMonitor()
+    {
+        return monitor;
+    }
+
+    Collection<String> getInitialErrors()
+    {
+        return initialErrors;
     }
 
     /**
@@ -129,7 +155,7 @@ public class ConfigurationFactory
         registeredProviders.add(configurationProvider);
 
         // check for a prebuilt instance
-        T instance = (T) instanceCache.get(configurationProvider);
+        @SuppressWarnings("unchecked") T instance = (T) instanceCache.get(configurationProvider);
         if (instance != null) {
             return instance;
         }
@@ -145,7 +171,7 @@ public class ConfigurationFactory
         }
 
         // add to instance cache
-        T existingValue = (T) instanceCache.putIfAbsent(configurationProvider, instance);
+        @SuppressWarnings("unchecked") T existingValue = (T) instanceCache.putIfAbsent(configurationProvider, instance);
         // if key was already associated with a value, there was a
         // creation race and we lost. Just use the winners' instance;
         if (existingValue != null) {
@@ -166,7 +192,7 @@ public class ConfigurationFactory
             prefix += ".";
         }
 
-        ConfigurationMetadata<T> configurationMetadata = (ConfigurationMetadata<T>) metadataCache.get(configClass);
+        @SuppressWarnings("unchecked") ConfigurationMetadata<T> configurationMetadata = (ConfigurationMetadata<T>) metadataCache.getUnchecked(configClass);
         configurationMetadata.getProblems().throwIfHasErrors();
 
         T instance = newInstance(configurationMetadata);
@@ -200,7 +226,7 @@ public class ConfigurationFactory
         return new ConfigurationHolder<T>(instance, problems);
     }
 
-    private <T> T newInstance(ConfigurationMetadata<T> configurationMetadata)
+    private static <T> T newInstance(ConfigurationMetadata<T> configurationMetadata)
     {
         try {
             return configurationMetadata.getConstructor().newInstance();
@@ -264,8 +290,8 @@ public class ConfigurationFactory
                     operativeInjectionPoint = injectionPoint;
                     operativeValue = value;
                     operativeName = fullName;
-                } else if (!value.equals(operativeValue)) {
-                    problems.addError("Value for property '%s' (=%s) conflicts with property '%s' (=%s)", fullName, value, operativeName, operativeValue);
+                } else {
+                    problems.addError("Configuration property '%s' (=%s) conflicts with property '%s' (=%s)", fullName, value, operativeName, operativeValue);
                 }
             }
         }
@@ -302,6 +328,7 @@ public class ConfigurationFactory
                     injectionPoint.getSetter().toGenericString()));
         }
         usedProperties.add(name);
+        unusedProperties.remove(name);
         return finalValue;
     }
 
@@ -375,7 +402,7 @@ public class ConfigurationFactory
         }
     }
 
-    private List<ConfigurationProvider<?>> getAllProviders(Module... modules)
+    private static List<ConfigurationProvider<?>> getAllProviders(Module... modules)
     {
         final List<ConfigurationProvider<?>> providers = Lists.newArrayList();
 
@@ -383,6 +410,7 @@ public class ConfigurationFactory
         for (final Element element : elementsIterator) {
             element.acceptVisitor(new DefaultElementVisitor<Void>()
             {
+                @Override
                 public <T> Void visit(Binding<T> binding)
                 {
                     // look for ConfigurationProviders...

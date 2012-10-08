@@ -15,6 +15,7 @@
  */
 package com.proofpoint.configuration;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.inject.Binder;
 import com.google.inject.CreationException;
@@ -29,6 +30,7 @@ import org.testng.annotations.Test;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -128,27 +130,28 @@ public class ConfigurationFactoryTest
     }
 
     @Test
-    public void testConfigurationWithRedundantLegacyConfig()
+    public void testConfigurationWithRedundantLegacyConfigThrows()
     {
         Map<String, String> properties = new TreeMap<String, String>();
         properties.put("string-value", "this is a");
         properties.put("string-a", "this is a");
         properties.put("string-b", "this is b");
         TestMonitor monitor = new TestMonitor();
-        Injector injector = createInjector(properties, monitor, new Module()
-        {
-            public void configure(Binder binder)
+        try {
+            createInjector(properties, monitor, new Module()
             {
-                ConfigurationModule.bindConfig(binder).to(LegacyConfigPresent.class);
-            }
-        });
-        LegacyConfigPresent legacyConfigPresent = injector.getInstance(LegacyConfigPresent.class);
-        monitor.assertNumberOfErrors(0);
-        monitor.assertNumberOfWarnings(1);
-        monitor.assertMatchingWarningRecorded("string-value", "replaced", "Use 'string-a'");
-        Assert.assertNotNull(legacyConfigPresent);
-        Assert.assertEquals(legacyConfigPresent.getStringA(), "this is a");
-        Assert.assertEquals(legacyConfigPresent.getStringB(), "this is b");
+                public void configure(Binder binder)
+                {
+                    ConfigurationModule.bindConfig(binder).to(LegacyConfigPresent.class);
+                }
+            });
+        }
+        catch (CreationException e) {
+            monitor.assertNumberOfErrors(1);
+            monitor.assertNumberOfWarnings(1);
+            monitor.assertMatchingWarningRecorded("string-value", "replaced", "Use 'string-a'");
+            Assertions.assertContainsAllOf(e.getMessage(), "string-value", "conflicts with property", "string-a");
+        }
     }
 
     @Test
@@ -290,10 +293,9 @@ public class ConfigurationFactoryTest
         }
     }
 
-
     private Injector createInjector(Map<String, String> properties, TestMonitor monitor, Module module)
     {
-        ConfigurationFactory configurationFactory = new ConfigurationFactory(properties, monitor);
+        ConfigurationFactory configurationFactory = new ConfigurationFactory(properties, Collections.<String>emptySet(), ImmutableList.<String>of(), monitor);
         List<Message> messages = new ConfigurationValidator(configurationFactory, null).validate(module);
         return Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
     }
