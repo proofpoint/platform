@@ -18,36 +18,29 @@
 package com.proofpoint.jaxrs;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import javax.validation.ConstraintViolation;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 public class BeanValidationException extends ValidationException
 {
-    private List<ConstraintViolation<Object>> violations;
+    private ImmutableSet<ConstraintViolation<Object>> violations;
 
     public BeanValidationException(Set<ConstraintViolation<Object>> violations)
     {
-        this.violations = new ArrayList<ConstraintViolation<Object>>(violations);
+        this.violations = ImmutableSet.copyOf(violations);
     }
 
     @Override
     public List<String> getErrorMessages()
     {
-        return messagesFor(violations);
-    }
-
-    private static List<String> messagesFor(Collection<? extends ConstraintViolation<?>> violations)
-    {
-        ImmutableList.Builder<String> messages = new ImmutableList.Builder<String>();
+        ImmutableList.Builder<String> messages = new ImmutableList.Builder<>();
         for (ConstraintViolation<?> violation : violations) {
             messages.add(violation.getPropertyPath().toString() + " " + violation.getMessage());
         }
 
         return messages.build();
     }
-
 }

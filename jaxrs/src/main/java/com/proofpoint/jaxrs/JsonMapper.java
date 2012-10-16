@@ -1,5 +1,3 @@
-//
-//  DashboardJsonMapper.java
 /*
  * Copyright 2010 Proofpoint, Inc.
  *
