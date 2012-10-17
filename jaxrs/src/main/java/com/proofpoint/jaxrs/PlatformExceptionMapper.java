@@ -15,27 +15,20 @@
  */
 package com.proofpoint.jaxrs;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+
 /**
- * Wraps JsonProcessingExceptions to provide more information about parsing errors.
+ * Maps PlatformExceptions to a 400 response code.
  */
-public class JsonMapperParsingException extends PlatformException
+@Provider
+public class PlatformExceptionMapper implements ExceptionMapper<PlatformException>
 {
-    private Class<Object> type;
-
-    public JsonMapperParsingException(Class<Object> type, Throwable cause)
+    public Response toResponse(PlatformException e)
     {
-        super(String.format("Invalid json for Java type %s", type), cause);
-
-        this.type = type;
-    }
-
-    /**
-     * Returns the type of object that failed Json parsing.
-     *
-     * @return object type of object that failed Json parsing
-     */
-    public Class<Object> getType()
-    {
-        return type;
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(e.getMessage())
+                .build();
     }
 }

@@ -1,5 +1,3 @@
-//
-//  ValidationException.java
 /*
  * Copyright 2012 Proofpoint, Inc.
  *
@@ -17,9 +15,21 @@
  */
 package com.proofpoint.jaxrs;
 
-import java.util.List;
+import java.io.IOException;
 
-public abstract class ValidationException extends RuntimeException
+/**
+ * Exceptions that extend this class will be caught by the PlatformExceptionMapper and returned with a
+ * 400 response status code.
+ */
+public class PlatformException extends IOException
 {
-    public abstract List<String> getErrorMessages();
+    public PlatformException(String message)
+    {
+        super(message);
+    }
+
+    public PlatformException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
 }

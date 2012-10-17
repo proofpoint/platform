@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Proofpoint, Inc.
+ * Copyright 2012 Proofpoint, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,6 @@ class JsonMapper implements MessageBodyReader<Object>, MessageBodyWriter<Object>
             object = objectMapper.readValue(jsonParser, objectMapper.getTypeFactory().constructType(genericType));
         }
         catch (Exception e) {
-            // we want to return a 400 for bad JSON but not for a real IO exception
             if (e instanceof IOException && !(e instanceof JsonProcessingException) && !(e instanceof EOFException)) {
                 throw (IOException) e;
             }
@@ -139,8 +138,8 @@ class JsonMapper implements MessageBodyReader<Object>, MessageBodyWriter<Object>
             // Note: we are not logging at a higher level because this could cause a denial of service
             log.debug(e, "Invalid json for Java type %s", type);
 
-            // invalid json request
-            throw new JsonMapperParsingException("Invalid json for Java type " + type, e);
+            // Invalid json request. Throwing exception so the response code can be overridden using a mapper.
+            throw new JsonMapperParsingException(type, e);
         }
 
         // validate object using the bean validation framework

@@ -1,5 +1,3 @@
-//
-//  BeanValidationException.java
 /*
  * Copyright 2012 Proofpoint, Inc.
  *
@@ -24,17 +22,40 @@ import javax.validation.ConstraintViolation;
 import java.util.List;
 import java.util.Set;
 
-public class BeanValidationException extends ValidationException
+/**
+ * Thrown when bean validation has errors.
+ */
+public class BeanValidationException extends PlatformException
 {
     private ImmutableSet<ConstraintViolation<Object>> violations;
 
     public BeanValidationException(Set<ConstraintViolation<Object>> violations)
     {
+        super(messagesFor(violations).toString());
         this.violations = ImmutableSet.copyOf(violations);
     }
 
-    @Override
+    /**
+     * Returns the bean validation error messages.
+     *
+     * @return validation error messages
+     */
     public List<String> getErrorMessages()
+    {
+        return messagesFor(violations);
+    }
+
+    /**
+     * Returns the set of bean validation violations.
+     *
+     * @return set of bean validation violations
+     */
+    public Set<ConstraintViolation<Object>> getViolations()
+    {
+        return violations;
+    }
+
+    private static List<String> messagesFor(Set<ConstraintViolation<Object>> violations)
     {
         ImmutableList.Builder<String> messages = new ImmutableList.Builder<>();
         for (ConstraintViolation<?> violation : violations) {
