@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * Thrown when bean validation has errors.
  */
-public class BeanValidationException extends PlatformException
+public class BeanValidationException extends ParsingException
 {
     private ImmutableSet<ConstraintViolation<Object>> violations;
 

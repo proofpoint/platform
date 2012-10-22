@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Proofpoint, Inc.
+ * Copyright 2010, 2012 Proofpoint, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,8 +130,9 @@ class JsonMapper implements MessageBodyReader<Object>, MessageBodyWriter<Object>
             object = objectMapper.readValue(jsonParser, objectMapper.getTypeFactory().constructType(genericType));
         }
         catch (Exception e) {
+            // We want to handle parsing exceptions differently than regular IOExceptions so just rethrow IOExceptions
             if (e instanceof IOException && !(e instanceof JsonProcessingException) && !(e instanceof EOFException)) {
-                throw (IOException) e;
+                throw e;
             }
 
             // log the exception at debug so it can be viewed during development

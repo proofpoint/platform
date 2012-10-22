@@ -15,20 +15,21 @@
  */
 package com.proofpoint.jaxrs;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import java.io.IOException;
 
 /**
- * Maps PlatformExceptions to a 400 response code.
+ * Exceptions that extend this class will be caught by the ParsingExceptionMapper and returned with a
+ * 400 response status code.
  */
-@Provider
-public class PlatformExceptionMapper implements ExceptionMapper<PlatformException>
+public class ParsingException extends IOException
 {
-    public Response toResponse(PlatformException e)
+    public ParsingException(String message)
     {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity(e.getMessage())
-                .build();
+        super(message);
+    }
+
+    public ParsingException(String message, Throwable cause)
+    {
+        super(message, cause);
     }
 }

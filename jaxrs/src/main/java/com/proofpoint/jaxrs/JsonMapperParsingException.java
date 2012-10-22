@@ -18,11 +18,11 @@ package com.proofpoint.jaxrs;
 /**
  * Wraps JsonProcessingExceptions to provide more information about parsing errors.
  */
-public class JsonMapperParsingException extends PlatformException
+public class JsonMapperParsingException extends ParsingException
 {
-    private Class<Object> type;
+    private Class<?> type;
 
-    public JsonMapperParsingException(Class<Object> type, Throwable cause)
+    public JsonMapperParsingException(Class<?> type, Throwable cause)
     {
         super(String.format("Invalid json for Java type %s", type), cause);
 
@@ -34,7 +34,7 @@ public class JsonMapperParsingException extends PlatformException
      *
      * @return object type of object that failed Json parsing
      */
-    public Class<Object> getType()
+    public Class<?> getType()
     {
         return type;
     }
