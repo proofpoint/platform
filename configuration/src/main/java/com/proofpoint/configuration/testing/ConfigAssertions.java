@@ -138,17 +138,16 @@ public final class ConfigAssertions
 
     private static boolean isPropertyTested(String property, AttributeMetadata attribute, Set<String> testedProperties)
     {
-        boolean isTested = false;
         final ConfigMap configMap = attribute.getConfigMap();
         if (configMap == null) {
-            isTested = testedProperties.contains(property);
+            return testedProperties.contains(property);
         }
-        else if (isConfigClass(configMap.value())) {
+        if (isConfigClass(configMap.value())) {
             for (String testedProperty : testedProperties) {
                 if (testedProperty.startsWith(property) &&
                         testedProperty.charAt(property.length()) == '.' &&
                         testedProperty.substring(property.length() + 1).contains(".")) {
-                    isTested = true;
+                    return true;
                 }
             }
         }
@@ -157,11 +156,11 @@ public final class ConfigAssertions
                 if (testedProperty.startsWith(property) &&
                         testedProperty.charAt(property.length()) == '.' &&
                         !testedProperty.substring(property.length() + 1).contains(".")) {
-                    isTested = true;
+                    return true;
                 }
             }
         }
-        return isTested;
+        return false;
     }
 
     @SafeVarargs
