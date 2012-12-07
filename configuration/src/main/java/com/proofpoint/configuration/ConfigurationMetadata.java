@@ -96,7 +96,7 @@ public class ConfigurationMetadata<T>
             }
         }
 
-        // verify there is a public no-arg constructor
+        // verify there is a no-arg constructor
         Constructor<T> constructor = null;
         try {
             constructor = configClass.getDeclaredConstructor();
