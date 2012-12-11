@@ -51,6 +51,8 @@ public class EventJsonSerializer
             return InetAddress.getLocalHost().getHostName();
         }
         catch (UnknownHostException e) {
+            // Java 7u5 and later on MacOS sometimes throws this unless the local hostname is in DNS
+            // or hosts file. The exception message is the hostname followed by a colon and an error message.
             final Matcher matcher = HOST_EXCEPTION_MESSAGE_PATTERN.matcher(e.getMessage());
             if (matcher.matches()) {
                 return matcher.group(1);
