@@ -1,3 +1,16 @@
+Platform 0.71
+
+* BETA: Bootstrap for testing
+
+The Bootstrap class performs may initialization tasks for servers, but when
+testing not all installation tasks are desired.  Specifically, the Bootstrap
+class loads configuration properties from a file specified using System
+property.  The new setConfigurationProperty and setConfigurationProperties
+have been added to supply the properties directly.  Another, problematic
+task is logging initialization, which can now be disabled with the new
+doNotInitializeLogging() method.  For an example of a Bootstrap test see
+com.proofpoint.platform.sample.TestServer.
+
 Platform 0.70
 
 * Upgrade Jackson to 2.1.3
