@@ -32,6 +32,7 @@ public @interface EventField
         DATA,
         HOST,
         TIMESTAMP,
+        TRACETOKEN,
         UUID;
 
         public String getFieldName()

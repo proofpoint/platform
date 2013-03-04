@@ -64,7 +64,7 @@ final class EventTypeMetadata<T>
 
     public static <T> EventTypeMetadata<T> getEventTypeMetadata(Class<T> eventClass)
     {
-        return new EventTypeMetadata<T>(eventClass, Lists.<String>newArrayList(), Maps.<Class<?>, EventTypeMetadata<?>>newHashMap(), false);
+        return new EventTypeMetadata<>(eventClass, Lists.<String>newArrayList(), Maps.<Class<?>, EventTypeMetadata<?>>newHashMap(), false);
     }
 
     private final Class<T> eventClass;
@@ -72,6 +72,7 @@ final class EventTypeMetadata<T>
     private final EventFieldMetadata uuidField;
     private final EventFieldMetadata timestampField;
     private final EventFieldMetadata hostField;
+    private final EventFieldMetadata tracetokenField;
     private final List<EventFieldMetadata> fields;
     private final List<String> errors;
 
@@ -195,6 +196,7 @@ final class EventTypeMetadata<T>
         this.uuidField = getFirst(specialFields.get(EventFieldMapping.UUID), null);
         this.timestampField = getFirst(specialFields.get(EventFieldMapping.TIMESTAMP), null);
         this.hostField = getFirst(specialFields.get(EventFieldMapping.HOST), null);
+        this.tracetokenField = getFirst(specialFields.get(EventFieldMapping.TRACETOKEN), null);
 
         this.fields = Ordering.from(EventFieldMetadata.NAME_COMPARATOR).immutableSortedCopy(fields.values());
 
@@ -381,6 +383,11 @@ final class EventTypeMetadata<T>
     public EventFieldMetadata getHostField()
     {
         return hostField;
+    }
+
+    public EventFieldMetadata getTracetokenField()
+    {
+        return tracetokenField;
     }
 
     public List<EventFieldMetadata> getFields()
