@@ -64,7 +64,6 @@ public class Bootstrap
 {
     private final Logger log = Logger.get(Bootstrap.class);
     private final Module[] modules;
-    static private Timer warningsSenderTimer = null;
 
     public Bootstrap(Module... modules)
     {
@@ -174,7 +173,7 @@ public class Bootstrap
         // Report config warnings
         if (!warnings.isEmpty()) {
             final EventClient eventClient = injector.getInstance(EventClient.class);
-            warningsSenderTimer = new Timer("config-warnings-sender", true);
+            Timer warningsSenderTimer = new Timer("config-warnings-sender", true);
             warningsSenderTimer.scheduleAtFixedRate(new TimerTask()
             {
                 @Override
@@ -183,6 +182,7 @@ public class Bootstrap
                     eventClient.post(new ConfigWarningsEvent(warnings));
                 }
             }, 0, 24 * 60 * 60 * 1000);
+            lifeCycleManager.addInstance(warningsSenderTimer);
         }
 
         return injector;
