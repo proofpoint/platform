@@ -87,7 +87,7 @@ class EventJsonSerializer<T>
             eventTypeMetadata.getTracetokenField().writeField(jsonGenerator, event);
         }
         else if (token != null) {
-            jsonGenerator.writeFieldName("tracetoken");
+            jsonGenerator.writeFieldName("traceToken");
             EventDataType.STRING.writeFieldValue(jsonGenerator, token);
         }
 

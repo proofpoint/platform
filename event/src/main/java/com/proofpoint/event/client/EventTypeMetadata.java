@@ -196,7 +196,7 @@ final class EventTypeMetadata<T>
         this.uuidField = getFirst(specialFields.get(EventFieldMapping.UUID), null);
         this.timestampField = getFirst(specialFields.get(EventFieldMapping.TIMESTAMP), null);
         this.hostField = getFirst(specialFields.get(EventFieldMapping.HOST), null);
-        this.tracetokenField = getFirst(specialFields.get(EventFieldMapping.TRACETOKEN), null);
+        this.tracetokenField = getFirst(specialFields.get(EventFieldMapping.TRACE_TOKEN), null);
 
         this.fields = Ordering.from(EventFieldMetadata.NAME_COMPARATOR).immutableSortedCopy(fields.values());
 
