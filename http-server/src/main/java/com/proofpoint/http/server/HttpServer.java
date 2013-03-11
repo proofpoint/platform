@@ -267,7 +267,6 @@ public class HttpServer
             throws IOException
     {
         // TODO: use custom (more easily-parseable) format
-        // TODO: make retention & rotation configurable
         RequestLogHandler logHandler = new RequestLogHandler();
 
         File logFile = new File(config.getLogPath());
@@ -280,7 +279,7 @@ public class HttpServer
             throw new IOException(format("Cannot create %s and path does not already exist", logPath.getAbsolutePath()));
         }
 
-        RequestLog requestLog = new DelimitedRequestLog(config.getLogPath(), (int) config.getLogRetentionTime().convertTo(TimeUnit.DAYS), tokenManager, eventClient);
+        RequestLog requestLog = new DelimitedRequestLog(config.getLogPath(), config.getLogMaxHistory(), config.getLogMaxSegmentSize().toBytes(), tokenManager, eventClient);
         logHandler.setRequestLog(requestLog);
 
         return logHandler;
