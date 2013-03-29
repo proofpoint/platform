@@ -23,8 +23,13 @@ import com.google.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.util.Map.Entry;
 
 import static com.proofpoint.platform.sample.PersonWithSelf.from;
 
@@ -43,11 +48,12 @@ public class PersonsResource
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listAll()
+    public Response listAll(@Context UriInfo uriInfo)
     {
         Builder<PersonWithSelf> builder = ImmutableList.builder();
-        for (Person person : store.getAll()) {
-            builder.add(from(person, null));
+        for (Entry<String, Person> entry : store.getAll()) {
+            URI self = UriBuilder.fromUri(uriInfo.getRequestUri()).path(entry.getKey()).build();
+            builder.add(from(entry.getValue(), self));
         }
         return Response.ok(builder.build()).build();
     }

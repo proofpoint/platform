@@ -16,17 +16,19 @@
 package com.proofpoint.platform.sample;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.proofpoint.event.client.InMemoryEventClient;
 import com.proofpoint.units.Duration;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.platform.sample.PersonEvent.personAdded;
 import static com.proofpoint.platform.sample.PersonEvent.personRemoved;
 import static com.proofpoint.platform.sample.PersonEvent.personUpdated;
-import static java.util.Arrays.asList;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
@@ -126,11 +128,18 @@ public class TestPersonStore
     {
         PersonStore store = new PersonStore(new StoreConfig(), new InMemoryEventClient());
 
-        store.put("foo", new Person("foo@example.com", "Mr Foo"));
-        store.put("bar", new Person("bar@example.com", "Mr Bar"));
+        ImmutableMap<String, Person> expected = ImmutableMap.of(
+                "foo", new Person("foo@example.com", "Mr Foo"),
+                "bar", new Person("bar@example.com", "Mr Bar"));
 
-        assertEquals(store.getAll().size(), 2);
-        assertEquals(store.getAll(), asList(new Person("foo@example.com", "Mr Foo"), new Person("bar@example.com", "Mr Bar")));
+        for (Entry<String, Person> entry : expected.entrySet()) {
+            store.put(entry.getKey(), entry.getValue());
+        }
+
+        Builder<String,Person> builder = ImmutableMap.builder();
+        for (Entry<String, Person> entry : store.getAll()) {
+            builder.put(entry);
+        }
+        assertEquals(builder.build(), expected);
     }
-
 }

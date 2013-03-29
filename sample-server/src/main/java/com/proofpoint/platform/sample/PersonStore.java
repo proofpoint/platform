@@ -25,6 +25,7 @@ import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 
 import java.util.Collection;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -97,8 +98,8 @@ public class PersonStore
         return removedPerson != null;
     }
 
-    public Collection<Person> getAll()
+    public Collection<Entry<String,Person>> getAll()
     {
-        return ImmutableList.copyOf(persons.values());
+        return ImmutableList.copyOf(persons.entrySet());
     }
 }
