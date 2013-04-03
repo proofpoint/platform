@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.google.common.base.Throwables.propagate;
+import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static org.testng.Assert.assertEquals;
 
 public class JsonTester
@@ -49,6 +50,11 @@ public class JsonTester
         catch (IOException e) {
             throw propagate(e);
         }
+    }
+
+    public static <T> T decodeJson(Class<T> tClass, Object value)
+    {
+        return decodeJson(jsonCodec(tClass), value);
     }
 
     public static <T> T decodeJson(JsonCodec<T> codec, Object value)
