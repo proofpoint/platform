@@ -26,10 +26,7 @@ import com.proofpoint.http.server.HttpServerInfo;
 import com.proofpoint.http.server.TheServlet;
 
 import javax.servlet.Filter;
-import com.proofpoint.discovery.client.AnnouncementHttpServerInfo;
-import com.proofpoint.http.server.HttpServer;
-import com.proofpoint.http.server.HttpServerConfig;
-import com.proofpoint.http.server.HttpServerInfo;
+import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.http.server.LocalAnnouncementHttpServerInfo;
 
 public class TestingHttpServerModule

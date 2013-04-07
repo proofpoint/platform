@@ -23,8 +23,8 @@ import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
-import com.proofpoint.discovery.client.ServiceAnnouncement;
-import com.proofpoint.discovery.client.ServiceAnnouncement.ServiceAnnouncementBuilder;
+import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
+import com.proofpoint.discovery.client.announce.ServiceAnnouncement.ServiceAnnouncementBuilder;
 import com.proofpoint.http.server.HttpServerInfo;
 import com.proofpoint.http.server.TheAdminServlet;
 import com.proofpoint.node.NodeInfo;
@@ -37,7 +37,7 @@ import java.util.Map;
 
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
-import static com.proofpoint.discovery.client.ServiceAnnouncement.serviceAnnouncement;
+import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
 
 public class JmxHttpRpcModule implements Module
 {
