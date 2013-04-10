@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  * http://www.research.att.com/people/Cormode_Graham/library/publications/CormodeShkapenyukSrivastavaXu09.pdf
  * to not have to rely on a timer that decays the value periodically
  */
-public class DecayCounter
+public final class DecayCounter
 {
     // needs to be such that Math.exp(alpha * seconds) does not grow too big
     static final long RESCALE_THRESHOLD_SECONDS = 50;
