@@ -36,7 +36,12 @@ public final class DecayCounter
         landmarkInSeconds = getTickInSeconds();
     }
 
-    public synchronized void add(long value)
+    public void add(long value)
+    {
+        add((double) value);
+    }
+
+    public synchronized void add(double value)
     {
         long nowInSeconds = getTickInSeconds();
 
