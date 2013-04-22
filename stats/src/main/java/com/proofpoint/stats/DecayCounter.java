@@ -5,6 +5,8 @@ import org.weakref.jmx.Managed;
 
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /*
  * A counter that decays exponentially. Values are weighted according to the formula
  *     w(t, α) = e^(-α * t), where α is the decay factor and t is the age in seconds
@@ -22,7 +24,7 @@ public final class DecayCounter
     private final Ticker ticker;
 
     private long landmarkInSeconds;
-    private double count;
+    private double count = 0.0;
 
     public DecayCounter(double alpha)
     {
@@ -31,6 +33,7 @@ public final class DecayCounter
 
     public DecayCounter(double alpha, Ticker ticker)
     {
+        checkArgument(alpha > 0.0, "alpha is non-positive");
         this.alpha = alpha;
         this.ticker = ticker;
         landmarkInSeconds = getTickInSeconds();
