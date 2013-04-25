@@ -86,7 +86,8 @@ public class ConfigurationValidator
                 }
 
                 @Override
-                public Void visit(PrivateElements privateElements) {
+                public Void visit(PrivateElements privateElements)
+                {
                     for (Element element : privateElements.getElements()) {
                         element.acceptVisitor(this);
                     }
