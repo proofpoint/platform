@@ -41,7 +41,7 @@ public class HttpClientBinder
         return new HttpClientBinder(binder, binder);
     }
 
-    public static HttpClientBinder httpClientBinder(Binder privateBinder, Binder rootBinder)
+    public static HttpClientBinder httpClientPrivateBinder(Binder privateBinder, Binder rootBinder)
     {
         return new HttpClientBinder(privateBinder, rootBinder);
     }

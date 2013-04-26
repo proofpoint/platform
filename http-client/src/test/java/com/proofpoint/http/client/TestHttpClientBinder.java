@@ -173,7 +173,7 @@ public class TestHttpClientBinder
                     {
                         newExporter(binder).export(ManagedClass.class);
                         PrivateBinder privateBinder = binder.newPrivateBinder();
-                        httpClientBinder(privateBinder, binder).bindHttpClient("foo", FooClient.class);
+                        HttpClientBinder.httpClientPrivateBinder(privateBinder, binder).bindHttpClient("foo", FooClient.class);
                         privateBinder.bind(ExposeHttpClient.class);
                         privateBinder.expose(ExposeHttpClient.class);
                     }
@@ -194,7 +194,7 @@ public class TestHttpClientBinder
                     {
                         newExporter(binder).export(ManagedClass.class);
                         PrivateBinder privateBinder = binder.newPrivateBinder();
-                        httpClientBinder(privateBinder, binder).bindAsyncHttpClient("foo", FooClient.class);
+                        HttpClientBinder.httpClientPrivateBinder(privateBinder, binder).bindAsyncHttpClient("foo", FooClient.class);
                         privateBinder.bind(ExposeHttpClient.class);
                         privateBinder.expose(ExposeHttpClient.class);
                     }
