@@ -43,6 +43,14 @@ jax-rs is no longer required.
 
 * Temporarily allow the characters .:=,- in event names once again.
 
+* Library upgrades
+
+  - Jersey 1.17.1
+
+* Maven plugin upgrades
+
+  - maven-duplicate-finder-plugin 1.0.4
+
 Platform 0.70
 
 * Upgrade Jackson to 2.1.3
