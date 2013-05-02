@@ -15,15 +15,16 @@
  */
 package com.proofpoint.platform.sample;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Iterables;
 import com.proofpoint.event.client.InMemoryEventClient;
+import com.proofpoint.platform.sample.PersonStore.StoreEntry;
 import com.proofpoint.units.Duration;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.Map.Entry;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.platform.sample.PersonEvent.personAdded;
@@ -128,18 +129,30 @@ public class TestPersonStore
     {
         PersonStore store = new PersonStore(new StoreConfig(), new InMemoryEventClient());
 
-        ImmutableMap<String, Person> expected = ImmutableMap.of(
-                "foo", new Person("foo@example.com", "Mr Foo"),
-                "bar", new Person("bar@example.com", "Mr Bar"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
+        store.put("bar", new Person("bar@example.com", "Mr Bar"));
 
-        for (Entry<String, Person> entry : expected.entrySet()) {
-            store.put(entry.getKey(), entry.getValue());
-        }
+        Collection<StoreEntry> entries = store.getAll();
+        assertEquals(entries.size(), 2);
 
-        Builder<String,Person> builder = ImmutableMap.builder();
-        for (Entry<String, Person> entry : store.getAll()) {
-            builder.put(entry);
-        }
-        assertEquals(builder.build(), expected);
+        StoreEntry fooEntry = Iterables.find(entries, new Predicate<StoreEntry>()
+        {
+            @Override
+            public boolean apply(StoreEntry input)
+            {
+                return input.getId().equals("foo");
+            }
+        });
+        assertEquals(fooEntry.getPerson(), new Person("foo@example.com", "Mr Foo"));
+
+        StoreEntry barEntry = Iterables.find(entries, new Predicate<StoreEntry>()
+        {
+            @Override
+            public boolean apply(StoreEntry input)
+            {
+                return input.getId().equals("bar");
+            }
+        });
+        assertEquals(barEntry.getPerson(), new Person("bar@example.com", "Mr Bar"));
     }
 }

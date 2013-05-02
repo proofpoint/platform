@@ -19,6 +19,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.inject.Inject;
+import com.proofpoint.platform.sample.PersonStore.StoreEntry;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -29,7 +30,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.util.Map.Entry;
 
 import static com.proofpoint.platform.sample.PersonWithSelf.from;
 
@@ -51,9 +51,9 @@ public class PersonsResource
     public Response listAll(@Context UriInfo uriInfo)
     {
         Builder<PersonWithSelf> builder = ImmutableList.builder();
-        for (Entry<String, Person> entry : store.getAll()) {
-            URI self = UriBuilder.fromUri(uriInfo.getRequestUri()).path(entry.getKey()).build();
-            builder.add(from(entry.getValue(), self));
+        for (StoreEntry entry : store.getAll()) {
+            URI self = UriBuilder.fromUri(uriInfo.getRequestUri()).path(entry.getId()).build();
+            builder.add(from(entry.getPerson(), self));
         }
         return Response.ok(builder.build()).build();
     }
