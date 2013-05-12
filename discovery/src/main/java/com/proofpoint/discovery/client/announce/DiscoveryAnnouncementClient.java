@@ -13,31 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofpoint.event.client;
+package com.proofpoint.discovery.client.announce;
 
-import static java.lang.String.format;
+import com.google.common.util.concurrent.CheckedFuture;
+import com.proofpoint.discovery.client.DiscoveryException;
+import com.proofpoint.units.Duration;
 
-// TODO move to discovery client?
-public class ServiceUnavailableException
-    extends RuntimeException
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+public interface DiscoveryAnnouncementClient
 {
-    private final String service;
-    private final String pool;
+    Duration DEFAULT_DELAY = new Duration(10, TimeUnit.SECONDS);
 
-    public ServiceUnavailableException(String type, String pool)
-    {
-        super(format("Service type=[%s], pool=[%s] is not available", type, pool));
-        this.service = type;
-        this.pool = pool;
-    }
+    CheckedFuture<Duration, DiscoveryException> announce(Set<ServiceAnnouncement> services);
 
-    public String getType()
-    {
-        return service;
-    }
-
-    public String getPool()
-    {
-        return pool;
-    }
+    CheckedFuture<Void, DiscoveryException> unannounce();
 }

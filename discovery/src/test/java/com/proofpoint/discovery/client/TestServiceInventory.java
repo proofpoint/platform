@@ -15,144 +15,102 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
-import com.proofpoint.http.client.ApacheHttpClient;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.node.NodeInfo;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.testng.Assert;
+import org.mockito.ArgumentCaptor;
 import org.testng.annotations.Test;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.URI;
+import java.util.Set;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.testng.Assert.assertEquals;
+
+@SuppressWarnings({"unchecked", "deprecation"})
 public class TestServiceInventory
 {
     @Test
     public void testNullServiceInventory()
             throws Exception
     {
+        HttpServiceBalancerImpl balancer = mock(HttpServiceBalancerImpl.class);
         ServiceInventory serviceInventory = new ServiceInventory(new ServiceInventoryConfig(),
+                new DiscoveryClientConfig(), new NodeInfo("test"),
+                JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
+                balancer);
+
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
+        serviceInventory.updateServiceInventory();
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
+
+        verify(balancer, never()).updateHttpUris(any(Set.class));
+    }
+
+    @Test
+    public void testDeprecatedServiceInventory()
+            throws Exception
+    {
+        HttpServiceBalancerImpl balancer = mock(HttpServiceBalancerImpl.class);
+        ServiceInventory serviceInventory = new ServiceInventory(new ServiceInventoryConfig(),
+                new DiscoveryClientConfig().setDiscoveryServiceURI(URI.create("https://example.com:4111")),
                 new NodeInfo("test"),
                 JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
-                new ApacheHttpClient());
+                balancer);
 
-        Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
+        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
+        verify(balancer).updateHttpUris(captor.capture());
+        assertEquals(Iterables.size(captor.getValue()), 1);
+
+        URI uri = (URI) Iterables.getOnlyElement(captor.getValue());
+        assertEquals(uri, URI.create("https://example.com:4111"));
+
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
         serviceInventory.updateServiceInventory();
-        Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
+    }
+
+    public TestServiceInventory()
+    {
+        super();
     }
 
     @Test
     public void testFileServiceInventory()
             throws Exception
     {
+        HttpServiceBalancerImpl balancer = mock(HttpServiceBalancerImpl.class);
         ServiceInventoryConfig serviceInventoryConfig = new ServiceInventoryConfig()
                 .setServiceInventoryUri(Resources.getResource("service-inventory.json").toURI());
 
         ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
+                new DiscoveryClientConfig().setDiscoveryServiceURI(URI.create("http://example.com:4111")),
                 new NodeInfo("test"),
                 JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
-                new ApacheHttpClient());
+                balancer);
 
-        Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
-        Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
-        Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 3);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
+
+        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
+        verify(balancer).updateHttpUris(captor.capture());
+        ImmutableSet<URI> expectedUris = ImmutableSet.of(URI.create("http://localhost:8411"), URI.create("http://localhost:8412"));
+        assertEquals(captor.getValue(), expectedUris);
+
         serviceInventory.updateServiceInventory();
-        Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
-        Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
-        Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
-    }
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 3);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
 
-    @Test
-    public void testHttpServiceInventory()
-            throws Exception
-    {
-        String serviceInventoryJson = Resources.toString(Resources.getResource("service-inventory.json"), Charsets.UTF_8);
-
-        Server server = null;
-        try {
-            int port;
-            ServerSocket socket = new ServerSocket();
-            try {
-                socket.bind(new InetSocketAddress(0));
-                port = socket.getLocalPort();
-            }
-            finally {
-                socket.close();
-            }
-            URI baseURI = new URI("http", null, "127.0.0.1", port, null, null, null);
-
-            server = new Server();
-            server.setSendServerVersion(false);
-
-            SelectChannelConnector httpConnector;
-            httpConnector = new SelectChannelConnector();
-            httpConnector.setName("http");
-            httpConnector.setPort(port);
-            server.addConnector(httpConnector);
-
-            ServletHolder servletHolder = new ServletHolder(new ServiceInventoryServlet(serviceInventoryJson));
-            ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-            context.addServlet(servletHolder, "/*");
-            HandlerCollection handlers = new HandlerCollection();
-            handlers.addHandler(context);
-            server.setHandler(handlers);
-
-            server.start();
-
-
-            // test
-            ServiceInventoryConfig serviceInventoryConfig = new ServiceInventoryConfig()
-                    .setServiceInventoryUri(baseURI);
-
-            ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
-                    new NodeInfo("test"),
-                    JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
-                    new ApacheHttpClient());
-
-            Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
-            Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
-            Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
-            serviceInventory.updateServiceInventory();
-            Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
-            Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
-            Assert.assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
-        }
-        finally {
-            if (server != null) {
-                server.stop();
-            }
-        }
-    }
-
-    private class ServiceInventoryServlet extends HttpServlet
-    {
-        private final byte[] serviceInventory;
-
-        private ServiceInventoryServlet(String serviceInventory)
-        {
-            this.serviceInventory = serviceInventory.getBytes(Charsets.UTF_8);
-        }
-
-        @Override
-        protected void doGet(HttpServletRequest request, HttpServletResponse response)
-                throws ServletException, IOException
-        {
-            response.setHeader("Content-Type", "application/json");
-            response.setStatus(200);
-            response.getOutputStream().write(serviceInventory);
-        }
+        verify(balancer, times(2)).updateHttpUris(captor.capture());
+        assertEquals(captor.getValue(), expectedUris);
     }
 }

@@ -16,15 +16,16 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
-import com.proofpoint.http.client.HttpClient;
-import com.proofpoint.http.client.Request.Builder;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
+import com.proofpoint.discovery.client.balancing.HttpServiceUpdaterAdapter;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
@@ -43,9 +44,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseHandler;
-import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 public class ServiceInventory
@@ -55,41 +56,46 @@ public class ServiceInventory
     private final String environment;
     private final URI serviceInventoryUri;
     private final Duration updateInterval;
-    private final NodeInfo nodeInfo;
     private final JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec;
-    private final HttpClient httpClient;
+    private final ServiceDescriptorsUpdateable discoveryUpdateable;
 
     private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<List<ServiceDescriptor>>(ImmutableList.<ServiceDescriptor>of());
     private final ScheduledExecutorService executorService = newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("service-inventory-%s").setDaemon(true).build());
     private final AtomicBoolean serverUp = new AtomicBoolean(true);
-    private ScheduledFuture<?> scheduledFuture;
+    private ScheduledFuture<?> scheduledFuture = null;
 
     @Inject
-    public ServiceInventory(ServiceInventoryConfig config,
+    public ServiceInventory(ServiceInventoryConfig serviceInventoryConfig,
+            DiscoveryClientConfig discoveryClientConfig,
             NodeInfo nodeInfo,
             JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec,
-            @ForDiscoveryClient HttpClient httpClient)
+            @ServiceType("discovery") HttpServiceBalancerImpl discoveryBalancer)
     {
-        Preconditions.checkNotNull(config, "config is null");
-        Preconditions.checkNotNull(nodeInfo, "nodeInfo is null");
-        Preconditions.checkNotNull(serviceDescriptorsCodec, "serviceDescriptorsCodec is null");
-        Preconditions.checkNotNull(httpClient, "httpClient is null");
+        checkNotNull(serviceInventoryConfig, "serviceInventoryConfig is null");
+        checkNotNull(discoveryClientConfig, "discoveryClientConfig is null");
+        checkNotNull(serviceDescriptorsCodec, "serviceDescriptorsCodec is null");
+        checkNotNull(discoveryBalancer, "discoveryBalancer is null");
 
-        this.nodeInfo = nodeInfo;
         this.environment = nodeInfo.getEnvironment();
-        this.serviceInventoryUri = config.getServiceInventoryUri();
-        updateInterval = config.getUpdateInterval();
+        this.serviceInventoryUri = serviceInventoryConfig.getServiceInventoryUri();
+        updateInterval = serviceInventoryConfig.getUpdateInterval();
         this.serviceDescriptorsCodec = serviceDescriptorsCodec;
-        this.httpClient = httpClient;
+        this.discoveryUpdateable = new HttpServiceUpdaterAdapter(discoveryBalancer);
 
         if (serviceInventoryUri != null) {
             String scheme = serviceInventoryUri.getScheme().toLowerCase();
-            Preconditions.checkArgument(scheme.equals("http") || scheme.equals("https") || scheme.equals("file"), "Service inventory uri must have a http, https, or file scheme");
+            checkArgument(scheme.equals("file"), "Service inventory uri must have a file scheme");
 
             try {
                 updateServiceInventory();
             }
             catch (Exception ignored) {
+            }
+        }
+        else {
+            @SuppressWarnings("deprecation") URI uri = discoveryClientConfig.getDiscoveryServiceURI();
+            if (uri != null) {
+                discoveryBalancer.updateHttpUris(ImmutableSet.of(uri));
             }
         }
     }
@@ -163,17 +169,9 @@ public class ServiceInventory
 
         try {
             ServiceDescriptorsRepresentation serviceDescriptorsRepresentation;
-            if (serviceInventoryUri.getScheme().toLowerCase().startsWith("http")) {
-                Builder requestBuilder = prepareGet()
-                        .setUri(serviceInventoryUri)
-                        .setHeader("User-Agent", nodeInfo.getNodeId());
-                serviceDescriptorsRepresentation = httpClient.execute(requestBuilder.build(), createJsonResponseHandler(serviceDescriptorsCodec));
-            }
-            else {
-                File file = new File(serviceInventoryUri);
-                String json = Files.toString(file, Charsets.UTF_8);
-                serviceDescriptorsRepresentation = serviceDescriptorsCodec.fromJson(json);
-            }
+            File file = new File(serviceInventoryUri);
+            String json = Files.toString(file, Charsets.UTF_8);
+            serviceDescriptorsRepresentation = serviceDescriptorsCodec.fromJson(json);
 
             if (!environment.equals(serviceDescriptorsRepresentation.getEnvironment())) {
                 logServerError("Expected environment to be %s, but was %s", environment, serviceDescriptorsRepresentation.getEnvironment());
@@ -182,6 +180,14 @@ public class ServiceInventory
             List<ServiceDescriptor> descriptors = newArrayList(serviceDescriptorsRepresentation.getServiceDescriptors());
             Collections.shuffle(descriptors);
             serviceDescriptors.set(ImmutableList.copyOf(descriptors));
+            discoveryUpdateable.updateServiceDescriptors(Collections2.filter(descriptors, new Predicate<ServiceDescriptor>()
+            {
+                @Override
+                public boolean apply(ServiceDescriptor input)
+                {
+                    return "discovery".equals(input.getType());
+                }
+            }));
 
             if (serverUp.compareAndSet(false, true)) {
                 log.info("ServiceInventory connect succeeded");

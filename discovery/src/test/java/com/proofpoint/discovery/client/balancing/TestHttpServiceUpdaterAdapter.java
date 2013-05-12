@@ -13,34 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofpoint.discovery.client;
+package com.proofpoint.discovery.client.balancing;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.proofpoint.discovery.client.ServiceDescriptor;
+import com.proofpoint.discovery.client.ServiceDescriptorsUpdater;
+import com.proofpoint.discovery.client.ServiceSelectorConfig;
+import com.proofpoint.discovery.client.ServiceState;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.discovery.client.testing.InMemoryDiscoveryClient;
 import com.proofpoint.node.NodeInfo;
-import com.proofpoint.testing.Assertions;
+import org.mockito.ArgumentCaptor;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.net.URI;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-public class TestCachingServiceSelector
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+public class TestHttpServiceUpdaterAdapter
 {
-    private static final ServiceDescriptor APPLE_1_SERVICE = new ServiceDescriptor(UUID.randomUUID(), "node-A", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("a", "apple"));
-    private static final ServiceDescriptor APPLE_2_SERVICE = new ServiceDescriptor(UUID.randomUUID(), "node-B", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("a", "apple"));
-    private static final ServiceDescriptor DIFFERENT_TYPE = new ServiceDescriptor(UUID.randomUUID(), "node-A", "banana", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("b", "banana"));
-    private static final ServiceDescriptor DIFFERENT_POOL = new ServiceDescriptor(UUID.randomUUID(), "node-B", "apple", "fool", "location", ServiceState.RUNNING, ImmutableMap.of("a", "apple"));
+    private static final ServiceDescriptor APPLE_1_SERVICE = new ServiceDescriptor(UUID.randomUUID(), "node-A", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-a.example.com"));
+    private static final ServiceDescriptor APPLE_2_SERVICE = new ServiceDescriptor(UUID.randomUUID(), "node-B", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("https", "https://apple-a.example.com"));
+    private static final ServiceDescriptor DIFFERENT_TYPE = new ServiceDescriptor(UUID.randomUUID(), "node-A", "banana", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("https", "https://banana.example.com"));
+    private static final ServiceDescriptor DIFFERENT_POOL = new ServiceDescriptor(UUID.randomUUID(), "node-B", "apple", "fool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-fool.example.com"));
 
     private ScheduledExecutorService executor;
     private NodeInfo nodeInfo;
     private InMemoryDiscoveryClient discoveryClient;
-    private CachingServiceSelector serviceSelector;
+    private HttpServiceBalancerImpl httpServiceBalancer;
     private ServiceDescriptorsUpdater updater;
 
     @BeforeMethod
@@ -51,10 +62,9 @@ public class TestCachingServiceSelector
                 new ThreadFactoryBuilder().setNameFormat("Discovery-%s").setDaemon(true).build());
         nodeInfo = new NodeInfo("environment");
         discoveryClient = new InMemoryDiscoveryClient(nodeInfo);
-        serviceSelector = new CachingServiceSelector("apple",
-                new ServiceSelectorConfig().setPool("pool")
-        );
-        updater = new ServiceDescriptorsUpdater(serviceSelector, "apple",
+        httpServiceBalancer = mock(HttpServiceBalancerImpl.class);
+        updater = new ServiceDescriptorsUpdater(new HttpServiceUpdaterAdapter(httpServiceBalancer),
+                "apple",
                 new ServiceSelectorConfig().setPool("pool"),
                 discoveryClient,
                 executor);
@@ -68,16 +78,9 @@ public class TestCachingServiceSelector
     }
 
     @Test
-    public void testBasics()
-    {
-        Assert.assertEquals(serviceSelector.getType(), "apple");
-        Assert.assertEquals(serviceSelector.getPool(), "pool");
-    }
-
-    @Test
     public void testNotStartedEmpty()
     {
-        Assert.assertEquals(serviceSelector.selectAllServices(), ImmutableList.of());
+        verifyNoMoreInteractions(httpServiceBalancer);
     }
 
     @Test
@@ -86,7 +89,7 @@ public class TestCachingServiceSelector
     {
         updater.start();
 
-        Assert.assertEquals(serviceSelector.selectAllServices(), ImmutableList.of());
+        verifyNoMoreInteractions(httpServiceBalancer);
     }
 
     @Test
@@ -97,7 +100,7 @@ public class TestCachingServiceSelector
         discoveryClient.addDiscoveredService(DIFFERENT_TYPE);
         discoveryClient.addDiscoveredService(DIFFERENT_POOL);
 
-        Assert.assertEquals(serviceSelector.selectAllServices(), ImmutableList.of());
+        verifyNoMoreInteractions(httpServiceBalancer);
     }
 
     @Test
@@ -113,6 +116,9 @@ public class TestCachingServiceSelector
 
         Thread.sleep(100);
 
-        Assertions.assertEqualsIgnoreOrder(serviceSelector.selectAllServices(), ImmutableList.of(APPLE_1_SERVICE, APPLE_2_SERVICE));
+        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
+        verify(httpServiceBalancer).updateHttpUris(captor.capture());
+
+        Assert.assertEquals(captor.getValue(), ImmutableSet.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-a.example.com")));
     }
 }

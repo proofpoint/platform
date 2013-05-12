@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
 import com.proofpoint.discovery.client.HttpServiceSelector;
 import com.proofpoint.discovery.client.ServiceType;
+import com.proofpoint.http.client.balancing.ServiceUnavailableException;
 import com.proofpoint.http.client.AsyncHttpClient;
 import com.proofpoint.http.client.BodyGenerator;
 import com.proofpoint.http.client.Request;
@@ -117,7 +118,7 @@ public class HttpEventClient
         List<URI> uris = serviceSelector.selectHttpService();
 
         if (uris.isEmpty()) {
-            return Futures.<Void, RuntimeException>immediateFailedCheckedFuture(new ServiceUnavailableException(serviceSelector.getType(), serviceSelector.getPool()));
+            return Futures.<Void, RuntimeException>immediateFailedCheckedFuture(new ServiceUnavailableException("type=[" + serviceSelector.getType() + "], pool=[" + serviceSelector.getPool() + "]"));
         }
 
         // todo this doesn't really work due to returning the future which can fail without being retried

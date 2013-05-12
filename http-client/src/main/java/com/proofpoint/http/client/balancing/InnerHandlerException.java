@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Proofpoint, Inc.
+ * Copyright 2013 Proofpoint, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofpoint.discovery.client;
+package com.proofpoint.http.client.balancing;
 
-import java.net.URI;
-
-public interface AnnouncementHttpServerInfo
+class InnerHandlerException extends RetryException
 {
-    URI getHttpUri();
-    URI getHttpExternalUri();
-
-    URI getHttpsUri();
+    public InnerHandlerException(Exception cause)
+    {
+        super(cause);
+    }
 }

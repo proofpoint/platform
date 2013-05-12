@@ -18,6 +18,7 @@ package com.proofpoint.event.client;
 import com.google.common.base.Throwables;
 import com.google.common.io.CharStreams;
 import com.proofpoint.discovery.client.HttpServiceSelector;
+import com.proofpoint.http.client.balancing.ServiceUnavailableException;
 import com.proofpoint.discovery.client.testing.StaticHttpServiceSelector;
 import com.proofpoint.http.client.AsyncHttpClient;
 import com.proofpoint.http.client.HttpClientConfig;
@@ -67,7 +68,7 @@ public class TestHttpEventClient
     private URI baseUri;
     private AsyncHttpClient httpClient;
 
-    @Test(expectedExceptions = ServiceUnavailableException.class, expectedExceptionsMessageRegExp = ".*is not available.*")
+    @Test(expectedExceptions = ServiceUnavailableException.class, expectedExceptionsMessageRegExp = ".*has no instances.*")
     public void testFutureFailsWhenServiceUnavailable()
             throws ExecutionException, InterruptedException
     {

@@ -18,16 +18,25 @@ package com.proofpoint.discovery.client;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Binder;
 import com.google.inject.Module;
+import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
+import com.proofpoint.discovery.client.announce.Announcement;
+import com.proofpoint.discovery.client.announce.Announcer;
+import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
+import com.proofpoint.discovery.client.announce.HttpDiscoveryAnnouncementClient;
+import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
+import com.proofpoint.http.client.balancing.HttpServiceBalancer;
+import com.proofpoint.discovery.client.balancing.HttpServiceBalancerFactory;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 
-import java.net.URI;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
-import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
+import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
+import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static com.proofpoint.json.JsonCodecBinder.jsonCodecBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
@@ -36,6 +45,25 @@ public class DiscoveryModule implements Module
     @Override
     public void configure(Binder binder)
     {
+        // Binding these .toInstance() results in inexplicable NullPointerException errors during injection
+        final HttpServiceBalancerImpl discoveryBalancer = new HttpServiceBalancerImpl("discovery");
+        binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType("discovery")).toProvider(new Provider<HttpServiceBalancer>()
+        {
+            @Override
+            public HttpServiceBalancer get()
+            {
+                return discoveryBalancer;
+            }
+        }).in(Scopes.SINGLETON);
+        binder.bind(HttpServiceBalancerImpl.class).annotatedWith(serviceType("discovery")).toProvider(new Provider<HttpServiceBalancerImpl>()
+        {
+            @Override
+            public HttpServiceBalancerImpl get()
+            {
+                return discoveryBalancer;
+            }
+        }).in(Scopes.SINGLETON);
+
         // bind service inventory
         binder.bind(ServiceInventory.class).in(Scopes.SINGLETON);
         bindConfig(binder).to(ServiceInventoryConfig.class);
@@ -50,7 +78,7 @@ public class DiscoveryModule implements Module
         jsonCodecBinder(binder).bindJsonCodec(Announcement.class);
 
         // bind the http client
-        httpClientBinder(binder).bindAsyncHttpClient("discovery", ForDiscoveryClient.class);
+        discoveryBinder(binder).bindAsyncHttpClientWithBalancer(serviceType("discovery"), ForDiscoveryClient.class);
 
         // bind announcer
         binder.bind(Announcer.class).in(Scopes.SINGLETON);
@@ -59,6 +87,7 @@ public class DiscoveryModule implements Module
         Multibinder.newSetBinder(binder, ServiceAnnouncement.class);
 
         binder.bind(ServiceSelectorFactory.class).to(CachingServiceSelectorFactory.class).in(Scopes.SINGLETON);
+        binder.bind(HttpServiceBalancerFactory.class).in(Scopes.SINGLETON);
 
         newExporter(binder).export(ServiceInventory.class).withGeneratedName();
     }
@@ -68,30 +97,5 @@ public class DiscoveryModule implements Module
     public ScheduledExecutorService createDiscoveryExecutor()
     {
         return new ScheduledThreadPoolExecutor(5, new ThreadFactoryBuilder().setNameFormat("Discovery-%s").setDaemon(true).build());
-    }
-
-    @Provides
-    @ForDiscoveryClient
-    public URI getDiscoveryUri(ServiceInventory serviceInventory, DiscoveryClientConfig config)
-    {
-        Iterable<ServiceDescriptor> discovery = serviceInventory.getServiceDescriptors("discovery");
-        for (ServiceDescriptor descriptor : discovery) {
-            if (descriptor.getState() != ServiceState.RUNNING) {
-                continue;
-            }
-
-            try {
-                return new URI(descriptor.getProperties().get("https"));
-            } catch (Exception ignored) {
-            }
-            try {
-                return new URI(descriptor.getProperties().get("http"));
-            } catch (Exception ignored) {
-            }
-        }
-        if (config != null) {
-            return config.getDiscoveryServiceURI();
-        }
-        return null;
     }
 }
