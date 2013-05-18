@@ -52,6 +52,9 @@
         <!-- Default jvm size for compiler, tests etc. -->
         <platform.build.jvmsize>1024m</platform.build.jvmsize>
 
+        <!-- define the forkmode for tests. Default is 'once' -->
+        <platform.test.fork-mode>once</platform.test.fork-mode>
+
         <!-- Controls all the checkers run when building the project. -->
         <!-- Can be activated with -Dplatform.check.skip-all=true on the command line. -->
         <platform.check.skip-all>false</platform.check.skip-all>
@@ -177,6 +180,34 @@
                     </configuration>
                 </plugin>
 
+                <!-- Resource plugins should always use UTF-8 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.6</version>
+                    <configuration>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.14</version>
+                    <configuration>
+                        <!-- Work around Cobertura incompatibilty with Java 7 -->
+                        <argLine>-XX:-UseSplitVerifier</argLine>
+                        <systemPropertyVariables>
+                            <file.encoding>${project.build.sourceEncoding}</file.encoding>
+                            <sun.jnu.encoding>${project.build.sourceEncoding}</sun.jnu.encoding>
+                            <user.timezone>UTC</user.timezone>
+                            <java.awt.headless>true</java.awt.headless>
+                        </systemPropertyVariables>
+                        <forkMode>${platform.test.fork-mode}</forkMode>
+                        <runOrder>random</runOrder>
+                    </configuration>
+                </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
@@ -203,6 +234,23 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>2.4</version>
+                </plugin>
+
+                <!-- bundle up source code into jars for both the main and the test sources -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>2.2.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                                <goal>test-jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>
@@ -278,7 +326,22 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
 
             <plugin>

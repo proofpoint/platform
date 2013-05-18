@@ -1,3 +1,11 @@
+Platform 0.73
+
+* Maven plugin upgrades
+
+ - maven-resources-plugin 2.6
+ - maven-source-plugin 2.2.1
+ - maven-surefire-plugin 2.14
+
 Platform 0.72
 
 Temporarily allow event names to start with lowercase letters, etc.
