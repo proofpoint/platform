@@ -17,8 +17,8 @@ package com.proofpoint.launcher;
 
 class PidStatus
 {
-    public boolean held;
-    public Integer pid;
+    public final boolean held;
+    public final int pid;
 
     private PidStatus(boolean held, int pid)
     {
