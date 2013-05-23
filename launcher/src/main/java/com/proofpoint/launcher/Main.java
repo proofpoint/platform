@@ -258,7 +258,7 @@ public class Main
                         if (!allowSpaces && line.matches(".*[ '\"\\\\].*")) {
                             System.err.println("JVM config file line contains space or other shell metacharacter: " + line);
                             System.err.println("JVM config file format is one argument per line, no shell quoting.");
-                            System.err.println("To indicate you know what you're doing, add the comment line:");
+                            System.err.println("To indicate you know what you're doing, add before this line the comment line:");
                             System.err.println("# allow spaces");
                             System.exit(STATUS_GENERIC_ERROR);
                         }
