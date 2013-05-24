@@ -1,3 +1,8 @@
+Platform 0.74
+
+* We removed the jmx-http-rpc-experimental artifact and the JmxHttpRpcModule
+  it defined.
+
 Platform 0.73
 
 * Applications can now use Bootstrap.withApplicationDefaults() to specify
