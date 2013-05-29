@@ -15,6 +15,7 @@
  */
 package com.proofpoint.http.server.testing;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.proofpoint.event.client.EventClient;
@@ -23,6 +24,7 @@ import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
+import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.RequestStats;
 import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.node.NodeInfo;
@@ -44,14 +46,14 @@ public class TestingHttpServer extends HttpServer
 
     private final HttpServerInfo httpServerInfo;
 
-    public TestingHttpServer(HttpServerInfo httpServerInfo, NodeInfo nodeInfo, HttpServerConfig config, @TheServlet Servlet servlet, @TheServlet Map<String, String> initParameters)
+    public TestingHttpServer(HttpServerInfo httpServerInfo, NodeInfo nodeInfo, HttpServerConfig config, Servlet servlet, Map<String, String> initParameters)
             throws IOException
     {
-        this(httpServerInfo, nodeInfo, config, servlet, initParameters, ImmutableSet.<Filter>of());
+        this(httpServerInfo, nodeInfo, config, servlet, initParameters, ImmutableSet.<Filter>of(), new QueryStringFilter());
     }
 
     @Inject
-    public TestingHttpServer(HttpServerInfo httpServerInfo, NodeInfo nodeInfo, HttpServerConfig config, @TheServlet Servlet servlet, @TheServlet Map<String, String> initParameters, @TheServlet Set<Filter> filters)
+    public TestingHttpServer(HttpServerInfo httpServerInfo, NodeInfo nodeInfo, HttpServerConfig config, @TheServlet Servlet servlet, @TheServlet Map<String, String> initParameters, @TheServlet Set<Filter> filters, QueryStringFilter queryStringFilter)
             throws IOException
     {
         super(httpServerInfo,
@@ -61,11 +63,11 @@ public class TestingHttpServer extends HttpServer
                 initParameters,
                 ImmutableSet.copyOf(filters),
                 ImmutableSet.<HttpResourceBinding>of(),
-                null,
-                null,
+                ImmutableMap.<String, String>of(),
                 ImmutableSet.<Filter>of(),
                 null,
                 null,
+                queryStringFilter,
                 new TraceTokenManager(),
                 new RequestStats(),
                 new NullEventClient());
