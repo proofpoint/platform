@@ -5,6 +5,8 @@ Platform 0.74
 * We removed the jmx-http-rpc-experimental artifact and the JmxHttpRpcModule
   it defined.
 
+* We removed support for JSONP.
+
 Platform 0.73
 
 * Applications can now use Bootstrap.withApplicationDefaults() to specify
