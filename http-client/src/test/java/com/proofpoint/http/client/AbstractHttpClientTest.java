@@ -242,6 +242,24 @@ public abstract class AbstractHttpClientTest
         }
     }
 
+    public void testConnectionRefusedWithDefaultingResponseExceptionHandler()
+            throws Exception
+    {
+        ServerSocket serverSocket = new ServerSocket(0, 1);
+        int port = serverSocket.getLocalPort();
+        serverSocket.close();
+
+        HttpClientConfig config = new HttpClientConfig();
+        config.setConnectTimeout(new Duration(5, MILLISECONDS));
+
+        Request request = prepareGet()
+                .setUri(new URI(scheme, null, host, port, "/", null, null))
+                .build();
+
+        Object expected = new Object();
+        Assert.assertEquals(executeRequest(config, request, new DefaultOnExceptionResponseHandler(expected)), expected);
+    }
+
     @Test
     public void testDeleteMethod()
             throws Exception
@@ -484,9 +502,10 @@ public abstract class AbstractHttpClientTest
         String statusMessage = executeRequest(request, new ResponseHandler<String, Exception>()
         {
             @Override
-            public Exception handleException(Request request, Exception exception)
+            public String handleException(Request request, Exception exception)
+                    throws Exception
             {
-                return exception;
+                throw exception;
             }
 
             @Override
@@ -710,9 +729,10 @@ public abstract class AbstractHttpClientTest
             implements ResponseHandler<String, Exception>
     {
         @Override
-        public Exception handleException(Request request, Exception exception)
+        public String handleException(Request request, Exception exception)
+                throws Exception
         {
-            return exception;
+            throw exception;
         }
 
         @Override
@@ -727,9 +747,10 @@ public abstract class AbstractHttpClientTest
             implements ResponseHandler<Integer, Exception>
     {
         @Override
-        public Exception handleException(Request request, Exception exception)
+        public Integer handleException(Request request, Exception exception)
+                throws Exception
         {
-            return exception;
+            throw exception;
         }
 
         @Override
@@ -751,9 +772,9 @@ public abstract class AbstractHttpClientTest
         }
 
         @Override
-        public RuntimeException handleException(Request request, Exception exception)
+        public Integer handleException(Request request, Exception exception)
         {
-            return null;
+            throw (RuntimeException) exception; // TODO remove this workaround to the Netty client bug
         }
 
         @Override
@@ -771,9 +792,10 @@ public abstract class AbstractHttpClientTest
             implements ResponseHandler<ListMultimap<String, String>, Exception>
     {
         @Override
-        public Exception handleException(Request request, Exception exception)
+        public ListMultimap<String, String> handleException(Request request, Exception exception)
+                throws Exception
         {
-            return exception;
+            throw exception;
         }
 
         @Override
@@ -787,9 +809,10 @@ public abstract class AbstractHttpClientTest
     public static class CaptureExceptionResponseHandler implements ResponseHandler<String, CapturedException>
     {
         @Override
-        public CapturedException handleException(Request request, Exception exception)
+        public String handleException(Request request, Exception exception)
+                throws CapturedException
         {
-            return new CapturedException(exception);
+            throw new CapturedException(exception);
         }
 
         @Override
@@ -806,6 +829,31 @@ public abstract class AbstractHttpClientTest
         public CapturedException(Exception exception)
         {
             super(exception);
+        }
+    }
+
+    private class DefaultOnExceptionResponseHandler implements ResponseHandler<Object, RuntimeException>
+    {
+
+        private final Object defaultObject;
+
+        public DefaultOnExceptionResponseHandler(Object defaultObject)
+        {
+            this.defaultObject = defaultObject;
+        }
+
+        @Override
+        public Object handleException(Request request, Exception exception)
+                throws RuntimeException
+        {
+            return defaultObject;
+        }
+
+        @Override
+        public Object handle(Request request, Response response)
+                throws RuntimeException
+        {
+            throw new UnsupportedOperationException();
         }
     }
 }
