@@ -15,6 +15,9 @@
  */
 package com.proofpoint.http.server;
 
+import com.google.common.base.Predicate;
+
+import javax.annotation.Nullable;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -25,15 +28,34 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static com.google.common.base.Predicates.not;
+
 class AdminFilter implements Filter
 {
     private static final String ADMIN_PATH = "/admin";
     private static final String ADMIN_PATH_PREFIX = "/admin/";
-    private final boolean isAdmin;
+    private static final Predicate<String> IS_ADMIN_PATH_PREDICATE = new Predicate<String>()
+    {
+        @Override
+        public boolean apply(@Nullable String input)
+        {
+            if (input == null) {
+                return false;
+            }
+
+            return input.equals(ADMIN_PATH) || input.startsWith(ADMIN_PATH_PREFIX);
+        }
+    };
+    private final Predicate<String> forThisPortPredicate;
 
     public AdminFilter(boolean isAdmin)
     {
-        this.isAdmin = isAdmin;
+        if (isAdmin) {
+            forThisPortPredicate = IS_ADMIN_PATH_PREDICATE;
+        }
+        else {
+            forThisPortPredicate = not(IS_ADMIN_PATH_PREDICATE);
+        }
     }
 
     @Override
@@ -48,7 +70,7 @@ class AdminFilter implements Filter
     {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         String path = request.getPathInfo();
-        if (isAdmin == (path != null && (path.equals(ADMIN_PATH) || path.startsWith(ADMIN_PATH_PREFIX)))) {
+        if (forThisPortPredicate.apply(path)) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
             HttpServletResponse response = (HttpServletResponse) servletResponse;
