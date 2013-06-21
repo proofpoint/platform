@@ -46,7 +46,7 @@ public class TestFullJsonResponseHandler
         assertEquals(response.getValue().getAge(), user.getAge());
     }
 
-    @Test
+    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Invalid \\[simple type, class com.proofpoint.http.client.TestFullJsonResponseHandler\\$User] json string")
     public void testInvalidJson()
     {
         String json = "{\"age\": \"foo\"}";
@@ -55,6 +55,7 @@ public class TestFullJsonResponseHandler
         assertFalse(response.hasValue());
         assertEquals(response.getException().getMessage(),
                 "Invalid [simple type, class com.proofpoint.http.client.TestFullJsonResponseHandler$User] json string");
+        response.getValue();
     }
 
     @Test

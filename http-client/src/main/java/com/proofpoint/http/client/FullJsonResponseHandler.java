@@ -151,6 +151,9 @@ public class FullJsonResponseHandler<T> implements ResponseHandler<JsonResponse<
 
         public T getValue()
         {
+            if (exception != null) {
+                throw exception;
+            }
             Preconditions.checkState(hasValue, "Response does not contain a JSON value");
             return value;
         }
