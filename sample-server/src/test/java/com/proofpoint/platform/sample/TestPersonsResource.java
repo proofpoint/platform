@@ -25,7 +25,7 @@ import java.net.URI;
 import java.util.Collection;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.proofpoint.platform.sample.PersonWithSelf.from;
+import static com.proofpoint.platform.sample.PersonWithSelf.createPersonSelf;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static org.testng.Assert.assertEquals;
 
@@ -60,10 +60,8 @@ public class TestPersonsResource
         assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
         assertInstanceOf(response.getEntity(), Collection.class);
         assertEquals((Collection<?>) response.getEntity(), newArrayList(
-                from(new Person("foo@example.com", "Mr Foo"), URI.create("http://localhost/v1/person/foo")),
-                from(new Person("bar@example.com", "Mr Bar"), URI.create("http://localhost/v1/person/bar"))
+                createPersonSelf(new Person("foo@example.com", "Mr Foo"), URI.create("http://localhost/v1/person/foo")),
+                createPersonSelf(new Person("bar@example.com", "Mr Bar"), URI.create("http://localhost/v1/person/bar"))
         ));
     }
-
-
 }
