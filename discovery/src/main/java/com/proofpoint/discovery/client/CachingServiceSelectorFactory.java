@@ -33,6 +33,8 @@ public class CachingServiceSelectorFactory implements ServiceSelectorFactory
     {
         checkNotNull(lookupClient, "client is null");
         checkNotNull(executor, "executor is null");
+        checkNotNull(nodeInfo, "nodeInfo is null");
+
         this.lookupClient = lookupClient;
         this.executor = executor;
         this.nodeInfo = nodeInfo;
