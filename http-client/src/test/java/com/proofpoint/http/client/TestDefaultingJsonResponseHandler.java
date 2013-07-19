@@ -51,6 +51,15 @@ public class TestDefaultingJsonResponseHandler
     }
 
     @Test
+    public void testSyntacticallyInvalidJson()
+    {
+        String json = "foo";
+        User response = handler.handle(null, mockResponse(OK, JSON_UTF_8, json));
+
+        assertSame(response, DEFAULT_VALUE);
+    }
+
+    @Test
     public void testException()
     {
         User response = handler.handleException(null, null);
