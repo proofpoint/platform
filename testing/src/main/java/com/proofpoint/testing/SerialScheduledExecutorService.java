@@ -219,13 +219,13 @@ public class SerialScheduledExecutorService
     }
 
     @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(Runnable runnable, long l, long l1, TimeUnit timeUnit)
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable runnable, long initialDelay, long period, TimeUnit timeUnit)
     {
         Preconditions.checkNotNull(runnable, "Task object is null");
-        Preconditions.checkArgument(l >= 0, "Initial delay must not be negative");
-        Preconditions.checkArgument(l1 > 0, "Repeating delay must be greater than 0");
-        SerialScheduledFuture<?> future = new RecurringRunnableSerialScheduledFuture(runnable, toNanos(l, timeUnit), toNanos(l1, timeUnit));
-        if (l == 0) {
+        Preconditions.checkArgument(initialDelay >= 0, "Initial delay must not be negative");
+        Preconditions.checkArgument(period > 0, "Repeating delay must be greater than 0");
+        SerialScheduledFuture<?> future = new RecurringRunnableSerialScheduledFuture(runnable, toNanos(initialDelay, timeUnit), toNanos(period, timeUnit));
+        if (initialDelay == 0) {
             future.task.run();
 
             if (future.isFailed()) {
@@ -240,9 +240,9 @@ public class SerialScheduledExecutorService
     }
 
     @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable runnable, long l, long l1, TimeUnit timeUnit)
+    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable runnable, long initialDelay, long period, TimeUnit timeUnit)
     {
-        return scheduleAtFixedRate(runnable, l, l1, timeUnit);
+        return scheduleAtFixedRate(runnable, initialDelay, period, timeUnit);
     }
 
     class SerialScheduledFuture<T>
