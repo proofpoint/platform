@@ -153,7 +153,7 @@ public final class BalancingAsyncHttpClient implements AsyncHttpClient
                         attempt.markBad();
                         final AsyncHttpResponseFuture<T, ?> attemptFuture;
                         synchronized (subFutureLock) {
-                            HttpServiceAttempt nextAttempt = null;
+                            HttpServiceAttempt nextAttempt;
                             try {
                                 nextAttempt = attempt.next();
                             }
@@ -263,6 +263,7 @@ public final class BalancingAsyncHttpClient implements AsyncHttpClient
         public ImmediateFailedAsyncHttpResponseFuture(E exception)
         {
             this.exception = exception;
+            setException(exception);
         }
 
         @Override
