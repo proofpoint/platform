@@ -11,6 +11,7 @@ import java.net.URI;
 
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.fail;
 
 public class TestTestingHttpClient
@@ -40,7 +41,7 @@ public class TestTestingHttpClient
             fail("expected exception");
         }
         catch (CapturedException e) {
-            assertEquals(e.getCause(), expectedException);
+            assertSame(e.getCause(), expectedException);
         }
     }
 
@@ -65,7 +66,7 @@ public class TestTestingHttpClient
                     }
                 }).executeAsync(request, new DefaultExceptionResponseHandler(testingException, expectedResponse));
 
-        assertEquals(future.checkedGet(), expectedResponse);
+        assertSame(future.checkedGet(), expectedResponse);
     }
 
     public static class CaptureExceptionResponseHandler implements ResponseHandler<String, CapturedException>
