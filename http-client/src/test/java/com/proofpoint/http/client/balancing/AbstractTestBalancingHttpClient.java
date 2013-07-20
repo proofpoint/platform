@@ -20,6 +20,7 @@ import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.net.ConnectException;
@@ -180,5 +181,45 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
         verify(response).getStatusCode();
         verify(responseHandler).handle(any(Request.class), same(response));
         verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, bodyGenerator, response, responseHandler);
+    }
+
+    @Test(dataProvider = "retryStatus")
+    public void testRetryOn408Status(int retryStatus)
+            throws Exception
+    {
+        Response retryResponse = mock(Response.class);
+        when(retryResponse.getStatusCode()).thenReturn(retryStatus);
+
+        httpClient.expectCall("http://s1.example.com/v1/service", retryResponse);
+        httpClient.expectCall("http://s2.example.com/v1/service", response);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
+
+        String returnValue = balancingHttpClient.execute(request, responseHandler);
+        assertEquals(returnValue, "test response", "return value from .execute()");
+
+        httpClient.assertDone();
+
+        verify(serviceAttempt1).getUri();
+        verify(serviceAttempt1).markBad();
+        verify(serviceAttempt1).next();
+        verify(serviceAttempt2).getUri();
+        verify(serviceAttempt2).markGood();
+        verify(response).getStatusCode();
+        verify(responseHandler).handle(any(Request.class), same(response));
+        verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, bodyGenerator, response, responseHandler);
+    }
+
+    @DataProvider(name = "retryStatus")
+    public Object[][] getRetryStatus()
+    {
+        return new Object[][] {
+                new Object[] { 408 },
+                new Object[] { 500 },
+                new Object[] { 502 },
+                new Object[] { 503 },
+                new Object[] { 504 },
+        };
     }
 }
