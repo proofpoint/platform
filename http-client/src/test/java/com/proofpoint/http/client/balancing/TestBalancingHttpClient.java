@@ -47,55 +47,18 @@ public class TestBalancingHttpClient
         when(serviceAttempt3.getUri()).thenReturn(URI.create("http://s1.example.com"));
         when(serviceAttempt3.next()).thenThrow(new AssertionError("Unexpected call to serviceAttempt3.next()"));
         httpClient = new TestingHttpClient("PUT");
-        balancingHttpClient = new BalancingHttpClient(serviceBalancer, httpClient,
-                new BalancingHttpClientConfig().setMaxAttempts(3));
+        balancingHttpClient = createBalancingHttpClient();
         bodyGenerator = mock(BodyGenerator.class);
         request = preparePut().setUri(URI.create("v1/service")).setBodyGenerator(bodyGenerator).build();
         response = mock(Response.class);
         when(response.getStatusCode()).thenReturn(204);
     }
 
-    @Test
-    public void testSuccessfulQuery()
-            throws Exception
+    @Override
+    protected BalancingHttpClient createBalancingHttpClient()
     {
-        httpClient.expectCall("http://s1.example.com/v1/service", response);
-
-        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
-        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
-
-        String returnValue = balancingHttpClient.execute(request, responseHandler);
-        assertEquals(returnValue, "test response", "return value from .execute()");
-
-        httpClient.assertDone();
-
-        verify(serviceAttempt1).getUri();
-        verify(serviceAttempt1).markGood();
-        verify(response).getStatusCode();
-        verify(responseHandler).handle(any(Request.class), same(response));
-        verifyNoMoreInteractions(serviceAttempt1, bodyGenerator, response, responseHandler);
-    }
-
-    @Test
-    public void testSuccessfulQueryNullPath()
-            throws Exception
-    {
-        httpClient.expectCall("http://s1.example.com/", response);
-
-        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
-        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
-
-        request = preparePut().setUri(new URI(null, null, null, null)).setBodyGenerator(bodyGenerator).build();
-        String returnValue = balancingHttpClient.execute(request, responseHandler);
-        assertEquals(returnValue, "test response", "return value from .execute()");
-
-        httpClient.assertDone();
-
-        verify(serviceAttempt1).getUri();
-        verify(serviceAttempt1).markGood();
-        verify(response).getStatusCode();
-        verify(responseHandler).handle(any(Request.class), same(response));
-        verifyNoMoreInteractions(serviceAttempt1, bodyGenerator, response, responseHandler);
+        return new BalancingHttpClient(serviceBalancer, httpClient,
+                new BalancingHttpClientConfig().setMaxAttempts(3));
     }
 
     @Test
@@ -106,8 +69,7 @@ public class TestBalancingHttpClient
         serviceAttempt1 = mock(HttpServiceAttempt.class);
         when(serviceBalancer.createAttempt()).thenReturn(serviceAttempt1);
         when(serviceAttempt1.getUri()).thenReturn(URI.create("http://s3.example.com/prefix"));
-        balancingHttpClient = new BalancingHttpClient(serviceBalancer, httpClient,
-                new BalancingHttpClientConfig().setMaxAttempts(3));
+        balancingHttpClient = createBalancingHttpClient();
 
         httpClient.expectCall("http://s3.example.com/prefix/v1/service", response);
 
@@ -486,8 +448,7 @@ public class TestBalancingHttpClient
         RuntimeException balancerException = new RuntimeException("test balancer exception");
         when(serviceBalancer.createAttempt()).thenThrow(balancerException);
 
-        balancingHttpClient = new BalancingHttpClient(serviceBalancer, httpClient,
-                new BalancingHttpClientConfig().setMaxAttempts(3));
+        balancingHttpClient = createBalancingHttpClient();
 
         ResponseHandler responseHandler = mock(ResponseHandler.class);
         RuntimeException handlerException = new RuntimeException("test responseHandler exception");
@@ -520,8 +481,7 @@ public class TestBalancingHttpClient
         RuntimeException balancerException = new RuntimeException("test balancer exception");
         when(serviceAttempt1.next()).thenThrow(balancerException);
 
-        balancingHttpClient = new BalancingHttpClient(serviceBalancer, httpClient,
-                new BalancingHttpClientConfig().setMaxAttempts(3));
+        balancingHttpClient = createBalancingHttpClient();
 
         ResponseHandler responseHandler = mock(ResponseHandler.class);
         RuntimeException handlerException = new RuntimeException("test responseHandler exception");

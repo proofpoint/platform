@@ -19,8 +19,21 @@ import com.proofpoint.http.client.BodyGenerator;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.Response;
+import com.proofpoint.http.client.ResponseHandler;
+import org.testng.annotations.Test;
 
-public class AbstractTestBalancingHttpClient<T extends HttpClient>
+import java.net.URI;
+
+import static com.proofpoint.http.client.Request.Builder.preparePut;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
+
+public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
 {
     protected HttpServiceBalancer serviceBalancer;
     protected HttpServiceAttempt serviceAttempt1;
@@ -32,7 +45,7 @@ public class AbstractTestBalancingHttpClient<T extends HttpClient>
     protected TestingClient httpClient;
     protected Response response;
 
-    interface TestingClient
+    protected interface TestingClient
         extends HttpClient
     {
         TestingClient expectCall(String uri, Response response);
@@ -40,5 +53,50 @@ public class AbstractTestBalancingHttpClient<T extends HttpClient>
         TestingClient expectCall(String uri, Exception exception);
 
         void assertDone();
+    }
+
+    protected abstract T createBalancingHttpClient();
+
+    @Test
+    public void testSuccessfulQuery()
+            throws Exception
+    {
+        httpClient.expectCall("http://s1.example.com/v1/service", response);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
+
+        String returnValue = balancingHttpClient.execute(request, responseHandler);
+        assertEquals(returnValue, "test response", "return value from .execute()");
+
+        httpClient.assertDone();
+
+        verify(serviceAttempt1).getUri();
+        verify(serviceAttempt1).markGood();
+        verify(response).getStatusCode();
+        verify(responseHandler).handle(any(Request.class), same(response));
+        verifyNoMoreInteractions(serviceAttempt1, bodyGenerator, response, responseHandler);
+    }
+
+    @Test
+    public void testSuccessfulQueryNullPath()
+            throws Exception
+    {
+        httpClient.expectCall("http://s1.example.com/", response);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
+
+        request = preparePut().setUri(new URI(null, null, null, null)).setBodyGenerator(bodyGenerator).build();
+        String returnValue = balancingHttpClient.execute(request, responseHandler);
+        assertEquals(returnValue, "test response", "return value from .execute()");
+
+        httpClient.assertDone();
+
+        verify(serviceAttempt1).getUri();
+        verify(serviceAttempt1).markGood();
+        verify(response).getStatusCode();
+        verify(responseHandler).handle(any(Request.class), same(response));
+        verifyNoMoreInteractions(serviceAttempt1, bodyGenerator, response, responseHandler);
     }
 }
