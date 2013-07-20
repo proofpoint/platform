@@ -62,68 +62,6 @@ public class TestBalancingHttpClient
     }
 
     @Test
-    public void testSuccessOnLastTry503()
-            throws Exception
-    {
-        Response response503 = mock(Response.class);
-        when(response503.getStatusCode()).thenReturn(503);
-
-        httpClient.expectCall("http://s1.example.com/v1/service", new ConnectException());
-        httpClient.expectCall("http://s2.example.com/v1/service", response503);
-        httpClient.expectCall("http://s1.example.com/v1/service", response);
-
-        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
-        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
-
-        String returnValue = balancingHttpClient.execute(request, responseHandler);
-        assertEquals(returnValue, "test response", "return value from .execute()");
-
-        httpClient.assertDone();
-
-        verify(serviceAttempt1).getUri();
-        verify(serviceAttempt1).markBad();
-        verify(serviceAttempt1).next();
-        verify(serviceAttempt2).getUri();
-        verify(serviceAttempt2).markBad();
-        verify(serviceAttempt2).next();
-        verify(serviceAttempt3).getUri();
-        verify(serviceAttempt3).markGood();
-        verify(responseHandler).handle(any(Request.class), same(response));
-        verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, serviceAttempt3, bodyGenerator, responseHandler);
-    }
-
-    @Test
-    public void testSuccessOnLastTryException()
-            throws Exception
-    {
-        Response response503 = mock(Response.class);
-        when(response503.getStatusCode()).thenReturn(503);
-
-        httpClient.expectCall("http://s1.example.com/v1/service", response503);
-        httpClient.expectCall("http://s2.example.com/v1/service", new ConnectException());
-        httpClient.expectCall("http://s1.example.com/v1/service", response);
-
-        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
-        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
-
-        String returnValue = balancingHttpClient.execute(request, responseHandler);
-        assertEquals(returnValue, "test response", "return value from .execute()");
-
-        httpClient.assertDone();
-
-        verify(serviceAttempt1).getUri();
-        verify(serviceAttempt1).markBad();
-        verify(serviceAttempt1).next();
-        verify(serviceAttempt2).getUri();
-        verify(serviceAttempt2).markBad();
-        verify(serviceAttempt2).next();
-        verify(serviceAttempt3).getUri();
-        verify(serviceAttempt3).markGood();
-        verify(responseHandler).handle(any(Request.class), same(response));
-        verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, serviceAttempt3, bodyGenerator, responseHandler);
-    }
-
-    @Test
     public void testGiveUpOnHttpClientException()
             throws Exception
     {
