@@ -29,17 +29,8 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 public class TestBalancingHttpClient
+    extends AbstractTestBalancingHttpClient<HttpClient>
 {
-    private HttpServiceBalancer serviceBalancer;
-    private HttpServiceAttempt serviceAttempt1;
-    private HttpServiceAttempt serviceAttempt2;
-    private HttpServiceAttempt serviceAttempt3;
-    private BalancingHttpClient balancingHttpClient;
-    private BodyGenerator bodyGenerator;
-    private Request request;
-    private TestingHttpClient httpClient;
-    private Response response;
-
     @BeforeMethod
     protected void setUp()
             throws Exception
@@ -600,7 +591,8 @@ public class TestBalancingHttpClient
         balancingHttpClient.execute(request, mock(ResponseHandler.class));
     }
 
-    class TestingHttpClient implements HttpClient
+    class TestingHttpClient
+            implements HttpClient, TestingClient
     {
 
         private String method;
@@ -613,12 +605,12 @@ public class TestBalancingHttpClient
             checkArgument(uris.size() == responses.size(), "uris same size as responses");
         }
 
-        TestingHttpClient expectCall(String uri, Response response)
+        public TestingHttpClient expectCall(String uri, Response response)
         {
             return expectCall(URI.create(uri), response);
         }
 
-        TestingHttpClient expectCall(String uri, Exception exception)
+        public TestingHttpClient expectCall(String uri, Exception exception)
         {
             return expectCall(URI.create(uri), exception);
         }
@@ -630,7 +622,7 @@ public class TestBalancingHttpClient
             return this;
         }
 
-        void assertDone()
+        public void assertDone()
         {
             assertEquals(uris.size(), 0, "all expected calls made");
         }
