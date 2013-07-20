@@ -16,8 +16,8 @@
 package com.proofpoint.http.server;
 
 import com.proofpoint.stats.CounterStat;
-import com.proofpoint.stats.MeterStat;
-import com.proofpoint.stats.TimedStat;
+import com.proofpoint.stats.DistributionStat;
+import com.proofpoint.stats.TimeStat;
 import com.proofpoint.units.Duration;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
@@ -28,25 +28,25 @@ import javax.inject.Inject;
 public class RequestStats
 {
     private final CounterStat request;
-    private final TimedStat requestTime;
-    private final MeterStat readBytes;
-    private final MeterStat writtenBytes;
+    private final TimeStat requestTime;
+    private final DistributionStat readBytes;
+    private final DistributionStat writtenBytes;
 
     @Inject
     public RequestStats()
     {
         request = new CounterStat();
-        requestTime = new TimedStat();
-        readBytes = new MeterStat();
-        writtenBytes = new MeterStat();
+        requestTime = new TimeStat();
+        readBytes = new DistributionStat();
+        writtenBytes = new DistributionStat();
     }
 
     public void record(String method, int responseCode, long requestSizeInBytes, long responseSizeInBytes, Duration schedulingDelay, Duration requestProcessingTime)
     {
         request.update(1);
-        requestTime.addValue(requestProcessingTime);
-        readBytes.update(requestSizeInBytes);
-        writtenBytes.update(responseSizeInBytes);
+        requestTime.add(requestProcessingTime);
+        readBytes.add(requestSizeInBytes);
+        writtenBytes.add(responseSizeInBytes);
     }
 
     @Managed
@@ -58,21 +58,21 @@ public class RequestStats
 
     @Managed
     @Nested
-    public TimedStat getRequestTime()
+    public TimeStat getRequestTime()
     {
         return requestTime;
     }
 
     @Managed
     @Nested
-    public MeterStat getReadBytes()
+    public DistributionStat getReadBytes()
     {
         return readBytes;
     }
 
     @Managed
     @Nested
-    public MeterStat getWrittenBytes()
+    public DistributionStat getWrittenBytes()
     {
         return writtenBytes;
     }
