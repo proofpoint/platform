@@ -22,6 +22,7 @@ import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
 import org.testng.annotations.Test;
 
+import java.net.ConnectException;
 import java.net.URI;
 
 import static com.proofpoint.http.client.Request.Builder.preparePut;
@@ -32,6 +33,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
+import static org.testng.Assert.fail;
 
 public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
 {
@@ -98,5 +101,84 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
         verify(response).getStatusCode();
         verify(responseHandler).handle(any(Request.class), same(response));
         verifyNoMoreInteractions(serviceAttempt1, bodyGenerator, response, responseHandler);
+    }
+
+    @Test
+    public void testSuccessfulQueryAnnouncedPrefix()
+            throws Exception
+    {
+        serviceBalancer = mock(HttpServiceBalancer.class);
+        serviceAttempt1 = mock(HttpServiceAttempt.class);
+        when(serviceBalancer.createAttempt()).thenReturn(serviceAttempt1);
+        when(serviceAttempt1.getUri()).thenReturn(URI.create("http://s3.example.com/prefix"));
+        balancingHttpClient = createBalancingHttpClient();
+
+        httpClient.expectCall("http://s3.example.com/prefix/v1/service", response);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
+
+        String returnValue = balancingHttpClient.execute(request, responseHandler);
+        assertEquals(returnValue, "test response", "return value from .execute()");
+
+        httpClient.assertDone();
+
+        verify(serviceAttempt1).getUri();
+        verify(serviceAttempt1).markGood();
+        verify(response).getStatusCode();
+        verify(responseHandler).handle(any(Request.class), same(response));
+        verifyNoMoreInteractions(serviceAttempt1, bodyGenerator, response, responseHandler);
+    }
+
+    @Test
+    public void testDoesntRetryOnHandlerException()
+            throws Exception
+    {
+        httpClient.expectCall("http://s1.example.com/v1/service", response);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        Exception testException = new Exception("test exception");
+        when(responseHandler.handle(any(Request.class), same(response))).thenThrow(testException);
+
+        try {
+            String returnValue = balancingHttpClient.execute(request, responseHandler);
+            fail("expected exception, got " + returnValue);
+        }
+        catch (Exception e) {
+            assertSame(e, testException);
+        }
+
+        httpClient.assertDone();
+
+        verify(serviceAttempt1).getUri();
+        verify(serviceAttempt1).markBad();
+        verify(response).getStatusCode();
+        verify(responseHandler).handle(any(Request.class), same(response));
+        verifyNoMoreInteractions(serviceAttempt1, bodyGenerator, response, responseHandler);
+    }
+
+    @Test
+    public void testRetryOnHttpClientException()
+            throws Exception
+    {
+        httpClient.expectCall("http://s1.example.com/v1/service", new ConnectException());
+        httpClient.expectCall("http://s2.example.com/v1/service", response);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
+
+        String returnValue = balancingHttpClient.execute(request, responseHandler);
+        assertEquals(returnValue, "test response", "return value from .execute()");
+
+        httpClient.assertDone();
+
+        verify(serviceAttempt1).getUri();
+        verify(serviceAttempt1).markBad();
+        verify(serviceAttempt1).next();
+        verify(serviceAttempt2).getUri();
+        verify(serviceAttempt2).markGood();
+        verify(response).getStatusCode();
+        verify(responseHandler).handle(any(Request.class), same(response));
+        verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, bodyGenerator, response, responseHandler);
     }
 }
