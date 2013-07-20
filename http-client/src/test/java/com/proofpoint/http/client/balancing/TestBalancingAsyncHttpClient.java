@@ -70,32 +70,6 @@ public class TestBalancingAsyncHttpClient
     }
 
     @Test
-    public void testWithANoRetryHeader()
-            throws Exception
-    {
-        Response response500 = mock(Response.class);
-        when(response500.getStatusCode()).thenReturn(500);
-        when(response500.getHeader("X-Proofpoint-Retry")).thenReturn("no");
-
-        httpClient.expectCall("http://s1.example.com/v1/service", response500);
-
-        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
-        when(responseHandler.handle(any(Request.class), same(response500))).thenReturn("test response");
-
-        String returnValue = balancingHttpClient.execute(request, responseHandler);
-        assertEquals(returnValue, "test response", "return value from .execute()");
-
-        httpClient.assertDone();
-
-        verify(serviceAttempt1).getUri();
-        verify(serviceAttempt1).markBad();
-        verify(response500).getStatusCode();
-        verify(response500).getHeader("X-Proofpoint-Retry");
-        verify(responseHandler).handle(any(Request.class), same(response500));
-        verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, bodyGenerator, response, responseHandler, response500);
-    }
-
-    @Test
     public void testSuccessOnLastTry503()
             throws Exception
     {
@@ -125,7 +99,6 @@ public class TestBalancingAsyncHttpClient
         verify(responseHandler).handle(any(Request.class), same(response));
         verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, serviceAttempt3, bodyGenerator, response, responseHandler);
     }
-
 
     @Test
     public void testSuccessOnLastTryException()

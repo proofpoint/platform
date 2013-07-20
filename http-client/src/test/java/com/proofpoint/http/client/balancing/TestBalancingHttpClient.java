@@ -62,17 +62,18 @@ public class TestBalancingHttpClient
     }
 
     @Test
-    public void testWithANoRetryHeader()
+    public void testSuccessOnLastTry503()
             throws Exception
     {
-        Response response500 = mock(Response.class);
-        when(response500.getStatusCode()).thenReturn(500);
-        when(response500.getHeader("X-Proofpoint-Retry")).thenReturn("no");
+        Response response503 = mock(Response.class);
+        when(response503.getStatusCode()).thenReturn(503);
 
-        httpClient.expectCall("http://s1.example.com/v1/service", response500);
+        httpClient.expectCall("http://s1.example.com/v1/service", new ConnectException());
+        httpClient.expectCall("http://s2.example.com/v1/service", response503);
+        httpClient.expectCall("http://s1.example.com/v1/service", response);
 
         ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
-        when(responseHandler.handle(any(Request.class), same(response500))).thenReturn("test response");
+        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
 
         String returnValue = balancingHttpClient.execute(request, responseHandler);
         assertEquals(returnValue, "test response", "return value from .execute()");
@@ -81,21 +82,25 @@ public class TestBalancingHttpClient
 
         verify(serviceAttempt1).getUri();
         verify(serviceAttempt1).markBad();
-        verify(response500).getStatusCode();
-        verify(response500).getHeader("X-Proofpoint-Retry");
-        verify(responseHandler).handle(any(Request.class), same(response500));
-        verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, bodyGenerator, response, responseHandler, response500);
+        verify(serviceAttempt1).next();
+        verify(serviceAttempt2).getUri();
+        verify(serviceAttempt2).markBad();
+        verify(serviceAttempt2).next();
+        verify(serviceAttempt3).getUri();
+        verify(serviceAttempt3).markGood();
+        verify(responseHandler).handle(any(Request.class), same(response));
+        verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, serviceAttempt3, bodyGenerator, response, responseHandler);
     }
 
     @Test
-    public void testSuccessOnLastTry()
+    public void testSuccessOnLastTryException()
             throws Exception
     {
         Response response503 = mock(Response.class);
         when(response503.getStatusCode()).thenReturn(503);
 
-        httpClient.expectCall("http://s1.example.com/v1/service", new ConnectException());
-        httpClient.expectCall("http://s2.example.com/v1/service", response503);
+        httpClient.expectCall("http://s1.example.com/v1/service", response503);
+        httpClient.expectCall("http://s2.example.com/v1/service", new ConnectException());
         httpClient.expectCall("http://s1.example.com/v1/service", response);
 
         ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
