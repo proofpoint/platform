@@ -3,16 +3,12 @@ package com.proofpoint.http.client.balancing;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.CheckedFuture;
 import com.proofpoint.http.client.AsyncHttpClient;
-import com.proofpoint.http.client.BodyGenerator;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
-import org.mockito.ArgumentCaptor;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.net.ConnectException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.proofpoint.http.client.Request.Builder.preparePut;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -66,6 +59,13 @@ public class TestBalancingAsyncHttpClient
         }
     }
 
+    @Override
+    protected void issueRequest()
+            throws Exception
+    {
+        balancingHttpClient.executeAsync(request, mock(ResponseHandler.class));
+    }
+
     @Test
     public void testGetStats()
     {
@@ -90,13 +90,6 @@ public class TestBalancingAsyncHttpClient
 
         verify(mockClient).close();
         verifyNoMoreInteractions(mockClient, serviceBalancer);
-    }
-
-    @Override
-    protected void issueRequest()
-            throws Exception
-    {
-        balancingHttpClient.executeAsync(request, mock(ResponseHandler.class));
     }
 
     // TODO tests for interruption and cancellation

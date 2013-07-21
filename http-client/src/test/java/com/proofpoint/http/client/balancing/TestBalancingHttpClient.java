@@ -1,24 +1,17 @@
 package com.proofpoint.http.client.balancing;
 
-import com.proofpoint.http.client.BodyGenerator;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
-import org.mockito.ArgumentCaptor;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.net.ConnectException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.proofpoint.http.client.Request.Builder.preparePut;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -57,6 +50,13 @@ public class TestBalancingHttpClient
         }
     }
 
+    @Override
+    protected void issueRequest()
+            throws Exception
+    {
+        balancingHttpClient.execute(request, mock(ResponseHandler.class));
+    }
+
     @Test
     public void testGetStats()
     {
@@ -81,13 +81,6 @@ public class TestBalancingHttpClient
 
         verify(mockClient).close();
         verifyNoMoreInteractions(mockClient, serviceBalancer);
-    }
-
-    @Override
-    protected void issueRequest()
-            throws Exception
-    {
-        balancingHttpClient.execute(request, mock(ResponseHandler.class));
     }
 
     class TestingHttpClient
