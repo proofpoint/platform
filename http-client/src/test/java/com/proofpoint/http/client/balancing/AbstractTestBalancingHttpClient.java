@@ -59,7 +59,15 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
         void assertDone();
     }
 
+    protected abstract TestingClient createTestingClient();
+
     protected abstract T createBalancingHttpClient();
+
+    protected abstract void assertHandlerExceptionThrown(ResponseHandler responseHandler, RuntimeException handlerException)
+            throws Exception;
+
+    protected abstract void issueRequest()
+            throws Exception;
 
     @Test
     public void testSuccessfulQuery()

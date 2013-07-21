@@ -46,12 +46,18 @@ public class TestBalancingHttpClient
         when(serviceAttempt2.next()).thenReturn(serviceAttempt3);
         when(serviceAttempt3.getUri()).thenReturn(URI.create("http://s1.example.com"));
         when(serviceAttempt3.next()).thenThrow(new AssertionError("Unexpected call to serviceAttempt3.next()"));
-        httpClient = new TestingHttpClient("PUT");
+        httpClient = createTestingClient();
         balancingHttpClient = createBalancingHttpClient();
         bodyGenerator = mock(BodyGenerator.class);
         request = preparePut().setUri(URI.create("v1/service")).setBodyGenerator(bodyGenerator).build();
         response = mock(Response.class);
         when(response.getStatusCode()).thenReturn(204);
+    }
+
+    @Override
+    protected TestingHttpClient createTestingClient()
+    {
+        return new TestingHttpClient("PUT");
     }
 
     @Override
@@ -75,6 +81,18 @@ public class TestBalancingHttpClient
         RuntimeException handlerException = new RuntimeException("test responseHandler exception");
         when(responseHandler.handleException(any(Request.class), any(Exception.class))).thenThrow(handlerException);
 
+        assertHandlerExceptionThrown(responseHandler, handlerException);
+
+        ArgumentCaptor<Exception> captor = ArgumentCaptor.forClass(Exception.class);
+        verify(responseHandler).handleException(same(request), captor.capture());
+        assertSame(captor.getValue(), balancerException, "Exception passed to ResponseHandler");
+        verifyNoMoreInteractions(responseHandler);
+    }
+
+    @Override
+    protected void assertHandlerExceptionThrown(ResponseHandler responseHandler, RuntimeException handlerException)
+            throws Exception
+    {
         try {
             balancingHttpClient.execute(request, responseHandler);
             fail("Exception not thrown");
@@ -82,11 +100,6 @@ public class TestBalancingHttpClient
         catch (RuntimeException e) {
             assertSame(e, handlerException, "Exception thrown by BalancingHttpClient");
         }
-
-        ArgumentCaptor<Exception> captor = ArgumentCaptor.forClass(Exception.class);
-        verify(responseHandler).handleException(same(request), captor.capture());
-        assertSame(captor.getValue(), balancerException, "Exception passed to ResponseHandler");
-        verifyNoMoreInteractions(responseHandler);
     }
 
     @Test
@@ -108,13 +121,7 @@ public class TestBalancingHttpClient
         RuntimeException handlerException = new RuntimeException("test responseHandler exception");
         when(responseHandler.handleException(any(Request.class), any(Exception.class))).thenThrow(handlerException);
 
-        try {
-            balancingHttpClient.execute(request, responseHandler);
-            fail("Exception not thrown");
-        }
-        catch (RuntimeException e) {
-            assertSame(e, handlerException, "Exception thrown by BalancingHttpClient");
-        }
+        assertHandlerExceptionThrown(responseHandler, handlerException);
 
         ArgumentCaptor<Exception> captor = ArgumentCaptor.forClass(Exception.class);
         verify(responseHandler).handleException(same(request), captor.capture());
@@ -153,6 +160,13 @@ public class TestBalancingHttpClient
             throws Exception
     {
         request = preparePut().setUri(new URI("http", null, "/v1/service", null)).setBodyGenerator(bodyGenerator).build();
+        issueRequest();
+    }
+
+    @Override
+    protected void issueRequest()
+            throws Exception
+    {
         balancingHttpClient.execute(request, mock(ResponseHandler.class));
     }
 
@@ -161,7 +175,7 @@ public class TestBalancingHttpClient
             throws Exception
     {
         request = preparePut().setUri(new URI(null, "example.com", "v1/service", null)).setBodyGenerator(bodyGenerator).build();
-        balancingHttpClient.execute(request, mock(ResponseHandler.class));
+        issueRequest();
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = ".* path starts with '/'")
@@ -169,7 +183,7 @@ public class TestBalancingHttpClient
             throws Exception
     {
         request = preparePut().setUri(new URI(null, null, "/v1/service", null)).setBodyGenerator(bodyGenerator).build();
-        balancingHttpClient.execute(request, mock(ResponseHandler.class));
+        issueRequest();
     }
 
     class TestingHttpClient
