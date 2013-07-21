@@ -92,35 +92,11 @@ public class TestBalancingAsyncHttpClient
         verifyNoMoreInteractions(mockClient, serviceBalancer);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = ".* is not a relative URI")
-    public void testUriWithScheme()
-            throws Exception
-    {
-        request = preparePut().setUri(new URI("http", null, "/v1/service", null)).setBodyGenerator(bodyGenerator).build();
-        issueRequest();
-    }
-
     @Override
     protected void issueRequest()
             throws Exception
     {
         balancingHttpClient.executeAsync(request, mock(ResponseHandler.class));
-    }
-
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = ".* has a host component")
-    public void testUriWithHost()
-            throws Exception
-    {
-        request = preparePut().setUri(new URI(null, "example.com", "v1/service", null)).setBodyGenerator(bodyGenerator).build();
-        issueRequest();
-    }
-
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = ".* path starts with '/'")
-    public void testUriWithAbsolutePath()
-            throws Exception
-    {
-        request = preparePut().setUri(new URI(null, null, "/v1/service", null)).setBodyGenerator(bodyGenerator).build();
-        issueRequest();
     }
 
     // TODO tests for interruption and cancellation
