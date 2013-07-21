@@ -31,29 +31,6 @@ import static org.testng.Assert.fail;
 public class TestBalancingHttpClient
     extends AbstractTestBalancingHttpClient<HttpClient>
 {
-    @BeforeMethod
-    protected void setUp()
-            throws Exception
-    {
-        serviceBalancer = mock(HttpServiceBalancer.class);
-        serviceAttempt1 = mock(HttpServiceAttempt.class);
-        serviceAttempt2 = mock(HttpServiceAttempt.class);
-        serviceAttempt3 = mock(HttpServiceAttempt.class);
-        when(serviceBalancer.createAttempt()).thenReturn(serviceAttempt1);
-        when(serviceAttempt1.getUri()).thenReturn(URI.create("http://s1.example.com"));
-        when(serviceAttempt1.next()).thenReturn(serviceAttempt2);
-        when(serviceAttempt2.getUri()).thenReturn(URI.create("http://s2.example.com/"));
-        when(serviceAttempt2.next()).thenReturn(serviceAttempt3);
-        when(serviceAttempt3.getUri()).thenReturn(URI.create("http://s1.example.com"));
-        when(serviceAttempt3.next()).thenThrow(new AssertionError("Unexpected call to serviceAttempt3.next()"));
-        httpClient = createTestingClient();
-        balancingHttpClient = createBalancingHttpClient();
-        bodyGenerator = mock(BodyGenerator.class);
-        request = preparePut().setUri(URI.create("v1/service")).setBodyGenerator(bodyGenerator).build();
-        response = mock(Response.class);
-        when(response.getStatusCode()).thenReturn(204);
-    }
-
     @Override
     protected TestingHttpClient createTestingClient()
     {
@@ -67,28 +44,6 @@ public class TestBalancingHttpClient
                 new BalancingHttpClientConfig().setMaxAttempts(3));
     }
 
-    @Test
-    public void testCreateAttemptException()
-            throws Exception
-    {
-        serviceBalancer = mock(HttpServiceBalancer.class);
-        RuntimeException balancerException = new RuntimeException("test balancer exception");
-        when(serviceBalancer.createAttempt()).thenThrow(balancerException);
-
-        balancingHttpClient = createBalancingHttpClient();
-
-        ResponseHandler responseHandler = mock(ResponseHandler.class);
-        RuntimeException handlerException = new RuntimeException("test responseHandler exception");
-        when(responseHandler.handleException(any(Request.class), any(Exception.class))).thenThrow(handlerException);
-
-        assertHandlerExceptionThrown(responseHandler, handlerException);
-
-        ArgumentCaptor<Exception> captor = ArgumentCaptor.forClass(Exception.class);
-        verify(responseHandler).handleException(same(request), captor.capture());
-        assertSame(captor.getValue(), balancerException, "Exception passed to ResponseHandler");
-        verifyNoMoreInteractions(responseHandler);
-    }
-
     @Override
     protected void assertHandlerExceptionThrown(ResponseHandler responseHandler, RuntimeException handlerException)
             throws Exception
@@ -100,33 +55,6 @@ public class TestBalancingHttpClient
         catch (RuntimeException e) {
             assertSame(e, handlerException, "Exception thrown by BalancingHttpClient");
         }
-    }
-
-    @Test
-    public void testNextAttemptException()
-            throws Exception
-    {
-        httpClient.expectCall("http://s1.example.com/v1/service", new ConnectException());
-
-        serviceBalancer = mock(HttpServiceBalancer.class);
-        serviceAttempt1 = mock(HttpServiceAttempt.class);
-        when(serviceBalancer.createAttempt()).thenReturn(serviceAttempt1);
-        when(serviceAttempt1.getUri()).thenReturn(URI.create("http://s1.example.com"));
-        RuntimeException balancerException = new RuntimeException("test balancer exception");
-        when(serviceAttempt1.next()).thenThrow(balancerException);
-
-        balancingHttpClient = createBalancingHttpClient();
-
-        ResponseHandler responseHandler = mock(ResponseHandler.class);
-        RuntimeException handlerException = new RuntimeException("test responseHandler exception");
-        when(responseHandler.handleException(any(Request.class), any(Exception.class))).thenThrow(handlerException);
-
-        assertHandlerExceptionThrown(responseHandler, handlerException);
-
-        ArgumentCaptor<Exception> captor = ArgumentCaptor.forClass(Exception.class);
-        verify(responseHandler).handleException(same(request), captor.capture());
-        assertSame(captor.getValue(), balancerException, "Exception passed to ResponseHandler");
-        verifyNoMoreInteractions(responseHandler);
     }
 
     @Test
