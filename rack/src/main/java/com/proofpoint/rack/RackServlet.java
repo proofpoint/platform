@@ -17,7 +17,9 @@ package com.proofpoint.rack;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.UnmodifiableIterator;
 import com.google.common.io.Resources;
+import com.proofpoint.log.Logger;
 import org.jruby.CompatVersion;
 import org.jruby.Ruby;
 import org.jruby.RubyHash;
@@ -39,6 +41,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.jruby.javasupport.JavaEmbedUtils.javaToRuby;
 
@@ -58,29 +64,60 @@ public class RackServlet
     {
         Preconditions.checkNotNull(config);
 
+        Logger logger = Logger.get(RackServlet.class);
         File rackScriptFile = new File(config.getRackConfigPath());
+        Path rackDir = rackScriptFile.toPath().getParent();
 
         Preconditions.checkArgument(rackScriptFile.canRead(), "Could not find rack script specified by [" + config.getRackConfigPath()
                 + "] and resolved to [" + rackScriptFile.getAbsolutePath() + "]");
 
-        runtime = JavaEmbedUtils.initialize(ImmutableList.of(rackScriptFile.getParentFile().getCanonicalPath()), createRuntimeConfig());
+        runtime = createRubyRuntime(rackDir.toString());
+        rackApplication = buildRackApplication(rackScriptFile);
+    }
 
-        // don't inherit system settings for gems
-        RubyHash env = runtime.evalScriptlet("ENV").convertToHash();
+    private Ruby createRubyRuntime(String baseDir)
+            throws IOException
+    {
+        RubyInstanceConfig runtimeConfig = createRuntimeConfig();
+
+        Map env = new HashMap(runtimeConfig.getEnvironment());
         env.remove("GEM_HOME");
         env.remove("GEM_PATH");
+        runtimeConfig.setEnvironment(env);
 
-        InputStream stream = Resources.getResource("proofpoint/rack.rb").openStream();
+        return JavaEmbedUtils.initialize(ImmutableList.of(baseDir), runtimeConfig);
+    }
+
+    private void loadRubyScript(String scriptName)
+            throws IOException
+    {
+        InputStream stream = Resources.getResource("proofpoint/" + scriptName).openStream();
         try {
-            runtime.loadFile("rack.rb", stream, false);
+            runtime.loadFile(scriptName, stream, false);
         }
         finally {
             stream.close();
         }
+    }
+
+    private IRubyObject buildRackApplication(File rackScriptFile)
+            throws IOException
+    {
+        ImmutableList<String> scripts = ImmutableList.of(
+                "init.rb",
+                "logger.rb",
+                "railtie.rb",
+                "servlet_adapter.rb",
+                "builder.rb"
+        );
+
+        for (String script : scripts) {
+            loadRubyScript(script);
+        }
 
         IRubyObject builder = runtime.evalScriptlet("Proofpoint::RackServer::Builder.new");
 
-        rackApplication = adapter.callMethod(builder, "build", new IRubyObject[] {
+        return adapter.callMethod(builder, "build", new IRubyObject[] {
                 javaToRuby(runtime, rackScriptFile.getCanonicalPath())
         });
     }
