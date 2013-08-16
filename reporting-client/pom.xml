@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>stats</artifactId>
+    <artifactId>reporting-client</artifactId>
     <packaging>jar</packaging>
-    <name>stats</name>
 
     <parent>
-        <groupId>com.proofpoint.platform</groupId>
         <artifactId>platform</artifactId>
-        <version>0.79-SNAPSHOT</version>
+        <groupId>com.proofpoint.platform</groupId>
+        <version>0.76-SNAPSHOT</version>
     </parent>
 
     <dependencies>
+        <dependency>
+            <groupId>com.proofpoint.platform</groupId>
+            <artifactId>http-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.proofpoint.platform</groupId>
+            <artifactId>node</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
             <artifactId>reporting</artifactId>
@@ -19,13 +30,7 @@
 
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
-            <artifactId>units</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.proofpoint.platform</groupId>
-            <artifactId>log</artifactId>
-            <scope>test</scope>
+            <artifactId>stats</artifactId>
         </dependency>
 
         <dependency>
@@ -34,24 +39,18 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math</artifactId>
-            <version>2.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>annotations</artifactId>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-multibindings</artifactId>
         </dependency>
 
         <dependency>
@@ -59,11 +58,17 @@
             <artifactId>testing</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
-
