@@ -12,27 +12,27 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-public class TestHttpClientBuilder
+public class TestHttpClientProvider
 {
     
-    private HttpClientBuilder builder;
+    private HttpClientProvider provider;
     
     @BeforeMethod
     public void setup()
     {
-        builder = new HttpClientBuilder();
+        provider = new HttpClientProvider();
     }
     
     @Test
     public void testNullsNotAllowed()
     {
         try {
-            builder.config(null);
+            provider.config(null);
             fail("should have thrown an exception");
         }
         catch(NullPointerException expected) { }
         try {
-            builder.requestFilters(null);
+            provider.requestFilters(null);
             fail("should have thrown an exception");
         }
         catch(NullPointerException expected) { }
@@ -41,18 +41,18 @@ public class TestHttpClientBuilder
     @Test
     public void testServiceNameCanBeNull()
     {
-        assertNull(builder.getServiceName());
-        builder.serviceName("foo-service");
-        assertEquals(builder.getServiceName(), "foo-service");
-        builder.serviceName(null);
-        assertNull(builder.getServiceName());
+        assertNull(provider.getServiceName());
+        provider.serviceName("foo-service");
+        assertEquals(provider.getServiceName(), "foo-service");
+        provider.serviceName(null);
+        assertNull(provider.getServiceName());
     }
     
     @Test
     public void testBuild() throws Exception 
     {
-        builder.serviceName("wrong");
-        ApacheHttpClient client = (ApacheHttpClient)builder.build();
+        provider.serviceName("wrong");
+        ApacheHttpClient client = (ApacheHttpClient)provider.get();
         assertNotNull(client);
         Field field = ApacheHttpClient.class.getDeclaredField("httpClient");
         field.setAccessible(true);

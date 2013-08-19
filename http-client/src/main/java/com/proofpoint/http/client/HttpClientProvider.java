@@ -7,26 +7,28 @@ import java.util.Set;
 
 import javax.net.ssl.X509TrustManager;
 
-public class HttpClientBuilder
-{
+import com.google.inject.Provider;
 
+public class HttpClientProvider implements Provider<HttpClient>
+{
+    
     private HttpClientConfig config = new HttpClientConfig();
     private Set<? extends HttpRequestFilter> requestFilters = Collections.<HttpRequestFilter>emptySet();
     private String serviceName = null;
  
-    public HttpClientBuilder config(HttpClientConfig config)
+    public HttpClientProvider config(HttpClientConfig config)
     {
         this.config = checkNotNull(config);
         return this;
     }
     
-    public HttpClientBuilder requestFilters(Set<? extends HttpRequestFilter> requestFilters)
+    public HttpClientProvider requestFilters(Set<? extends HttpRequestFilter> requestFilters)
     {
         this.requestFilters = checkNotNull(requestFilters);
         return this;
     }
     
-    public HttpClientBuilder serviceName(String serviceName)
+    public HttpClientProvider serviceName(String serviceName)
     {
         // this is ok to be null, no need to check
         this.serviceName = serviceName;
@@ -37,8 +39,9 @@ public class HttpClientBuilder
     {
         return serviceName;
     }
-    
-    public HttpClient build()
+
+    @Override
+    public HttpClient get()
     {
         X509TrustManager trustManager = null;
         if(serviceName!=null) {
@@ -46,5 +49,5 @@ public class HttpClientBuilder
         }
         return new ApacheHttpClient(config, requestFilters, trustManager);
     }
-    
+
 }
