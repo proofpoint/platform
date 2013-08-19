@@ -15,19 +15,28 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.annotations.Beta;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ListMultimap;
-import com.google.common.io.CountingInputStream;
-import com.proofpoint.units.Duration;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.SocketTimeoutException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
+import javax.net.ssl.X509TrustManager;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
@@ -36,19 +45,22 @@ import org.apache.http.params.CoreConnectionPNames;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 
-import javax.annotation.PreDestroy;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.SocketTimeoutException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import com.google.common.annotations.Beta;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ListMultimap;
+import com.google.common.io.CountingInputStream;
+import com.proofpoint.log.Logger;
+import com.proofpoint.units.Duration;
 
 @Beta
 public class ApacheHttpClient
         implements com.proofpoint.http.client.HttpClient
 {
+    private static final Logger log = Logger.get(ApacheHttpClient.class);
+    
     private final RequestStats stats = new RequestStats();
     private final HttpClient httpClient;
     private final List<HttpRequestFilter> requestFilters;
@@ -62,8 +74,13 @@ public class ApacheHttpClient
     {
         this(config, Collections.<HttpRequestFilter>emptySet());
     }
-
+    
     public ApacheHttpClient(HttpClientConfig config, Set<? extends HttpRequestFilter> requestFilters)
+    {
+        this(config, requestFilters, null);
+    }
+
+    public ApacheHttpClient(HttpClientConfig config, Set<? extends HttpRequestFilter> requestFilters, X509TrustManager trustManager)
     {
         Preconditions.checkNotNull(config, "config is null");
         Preconditions.checkNotNull(requestFilters, "requestFilters is null");
@@ -71,6 +88,16 @@ public class ApacheHttpClient
         PoolingClientConnectionManager connectionManager = new PoolingClientConnectionManager();
         connectionManager.setMaxTotal(config.getMaxConnections());
         connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerServer());
+        if(trustManager!=null) {
+            try {
+                SSLSocketFactory sf = new SSLSocketFactory(new ServiceTrustStrategy(trustManager));
+                connectionManager.getSchemeRegistry().register(new Scheme("https", 443, sf));
+            }
+            catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
+                log.error(e, "Unable to initialize HttpClient: %s", e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }
 
         BasicHttpParams httpParams = new BasicHttpParams();
         httpParams.setParameter(CoreConnectionPNames.SO_TIMEOUT, (int) config.getReadTimeout().toMillis());
