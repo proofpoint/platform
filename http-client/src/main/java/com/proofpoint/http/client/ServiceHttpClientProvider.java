@@ -9,26 +9,26 @@ import javax.net.ssl.X509TrustManager;
 
 import com.google.inject.Provider;
 
-public class HttpClientProvider implements Provider<HttpClient>
+public class ServiceHttpClientProvider implements Provider<HttpClient>
 {
     
     private HttpClientConfig config = new HttpClientConfig();
     private Set<? extends HttpRequestFilter> requestFilters = Collections.<HttpRequestFilter>emptySet();
     private String serviceName = null;
  
-    public HttpClientProvider config(HttpClientConfig config)
+    public ServiceHttpClientProvider config(HttpClientConfig config)
     {
         this.config = checkNotNull(config);
         return this;
     }
     
-    public HttpClientProvider requestFilters(Set<? extends HttpRequestFilter> requestFilters)
+    public ServiceHttpClientProvider requestFilters(Set<? extends HttpRequestFilter> requestFilters)
     {
         this.requestFilters = checkNotNull(requestFilters);
         return this;
     }
     
-    public HttpClientProvider serviceName(String serviceName)
+    public ServiceHttpClientProvider serviceName(String serviceName)
     {
         // this is ok to be null, no need to check
         this.serviceName = serviceName;

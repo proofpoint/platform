@@ -12,15 +12,15 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-public class TestHttpClientProvider
+public class TestServiceHttpClientProvider
 {
     
-    private HttpClientProvider provider;
+    private ServiceHttpClientProvider provider;
     
     @BeforeMethod
     public void setup()
     {
-        provider = new HttpClientProvider();
+        provider = new ServiceHttpClientProvider();
     }
     
     @Test
