@@ -1,11 +1,11 @@
 package com.proofpoint.http.client;
 
+import org.apache.http.conn.ssl.TrustStrategy;
+
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.X509TrustManager;
-
-import org.apache.http.conn.ssl.TrustStrategy;
 
 class ServiceTrustStrategy implements TrustStrategy {
 

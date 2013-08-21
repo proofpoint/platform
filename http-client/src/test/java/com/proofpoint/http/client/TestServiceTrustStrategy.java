@@ -1,18 +1,18 @@
 package com.proofpoint.http.client;
 
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import com.proofpoint.http.client.TestServiceTrustManager.TestX509Certificate;
+
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.X509TrustManager;
 
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import com.proofpoint.http.client.TestServiceTrustManager.TestX509Certificate;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class TestServiceTrustStrategy
 {

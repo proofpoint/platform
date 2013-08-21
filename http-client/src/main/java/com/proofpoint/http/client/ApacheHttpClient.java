@@ -15,20 +15,15 @@
  */
 package com.proofpoint.http.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.SocketTimeoutException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PreDestroy;
-import javax.net.ssl.X509TrustManager;
+import com.google.common.annotations.Beta;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ListMultimap;
+import com.google.common.io.CountingInputStream;
+import com.proofpoint.log.Logger;
+import com.proofpoint.units.Duration;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -45,15 +40,20 @@ import org.apache.http.params.CoreConnectionPNames;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 
-import com.google.common.annotations.Beta;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ListMultimap;
-import com.google.common.io.CountingInputStream;
-import com.proofpoint.log.Logger;
-import com.proofpoint.units.Duration;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.SocketTimeoutException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
+import javax.net.ssl.X509TrustManager;
 
 @Beta
 public class ApacheHttpClient
