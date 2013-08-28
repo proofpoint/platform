@@ -90,7 +90,10 @@ public class TestHttpServiceBalancerListenerAdapter
     {
         updater.start();
 
-        verifyNoMoreInteractions(httpServiceBalancer);
+        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
+        verify(httpServiceBalancer).updateHttpUris(captor.capture());
+
+        assertEquals(captor.getValue(), ImmutableSet.of());
     }
 
     @Test
@@ -114,8 +117,6 @@ public class TestHttpServiceBalancerListenerAdapter
         discoveryClient.addDiscoveredService(DIFFERENT_POOL);
 
         updater.start();
-
-        Thread.sleep(100);
 
         ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
         verify(httpServiceBalancer).updateHttpUris(captor.capture());
