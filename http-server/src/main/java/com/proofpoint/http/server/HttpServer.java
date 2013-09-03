@@ -81,6 +81,7 @@ public class HttpServer
             QueryStringFilter queryStringFilter,
             TraceTokenManager tokenManager,
             RequestStats stats,
+            DetailedRequestStats detailedRequestStats,
             EventClient eventClient)
             throws IOException
     {
@@ -219,7 +220,7 @@ public class HttpServer
         }
 
         RequestLogHandler statsRecorder = new RequestLogHandler();
-        statsRecorder.setRequestLog(new StatsRecordingHandler(stats));
+        statsRecorder.setRequestLog(new StatsRecordingHandler(stats, detailedRequestStats));
         handlers.addHandler(statsRecorder);
 
         // add handlers to Jetty
