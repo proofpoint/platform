@@ -34,7 +34,6 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreConnectionPNames;
 import org.weakref.jmx.Flatten;
-import org.weakref.jmx.Managed;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
@@ -98,7 +97,6 @@ public class ApacheHttpClient
         httpClient.getConnectionManager().shutdown();
     }
 
-    @Managed
     @Flatten
     public RequestStats getStats()
     {
