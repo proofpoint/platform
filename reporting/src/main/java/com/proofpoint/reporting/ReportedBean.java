@@ -116,7 +116,7 @@ class ReportedBean
 
         Map<String, ReportedBeanAttributeBuilder> attributeBuilders = new TreeMap<>();
 
-        for (Map.Entry<Method, Method> entry : AnnotationUtils.findReportedMethods(target.getClass()).entrySet()) {
+        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), ReportedAnnotation.class).entrySet()) {
             Method concreteMethod = entry.getKey();
             Method annotatedMethod = entry.getValue();
 
