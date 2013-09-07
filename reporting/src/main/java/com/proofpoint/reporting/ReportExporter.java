@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Throwables.propagate;
-import static com.proofpoint.reporting.AnnotationUtils.findReportedMethods;
+import static com.proofpoint.reporting.AnnotationUtils.findAnnotatedMethods;
 import static com.proofpoint.reporting.AnnotationUtils.isFlatten;
 import static com.proofpoint.reporting.AnnotationUtils.isNested;
 
@@ -113,7 +113,7 @@ public class ReportExporter
         }
 
         try {
-            for (Entry<Method, Method> entry : findReportedMethods(object.getClass()).entrySet()) {
+            for (Entry<Method, Method> entry : findAnnotatedMethods(object.getClass(), ReportedAnnotation.class).entrySet()) {
                 notifyBucketIdProvider(entry.getKey().invoke(object), bucketIdProvider, entry.getValue());
             }
         }

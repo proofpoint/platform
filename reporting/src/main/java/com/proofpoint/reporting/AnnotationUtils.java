@@ -16,6 +16,7 @@
 package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Nested;
 
@@ -39,7 +40,7 @@ import static java.util.Arrays.asList;
 
 final class AnnotationUtils
 {
-    private static final ImmutableSet<Class<? extends Annotation>> REPORTED_ANNOTATIONS = ImmutableSet.of(ReportedAnnotation.class, Nested.class, Flatten.class);
+    private static final Set<Class<? extends Annotation>> FLATTEN_OR_NESTED_ANNOTATION_SET = ImmutableSet.of(Nested.class, Flatten.class);
     private static final Set<Class<? extends Annotation>> FLATTEN_ANNOTATION_SET = ImmutableSet.<Class<? extends Annotation>>of(Flatten.class);
     private static final Set<Class<? extends Annotation>> NESTED_ANNOTATION_SET = ImmutableSet.<Class<? extends Annotation>>of(Nested.class);
 
@@ -165,22 +166,23 @@ final class AnnotationUtils
     }
 
     /**
-     * Find methods that are tagged as reported somewhere in the hierarchy
+     * Find methods that are tagged with a particular annotation somewhere in the hierarchy
      *
      * @param clazz the class to analyze
+     * @param annotationClass the annotation to look for
      * @return a map that associates a concrete method to the actual method tagged as reported
      *         (which may belong to a different class in clazz's hierarchy)
      */
-    public static Map<Method, Method> findReportedMethods(Class<?> clazz)
+    public static Map<Method, Method> findAnnotatedMethods(Class<?> clazz, Class<? extends Annotation> annotationClass)
     {
         Map<Method, Method> result = new HashMap<>();
         Set<Signature> foundMethods = new HashSet<>();
-        findReportedMethods(clazz, result, foundMethods);
+        findAnnotatedMethods(clazz, result, foundMethods, ImmutableSet.<Class<? extends Annotation>>of(annotationClass));
 
         return result;
     }
 
-    private static void findReportedMethods(Class<?> clazz, Map<Method, Method> result, Set<Signature> foundMethods)
+    private static void findAnnotatedMethods(Class<?> clazz, Map<Method, Method> result, Set<Signature> foundMethods, Set<Class<? extends Annotation>> annotationSet)
     {
         // gather all available methods
         // this returns everything, even if it's declared in a parent
@@ -197,7 +199,7 @@ final class AnnotationUtils
             foundMethods.add(methodSignature);
 
             // look for annotations recursively in superclasses or interfaces
-            Method reportedGetter = findReportedMethod(clazz, method.getName(), method.getParameterTypes());
+            Method reportedGetter = findAnnotatedMethod(clazz, method.getName(), method.getParameterTypes(), annotationSet);
             if (reportedGetter != null) {
                 method.setAccessible(true);
                 reportedGetter.setAccessible(true);
@@ -207,32 +209,32 @@ final class AnnotationUtils
 
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != null) {
-            findReportedMethods(superclass, result, foundMethods);
+            findAnnotatedMethods(superclass, result, foundMethods, annotationSet);
         }
 
         for (Class<?> iface : clazz.getInterfaces()) {
-            findReportedMethods(iface, result, foundMethods);
+            findAnnotatedMethods(iface, result, foundMethods, annotationSet);
         }
     }
 
-    public static Method findReportedMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes)
+    private static Method findAnnotatedMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes, Set<Class<? extends Annotation>> annotationSet)
     {
         try {
             Method method = clazz.getDeclaredMethod(methodName, parameterTypes);
-            if (isReportedMethod(method)) return method;
+            if (isAnnotatedMethod(method, annotationSet)) return method;
         }
         catch (NoSuchMethodException ignored) {
         }
 
         if (clazz.getSuperclass() != null) {
-            Method reportedGetter = findReportedMethod(clazz.getSuperclass(), methodName, parameterTypes);
+            Method reportedGetter = findAnnotatedMethod(clazz.getSuperclass(), methodName, parameterTypes, annotationSet);
             if (reportedGetter != null) {
                 return reportedGetter;
             }
         }
 
         for (Class<?> iface : clazz.getInterfaces()) {
-            Method reportedGetter = findReportedMethod(iface, methodName, parameterTypes);
+            Method reportedGetter = findAnnotatedMethod(iface, methodName, parameterTypes, annotationSet);
             if (reportedGetter != null) {
                 return reportedGetter;
             }
@@ -241,9 +243,9 @@ final class AnnotationUtils
         return null;
     }
 
-    public static boolean isReportedMethod(Method method)
+    private static boolean isAnnotatedMethod(Method method, Set<Class<? extends Annotation>> annotationSet)
     {
-        return isAnnotationPresent(REPORTED_ANNOTATIONS, new HashSet<Class<? extends Annotation>>(), method.getAnnotations());
+        return isAnnotationPresent(Sets.union(annotationSet, FLATTEN_OR_NESTED_ANNOTATION_SET), new HashSet<Class<? extends Annotation>>(), method.getAnnotations());
     }
 
     public static boolean isFlatten(Method method)
