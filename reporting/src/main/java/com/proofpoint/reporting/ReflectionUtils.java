@@ -21,12 +21,11 @@ import javax.management.RuntimeErrorException;
 import javax.management.RuntimeOperationsException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 final class ReflectionUtils
@@ -107,10 +106,10 @@ final class ReflectionUtils
     public static String getAttributeName(Method method)
     {
         Matcher matcher = getterOrSetterPattern.matcher(method.getName());
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("method does not represent a getter or setter");
+        if (matcher.matches()) {
+            return matcher.group(2);
         }
-        return matcher.group(2);
+        return LOWER_CAMEL.to(UPPER_CAMEL, method.getName());
     }
 
     public static boolean isValidGetter(Method getter)
