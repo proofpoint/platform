@@ -27,7 +27,7 @@ import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeConverterBinding;
-import com.proofpoint.reporting.TestExporter.NamedObject;
+import com.proofpoint.reporting.TestReportExporter.NamedObject;
 import org.testng.annotations.BeforeMethod;
 import org.weakref.jmx.MBeanExporter;
 
@@ -50,7 +50,7 @@ import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class TestExporter extends AbstractReportedBeanTest<NamedObject>
+public class TestReportExporter extends AbstractReportedBeanTest<NamedObject>
 {
     private ReportedBeanRegistry registry;
     private MBeanExporter mBeanExporter;
