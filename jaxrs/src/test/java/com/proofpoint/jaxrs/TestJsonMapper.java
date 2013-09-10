@@ -25,6 +25,7 @@ import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.net.HttpHeaders;
+import com.google.common.reflect.TypeToken;
 import com.proofpoint.json.JsonCodec;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -37,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipException;
@@ -195,6 +197,25 @@ public class TestJsonMapper
             Assert.assertEquals(e.getErrorMessages().size(), 2);
             Assert.assertTrue(e.getErrorMessages().contains("secondField may not be null"));
             Assert.assertTrue(e.getErrorMessages().contains("firstField may not be null"));
+        }
+    }
+
+    @Test
+    public void testBeanValidationOfListThrowsBeanValidationException() throws IOException
+    {
+        try {
+            JsonMapper jsonMapper = new JsonMapper(new ObjectMapper(), null);
+            InputStream is = new ByteArrayInputStream("[{}]".getBytes());
+            Type listJsonClassType = new TypeToken<List<JsonClass>>()
+            {
+            }.getType();
+            jsonMapper.readFrom(Object.class, listJsonClassType, null, null, null, is);
+            Assert.fail("Should have thrown an BeanValidationException");
+        }
+        catch (BeanValidationException e) {
+            Assert.assertEquals(e.getErrorMessages().size(), 2);
+            Assert.assertTrue(e.getErrorMessages().contains("list[0].secondField may not be null"));
+            Assert.assertTrue(e.getErrorMessages().contains("list[0].firstField may not be null"));
         }
     }
 
