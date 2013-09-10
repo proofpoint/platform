@@ -17,19 +17,28 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+import com.proofpoint.reporting.HealthStatusRepresentation.Status;
 
+import javax.management.AttributeNotFoundException;
+import javax.management.MBeanException;
+import javax.management.ReflectionException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import java.util.Map.Entry;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 @Path("/admin/health")
 public class HealthResource
 {
+    private static final Pattern VALID_REASON_PATTERN = Pattern.compile("^([^\\00-\\x1f]*)");
     private final HealthBeanRegistry healthBeanRegistry;
 
     @Inject
@@ -48,5 +57,42 @@ public class HealthResource
         }
 
         return new HealthRegistrationsRepresentation(builder.build());
+    }
+
+    @GET
+    @Path("check")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<HealthStatusRepresentation> checkStatus()
+    {
+        ImmutableList.Builder<HealthStatusRepresentation> builder = ImmutableList.builder();
+        for (Entry<String, HealthBeanAttribute> entry : healthBeanRegistry.getHealthAttributes().entrySet()) {
+            String reason;
+            Status status = Status.ERROR;
+
+            try {
+                reason = entry.getValue().getValue();
+            }
+            catch (AttributeNotFoundException e) {
+                status = Status.UNKNOWN;
+                reason = "Health check attribute not found";
+            }
+            catch (MBeanException | ReflectionException e) {
+                status = Status.UNKNOWN;
+                reason = e.getCause().getMessage();
+            }
+
+            if (reason == null) {
+                status = Status.OK;
+            }
+            else {
+                // Strip all but first line
+                Matcher matcher = VALID_REASON_PATTERN.matcher(reason);
+                checkState(matcher.find());
+                reason = matcher.group(1);
+            }
+
+            builder.add(new HealthStatusRepresentation(entry.getKey(), status, reason));
+        }
+        return builder.build();
     }
 }

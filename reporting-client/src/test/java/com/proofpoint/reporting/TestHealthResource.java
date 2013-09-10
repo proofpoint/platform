@@ -23,7 +23,7 @@ import com.proofpoint.json.ObjectMapperProvider;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.management.ObjectName;
+import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
@@ -62,12 +62,28 @@ public class TestHealthResource
         ), "in json " + json);
     }
 
+    @Test
+    public void testCheckStatus()
+            throws Exception
+    {
+        HealthResource resource = new HealthResource(healthBeanRegistry);
+        ObjectMapper mapper = new ObjectMapperProvider().get().enable(INDENT_OUTPUT);
+        String json = mapper.writeValueAsString(
+                resource.checkStatus());
+        List actual = mapper.readValue(json, List.class);
+        assertEqualsIgnoreOrder(actual, ImmutableList.of(
+                ImmutableMap.of("description", "Check one", "status", "ERROR", "reason", "Failed check one"),
+                ImmutableMap.of("description", "Check two", "status", "OK"),
+                ImmutableMap.of("description", "Check three (two)", "status", "UNKNOWN", "reason", "Exception check three")
+        ));
+    }
+
     private static class TestHealth1
     {
         @HealthCheck("Check one")
         public String getCheckOne()
         {
-            return "Failed check one";
+            return "Failed check one\nignore second line";
         }
 
         @HealthCheck("Check two")
@@ -82,7 +98,7 @@ public class TestHealthResource
         @HealthCheck("Check three")
         private String getCheckThree()
         {
-            return "Failed check three";
+            throw new RuntimeException("Exception check three");
         }
     }
 }
