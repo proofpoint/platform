@@ -53,6 +53,7 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.sun.jersey.api.uri.UriComponent.decodeQuery;
@@ -154,6 +155,9 @@ class JsonMapper
         Set<ConstraintViolation<Object>> violations;
         if (TypeToken.of(genericType).getRawType().equals(List.class)) {
             violations = VALIDATOR.<Object>validate(new ValidatableList((List<?>) object));
+        }
+        else if (TypeToken.of(genericType).getRawType().equals(Map.class)) {
+            violations = VALIDATOR.<Object>validate(new ValidatableMap((Map<?, ?>) object));
         }
         else {
             violations = VALIDATOR.validate(object);
@@ -290,6 +294,17 @@ class JsonMapper
         ValidatableList(List<?> list)
         {
             this.list = list;
+        }
+    }
+
+    private static class ValidatableMap
+    {
+        @Valid
+        final private Map<?, ?> map;
+
+        ValidatableMap(Map<?, ?> map)
+        {
+            this.map = map;
         }
     }
 }

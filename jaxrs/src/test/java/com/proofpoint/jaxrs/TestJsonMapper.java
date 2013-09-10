@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ForwardingMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.net.HttpHeaders;
@@ -42,6 +43,9 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipException;
+
+import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
+import static org.testng.Assert.fail;
 
 public class TestJsonMapper
 {
@@ -105,7 +109,7 @@ public class TestJsonMapper
                     throw new EOFException("forced EOF Exception");
                 }
             });
-            Assert.fail("Should have thrown a JsonMapperParsingException");
+            fail("Should have thrown a JsonMapperParsingException");
         }
         catch (JsonMapperParsingException e) {
             Assert.assertTrue((e.getMessage()).startsWith("Invalid json for Java type"));
@@ -141,7 +145,7 @@ public class TestJsonMapper
                     throw new TestingJsonProcessingException("forced JsonProcessingException");
                 }
             });
-            Assert.fail("Should have thrown a JsonMapperParsingException");
+            fail("Should have thrown a JsonMapperParsingException");
         }
         catch (JsonMapperParsingException e) {
             Assert.assertTrue((e.getMessage()).startsWith("Invalid json for Java type"));
@@ -177,10 +181,10 @@ public class TestJsonMapper
                     throw new ZipException("forced ZipException");
                 }
             });
-            Assert.fail("Should have thrown an IOException");
+            fail("Should have thrown an IOException");
         }
         catch (WebApplicationException e) {
-            Assert.fail("Should not have received an IOException", e);
+            fail("Should not have received an IOException", e);
         }
     }
 
@@ -191,12 +195,13 @@ public class TestJsonMapper
             JsonMapper jsonMapper = new JsonMapper(new ObjectMapper(), null);
             InputStream is = new ByteArrayInputStream("{}".getBytes());
             jsonMapper.readFrom(Object.class, JsonClass.class, null, null, null, is);
-            Assert.fail("Should have thrown an BeanValidationException");
+            fail("Should have thrown an BeanValidationException");
         }
         catch (BeanValidationException e) {
-            Assert.assertEquals(e.getErrorMessages().size(), 2);
-            Assert.assertTrue(e.getErrorMessages().contains("secondField may not be null"));
-            Assert.assertTrue(e.getErrorMessages().contains("firstField may not be null"));
+            assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
+                    "secondField may not be null",
+                    "firstField may not be null"
+            ));
         }
     }
 
@@ -210,12 +215,33 @@ public class TestJsonMapper
             {
             }.getType();
             jsonMapper.readFrom(Object.class, listJsonClassType, null, null, null, is);
-            Assert.fail("Should have thrown an BeanValidationException");
+            fail("Should have thrown an BeanValidationException");
         }
         catch (BeanValidationException e) {
-            Assert.assertEquals(e.getErrorMessages().size(), 2);
-            Assert.assertTrue(e.getErrorMessages().contains("list[0].secondField may not be null"));
-            Assert.assertTrue(e.getErrorMessages().contains("list[0].firstField may not be null"));
+            assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
+                    "list[0].secondField may not be null",
+                    "list[0].firstField may not be null"
+            ));
+        }
+    }
+
+    @Test
+    public void testBeanValidationOfMapThrowsBeanValidationException() throws IOException
+    {
+        try {
+            JsonMapper jsonMapper = new JsonMapper(new ObjectMapper(), null);
+            InputStream is = new ByteArrayInputStream("{\"foo\":{}}".getBytes());
+            Type mapJsonClassType = new TypeToken<Map<String, JsonClass>>()
+            {
+            }.getType();
+            jsonMapper.readFrom(Object.class, mapJsonClassType, null, null, null, is);
+            fail("Should have thrown an BeanValidationException");
+        }
+        catch (BeanValidationException e) {
+            assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
+                    "map[foo].secondField may not be null",
+                    "map[foo].firstField may not be null"
+            ));
         }
     }
 
