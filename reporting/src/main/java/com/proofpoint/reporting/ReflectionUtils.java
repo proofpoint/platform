@@ -19,6 +19,7 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import javax.management.RuntimeErrorException;
 import javax.management.RuntimeOperationsException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.regex.Matcher;
@@ -110,6 +111,11 @@ final class ReflectionUtils
             return matcher.group(2);
         }
         return LOWER_CAMEL.to(UPPER_CAMEL, method.getName());
+    }
+
+    public static String getAttributeName(Field field)
+    {
+        return LOWER_CAMEL.to(UPPER_CAMEL, field.getName());
     }
 
     public static boolean isValidGetter(Method getter)

@@ -17,11 +17,13 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableList;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
@@ -59,6 +61,18 @@ class HealthBean
                     .withConcreteGetter(concreteMethod)
                     .withAnnotatedGetter(annotatedMethod)
                     .build());
+        }
+
+        for (Field field : AnnotationUtils.findAnnotatedFields(target.getClass(), HealthCheck.class)) {
+
+        if (!AtomicReference.class.isAssignableFrom(field.getType())) {
+            throw new RuntimeException("healthcheck annotation on non-AtomicReference field " + field.toGenericString());
+        }
+
+        attributes.addAll(new HealthBeanAttributeBuilder()
+                .onInstance(target)
+                .withField(field)
+                .build());
         }
 
         return new HealthBean(attributes);
