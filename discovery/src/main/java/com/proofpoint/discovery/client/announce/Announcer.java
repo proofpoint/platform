@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
@@ -26,9 +25,12 @@ import com.google.inject.Inject;
 import com.proofpoint.discovery.client.DiscoveryException;
 import com.proofpoint.discovery.client.ExponentialBackOff;
 import com.proofpoint.log.Logger;
+import com.proofpoint.reporting.HealthCheck;
+import com.proofpoint.reporting.HealthExporter;
 import com.proofpoint.units.Duration;
 
 import javax.annotation.PreDestroy;
+import javax.management.InstanceAlreadyExistsException;
 import java.net.ConnectException;
 import java.util.Set;
 import java.util.UUID;
@@ -39,10 +41,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Throwables.propagate;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class Announcer
@@ -52,6 +59,8 @@ public class Announcer
 
     private final DiscoveryAnnouncementClient announcementClient;
     private final ScheduledExecutorService executor;
+    private final HealthExporter healthExporter;
+
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     private final ExponentialBackOff errorBackOff = new ExponentialBackOff(
@@ -60,9 +69,11 @@ public class Announcer
             "Discovery server connect succeeded for announce",
             "Cannot connect to discovery server for announce",
             log);
+    private final AtomicReference<Throwable> failed = new AtomicReference<>();
+    private final AtomicLong nextAnnouncementTime = new AtomicLong();
 
     @Inject
-    public Announcer(DiscoveryAnnouncementClient announcementClient, Set<ServiceAnnouncement> serviceAnnouncements)
+    public Announcer(DiscoveryAnnouncementClient announcementClient, Set<ServiceAnnouncement> serviceAnnouncements, HealthExporter healthExporter)
     {
         checkNotNull(announcementClient, "client is null");
         checkNotNull(serviceAnnouncements, "serviceAnnouncements is null");
@@ -72,12 +83,20 @@ public class Announcer
             announcements.put(serviceAnnouncement.getId(), serviceAnnouncement);
         }
         executor = new ScheduledThreadPoolExecutor(5, daemonThreadsNamed("Announcer-%s"));
+        this.healthExporter = checkNotNull(healthExporter, "healthExporter is null");
+        nextAnnouncementTime.set(System.nanoTime());
     }
 
     public void start()
     {
-        Preconditions.checkState(!executor.isShutdown(), "Announcer has been destroyed");
+        checkState(!executor.isShutdown(), "Announcer has been destroyed");
         if (started.compareAndSet(false, true)) {
+            try {
+                healthExporter.export(null, this);
+            }
+            catch (InstanceAlreadyExistsException e) {
+                throw propagate(e);
+            }
             // announce immediately, if discovery is running
             announce();
         }
@@ -129,6 +148,8 @@ public class Announcer
             public void onSuccess(Duration duration)
             {
                 errorBackOff.success();
+                failed.set(null);
+                nextAnnouncementTime.set(System.nanoTime() + duration.roundTo(NANOSECONDS));
 
                 // wait 80% of the suggested delay
                 duration = new Duration(duration.toMillis() * 0.8, MILLISECONDS);
@@ -139,11 +160,28 @@ public class Announcer
             public void onFailure(Throwable t)
             {
                 Duration duration = errorBackOff.failed(t);
+                failed.set(t);
                 scheduleNextAnnouncement(duration);
             }
         }, executor);
 
         return future;
+    }
+
+    @HealthCheck("Discovery announcement")
+    Object checkAnnouncementHealth()
+    {
+        Throwable throwable = failed.get();
+        if (throwable != null) {
+            return throwable;
+        }
+
+        long overdue = System.nanoTime() - nextAnnouncementTime.get();
+        if (overdue > 0) {
+            return "Overdue for " + new Duration(overdue, NANOSECONDS).convertToMostSuccinctTimeUnit();
+        }
+
+        return null;
     }
 
     private void scheduleNextAnnouncement(Duration delay)
@@ -171,11 +209,11 @@ public class Announcer
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw Throwables.propagate(e);
+            throw propagate(e);
         }
         catch (ExecutionException e) {
             Throwables.propagateIfPossible(e.getCause(), type);
-            throw Throwables.propagate(e.getCause());
+            throw propagate(e.getCause());
         }
     }
 }
