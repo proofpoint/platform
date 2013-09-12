@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>jmx</artifactId>
+    <artifactId>concurrent</artifactId>
     <packaging>jar</packaging>
-    <name>jmx</name>
+    <name>concurrent</name>
 
     <parent>
         <groupId>com.proofpoint.platform</groupId>
@@ -14,22 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
-            <artifactId>log</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.proofpoint.platform</groupId>
-            <artifactId>configuration</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.proofpoint.platform</groupId>
-            <artifactId>discovery</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.weakref</groupId>
-            <artifactId>jmxutils</artifactId>
+            <artifactId>units</artifactId>
         </dependency>
 
         <dependency>
@@ -38,24 +23,13 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-multibindings</artifactId>
+            <groupId>org.weakref</groupId>
+            <artifactId>jmxutils</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.proofpoint.platform</groupId>
-            <artifactId>testing</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
