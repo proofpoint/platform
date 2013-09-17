@@ -30,11 +30,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -62,9 +57,7 @@ public class TestOverrideMethodFilterInHttpServer
     {
         resource = new TestResource();
         server = createServer(resource);
-
         client = new ApacheHttpClient();
-
         server.start();
     }
 
@@ -213,62 +206,9 @@ public class TestOverrideMethodFilterInHttpServer
         assertNonOverridableMethod(buildRequestWithQueryParam(PUT, GET));
     }
 
-    @Path("/")
-    public static class TestResource
+    private static TestingHttpServer createServer(final TestResource resource)
     {
-        private volatile boolean post;
-        private volatile boolean put;
-        private volatile boolean get;
-        private volatile boolean delete;
 
-        @POST
-        public void post()
-        {
-            post = true;
-        }
-
-        @GET
-        public boolean get()
-        {
-            get = true;
-            return true;
-        }
-
-        @DELETE
-        public void delete()
-        {
-            delete = true;
-        }
-
-        @PUT
-        public void put()
-        {
-            put = true;
-        }
-
-        public boolean postCalled()
-        {
-            return post;
-        }
-
-        public boolean putCalled()
-        {
-            return put;
-        }
-
-        public boolean getCalled()
-        {
-            return get;
-        }
-
-        public boolean deleteCalled()
-        {
-            return delete;
-        }
-    }
-
-    private TestingHttpServer createServer(final TestResource resource)
-    {
         return Guice.createInjector(
                 new TestingNodeModule(),
                 new JaxrsModule(),
@@ -283,4 +223,5 @@ public class TestOverrideMethodFilterInHttpServer
                     }
                 }).getInstance(TestingHttpServer.class);
     }
+
 }
