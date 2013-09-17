@@ -31,7 +31,7 @@ import static com.google.inject.multibindings.MapBinder.newMapBinder;
 
 public class JaxrsModule implements Module
 {
-    public static final String JERSEY_SPI_CONTAINER_CONTAINER_REQUEST_FILTERS = "com.sun.jersey.spi.container.ContainerRequestFilters";
+    private static final String JERSEY_SPI_CONTAINER_CONTAINER_REQUEST_FILTERS = "com.sun.jersey.spi.container.ContainerRequestFilters";
 
     @Override
     public void configure(Binder binder)
