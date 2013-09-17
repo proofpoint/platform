@@ -27,8 +27,12 @@ import javax.servlet.Servlet;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.google.inject.multibindings.MapBinder.newMapBinder;
+
 public class JaxrsModule implements Module
 {
+    public static final String JERSEY_SPI_CONTAINER_CONTAINER_REQUEST_FILTERS = "com.sun.jersey.spi.container.ContainerRequestFilters";
+
     @Override
     public void configure(Binder binder)
     {
@@ -39,15 +43,11 @@ public class JaxrsModule implements Module
         binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(Key.get(GuiceContainer.class));
         binder.bind(JsonMapper.class).in(Scopes.SINGLETON);
         binder.bind(ParsingExceptionMapper.class).in(Scopes.SINGLETON);
+
+        newMapBinder(binder, String.class, String.class, TheServlet.class)
+                .addBinding(JERSEY_SPI_CONTAINER_CONTAINER_REQUEST_FILTERS)
+                .toInstance(OverrideMethodFilter.class.getName());
+
     }
 
-    @Provides
-    @TheServlet
-    public Map<String, String> createTheServletParams()
-    {
-        Map<String, String> initParams = new HashMap<>();
-        initParams.put("com.sun.jersey.spi.container.ContainerRequestFilters", OverrideMethodFilter.class.getName());
-
-        return initParams;
-    }
 }
