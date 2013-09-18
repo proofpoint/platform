@@ -18,4 +18,10 @@ public class TestingTicker
     {
         time += unit.toNanos(delta);
     }
+
+    public void set(long delta, TimeUnit unit)
+    {
+        time = unit.toNanos(delta);
+    }
+
 }

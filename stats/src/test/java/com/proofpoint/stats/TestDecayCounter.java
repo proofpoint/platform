@@ -33,4 +33,17 @@ public class TestDecayCounter
         double expected = 2 + 1 / Math.E;
         assertTrue(Math.abs(counter.getCount() - expected) < 1e-9);
     }
+
+    @Test
+    public void testAssumedHistory()
+    {
+        TestingTicker ticker = new TestingTicker();
+
+        DecayCounter counter = new DecayCounter(1, ticker, 1, TimeUnit.SECONDS);
+        counter.add(1);
+
+        double expected = 1.0;
+        assertTrue(Math.abs(counter.getCount() - expected) < 1e-9);
+    }
+
 }
