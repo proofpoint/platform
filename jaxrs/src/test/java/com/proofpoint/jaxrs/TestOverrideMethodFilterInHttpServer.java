@@ -15,31 +15,22 @@
  */
 package com.proofpoint.jaxrs;
 
-import com.google.inject.Binder;
-import com.google.inject.Guice;
-import com.google.inject.Module;
 import com.proofpoint.http.client.ApacheHttpClient;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.server.testing.TestingHttpServer;
-import com.proofpoint.http.server.testing.TestingHttpServerModule;
-import com.proofpoint.json.JsonModule;
-import com.proofpoint.node.testing.TestingNodeModule;
+import com.proofpoint.jaxrs.testing.TestResource;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
+import static com.proofpoint.jaxrs.util.HttpTestUtils.createServer;
 import static java.lang.String.format;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -62,9 +53,7 @@ public class TestOverrideMethodFilterInHttpServer
     {
         resource = new TestResource();
         server = createServer(resource);
-
         client = new ApacheHttpClient();
-
         server.start();
     }
 
@@ -213,74 +202,5 @@ public class TestOverrideMethodFilterInHttpServer
         assertNonOverridableMethod(buildRequestWithQueryParam(PUT, GET));
     }
 
-    @Path("/")
-    public static class TestResource
-    {
-        private volatile boolean post;
-        private volatile boolean put;
-        private volatile boolean get;
-        private volatile boolean delete;
 
-        @POST
-        public void post()
-        {
-            post = true;
-        }
-
-        @GET
-        public boolean get()
-        {
-            get = true;
-            return true;
-        }
-
-        @DELETE
-        public void delete()
-        {
-            delete = true;
-        }
-
-        @PUT
-        public void put()
-        {
-            put = true;
-        }
-
-        public boolean postCalled()
-        {
-            return post;
-        }
-
-        public boolean putCalled()
-        {
-            return put;
-        }
-
-        public boolean getCalled()
-        {
-            return get;
-        }
-
-        public boolean deleteCalled()
-        {
-            return delete;
-        }
-    }
-
-    private TestingHttpServer createServer(final TestResource resource)
-    {
-        return Guice.createInjector(
-                new TestingNodeModule(),
-                new JaxrsModule(),
-                new JsonModule(),
-                new TestingHttpServerModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(TestResource.class).toInstance(resource);
-                    }
-                }).getInstance(TestingHttpServer.class);
-    }
 }

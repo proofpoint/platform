@@ -6,10 +6,11 @@ import com.sun.jersey.spi.container.ResourceFilterFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.inject.multibindings.MapBinder.newMapBinder;
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
 
 public class JaxrsBinder
 {
-    public static final String RESOURCE_FILTERS = "com.sun.jersey.spi.container.ResourceFilters";
+
     private final Binder binder;
 
     private JaxrsBinder(Binder binder)
@@ -25,8 +26,8 @@ public class JaxrsBinder
     public void bindFilterToResource (Class<? extends ResourceFilterFactory> filterFactoryClass)
     {
         checkNotNull(filterFactoryClass, "Resource Filter Factory Class cannot be null");
-        newMapBinder(binder, String.class, String.class, TheServlet.class)
-                .addBinding(RESOURCE_FILTERS)
-                .toInstance(filterFactoryClass.getName());
+        newSetBinder(binder, ResourceFilterFactory.class)
+                .addBinding()
+                .to(filterFactoryClass);
     }
 }
