@@ -33,7 +33,7 @@ public class JaxrsTheServletProvider implements Provider<Map<String, String>>
     }
 
     @Inject(optional = true)
-    public void setServletInitParameters(Set<ResourceFilterFactory> resourceFilterFactorySet)
+    public void setResourceFilterFactories(Set<ResourceFilterFactory> resourceFilterFactorySet)
     {
         this.resourceFilterFactorySet = ImmutableSet.copyOf(resourceFilterFactorySet);
     }
@@ -44,24 +44,24 @@ public class JaxrsTheServletProvider implements Provider<Map<String, String>>
         if ((resourceFilterFactorySet != null) && !resourceFilterFactorySet.isEmpty()) {
             servletInitParameters.put(JERSEY_RESOURCE_FILTERS, join (resourceFilterFactorySet));
         }
-        return servletInitParameters;
+        return ImmutableMap.<String, String>builder().putAll(servletInitParameters).build();
     }
 
     private String join(Set<ResourceFilterFactory> resourceFilterFactorySet)
     {
-        StringBuilder stringBuilder = new StringBuilder("");
+        StringBuilder stringBuilder = new StringBuilder();
         boolean first = true;
         if ((resourceFilterFactorySet != null) && (!resourceFilterFactorySet.isEmpty())) {
             for (ResourceFilterFactory factory : resourceFilterFactorySet) {
-                if (!first) {
-                    stringBuilder.append(",");
-                } else {
+                if (first) {
                     first = false;
+                }
+                else {
+                    stringBuilder.append(",");
                 }
                 stringBuilder.append(factory.getClass().getName());
             }
         }
         return stringBuilder.toString();
-
     }
 }

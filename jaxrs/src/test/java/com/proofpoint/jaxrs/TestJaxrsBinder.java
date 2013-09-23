@@ -11,8 +11,6 @@ import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StaticBodyGenerator;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.http.server.testing.TestingHttpServer;
-import com.proofpoint.jaxrs.testing.MockFilterFactory;
-import com.proofpoint.jaxrs.testing.TestResource;
 import com.sun.jersey.spi.container.ResourceFilterFactory;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -32,13 +30,13 @@ public class TestJaxrsBinder
     ResourceFilterFactory filterFactory;
 
     @BeforeTest
-    public void setup ()
+    public void setup()
     {
         filterFactory = mock(ResourceFilterFactory.class);
     }
 
     @Test
-    public void testInstantiation ()
+    public void testInstantiation()
     {
         Injector injector = Guice.createInjector(new Module()
         {
@@ -46,19 +44,19 @@ public class TestJaxrsBinder
             public void configure(Binder binder)
             {
                 jaxrsBinder = JaxrsBinder.jaxrsBinder(binder);
-                jaxrsBinder.bindFilterToResource(filterFactory.getClass());
-                binder.bind (filterFactory.getClass()).in(Scopes.SINGLETON);
+                jaxrsBinder.bindResourceFilterFactory(filterFactory.getClass());
+                binder.bind(filterFactory.getClass()).in(Scopes.SINGLETON);
             }
         });
         try {
-            assertNotNull (injector.getInstance (filterFactory.getClass()));
+            assertNotNull(injector.getInstance(filterFactory.getClass()));
         } catch (Exception e) {
-            fail ("Failed to run test instantiation : " + e.getMessage());
+            fail("Failed to run test instantiation : " + e.getMessage());
         }
     }
 
     @Test
-    public void testMultipleFilterFactories ()
+    public void testMultipleFilterFactories()
     {
         final ResourceFilterFactory filterFactory1 = mock(ResourceFilterFactory.class);
         final ResourceFilterFactory filterFactory2 = mock(ResourceFilterFactory.class);
@@ -69,22 +67,22 @@ public class TestJaxrsBinder
             public void configure(Binder binder)
             {
                 jaxrsBinder = JaxrsBinder.jaxrsBinder(binder);
-                jaxrsBinder.bindFilterToResource(filterFactory1.getClass());
-                jaxrsBinder.bindFilterToResource(filterFactory2.getClass());
+                jaxrsBinder.bindResourceFilterFactory(filterFactory1.getClass());
+                jaxrsBinder.bindResourceFilterFactory(filterFactory2.getClass());
                 binder.bind (filterFactory1.getClass()).in(Scopes.SINGLETON);
                 binder.bind (filterFactory2.getClass()).in(Scopes.SINGLETON);
             }
         });
         try {
-            assertNotNull (injector.getInstance (filterFactory1.getClass()));
-            assertNotNull (injector.getInstance (filterFactory2.getClass()));
+            assertNotNull(injector.getInstance(filterFactory1.getClass()));
+            assertNotNull(injector.getInstance(filterFactory2.getClass()));
         } catch (Exception e) {
             fail ("Failed to run test instantiation : " + e.getMessage());
         }
     }
 
     @Test
-    public void testServerInstantiation () throws Exception
+    public void testServerInstantiation() throws Exception
     {
         TestResource resource = new TestResource();
         final ResourceFilterFactory filterFactory = new MockFilterFactory();
@@ -100,6 +98,6 @@ public class TestJaxrsBinder
 
         StringResponse response = client.execute(request, createStringResponseHandler());
         assertEquals(response.getStatusCode(), 201);
-        assertTrue (resource.getCalled());
+        assertTrue(resource.getCalled());
     }
 }

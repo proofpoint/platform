@@ -1,4 +1,4 @@
-package com.proofpoint.jaxrs.testing;
+package com.proofpoint.jaxrs;
 
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ResourceFilter;

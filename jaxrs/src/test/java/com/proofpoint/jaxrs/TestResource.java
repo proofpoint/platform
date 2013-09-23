@@ -1,4 +1,4 @@
-package com.proofpoint.jaxrs.testing;
+package com.proofpoint.jaxrs;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;

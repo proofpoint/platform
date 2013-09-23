@@ -7,7 +7,7 @@ import com.google.inject.Module;
 import com.proofpoint.http.server.testing.TestingHttpServer;
 import com.proofpoint.http.server.testing.TestingHttpServerModule;
 import com.proofpoint.jaxrs.JaxrsModule;
-import com.proofpoint.jaxrs.testing.TestResource;
+import com.proofpoint.jaxrs.TestResource;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.sun.jersey.spi.container.ContainerRequest;
@@ -22,8 +22,12 @@ import java.util.List;
 
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 
-public class HttpTestUtils
+public final class HttpTestUtils
 {
+    private HttpTestUtils ()
+    {
+    }
+
     public static TestingHttpServer createServer(final TestResource resource)
     {
 
@@ -57,7 +61,7 @@ public class HttpTestUtils
                     {
                         binder.bind(TestResource.class).toInstance(resource);
                         jaxrsBinder(binder)
-                                .bindFilterToResource(filterFactory.getClass());
+                                .bindResourceFilterFactory(filterFactory.getClass());
                     }
                 });
         return injector.getInstance(TestingHttpServer.class);

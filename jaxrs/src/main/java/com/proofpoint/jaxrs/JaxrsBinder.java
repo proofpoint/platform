@@ -15,7 +15,7 @@ public class JaxrsBinder
 
     private JaxrsBinder(Binder binder)
     {
-        this.binder = checkNotNull (binder, "binder cannot be null");
+        this.binder = checkNotNull(binder, "binder cannot be null");
     }
 
     public static JaxrsBinder jaxrsBinder(Binder binder)
@@ -23,7 +23,7 @@ public class JaxrsBinder
         return new JaxrsBinder(binder);
     }
 
-    public void bindFilterToResource (Class<? extends ResourceFilterFactory> filterFactoryClass)
+    public void bindResourceFilterFactory(Class<? extends ResourceFilterFactory> filterFactoryClass)
     {
         checkNotNull(filterFactoryClass, "Resource Filter Factory Class cannot be null");
         newSetBinder(binder, ResourceFilterFactory.class)
