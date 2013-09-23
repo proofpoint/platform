@@ -97,7 +97,7 @@ public class TestJaxrsBinder
                 .build();
 
         StringResponse response = client.execute(request, createStringResponseHandler());
-        assertEquals(response.getStatusCode(), 201);
+        assertEquals(response.getStatusCode(), 503);
         assertTrue(resource.getCalled());
     }
 }

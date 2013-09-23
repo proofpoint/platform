@@ -93,7 +93,7 @@ public final class HttpTestUtils
                     @Override
                     public ContainerResponse filter(ContainerRequest request, ContainerResponse response)
                     {
-                        response.setStatus(201);
+                        response.setStatus(503);
                         return response;
                     }
                 };
