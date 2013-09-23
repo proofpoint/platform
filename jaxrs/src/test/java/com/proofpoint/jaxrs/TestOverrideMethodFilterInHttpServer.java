@@ -15,11 +15,17 @@
  */
 package com.proofpoint.jaxrs;
 
+import com.google.inject.Binder;
+import com.google.inject.Guice;
+import com.google.inject.Module;
 import com.proofpoint.http.client.ApacheHttpClient;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.server.testing.TestingHttpServer;
+import com.proofpoint.http.server.testing.TestingHttpServerModule;
+import com.proofpoint.json.JsonModule;
+import com.proofpoint.node.testing.TestingNodeModule;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -29,7 +35,6 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
-import static com.proofpoint.jaxrs.util.HttpTestUtils.createServer;
 import static java.lang.String.format;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -201,5 +206,22 @@ public class TestOverrideMethodFilterInHttpServer
         assertNonOverridableMethod(buildRequestWithQueryParam(PUT, GET));
     }
 
+    private static TestingHttpServer createServer(final TestResource resource)
+    {
+
+        return Guice.createInjector(
+                new TestingNodeModule(),
+                new JaxrsModule(),
+                new JsonModule(),
+                new TestingHttpServerModule(),
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(TestResource.class).toInstance(resource);
+                    }
+                }).getInstance(TestingHttpServer.class);
+    }
 
 }

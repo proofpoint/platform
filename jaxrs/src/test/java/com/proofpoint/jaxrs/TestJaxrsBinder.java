@@ -11,13 +11,16 @@ import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StaticBodyGenerator;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.http.server.testing.TestingHttpServer;
+import com.proofpoint.http.server.testing.TestingHttpServerModule;
+import com.proofpoint.json.JsonModule;
+import com.proofpoint.node.testing.TestingNodeModule;
 import com.sun.jersey.spi.container.ResourceFilterFactory;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
-import static com.proofpoint.jaxrs.util.HttpTestUtils.createServerWithFilter;
+import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -85,7 +88,7 @@ public class TestJaxrsBinder
     public void testServerInstantiation() throws Exception
     {
         TestResource resource = new TestResource();
-        final ResourceFilterFactory filterFactory = new MockFilterFactory();
+        final ResourceFilterFactory filterFactory = new TestFilterFactory();
 
         TestingHttpServer server = createServerWithFilter(resource, filterFactory);
         ApacheHttpClient client = new ApacheHttpClient();
@@ -99,5 +102,26 @@ public class TestJaxrsBinder
         StringResponse response = client.execute(request, createStringResponseHandler());
         assertEquals(response.getStatusCode(), 503);
         assertTrue(resource.getCalled());
+    }
+
+    private static TestingHttpServer createServerWithFilter (final TestResource resource, final ResourceFilterFactory filterFactory)
+    {
+
+        Injector injector = Guice.createInjector(
+                new TestingNodeModule(),
+                new JaxrsModule(),
+                new JsonModule(),
+                new TestingHttpServerModule(),
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(TestResource.class).toInstance(resource);
+                        jaxrsBinder(binder)
+                                .bindResourceFilterFactory(filterFactory.getClass());
+                    }
+                });
+        return injector.getInstance(TestingHttpServer.class);
     }
 }
