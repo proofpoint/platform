@@ -57,7 +57,9 @@ public class TestOverrideMethodFilterInHttpServer
     {
         resource = new TestResource();
         server = createServer(resource);
+
         client = new ApacheHttpClient();
+
         server.start();
     }
 
@@ -208,7 +210,6 @@ public class TestOverrideMethodFilterInHttpServer
 
     private static TestingHttpServer createServer(final TestResource resource)
     {
-
         return Guice.createInjector(
                 new TestingNodeModule(),
                 new JaxrsModule(),
@@ -223,5 +224,4 @@ public class TestOverrideMethodFilterInHttpServer
                     }
                 }).getInstance(TestingHttpServer.class);
     }
-
 }
