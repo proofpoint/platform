@@ -1,5 +1,6 @@
 package com.proofpoint.jaxrs;
 
+import com.beust.jcommander.internal.Sets;
 import com.google.common.base.Charsets;
 import com.google.inject.Binder;
 import com.google.inject.Guice;
@@ -17,6 +18,8 @@ import com.proofpoint.node.testing.TestingNodeModule;
 import com.sun.jersey.spi.container.ResourceFilterFactory;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+
+import java.util.Set;
 
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
@@ -89,8 +92,10 @@ public class TestJaxrsBinder
     {
         TestResource resource = new TestResource();
         final ResourceFilterFactory filterFactory = new TestFilterFactory();
+        Set<ResourceFilterFactory> filterFactories = Sets.newHashSet();
+        filterFactories.add(filterFactory);
 
-        TestingHttpServer server = createServerWithFilter(resource, filterFactory);
+        TestingHttpServer server = createServerWithFilter(resource, filterFactories);
         ApacheHttpClient client = new ApacheHttpClient();
         server.start();
 
@@ -104,7 +109,32 @@ public class TestJaxrsBinder
         assertTrue(resource.getCalled());
     }
 
-    private static TestingHttpServer createServerWithFilter (final TestResource resource, final ResourceFilterFactory filterFactory)
+    @Test
+    public void testMultipleFiltersInServer() throws Exception
+    {
+        TestResource resource = new TestResource();
+        final ResourceFilterFactory statusCodeChangeFilterFactory = new TestFilterFactory();
+        final ResourceFilterFactory headerChangeFilterFactory = new SecondTestFilterFactory();
+        Set<ResourceFilterFactory> filterFactories = Sets.newHashSet();
+        filterFactories.add(statusCodeChangeFilterFactory);
+        filterFactories.add(headerChangeFilterFactory);
+
+        TestingHttpServer server = createServerWithFilter(resource, filterFactories);
+        ApacheHttpClient client = new ApacheHttpClient();
+        server.start();
+
+        Request request = prepareGet()
+                .setUri(server.getBaseUrl())
+                .setBodyGenerator(StaticBodyGenerator.createStaticBodyGenerator("", Charsets.US_ASCII))
+                .build();
+
+        StringResponse response = client.execute(request, createStringResponseHandler());
+        assertEquals(response.getStatusCode(), 503);
+        assertEquals(response.getHeader("NewHeader"), "NewValue");
+        assertTrue(resource.getCalled());
+    }
+
+    private static TestingHttpServer createServerWithFilter (final TestResource resource, final Set<ResourceFilterFactory> filterFactories)
     {
 
         Injector injector = Guice.createInjector(
@@ -118,8 +148,10 @@ public class TestJaxrsBinder
                     public void configure(Binder binder)
                     {
                         binder.bind(TestResource.class).toInstance(resource);
-                        jaxrsBinder(binder)
+                        for (ResourceFilterFactory filterFactory : filterFactories) {
+                            jaxrsBinder(binder)
                                 .bindResourceFilterFactory(filterFactory.getClass());
+                        }
                     }
                 });
         return injector.getInstance(TestingHttpServer.class);
