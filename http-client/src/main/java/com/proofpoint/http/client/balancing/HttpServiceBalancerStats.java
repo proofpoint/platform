@@ -15,15 +15,24 @@
  */
 package com.proofpoint.http.client.balancing;
 
-class InnerHandlerException extends RetryException
-{
-    InnerHandlerException(Exception cause, String failureCategory)
-    {
-        super(cause, failureCategory);
-    }
+import com.proofpoint.reporting.Key;
+import com.proofpoint.stats.CounterStat;
+import com.proofpoint.stats.TimeStat;
 
-    InnerHandlerException(Exception cause, Exception failureException)
-    {
-        super(cause, failureException);
+import java.net.URI;
+
+public interface HttpServiceBalancerStats
+{
+    CounterStat failure(@Key("targetUri") URI uri, @Key("failure") String failureCategory);
+
+    TimeStat responseTime(@Key("targetUri") URI uri, @Key("status") Status status);
+
+    public enum Status {
+        SUCCESS, FAILURE;
+
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
     }
 }
