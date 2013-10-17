@@ -13,26 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofpoint.http.client.balancing;
+package com.proofpoint.node;
 
-import com.proofpoint.reporting.Key;
-import com.proofpoint.stats.CounterStat;
-import com.proofpoint.stats.TimeStat;
+import javax.inject.Qualifier;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.net.URI;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
 
-public interface HttpServiceBalancerStats
+@Retention(RetentionPolicy.RUNTIME)
+@Target({FIELD, PARAMETER, METHOD})
+@Qualifier
+@interface ApplicationName
 {
-    CounterStat failure(@Key("targetUri") URI uri, @Key("failure") String failureCategory);
-
-    TimeStat responseTime(@Key("targetUri") URI uri, @Key("status") Status status);
-
-    public enum Status {
-        SUCCESS, FAILURE;
-
-        @Override
-        public String toString() {
-            return name().toLowerCase();
-        }
-    }
 }

@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofpoint.http.client.balancing;
+package com.proofpoint.node;
 
-import com.proofpoint.reporting.Key;
-import com.proofpoint.stats.CounterStat;
-import com.proofpoint.stats.TimeStat;
+import com.google.inject.Binder;
+import com.google.inject.Module;
 
-import java.net.URI;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public interface HttpServiceBalancerStats
+public class ApplicationNameModule implements Module
 {
-    CounterStat failure(@Key("targetUri") URI uri, @Key("failure") String failureCategory);
+    private final String applicationName;
 
-    TimeStat responseTime(@Key("targetUri") URI uri, @Key("status") Status status);
+    public ApplicationNameModule(String applicationName)
+    {
+        this.applicationName = checkNotNull(applicationName, "applicationName is null");
+    }
 
-    public enum Status {
-        SUCCESS, FAILURE;
-
-        @Override
-        public String toString() {
-            return name().toLowerCase();
-        }
+    @Override
+    public void configure(Binder binder)
+    {
+        binder.bindConstant().annotatedWith(ApplicationName.class).to(applicationName);
     }
 }

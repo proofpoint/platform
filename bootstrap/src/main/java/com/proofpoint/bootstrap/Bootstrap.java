@@ -39,6 +39,7 @@ import com.proofpoint.event.client.EventClient;
 import com.proofpoint.log.Logger;
 import com.proofpoint.log.Logging;
 import com.proofpoint.log.LoggingConfiguration;
+import com.proofpoint.node.ApplicationNameModule;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -73,14 +74,34 @@ public class Bootstrap
     private Map<String, String> applicationDefaults = null;
 
     private boolean initialized = false;
+    private final String applicationName;
 
+    /**
+     * @deprecated Use <tt>Bootstrap.bootstrapApplication(String).withModules(Module...)</tt> instead.
+     */
+    @Deprecated
     public Bootstrap(Module... modules)
     {
         this(ImmutableList.copyOf(modules));
     }
 
+    /**
+     * @deprecated Use <tt>Bootstrap.bootstrapApplication(String).withModules(Iterable &lt;? extends Module>&gt;)</tt> instead.
+     */
+    @Deprecated
     public Bootstrap(Iterable<? extends Module> modules)
     {
+        this("legacy-app", modules);
+    }
+
+    public static BootstrapWithoutModules bootstrapApplication(String applicationName)
+    {
+        return new BootstrapWithoutModules(applicationName);
+    }
+
+    private Bootstrap(String applicationName, Iterable<? extends Module> modules)
+    {
+        this.applicationName = checkNotNull(applicationName, "applicationName is null");
         this.modules = ImmutableList.copyOf(modules);
     }
 
@@ -198,6 +219,7 @@ public class Bootstrap
         Builder<Module> moduleList = ImmutableList.builder();
         moduleList.add(new LifeCycleModule());
         moduleList.add(new ConfigurationModule(configurationFactory));
+        moduleList.add(new ApplicationNameModule(applicationName));
         if (!messages.isEmpty()) {
             moduleList.add(new ValidationErrorModule(messages));
         }
@@ -285,5 +307,25 @@ public class Bootstrap
             }
         }
         return columnPrinter;
+    }
+
+    public static class BootstrapWithoutModules
+    {
+        private final String applicationName;
+
+        private BootstrapWithoutModules(String applicationName)
+        {
+            this.applicationName = checkNotNull(applicationName, "applicationName is null");
+        }
+
+        public Bootstrap withModules(Module... modules)
+        {
+            return withModules(ImmutableList.copyOf(modules));
+        }
+
+        public Bootstrap withModules(Iterable<? extends Module> modules)
+        {
+            return new Bootstrap(applicationName, modules);
+        }
     }
 }
