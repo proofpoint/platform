@@ -15,7 +15,6 @@
  */
 package com.proofpoint.jaxrs;
 
-import com.proofpoint.log.Logger;
 import com.proofpoint.units.Duration;
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ContainerRequest;
@@ -28,8 +27,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 class TimingFilter
         implements ContainerRequestFilter, ContainerResponseFilter
 {
-    private static final Logger logger = Logger.get(TimingFilter.class);
-    private static final String START_TIME_KEY = TimingFilter.class.getName() + "start-time";
+    private static final String START_TIME_KEY = TimingFilter.class.getName() + ".start-time";
     private final AbstractMethod abstractMethod;
     private final RequestStats requestStats;
 
