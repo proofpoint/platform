@@ -22,17 +22,21 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerStats.Status;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class HttpServiceBalancerImpl
         implements HttpServiceBalancer
 {
     private final AtomicReference<Set<URI>> httpUris = new AtomicReference<>((Set<URI>) ImmutableSet.<URI>of());
+    private final Map<URI, Integer> concurrentAttempts = new HashMap<>();
     private final String description;
     private final HttpServiceBalancerStats httpServiceBalancerStats;
     private final Ticker ticker;
@@ -82,8 +86,25 @@ public class HttpServiceBalancerImpl
                 }
             }
 
+            int leastConcurrent = Integer.MAX_VALUE;
+            ArrayList<URI> leastUris = new ArrayList<>();
+            synchronized (concurrentAttempts) {
+                for (URI uri : httpUris) {
+                    int uriConcurrent = firstNonNull(concurrentAttempts.get(uri), 0);
+                    if (uriConcurrent < leastConcurrent) {
+                        leastConcurrent = uriConcurrent;
+                        leastUris = new ArrayList<>(ImmutableSet.of(uri));
+                    }
+                    else if (uriConcurrent == leastConcurrent) {
+                        leastUris.add(uri);
+                    }
+                }
+
+                uri = leastUris.get(ThreadLocalRandom.current().nextInt(0, leastUris.size()));
+                concurrentAttempts.put(uri, leastConcurrent + 1);
+            }
+
             this.attempted = attempted;
-            uri = httpUris.get(ThreadLocalRandom.current().nextInt(0, httpUris.size()));
             startTick = ticker.read();
         }
 
@@ -96,14 +117,29 @@ public class HttpServiceBalancerImpl
         @Override
         public void markGood()
         {
+            decrementConcurrency();
             httpServiceBalancerStats.responseTime(uri, Status.SUCCESS).add(ticker.read() - startTick, TimeUnit.NANOSECONDS);
         }
 
         @Override
         public void markBad(String failureCategory)
         {
+            decrementConcurrency();
             httpServiceBalancerStats.responseTime(uri, Status.FAILURE).add(ticker.read() - startTick, TimeUnit.NANOSECONDS);
             httpServiceBalancerStats.failure(uri, failureCategory).update(1);
+        }
+
+        private void decrementConcurrency()
+        {
+            synchronized (concurrentAttempts) {
+                Integer uriConcurrent = concurrentAttempts.get(uri);
+                if (uriConcurrent == null || uriConcurrent <= 1) {
+                    concurrentAttempts.remove(uri);
+                }
+                else {
+                    concurrentAttempts.put(uri, uriConcurrent - 1);
+                }
+            }
         }
 
         @Override
