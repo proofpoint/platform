@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class HttpServiceBalancerImpl
         implements HttpServiceBalancer
@@ -71,6 +72,7 @@ public class HttpServiceBalancerImpl
         private final Set<URI> attempted;
         private final URI uri;
         private final long startTick;
+        private boolean inProgress = true;
 
         public HttpServiceAttemptImpl(Set<URI> attempted)
         {
@@ -131,6 +133,8 @@ public class HttpServiceBalancerImpl
 
         private void decrementConcurrency()
         {
+            checkState(inProgress, "is in progress");
+            inProgress = false;
             synchronized (concurrentAttempts) {
                 Integer uriConcurrent = concurrentAttempts.get(uri);
                 if (uriConcurrent == null || uriConcurrent <= 1) {
@@ -145,6 +149,7 @@ public class HttpServiceBalancerImpl
         @Override
         public HttpServiceAttempt next()
         {
+            checkState(!inProgress, "is not still in progress");
             Set<URI> newAttempted = ImmutableSet.<URI>builder()
                     .add(uri)
                     .addAll(attempted)

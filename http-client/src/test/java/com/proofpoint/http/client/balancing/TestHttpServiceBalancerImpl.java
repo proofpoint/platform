@@ -197,8 +197,25 @@ public class TestHttpServiceBalancerImpl
             attempt1.markGood();
             attempt1 = httpServiceBalancer.createAttempt();
             assertNotEquals(attempt1.getUri(), attempt2.getUri(), "concurrent attempt");
+
+            HttpServiceAttempt attempt3 = httpServiceBalancer.createAttempt();
+            HttpServiceAttempt attempt4 = httpServiceBalancer.createAttempt();
+
+            assertNotEquals(attempt4.getUri(), attempt3.getUri(), "concurrent attempt");
+            attempt4.markBad("testing failure");
+            attempt4 = attempt4.next();
+            assertEquals(attempt4.getUri(), attempt3.getUri());
+            attempt4.markBad("testing failure");
+            attempt4 = attempt4.next();
+            assertNotEquals(attempt4.getUri(), attempt3.getUri(), "concurrent attempt");
+            attempt3.markGood();
+            attempt3 = httpServiceBalancer.createAttempt();
+            assertNotEquals(attempt3.getUri(), attempt4.getUri(), "concurrent attempt");
+
             attempt1.markGood();
             attempt2.markGood();
+            attempt3.markGood();
+            attempt4.markGood();
         }
     }
 }
