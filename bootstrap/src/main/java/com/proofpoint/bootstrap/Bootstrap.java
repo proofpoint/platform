@@ -41,13 +41,8 @@ import com.proofpoint.log.Logging;
 import com.proofpoint.log.LoggingConfiguration;
 import com.proofpoint.node.ApplicationNameModule;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.TreeMap;
+import java.io.*;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -100,7 +95,7 @@ public class Bootstrap
         return new BootstrapBeforeModules(applicationName);
     }
 
-    private Bootstrap(String applicationName, Iterable<? extends Module> modules, boolean initializeLogging)
+    protected Bootstrap(String applicationName, Iterable<? extends Module> modules, boolean initializeLogging)
     {
         if (initializeLogging) {
             logging = Logging.initialize();
@@ -153,6 +148,11 @@ public class Bootstrap
     {
         this.requireExplicitBindings = requireExplicitBindings;
         return this;
+    }
+
+    public List<Module> getModules()
+    {
+        return this.modules;
     }
 
     public Injector initialize()
@@ -307,31 +307,4 @@ public class Bootstrap
         return columnPrinter;
     }
 
-    public static class BootstrapBeforeModules
-    {
-        private final String applicationName;
-        private boolean initializeLogging = true;
-
-        private BootstrapBeforeModules(String applicationName)
-        {
-            this.applicationName = checkNotNull(applicationName, "applicationName is null");
-        }
-
-        @Beta
-        public BootstrapBeforeModules doNotInitializeLogging()
-        {
-            this.initializeLogging = false;
-            return this;
-        }
-
-        public Bootstrap withModules(Module... modules)
-        {
-            return withModules(ImmutableList.copyOf(modules));
-        }
-
-        public Bootstrap withModules(Iterable<? extends Module> modules)
-        {
-            return new Bootstrap(applicationName, modules, initializeLogging);
-        }
-    }
 }

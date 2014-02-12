@@ -15,6 +15,7 @@
  */
 package com.proofpoint.bootstrap;
 
+import com.google.common.io.Resources;
 import com.google.inject.Binder;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Module;
@@ -24,6 +25,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import javax.inject.Inject;
+
+import java.io.InputStream;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
 
@@ -67,6 +70,34 @@ public class TestBootstrap
         }
     }
 
+    @Test
+    public void testWithModulesFromWellFormattedFile()
+        throws Exception
+    {
+        testWithModulesFromFile("test-application-modules.config");
+    }
+
+    @Test
+    public void testWithModulesFromFileWithExtraLinesAndSpacing()
+            throws Exception
+    {
+        testWithModulesFromFile("test-application-modules-spacing.config");
+    }
+
+    private void testWithModulesFromFile(String fileName)
+            throws Exception
+    {
+        String input = Resources.getResource(fileName).getFile();
+
+        Bootstrap bootstrap = bootstrapApplication("test-application")
+                .withModulesFromFile(input)
+                .build();
+
+        Assert.assertEquals(bootstrap.getModules().size(), 2);
+        Assert.assertEquals(bootstrap.getModules().get(0).getClass(), ModuleA.class);
+        Assert.assertEquals(bootstrap.getModules().get(1).getClass(), ModuleB.class);
+    }
+
     public static class Instance
     {
     }
@@ -84,6 +115,22 @@ public class TestBootstrap
         @Inject
         public InstanceB(InstanceA a)
         {
+        }
+    }
+
+    public static class ModuleA implements Module
+    {
+        @Override
+        public void configure(Binder binder) {
+            //NOOP
+        }
+    }
+
+    public static class ModuleB implements Module
+    {
+        @Override
+        public void configure(Binder binder) {
+            //NOOP
         }
     }
 }

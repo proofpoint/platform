@@ -31,6 +31,7 @@ public class RackModule implements Module
     @Override
     public void configure(Binder binder)
     {
+        binder.requireExplicitBindings();
         binder.disableCircularProxies();
 
         binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(RackServlet.class).in(Scopes.SINGLETON);
