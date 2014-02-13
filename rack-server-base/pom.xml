@@ -169,7 +169,7 @@
                                                 </linecontainsregexp>
                                             </filterchain>
                                             <footer trim="yes" filtering="no">
-                                                gem "rake", "10.0.4"
+                                                gem "rake", ">= 10.0.4"
                                             </footer>
                                         </concat>
                                         <copy file="${project.basedir}/Gemfile.lock" tofile="${project.basedir}/Gemfile.build.lock" />
@@ -198,6 +198,49 @@
                                             <arg value="-c" />
                                             <arg value="if [ -d app/assets ]; then bundle exec rake assets:precompile; fi" />
                                         </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>application-modules</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <!--
+                                    Save value of application-modules property to a file and make sure
+                                    each entry is on a separate line with no extra whitespace
+                                    -->
+                                    <target name="Application Modules">
+                                        <mkdir dir="${project.build.directory}/etc"/>
+                                        <echo
+                                                file="${project.build.directory}/etc/application_modules.config"
+                                                encoding="utf-8">
+                                            ${application-modules}
+                                        </echo>
+                                        <replaceregexp
+                                                file="${project.build.directory}/etc/application_modules.config"
+                                                match="^\s+"
+                                                byline="true"
+                                                replace=""
+                                                />
+                                        <replaceregexp
+                                                file="${project.build.directory}/etc/application_modules.config"
+                                                match="\s+$"
+                                                byline="true"
+                                                replace=""
+                                                />
+                                        <replaceregexp
+                                                file="${project.build.directory}/etc/application_modules.config"
+                                                match="\s+"
+                                                byline="true"
+                                                replace="\n"
+                                                />
+                                        <fixcrlf
+                                                file="${project.build.directory}/etc/application_modules.config"
+                                                />
                                     </target>
                                 </configuration>
                             </execution>

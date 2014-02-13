@@ -15,7 +15,9 @@
  */
 package com.proofpoint.rack;
 
+import ch.qos.logback.core.util.FileUtil;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.discovery.client.DiscoveryModule;
@@ -30,6 +32,11 @@ import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.tracetoken.TraceTokenModule;
 import org.weakref.jmx.guice.MBeanModule;
 
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
 
 /**
@@ -37,24 +44,26 @@ import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
  */
 public class Main
 {
+    static Logger logger = null;
+    static Bootstrap app = null;
+
     public static void main(String[] args)
             throws Exception
     {
         try {
-            Bootstrap app = bootstrapApplication("rack")
-                    .withModules(
-                            new NodeModule(),
-                            new HttpServerModule(),
-                            new HttpEventModule(),
-                            new ReportingModule(),
-                            new ReportingClientModule(),
-                            new TraceTokenModule(),
-                            new DiscoveryModule(),
-                            new JsonModule(),
-                            new MBeanModule(),
-                            new RackModule(),
-                            new JmxModule()
-                    );
+            app = bootstrapApplication("rack").withApplicationModules().withModules(
+                    new NodeModule(),
+                    new HttpServerModule(),
+                    new HttpEventModule(),
+                    new ReportingModule(),
+                    new ReportingClientModule(),
+                    new TraceTokenModule(),
+                    new DiscoveryModule(),
+                    new JsonModule(),
+                    new MBeanModule(),
+                    new RackModule(),
+                    new JmxModule()
+            );
 
             Injector injector = app.initialize();
             injector.getInstance(Announcer.class).start();
@@ -69,4 +78,10 @@ public class Main
             System.exit(0);
         }
     }
+
+    public static List<Module> getApplicationModules()
+    {
+        return app.getModules();
+    }
+
 }

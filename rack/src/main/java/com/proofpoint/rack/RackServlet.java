@@ -80,7 +80,7 @@ public class RackServlet
     {
         RubyInstanceConfig runtimeConfig = createRuntimeConfig();
 
-        Map env = new HashMap(runtimeConfig.getEnvironment());
+        HashMap env = new HashMap(runtimeConfig.getEnvironment());
         env.remove("GEM_HOME");
         env.remove("GEM_PATH");
         runtimeConfig.setEnvironment(env);
@@ -107,6 +107,7 @@ public class RackServlet
                 "init.rb",
                 "logger.rb",
                 "railtie.rb",
+                "application_modules.rb",
                 "servlet_adapter.rb",
                 "builder.rb"
         );
