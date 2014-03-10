@@ -125,6 +125,9 @@ public class TestTestingReportCollectionFactory
         verifyNoMoreInteractions(someObject);
 
         assertEquals(someObject.get(), "bar");
+
+        // Verify calls on getSuper() don't affect verification of getMock()
+        verify(factory.getMock(KeyedDistribution.class)).add("foo", true);
     }
 
     @Test
@@ -141,6 +144,9 @@ public class TestTestingReportCollectionFactory
         verifyNoMoreInteractions(someObject);
 
         assertEquals(someObject.get(), "bar");
+
+        // Verify calls on getSuper() don't affect verification of getMock()
+        verify(factory.getMock(KeyedDistribution.class, "name")).add("foo", true);
     }
 
     @Test(expectedExceptions = Error.class, expectedExceptionsMessageRegExp = "Duplicate ReportCollection for interface .*")
