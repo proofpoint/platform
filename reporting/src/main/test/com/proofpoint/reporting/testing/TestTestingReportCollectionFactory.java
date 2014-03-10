@@ -114,9 +114,10 @@ public class TestTestingReportCollectionFactory
     @Test
     public void testSuper()
     {
-        factory.createReportCollection(KeyedDistribution.class)
-                .add("foo", true)
-                .put("bar");
+        KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class);
+        reportCollection.add("foo", true).put("bar");
+        reportCollection.add("foo", false).put("other");
+
         KeyedDistribution keyedDistribution = factory.getSuper(KeyedDistribution.class);
         SomeObject someObject = keyedDistribution.add("foo", true);
 
@@ -129,9 +130,10 @@ public class TestTestingReportCollectionFactory
     @Test
     public void testNamedSuper()
     {
-        factory.createReportCollection(KeyedDistribution.class, "name")
-                .add("foo", true)
-                .put("bar");
+        KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class, "name");
+        reportCollection.add("foo", true).put("bar");
+        reportCollection.add("foo", false).put("other");
+
         KeyedDistribution keyedDistribution = factory.getSuper(KeyedDistribution.class, "name");
         SomeObject someObject = keyedDistribution.add("foo", true);
 
