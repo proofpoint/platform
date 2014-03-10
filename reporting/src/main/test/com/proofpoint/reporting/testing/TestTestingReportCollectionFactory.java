@@ -40,85 +40,85 @@ public class TestTestingReportCollectionFactory
     }
 
     @Test
-    public void testGetMock()
+    public void testGetArgumentVerifier()
     {
         assertNotNull(factory.createReportCollection(KeyedDistribution.class));
-        assertNotNull(factory.getMock(KeyedDistribution.class));
-        assertNull(factory.getMock(KeyedDistribution2.class));
+        assertNotNull(factory.getArgumentVerifier(KeyedDistribution.class));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution2.class));
     }
 
     @Test
-    public void testGetNamedMock()
+    public void testGetNamedArgumentVerifier()
     {
         assertNotNull(factory.createReportCollection(KeyedDistribution.class, "foo"));
         assertNotNull(factory.createReportCollection(KeyedDistribution.class, "bar"));
 
-        KeyedDistribution foo = factory.getMock(KeyedDistribution.class, "foo");
-        KeyedDistribution bar = factory.getMock(KeyedDistribution.class, "bar");
+        KeyedDistribution foo = factory.getArgumentVerifier(KeyedDistribution.class, "foo");
+        KeyedDistribution bar = factory.getArgumentVerifier(KeyedDistribution.class, "bar");
         assertNotNull(foo);
         assertNotNull(bar);
         assertNotSame(foo, bar);
 
-        assertNull(factory.getMock(KeyedDistribution.class, "baz"));
-        assertNull(factory.getMock(KeyedDistribution2.class));
-        assertNull(factory.getMock(KeyedDistribution2.class, "foo"));
-        assertNull(factory.getMock(KeyedDistribution2.class, "baz"));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution.class, "baz"));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution2.class));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution2.class, "foo"));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution2.class, "baz"));
     }
 
     @Test
-    public void testMock()
+    public void testArgumentVerifier()
     {
         factory.createReportCollection(KeyedDistribution.class)
                 .add("foo", true);
-        KeyedDistribution keyedDistribution = factory.getMock(KeyedDistribution.class);
+        KeyedDistribution keyedDistribution = factory.getArgumentVerifier(KeyedDistribution.class);
         verify(keyedDistribution).add("foo", true);
         verifyNoMoreInteractions(keyedDistribution);
     }
 
     @Test
-    public void testNamedMock()
+    public void testNamedArgumentVerifier()
     {
         factory.createReportCollection(KeyedDistribution.class, "name")
                 .add("foo", true);
-        KeyedDistribution keyedDistribution = factory.getMock(KeyedDistribution.class, "name");
+        KeyedDistribution keyedDistribution = factory.getArgumentVerifier(KeyedDistribution.class, "name");
         verify(keyedDistribution).add("foo", true);
         verifyNoMoreInteractions(keyedDistribution);
     }
 
     @Test
-    public void testGetSuper()
+    public void testGetReportCollection()
     {
         assertNotNull(factory.createReportCollection(KeyedDistribution.class));
-        assertNotNull(factory.getSuper(KeyedDistribution.class));
-        assertNull(factory.getMock(KeyedDistribution2.class));
+        assertNotNull(factory.getReportCollection(KeyedDistribution.class));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution2.class));
     }
 
     @Test
-    public void testGetNamedSuper()
+    public void testGetNamedReportCollection()
     {
         assertNotNull(factory.createReportCollection(KeyedDistribution.class, "foo"));
         assertNotNull(factory.createReportCollection(KeyedDistribution.class, "bar"));
 
-        KeyedDistribution foo = factory.getSuper(KeyedDistribution.class, "foo");
-        KeyedDistribution bar = factory.getSuper(KeyedDistribution.class, "bar");
+        KeyedDistribution foo = factory.getReportCollection(KeyedDistribution.class, "foo");
+        KeyedDistribution bar = factory.getReportCollection(KeyedDistribution.class, "bar");
         assertNotNull(foo);
         assertNotNull(bar);
         assertNotSame(foo, bar);
 
-        assertNull(factory.getMock(KeyedDistribution.class, "baz"));
-        assertNull(factory.getMock(KeyedDistribution2.class));
-        assertNull(factory.getMock(KeyedDistribution2.class, "foo"));
-        assertNull(factory.getMock(KeyedDistribution2.class, "baz"));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution.class, "baz"));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution2.class));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution2.class, "foo"));
+        assertNull(factory.getArgumentVerifier(KeyedDistribution2.class, "baz"));
     }
 
     @Test
-    public void testSuper()
+    public void testReturnValueSpy()
     {
         KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class);
         reportCollection.add("foo", true).put("bar");
         reportCollection.add("foo", false).put("other");
 
-        KeyedDistribution keyedDistribution = factory.getSuper(KeyedDistribution.class);
+        KeyedDistribution keyedDistribution = factory.getReportCollection(KeyedDistribution.class);
         SomeObject someObject = keyedDistribution.add("foo", true);
 
         verify(someObject).put("bar");
@@ -126,18 +126,18 @@ public class TestTestingReportCollectionFactory
 
         assertEquals(someObject.get(), "bar");
 
-        // Verify calls on getSuper() don't affect verification of getMock()
-        verify(factory.getMock(KeyedDistribution.class)).add("foo", true);
+        // Verify calls on getReportCollection() don't affect verification of getArgumentVerifier()
+        verify(factory.getArgumentVerifier(KeyedDistribution.class)).add("foo", true);
     }
 
     @Test
-    public void testNamedSuper()
+    public void testNamedReturnValueSpy()
     {
         KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class, "name");
         reportCollection.add("foo", true).put("bar");
         reportCollection.add("foo", false).put("other");
 
-        KeyedDistribution keyedDistribution = factory.getSuper(KeyedDistribution.class, "name");
+        KeyedDistribution keyedDistribution = factory.getReportCollection(KeyedDistribution.class, "name");
         SomeObject someObject = keyedDistribution.add("foo", true);
 
         verify(someObject).put("bar");
@@ -145,8 +145,8 @@ public class TestTestingReportCollectionFactory
 
         assertEquals(someObject.get(), "bar");
 
-        // Verify calls on getSuper() don't affect verification of getMock()
-        verify(factory.getMock(KeyedDistribution.class, "name")).add("foo", true);
+        // Verify calls on getReportCollection() don't affect verification of getArgumentVerifier()
+        verify(factory.getArgumentVerifier(KeyedDistribution.class, "name")).add("foo", true);
     }
 
     @Test(expectedExceptions = Error.class, expectedExceptionsMessageRegExp = "Duplicate ReportCollection for interface .*")

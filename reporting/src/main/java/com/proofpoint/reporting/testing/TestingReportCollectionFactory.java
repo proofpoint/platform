@@ -38,7 +38,7 @@ import static org.mockito.Mockito.spy;
 public class TestingReportCollectionFactory
     extends ReportCollectionFactory
 {
-    private final NamedInstanceMap mockMap = new NamedInstanceMap();
+    private final NamedInstanceMap argumentVerifierMap = new NamedInstanceMap();
     private final NamedInstanceMap superMap = new NamedInstanceMap();
 
     public TestingReportCollectionFactory()
@@ -59,8 +59,8 @@ public class TestingReportCollectionFactory
     {
         checkNotNull(aClass, "class is null");
 
-        T mock = mock(aClass);
-        mockMap.put(null, aClass, mock);
+        T argumentVerifier = mock(aClass);
+        argumentVerifierMap.put(null, aClass, argumentVerifier);
 
         T superCollection = super.createReportCollection(aClass);
         superMap.put(null, aClass, superCollection);
@@ -68,7 +68,7 @@ public class TestingReportCollectionFactory
         return (T) newProxyInstance(
                 aClass.getClassLoader(),
                 new Class[]{aClass},
-                new TestingInvocationHandler(mock, superCollection));
+                new TestingInvocationHandler(argumentVerifier, superCollection));
     }
 
     @SuppressWarnings("unchecked")
@@ -78,8 +78,8 @@ public class TestingReportCollectionFactory
         checkNotNull(aClass, "class is null");
         checkNotNull(name, "name is null");
 
-        T mock = mock(aClass);
-        mockMap.put(name, aClass, mock);
+        T argumentVerifier = mock(aClass);
+        argumentVerifierMap.put(name, aClass, argumentVerifier);
 
         T superCollection = super.createReportCollection(aClass);
         superMap.put(name, aClass, superCollection);
@@ -87,30 +87,26 @@ public class TestingReportCollectionFactory
         return (T) newProxyInstance(
                 aClass.getClassLoader(),
                 new Class[]{aClass},
-                new TestingInvocationHandler(mock, superCollection));
+                new TestingInvocationHandler(argumentVerifier, superCollection));
     }
 
-    @Nullable
-    public <T> T getMock(Class<T> aClass)
+    public <T> T getArgumentVerifier(Class<T> aClass)
     {
-        return mockMap.get(null, aClass);
+        return argumentVerifierMap.get(null, aClass);
     }
 
-    @Nullable
-    public <T> T getMock(Class<T> aClass, String name)
+    public <T> T getArgumentVerifier(Class<T> aClass, String name)
     {
         checkNotNull(name, "name is null");
-        return mockMap.get(name, aClass);
+        return argumentVerifierMap.get(name, aClass);
     }
 
-    @Nullable
-    public <T> T getSuper(Class<T> aClass)
+    public <T> T getReportCollection(Class<T> aClass)
     {
         return superMap.get(null, aClass);
     }
 
-    @Nullable
-    public <T> T getSuper(Class<T> aClass, String name)
+    public <T> T getReportCollection(Class<T> aClass, String name)
     {
         checkNotNull(name, "name is null");
         return superMap.get(name, aClass);
@@ -133,12 +129,12 @@ public class TestingReportCollectionFactory
     private static class TestingInvocationHandler<T>
             implements InvocationHandler
     {
-        private final T mock;
+        private final T argumentVerifier;
         private final T superCollection;
 
-        public TestingInvocationHandler(T mock, T superCollection)
+        public TestingInvocationHandler(T argumentVerifier, T superCollection)
         {
-            this.mock = mock;
+            this.argumentVerifier = argumentVerifier;
             this.superCollection = superCollection;
         }
 
@@ -146,7 +142,7 @@ public class TestingReportCollectionFactory
         public Object invoke(Object proxy, Method method, Object[] args)
                 throws Throwable
         {
-            method.invoke(mock, args);
+            method.invoke(argumentVerifier, args);
             return method.invoke(superCollection, args);
         }
     }
