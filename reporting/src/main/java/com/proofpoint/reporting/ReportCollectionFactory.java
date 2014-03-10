@@ -124,7 +124,7 @@ public class ReportCollectionFactory
         @GuardedBy("registeredMap")
         private final Map<List<Optional<String>>, Object> registeredMap = new HashMap<>();
         @GuardedBy("registeredMap")
-        private final Set<Object> duplicates = new HashSet<>();
+        private final Set<Object> reinsertedSet = new HashSet<>();
         @GuardedBy("registeredMap")
         private final Map<Object, String> objectNameMap = new HashMap<>();
 
@@ -234,7 +234,7 @@ public class ReportCollectionFactory
                             synchronized (registeredMap) {
                                 Object existingStat = registeredMap.get(key);
                                 if (existingStat != null) {
-                                    duplicates.add(existingStat);
+                                    reinsertedSet.add(existingStat);
                                     return existingStat;
                                 }
                                 registeredMap.put(key, stat);
@@ -258,7 +258,7 @@ public class ReportCollectionFactory
             public void onRemoval(RemovalNotification<List<Optional<String>>, Object> notification)
             {
                 synchronized (registeredMap) {
-                    if (duplicates.remove(notification.getValue())) {
+                    if (reinsertedSet.remove(notification.getValue())) {
                         return;
                     }
                     String objectName = objectNameMap.remove(notification.getValue());
