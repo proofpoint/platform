@@ -167,7 +167,7 @@ some minutes of a particular returned object not being returned again, the
 object will be unexported from reporting and JMX and allowed to be garbage
 collected.
 
-Testing Report Collections
+Testing report collections
 --------------------------
 
 The `TestingReportCollectionFactory` class produces report collection
