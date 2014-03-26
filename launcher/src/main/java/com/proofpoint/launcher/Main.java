@@ -243,6 +243,14 @@ public class Main
 
             List<String> javaArgs = new LinkedList<>();
             javaArgs.add("java");
+            javaArgs.add("-server");
+            javaArgs.add("-XX:+UseConcMarkSweepGC");
+            javaArgs.add("-XX:+ExplicitGCInvokesConcurrent");
+            javaArgs.add("-XX:+HeapDumpOnOutOfMemoryError");
+            javaArgs.add("-XX:+AggressiveOpts");
+            javaArgs.add("-XX:+DoEscapeAnalysis");
+            javaArgs.add("-XX:+UseCompressedOops");
+            javaArgs.add("-XX:OnOutOfMemoryError=kill -9 %p");
 
             if (!new File(configPath).exists()) {
                 System.err.println("Config file is missing: " + configPath);
