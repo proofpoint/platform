@@ -250,7 +250,12 @@ public class Main
             javaArgs.add("-XX:+AggressiveOpts");
             javaArgs.add("-XX:+DoEscapeAnalysis");
             javaArgs.add("-XX:+UseCompressedOops");
-            javaArgs.add("-XX:OnOutOfMemoryError=kill -9 %p");
+            if (System.getProperty("os.name").startsWith("Windows")) {
+                javaArgs.add("-XX:OnOutOfMemoryError=taskkill /f /pid %p");
+            }
+            else {
+                javaArgs.add("-XX:OnOutOfMemoryError=kill -9 %p");
+            }
 
             if (!new File(configPath).exists()) {
                 System.err.println("Config file is missing: " + configPath);
