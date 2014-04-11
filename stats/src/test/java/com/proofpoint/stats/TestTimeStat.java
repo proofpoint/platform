@@ -32,8 +32,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-public class
-        TestTimeStat
+public class TestTimeStat
 {
     private static final int VALUES = 1000;
     private TestingTicker ticker;
