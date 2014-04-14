@@ -889,7 +889,7 @@ public class ConfigurationMetadataTest
     }
 
     @Test
-    public void testMapConfigNotGenericClass()
+    public void testMapConfigRawType()
             throws Exception
     {
         TestMonitor monitor = new TestMonitor();
@@ -899,7 +899,7 @@ public class ConfigurationMetadataTest
         verifyMetaData(metadata, MapConfigNotGenericClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
         monitor.assertNumberOfWarnings(0);
-        monitor.assertMatchingErrorRecorded("Configuration setter method", "setValue", "Map is missing type parameters");
+        monitor.assertMatchingErrorRecorded("Configuration setter method", "setValue", "Map is a raw type");
     }
 
     @Test

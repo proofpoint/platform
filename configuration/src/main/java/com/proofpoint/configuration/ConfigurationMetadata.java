@@ -219,7 +219,7 @@ public class ConfigurationMetadata<T>
         if (method.getParameterTypes()[0] == Map.class) {
             Type[] mapTypes = getTypeParameters(Map.class, method.getGenericParameterTypes()[0]);
             if (mapTypes == null) {
-                problems.addError("Configuration setter method [%s] Map is missing type parameters", method.toGenericString());
+                problems.addError("Configuration setter method [%s] Map is a raw type", method.toGenericString());
                 return false;
             }
             if (!(mapTypes[0] instanceof Class)) {
