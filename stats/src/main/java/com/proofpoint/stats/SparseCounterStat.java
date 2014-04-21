@@ -18,17 +18,20 @@ package com.proofpoint.stats;
 import com.google.common.base.Function;
 import com.proofpoint.reporting.Bucketed;
 import com.proofpoint.reporting.Reported;
-import com.proofpoint.stats.SparseCounterStat.Counter;
 
 public class SparseCounterStat
-    extends Bucketed<Counter>
+    extends Bucketed<SparseCounterStat.Counter>
 {
     public void add(long count)
     {
-        add((double) count);
+        addInternal((double) count);
     }
 
-    public void add(final double count)
+    public void add(double count) {
+        addInternal(count);
+    }
+
+    private void addInternal(final double count)
     {
         applyToCurrentBucket(new Function<Counter, Void>()
         {
