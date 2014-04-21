@@ -79,7 +79,7 @@ public class TestSparseTimeStat
     }
 
     @Test
-    public void time()
+    public void testTimeCallable()
             throws Exception
     {
         SparseTimeStat stat = new SparseTimeStat(ticker);
@@ -100,7 +100,7 @@ public class TestSparseTimeStat
     }
 
     @Test
-    public void timeTry()
+    public void testTimeTry()
             throws Exception
     {
         SparseTimeStat stat = new SparseTimeStat(ticker);
