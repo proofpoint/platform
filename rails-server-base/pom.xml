@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.proofpoint.platform</groupId>
+  <artifactId>rails-server-base</artifactId>
+  <version>0.91-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>rails-server-base</name>
+  <description>Proofpoint Platform Rails Server base POM</description>
+  <url>http://github.com/proofpoint/platform</url>
+
+  <inceptionYear>2010</inceptionYear>
+  <organization>
+    <name>Proofpoint, Inc.</name>
+    <url>http://www.proofpoint.com</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Apache License 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <proofpoint.package.runAsUser>${project.artifactId}</proofpoint.package.runAsUser>
+    <proofpoint.package.name>${project.artifactId}</proofpoint.package.name>
+    <proofpoint.package.installDir>/opt/proofpoint/${proofpoint.package.name}</proofpoint.package.installDir>
+  </properties>
+
+  <scm>
+    <connection>scm:git:git://github.com/proofpoint/platform.git</connection>
+    <developerConnection>scm:git:git@github.com:proofpoint/platform.git</developerConnection>
+    <url>http://github.com/proofpoint/platform/tree/master</url>
+  </scm>
+
+  <prerequisites>
+    <maven>3.0</maven>
+  </prerequisites>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>Nexus Release Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jruby</groupId>
+      <artifactId>jruby-complete</artifactId>
+      <version>1.7.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.proofpoint.platform</groupId>
+      <artifactId>rails-packaging</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <classifier>bin</classifier>
+      <type>tar.gz</type>
+    </dependency>
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>child-project-profile</id>
+      <!-- Activate profile in child projects, but not this project -->
+      <activation>
+        <file>
+          <missing>profile-activate-72946194395.do.not.remove</missing>
+        </file>
+      </activation>
+
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-gpg-plugin</artifactId>
+              <version>1.4</version>
+              <executions>
+                <execution>
+                  <id>sign-artifacts</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>sign</goal>
+                  </goals>
+                  <configuration>
+                    <useAgent>true</useAgent>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+        <plugins>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.7</version>
+
+            <executions>
+              <!--
+              Bundle gems in deployment mode to remove outside dependencies
+              -->
+              <execution>
+                <id>bundle-gems</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target name="Bundle gems">
+                    <concat destfile="${project.basedir}/Gemfile.build" fixlastline="yes">
+                      <path path="${project.basedir}/Gemfile"/>
+                      <filterchain>
+                        <linecontainsregexp negate="true">
+                          <regexp pattern="^\s*gem\s+['&quot;]rake['&quot;]"/>
+                        </linecontainsregexp>
+                      </filterchain>
+                      <footer trim="yes" filtering="no">
+                        gem "rake", ">= 10.0.4"
+                      </footer>
+                    </concat>
+                    <copy file="${project.basedir}/Gemfile.lock"
+                          tofile="${project.basedir}/Gemfile.build.lock"/>
+                    <exec dir="${project.basedir}" executable="bundle" failonerror="true">
+                      <arg value="install"/>
+                      <arg value="--standalone"/>
+                      <arg value="--binstubs"/>
+                      <arg value="--gemfile=${project.basedir}/Gemfile.build"/>
+                    </exec>
+                  </target>
+                </configuration>
+              </execution>
+
+              <!--
+              Precompile the application assets for deployment
+              -->
+              <execution>
+                <id>precompile-assets</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target name="Precompile assets">
+                    <exec executable="bash" dir="${project.basedir}" failonerror="true">
+                      <env key="RAILS_ENV" value="production"/>
+                      <env key="RAILS_GROUPS" value="production,assets"/>
+                      <arg value="-c"/>
+                      <arg value="if [ -d app/assets ]; then bundle exec rake assets:precompile; fi"/>
+                    </exec>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-jars-to-rack-lib</id>
+                <phase>compile</phase>
+                <goals><goal>copy-dependencies</goal></goals>
+                <configuration>
+                  <outputDirectory>${project.basedir}/lib</outputDirectory>
+                  <stripVersion>true</stripVersion>
+                  <includeTypes>jar</includeTypes>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>extract-rails-packaging</id>
+                <phase>prepare-package</phase>
+                <goals><goal>unpack-dependencies</goal></goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/rails-packaging</outputDirectory>
+                  <includeArtifactIds>rails-packaging</includeArtifactIds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>rpm-maven-plugin</artifactId>
+            <version>2.1-alpha-1</version>
+            <extensions>true</extensions>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>attached-rpm</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <name>${proofpoint.package.name}</name>
+              <copyright>2012, Proofpoint</copyright>
+              <group>Application/Services</group>
+              <defaultDirmode>755</defaultDirmode>
+              <defaultFilemode>644</defaultFilemode>
+              <defaultUsername>root</defaultUsername>
+              <defaultGroupname>root</defaultGroupname>
+              <defineStatements>
+                <defineStatement>_tmppath ${project.build.directory}/rpm-tmp</defineStatement>
+                <defineStatement>__os_install_post %{nil}</defineStatement>
+              </defineStatements>
+              <mappings>
+
+                <!-- /bin -->
+                <mapping>
+                  <directory>${proofpoint.package.installDir}/bin</directory>
+                  <filemode>755</filemode>
+                  <sources>
+                    <source>
+                      <location>${project.build.directory}/rails-packaging/bin</location>
+                    </source>
+                  </sources>
+                </mapping>
+
+                <!-- /rack -->
+                <mapping>
+                  <directory>${proofpoint.package.installDir}/rack</directory>
+                  <recurseDirectories>true</recurseDirectories>
+                  <sources>
+                    <source>
+                      <location>${basedir}</location>
+                      <includes>
+                        <include>app/**</include>
+                        <include>db/**</include>
+                        <include>config.ru</include>
+                        <include>lib/**</include>
+                        <include>public/**</include>
+                        <include>bundle/**</include>
+                        <include>Gemfile</include>
+                        <include>Gemfile.lock</include>
+                        <include>script/**</include>
+                        <include>vendor/**</include>
+                        <include>config/**</include>
+                      </includes>
+                      <excludes>
+                        <exclude>**/.gitkeep</exclude>
+                        <exclude>**/*.log</exclude>
+                        <exclude>bundle/**/generators/**</exclude>
+                        <exclude>bundle/**/spec/**</exclude>
+                        <exclude>config/database.yml</exclude>
+                        <exclude>vendor/cache/**</exclude>
+                        <exclude>Rakefile</exclude>
+                      </excludes>
+                    </source>
+                    <source>
+                      <location>${project.build.directory}/rails-packaging/rack</location>
+                    </source>
+                  </sources>
+                </mapping>
+
+                <!-- /rack/bin -->
+                <mapping>
+                  <directory>${proofpoint.package.installDir}/rack/bin</directory>
+                  <filemode>755</filemode>
+                  <sources>
+                    <source>
+                      <location>${basedir}/bin</location>
+                    </source>
+                  </sources>
+                </mapping>
+
+                <!-- /rack/log -->
+                <mapping>
+                  <directory>${proofpoint.package.installDir}/rack/log</directory>
+                  <username>${proofpoint.package.runAsUser}</username>
+                  <groupname>${proofpoint.package.runAsUser}</groupname>
+                </mapping>
+
+              </mappings>
+            </configuration>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>sonatype-oss-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.4</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <useAgent>true</useAgent>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

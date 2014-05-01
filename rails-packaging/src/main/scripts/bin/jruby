@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Constants
+readonly bin_dir=$( cd "$( dirname "$0" )" && pwd )
+readonly rack_dir="$bin_dir/../rack"
+readonly lib_dir="$rack_dir/lib"
+readonly bundle_dir="$rack_dir/bundle"
+readonly node_config="-Dnode.environment=local"
+readonly jruby_opts="--1.8 -v"
+declare user_log=''
+
+# Run JRuby
+run_jruby() {
+  RAILS_ENV=production \
+  RACK_ENV=production \
+  java \
+  -cp "$lib_dir/*" \
+  $node_config \
+  org.jruby.Main \
+  $jruby_opts \
+  -I$bundle_dir \
+  $*
+}
+
+# Script args
+if [[ "$1" == "-l" ]]; then {
+  user_log=$2;
+  shift 2;
+  run_jruby $* | tee $user_log
+}; else {
+  run_jruby $*
+}; fi
+

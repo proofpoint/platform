@@ -238,6 +238,8 @@
         <module>trace-token</module>
         <module>reporting</module>
         <module>reporting-client</module>
+        <module>rails-packaging</module>
+        <module>rails-server-base</module>
     </modules>
 </project>
 
