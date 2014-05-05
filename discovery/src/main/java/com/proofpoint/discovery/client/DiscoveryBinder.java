@@ -123,6 +123,7 @@ public class DiscoveryBinder
      * {@link #bindHttpBalancer(String)} to get a
      * {@link com.proofpoint.http.client.balancing.HttpServiceBalancer}.
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public void bindHttpSelector(String type)
     {
@@ -136,12 +137,35 @@ public class DiscoveryBinder
      * {@link #bindHttpBalancer(ServiceType)} to get a
      * {@link com.proofpoint.http.client.balancing.HttpServiceBalancer}.
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public void bindHttpSelector(ServiceType serviceType)
     {
         checkNotNull(serviceType, "serviceType is null");
         bindSelector(serviceType);
         binder.bind(HttpServiceSelector.class).annotatedWith(serviceType).toProvider(new HttpServiceSelectorProvider(serviceType.value())).in(Scopes.SINGLETON);
+    }
+
+    public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String type)
+    {
+        return bindDiscoveredHttpClient(checkNotNull(type, "type is null"), serviceType(type));
+    }
+
+    public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String name, ServiceType serviceType)
+    {
+        checkNotNull(name, "name is null");
+        checkNotNull(serviceType, "serviceType is null");
+
+        bindHttpBalancer(serviceType);
+        PrivateBinder privateBinder = binder.newPrivateBinder();
+        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).to(Key.get(HttpServiceBalancer.class, serviceType));
+        HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
+        bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
+        privateBinder.bind(HttpClient.class).annotatedWith(serviceType).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
+        privateBinder.expose(HttpClient.class).annotatedWith(serviceType);
+        reportBinder(binder).export(HttpClient.class).annotatedWith(serviceType).withGeneratedName();
+
+        return new BalancingHttpClientBindingBuilder(binder, serviceType, delegateBindingBuilder);
     }
 
     public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String type, Class<? extends Annotation> annotation)
@@ -180,6 +204,7 @@ public class DiscoveryBinder
     /**
      * @deprecated Use {@link #bindDiscoveredHttpClient(String, Class)}
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public BalancingHttpClientAsyncBindingBuilder bindDiscoveredAsyncHttpClient(String type, Class<? extends Annotation> annotation)
     {
@@ -189,6 +214,7 @@ public class DiscoveryBinder
     /**
      * @deprecated Use {@link #bindDiscoveredHttpClient(ServiceType, Class)}
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public BalancingHttpClientAsyncBindingBuilder bindDiscoveredAsyncHttpClient(ServiceType serviceType, Class<? extends Annotation> annotation)
     {
@@ -240,18 +266,24 @@ public class DiscoveryBinder
     public static class BalancingHttpClientBindingBuilder
             extends AbstractBalancingHttpClientBindingBuilder<HttpClient, BalancingHttpClientBindingBuilder, HttpClientAsyncBindingBuilder>
     {
-        public BalancingHttpClientBindingBuilder(Binder binder, Class<? extends Annotation> annotation, HttpClientBindingBuilder delegateBindingBuilder)
+        public BalancingHttpClientBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, HttpClientBindingBuilder delegateBindingBuilder)
         {
-            super(binder, HttpClient.class, annotation, delegateBindingBuilder);
+            super(binder, HttpClient.class, Key.get(HttpClient.class, annotationType), delegateBindingBuilder);
+        }
+
+        public BalancingHttpClientBindingBuilder(Binder binder, Annotation annotation, HttpClientBindingBuilder delegateBindingBuilder)
+        {
+            super(binder, HttpClient.class, Key.get(HttpClient.class, annotation), delegateBindingBuilder);
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static class BalancingHttpClientAsyncBindingBuilder
             extends AbstractBalancingHttpClientBindingBuilder<AsyncHttpClient, BalancingHttpClientAsyncBindingBuilder, HttpClientAsyncBindingBuilder>
     {
-        public BalancingHttpClientAsyncBindingBuilder(Binder binder, Class<? extends Annotation> annotation, HttpClientAsyncBindingBuilder delegateBindingBuilder)
+        public BalancingHttpClientAsyncBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, HttpClientAsyncBindingBuilder delegateBindingBuilder)
         {
-            super(binder, AsyncHttpClient.class, annotation, delegateBindingBuilder);
+            super(binder, AsyncHttpClient.class, Key.get(AsyncHttpClient.class, annotationType), delegateBindingBuilder);
         }
     }
 
@@ -259,21 +291,21 @@ public class DiscoveryBinder
     {
         private final Binder binder;
         private final Class<T> aClass;
-        private final Class<? extends Annotation> annotation;
+        private final Key<T> key;
         protected final D delegateBindingBuilder;
 
-        protected AbstractBalancingHttpClientBindingBuilder(Binder binder, Class<T> aClass, Class<? extends Annotation> annotation, D delegateBindingBuilder)
+        protected AbstractBalancingHttpClientBindingBuilder(Binder binder, Class<T> aClass, Key<T> key, D delegateBindingBuilder)
         {
             this.binder = binder;
             this.aClass = aClass;
-            this.annotation = annotation;
+            this.key = key;
             this.delegateBindingBuilder = delegateBindingBuilder;
         }
 
         @SuppressWarnings("unchecked")
         public B withAlias(Class<? extends Annotation> alias)
         {
-            binder.bind(aClass).annotatedWith(alias).to(Key.get(aClass, annotation));
+            binder.bind(aClass).annotatedWith(alias).to(key);
             return (B) this;
         }
 
@@ -281,7 +313,7 @@ public class DiscoveryBinder
         public B withAliases(ImmutableList<Class<? extends Annotation>> aliases)
         {
             for (Class<? extends Annotation> alias : aliases) {
-                binder.bind(aClass).annotatedWith(alias).to(Key.get(aClass, annotation));
+                binder.bind(aClass).annotatedWith(alias).to(key);
             }
             return (B) this;
         }
