@@ -77,23 +77,35 @@ public class TimeStat
     public <T> T time(Callable<T> callable)
             throws Exception
     {
-        try (BlockTimer blockTimer = time()) {
+        try (BlockTimer ignored = time()) {
             return callable.call();
         }
     }
 
     public BlockTimer time() {
-        return new BlockTimer();
+        return new BlockTimer(this);
     }
 
-    public class BlockTimer implements AutoCloseable
+    public static class BlockTimer implements AutoCloseable
     {
-        private final long start = ticker.read();
+        private final long start;
+        private TimeStat timeStat;
+
+        public BlockTimer(TimeStat timeStat)
+        {
+            this.timeStat = timeStat;
+            start = timeStat.ticker.read();
+        }
+
+        public void timeTo(TimeStat timeStat)
+        {
+            this.timeStat = timeStat;
+        }
 
         @Override
         public void close()
         {
-            add(ticker.read() - start);
+            timeStat.add(timeStat.ticker.read() - start);
         }
     }
 
