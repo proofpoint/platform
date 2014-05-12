@@ -27,6 +27,8 @@ import org.weakref.jmx.Nested;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 public class TimeStat
 {
     private final TimeDistribution oneMinute;
@@ -99,6 +101,7 @@ public class TimeStat
 
         public void timeTo(TimeStat timeStat)
         {
+            checkArgument(timeStat.ticker == this.timeStat.ticker, "timeStat uses the same ticker");
             this.timeStat = timeStat;
         }
 

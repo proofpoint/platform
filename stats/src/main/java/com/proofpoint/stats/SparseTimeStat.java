@@ -25,6 +25,7 @@ import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class SparseTimeStat
@@ -97,6 +98,7 @@ public class SparseTimeStat
 
         public void timeTo(SparseTimeStat sparseTimeStat)
         {
+            checkArgument(sparseTimeStat.ticker == this.sparseTimeStat.ticker, "sparseTimeStat uses the same ticker");
             this.sparseTimeStat = sparseTimeStat;
         }
 
