@@ -15,8 +15,6 @@
  */
 package com.proofpoint.http.server;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -24,11 +22,11 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.NoSuchElementException;
 import java.util.zip.GZIPInputStream;
 
 import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
 
-// TODO: handle request.getContentLength and getHeader("content-encoding")
 class GZipRequestWrapper
         extends HttpServletRequestWrapper
 {
@@ -56,11 +54,9 @@ class GZipRequestWrapper
     @Override
     public String getHeader(String name)
     {
-        if (equalsIgnoreCase(name, "content-length")) {
+        if (equalsIgnoreCase(name, "content-length") || equalsIgnoreCase(name, "content-encoding")) {
             return null;
         }
-
-        // TODO: filter out content-coding
 
         return request.getHeader(name);
     }
@@ -68,21 +64,38 @@ class GZipRequestWrapper
     @Override
     public int getIntHeader(String name)
     {
-        // TODO: filter out content-length
+        if (equalsIgnoreCase(name, "content-length")) {
+            return -1;
+        }
         return request.getIntHeader(name);
     }
 
     @Override
     public Enumeration<String> getHeaderNames()
     {
-        // TODO: filter out content-length & content-coding
-        return request.getHeaderNames();
+        return new FilteringEnumeration(request.getHeaderNames());
     }
 
     @Override
     public Enumeration<String> getHeaders(String name)
     {
-        // TODO: filter out content-length & content-coding
+        if (equalsIgnoreCase(name, "content-length") || equalsIgnoreCase(name, "content-encoding")) {
+            return new Enumeration<String>()
+            {
+                @Override
+                public boolean hasMoreElements()
+                {
+                    return false;
+                }
+
+                @Override
+                public String nextElement()
+                {
+                    throw new NoSuchElementException();
+                }
+            };
+        }
+
         return request.getHeaders(name);
     }
 
@@ -161,19 +174,72 @@ class GZipRequestWrapper
         @Override
         public boolean isFinished()
         {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public boolean isReady()
         {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public void setReadListener(ReadListener readListener)
         {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
+        }
+
+    }
+
+    private static class FilteringEnumeration implements Enumeration<String>
+    {
+        private final Enumeration<String> delegate;
+        MoreElementState moreElementState;
+        String nextElement;
+
+        private enum MoreElementState { UNKNOWN, YES, NO }
+
+        public FilteringEnumeration(Enumeration<String> headerNames)
+        {
+            delegate = headerNames;
+            moreElementState = MoreElementState.UNKNOWN;
+        }
+
+        @Override
+        public boolean hasMoreElements()
+        {
+            if (moreElementState == MoreElementState.UNKNOWN) {
+                lookAhead();
+            }
+            if (moreElementState == MoreElementState.YES) {
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public String nextElement()
+        {
+            if (moreElementState == MoreElementState.UNKNOWN) {
+                lookAhead();
+            }
+            if (moreElementState == MoreElementState.NO) {
+                throw new NoSuchElementException();
+            }
+            moreElementState = MoreElementState.UNKNOWN;
+            return nextElement;
+        }
+
+        private void lookAhead()
+        {
+            do {
+                if (!delegate.hasMoreElements()) {
+                    moreElementState = MoreElementState.NO;
+                    return;
+                }
+                nextElement = delegate.nextElement();
+            } while (equalsIgnoreCase(nextElement, "content-length") || equalsIgnoreCase(nextElement, "content-encoding"));
+            moreElementState = MoreElementState.YES;
         }
     }
 }
