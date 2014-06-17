@@ -194,36 +194,39 @@ class GZipRequestWrapper
     private static class FilteringEnumeration implements Enumeration<String>
     {
         private final Enumeration<String> delegate;
-        MoreElementState moreElementState;
+        MoreElementsState moreElementsState;
         String nextElement;
 
-        private enum MoreElementState { UNKNOWN, YES, NO }
+        private enum MoreElementsState
+        {
+            UNKNOWN, YES, NO
+        }
 
         public FilteringEnumeration(Enumeration<String> headerNames)
         {
             delegate = headerNames;
-            moreElementState = MoreElementState.UNKNOWN;
+            moreElementsState = MoreElementsState.UNKNOWN;
         }
 
         @Override
         public boolean hasMoreElements()
         {
-            if (moreElementState == MoreElementState.UNKNOWN) {
+            if (moreElementsState == MoreElementsState.UNKNOWN) {
                 lookAhead();
             }
-            return moreElementState == MoreElementState.YES;
+            return moreElementsState == MoreElementsState.YES;
         }
 
         @Override
         public String nextElement()
         {
-            if (moreElementState == MoreElementState.UNKNOWN) {
+            if (moreElementsState == MoreElementsState.UNKNOWN) {
                 lookAhead();
             }
-            if (moreElementState == MoreElementState.NO) {
+            if (moreElementsState == MoreElementsState.NO) {
                 throw new NoSuchElementException();
             }
-            moreElementState = MoreElementState.UNKNOWN;
+            moreElementsState = MoreElementsState.UNKNOWN;
             return nextElement;
         }
 
@@ -231,12 +234,12 @@ class GZipRequestWrapper
         {
             do {
                 if (!delegate.hasMoreElements()) {
-                    moreElementState = MoreElementState.NO;
+                    moreElementsState = MoreElementsState.NO;
                     return;
                 }
                 nextElement = delegate.nextElement();
             } while (equalsIgnoreCase(nextElement, "content-length") || equalsIgnoreCase(nextElement, "content-encoding"));
-            moreElementState = MoreElementState.YES;
+            moreElementsState = MoreElementsState.YES;
         }
     }
 }
