@@ -211,10 +211,7 @@ class GZipRequestWrapper
             if (moreElementState == MoreElementState.UNKNOWN) {
                 lookAhead();
             }
-            if (moreElementState == MoreElementState.YES) {
-                return true;
-            }
-            return false;
+            return moreElementState == MoreElementState.YES;
         }
 
         @Override
