@@ -21,6 +21,7 @@ import com.google.inject.Scopes;
 
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
+import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 
 public class ReportingClientModule
     implements Module
@@ -33,5 +34,7 @@ public class ReportingClientModule
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);
         bindConfig(binder).to(ReportClientConfig.class);
+
+        jaxrsBinder(binder).bindAdmin(HealthResource.class);
     }
 }

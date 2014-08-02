@@ -13,6 +13,11 @@
     <dependencies>
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
+            <artifactId>jaxrs</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.proofpoint.platform</groupId>
             <artifactId>discovery</artifactId>
         </dependency>
 
@@ -57,6 +62,11 @@
         </dependency>
 
         <!-- for testing -->
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
             <artifactId>testing</artifactId>
