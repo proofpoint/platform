@@ -264,7 +264,6 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <copyright>2012, Proofpoint</copyright>
                             <group>Application/Services</group>
                             <defaultDirmode>755</defaultDirmode>
                             <defaultFilemode>644</defaultFilemode>
