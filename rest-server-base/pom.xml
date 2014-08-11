@@ -346,6 +346,9 @@
                                      <filemode>755</filemode>
                                  </mapping>
                             </mappings>
+                            <preinstallScriptlet>
+                                <script>if ! id ${project.rpm.username} >/dev/null ; then exit 1; fi</script>
+                            </preinstallScriptlet>
                             <preremoveScriptlet>
                                 <script>/sbin/service ${project.artifactId} stop</script>
                             </preremoveScriptlet>
