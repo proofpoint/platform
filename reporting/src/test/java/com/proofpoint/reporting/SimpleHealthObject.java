@@ -1,5 +1,7 @@
 package com.proofpoint.reporting;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class SimpleHealthObject
         implements SimpleHealthInterface
 {
@@ -7,6 +9,9 @@ public class SimpleHealthObject
     private Object objectValue;
     private String notBeanValue;
     private String privateValue;
+
+    @HealthCheck("Field value")
+    private final AtomicReference<String> fieldValue = new AtomicReference<>();
 
     private String notHealthCheck;
 
@@ -63,5 +68,10 @@ public class SimpleHealthObject
     private void setPrivateValue(String privateValue)
     {
         this.privateValue = privateValue;
+    }
+
+    private void setFieldValue(String value)
+    {
+        fieldValue.set(value);
     }
 }

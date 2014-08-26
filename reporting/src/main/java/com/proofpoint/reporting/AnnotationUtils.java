@@ -24,9 +24,11 @@ import javax.management.Descriptor;
 import javax.management.DescriptorKey;
 import javax.management.ImmutableDescriptor;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -243,6 +245,47 @@ final class AnnotationUtils
         }
 
         return null;
+    }
+
+    /**
+     * Find fields that are tagged with a particular annotation somewhere in the hierarchy
+     *
+     * @param clazz the class to analyze
+     * @param annotationClass the annotation to look for
+     * @return a collection of fields
+     */
+    public static Collection<Field> findAnnotatedFields(Class<?> clazz, Class<? extends Annotation> annotationClass)
+    {
+        Set<Field> result = new HashSet<>();
+        findAnnotatedFields(clazz, result, ImmutableSet.<Class<? extends Annotation>>of(annotationClass));
+
+        return result;
+    }
+
+    private static void findAnnotatedFields(Class<?> clazz, Set<Field> result, Set<Class<? extends Annotation>> annotationSet)
+    {
+        // gather all available fields
+        // this returns everything, even if it's declared in a parent
+        for (Field field : clazz.getDeclaredFields()) {
+            // skip fields that are used internally by the vm for implementing covariance, etc
+            if (field.isSynthetic()) {
+                continue;
+            }
+
+            if (isAnnotationPresent(annotationSet, new HashSet<Class<? extends Annotation>>(), field.getDeclaredAnnotations())) {
+                field.setAccessible(true);
+                result.add(field);
+            }
+        }
+
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass != null) {
+            findAnnotatedFields(superclass, result, annotationSet);
+        }
+
+        for (Class<?> iface : clazz.getInterfaces()) {
+            findAnnotatedFields(iface, result, annotationSet);
+        }
     }
 
     private static boolean isAnnotatedMethod(Method method, Set<Class<? extends Annotation>> annotationSet)
