@@ -12,6 +12,8 @@ Platform 1.05
   highly efficient binary encoding of JSON data.  For more information on
   Smile see: http://wiki.fasterxml.com/SmileFormatSpec
 
+* [Bug] Don't unannounce from discovery if Announcer never started.
+
 Platform 1.04
 
 * RPM packaging
