@@ -186,5 +186,4 @@ public class TestReportCollectionFactory
             nanos += unit.toNanos(amount);
         }
     }
-
 }
