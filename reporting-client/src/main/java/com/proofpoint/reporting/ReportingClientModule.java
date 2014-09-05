@@ -31,6 +31,7 @@ import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
+import static com.proofpoint.json.JsonCodecBinder.jsonCodecBinder;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 public class ReportingClientModule
@@ -41,8 +42,13 @@ public class ReportingClientModule
     {
         binder.bind(ReportCollector.class).in(Scopes.SINGLETON);
         binder.bind(ReportClient.class).in(Scopes.SINGLETON);
+        binder.bind(HealthCollector.class).in(Scopes.SINGLETON);
+
+        binder.bind(CurrentTimeSecsProvider.class).to(SystemCurrentTimeSecsProvider.class).in(Scopes.SINGLETON);
+        jsonCodecBinder(binder).bindJsonCodec(HealthReport.class);
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);
+        discoveryBinder(binder).bindDiscoveredHttpClient("monitoring-acceptor");
         bindConfig(binder).to(ReportClientConfig.class);
 
         jaxrsBinder(binder).bindAdmin(HealthResource.class);
@@ -60,7 +66,14 @@ public class ReportingClientModule
     private static ExecutorService createClientExecutorService()
     {
         return new ThreadPoolExecutor(1, 1, 0, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>(5),
-                        daemonThreadsNamed("reporting-client-%s"),
-                        new DiscardOldestPolicy());
+                daemonThreadsNamed("reporting-client-%s"),
+                new DiscardOldestPolicy());
+    }
+
+    @Provides
+    @ForHealthCollector
+    private static ScheduledExecutorService createHealthCollectorExecutorService()
+    {
+        return newSingleThreadScheduledExecutor(daemonThreadsNamed("health-collector-%s"));
     }
 }
