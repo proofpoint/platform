@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -128,24 +129,22 @@ public class TestReportClient
 
         ReportClient client = new ReportClient(nodeInfo, httpClient, new ReportClientConfig(), objectMapper);
         collectedData = HashBasedTable.create();
-        collectedData.put(ObjectName.getInstance("com.example:name=Foo"), "String", "test value");        client.report(TEST_TIME, collectedData);
-        assertEquals(sentJson.size(), 1);
-
-        Map<String, Object> sentMap = sentJson.get(0);
-
-        assertEquals(sentMap.keySet(), ImmutableSet.of("name", "timestamp", "type", "value", "tags"));
-        assertEquals(sentMap.get("timestamp"), TEST_TIME);
-        Map<String, String> tags = (Map<String, String>) sentMap.get("tags");
-        assertEquals(tags.get("application"), "test-application");
-        assertEquals(tags.get("host"), "test.hostname");
-        assertEquals(tags.get("environment"), "test_environment");
-        assertEquals(tags.get("pool"), "test_pool");
-        assertEquals(sentMap.get("type"), "string");
-
-        assertEquals(sentMap.get("name"), "Foo.String");
-        assertEquals(sentMap.get("value"), "test value");
-
-        assertEquals(tags.keySet(), ImmutableSet.of("application", "host", "environment", "pool"));
+        collectedData.put(ObjectName.getInstance("com.example:name=Foo"), "String", "test value");
+        client.report(TEST_TIME, collectedData);
+        assertEquals(sentJson, ImmutableList.of(
+                ImmutableMap.of(
+                        "name", "Foo.String",
+                        "timestamp", TEST_TIME,
+                        "type", "string",
+                        "value", "test value",
+                        "tags", ImmutableMap.of(
+                                "application", "test-application",
+                                "host", "test.hostname",
+                                "environment", "test_environment",
+                                "pool", "test_pool"
+                        )
+                )
+        ));
     }
 
     @Test
