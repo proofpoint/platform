@@ -15,7 +15,10 @@
  */
 package com.proofpoint.jaxrs;
 
+import com.google.common.collect.ImmutableList;
+
 import javax.validation.Valid;
+import java.util.Collection;
 import java.util.List;
 
 class ValidatableList
@@ -23,8 +26,8 @@ class ValidatableList
     @Valid
     final private List<?> list;
 
-    ValidatableList(List<?> list)
+    ValidatableList(Collection<?> collection)
     {
-        this.list = list;
+        this.list = ImmutableList.copyOf(collection);
     }
 }

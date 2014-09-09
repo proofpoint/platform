@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipException;
 
 import static com.google.common.base.Throwables.propagate;
@@ -203,6 +204,25 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
             {
             }.getType();
             mapper.readFrom(Object.class, listJsonClassType, null, null, null, is);
+            fail("Should have thrown an BeanValidationException");
+        }
+        catch (BeanValidationException e) {
+            assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
+                    "list[0].secondField may not be null",
+                    "list[0].firstField may not be null"
+            ));
+        }
+    }
+
+    @Test
+    public void testBeanValidationOfSetThrowsBeanValidationException() throws IOException
+    {
+        try {
+            InputStream is = getInputStream(ImmutableList.of(ImmutableMap.of()));
+            Type setJsonClassType = new TypeToken<Set<JsonClass>>()
+            {
+            }.getType();
+            mapper.readFrom(Object.class, setJsonClassType, null, null, null, is);
             fail("Should have thrown an BeanValidationException");
         }
         catch (BeanValidationException e) {
