@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -166,8 +167,9 @@ public class JsonMapper
 
         // validate object using the bean validation framework
         Set<ConstraintViolation<Object>> violations;
-        if (TypeToken.of(genericType).getRawType().equals(List.class)) {
-            violations = VALIDATOR.<Object>validate(new ValidatableList((List<?>) object));
+        if (TypeToken.of(genericType).getRawType().equals(List.class) ||
+                TypeToken.of(genericType).getRawType().equals(Set.class)) {
+            violations = VALIDATOR.<Object>validate(new ValidatableList((Collection<?>) object));
         }
         else if (TypeToken.of(genericType).getRawType().equals(Map.class)) {
             violations = VALIDATOR.<Object>validate(new ValidatableMap((Map<?, ?>) object));
