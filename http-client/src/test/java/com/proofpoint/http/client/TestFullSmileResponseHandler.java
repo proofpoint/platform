@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -95,7 +96,7 @@ public class TestFullSmileResponseHandler
         }
         catch (IllegalStateException e) {
             assertEquals(e.getMessage(), "Response does not contain a SMILE value");
-            assertEquals(e.getCause(), response.getException());
+            assertSame(e.getCause(), response.getException());
         }
     }
 
@@ -147,7 +148,7 @@ public class TestFullSmileResponseHandler
         }
         catch (RuntimeException e) {
             assertEquals(e.getMessage(), "Error reading SMILE response from server");
-            assertEquals(e.getCause(), expectedException);
+            assertSame(e.getCause(), expectedException);
         }
     }
 
