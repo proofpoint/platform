@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
+import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.json.JsonCodecBinder.jsonCodecBinder;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
@@ -48,7 +49,8 @@ public class ReportingClientModule
         jsonCodecBinder(binder).bindJsonCodec(HealthReport.class);
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);
-        discoveryBinder(binder).bindDiscoveredHttpClient("monitoring-acceptor");
+        discoveryBinder(binder).bindSelector("monitoring-acceptor");
+        httpClientBinder(binder).bindHttpClient("monitoring-acceptor", ForHealthCollector.class);
         bindConfig(binder).to(ReportClientConfig.class);
 
         jaxrsBinder(binder).bindAdmin(HealthResource.class);

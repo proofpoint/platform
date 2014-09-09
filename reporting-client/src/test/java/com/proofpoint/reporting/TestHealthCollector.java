@@ -17,7 +17,12 @@ package com.proofpoint.reporting;
 
 import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.proofpoint.discovery.client.CachingServiceSelector;
+import com.proofpoint.discovery.client.ServiceDescriptor;
+import com.proofpoint.discovery.client.ServiceSelectorConfig;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.testing.BodySourceTester;
 import com.proofpoint.http.client.testing.TestingHttpClient;
@@ -37,36 +42,46 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
 import java.io.ByteArrayOutputStream;
-import java.net.URI;
+import java.util.HashSet;
+import java.util.List;
 
 import static com.google.common.base.Throwables.propagate;
+import static com.proofpoint.discovery.client.ServiceState.RUNNING;
 import static com.proofpoint.json.JsonCodec.jsonCodec;
+import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class TestHealthCollector
 {
     private static final JsonCodec<Object> OBJECT_JSON_CODEC = jsonCodec(Object.class);
+    private static final String INSTANCE_URL = "http://instance.example.com";
     private SerialScheduledExecutorService executorService;
     private HealthBeanRegistry registry;
+    private CachingServiceSelector selector;
     private Processor processor;
     private HealthCollector collector;
 
     @BeforeMethod
     public void setup()
     {
+        NodeInfo nodeInfo = new NodeInfo("test-application", new NodeConfig()
+                .setEnvironment("testenvironment")
+                .setNodeInternalHostname("test.example.com"));
         executorService = new SerialScheduledExecutorService();
         registry = new HealthBeanRegistry();
+        selector = new CachingServiceSelector("monitoring-acceptor", new ServiceSelectorConfig(), nodeInfo);
         processor = mock(Processor.class);
         collector = new HealthCollector(
-                new NodeInfo("test-application", new NodeConfig()
-                        .setEnvironment("testenvironment")
-                        .setNodeInternalHostname("test.example.com")),
+                nodeInfo,
                 registry,
                 new TestingHttpClient(processor),
+                selector,
                 new CurrentTimeSecsProvider()
                 {
                     private final Ticker ticker = executorService.getTicker();
@@ -80,6 +95,7 @@ public class TestHealthCollector
                 executorService,
                 jsonCodec(HealthReport.class)
         );
+        updateSelector(INSTANCE_URL);
         collector.start();
     }
 
@@ -119,6 +135,22 @@ public class TestHealthCollector
                         "message", "test status"
                 ))
         ));
+    }
+
+    @Test
+    public void testMultipleRecievers()
+    {
+        registerTestAttribute("test description", null);
+        updateSelector("http://instance1.example.com", "http://instance2.example.com/", "http://instance3.example.com/foo");
+
+        assertSendsHealthReport(ImmutableMap.of(
+                "host", "test.example.com",
+                "time", 60,
+                "results", ImmutableList.of(ImmutableMap.of(
+                        "service", "test-application test description (suffix)",
+                        "status", "OK"
+                ))
+        ), "http://instance1.example.com", "http://instance2.example.com", "http://instance3.example.com/foo");
     }
 
     @Test
@@ -169,22 +201,48 @@ public class TestHealthCollector
         ));
     }
 
-    private void assertSendsHealthReport(Object expected)
+    private void updateSelector(String... urls)
     {
+        Builder<ServiceDescriptor> builder = ImmutableList.builder();
+        for (String url : urls) {
+            builder.add(new ServiceDescriptor(randomUUID(), randomUUID().toString(),
+                    "monitoring-acceptor", "general", randomUUID().toString(), RUNNING,
+                    ImmutableMap.of(
+                            "http", url
+                    )));
+        }
+        selector.updateServiceDescriptors(builder.build());
+    }
+
+    private void assertSendsHealthReport(Object expected, String... urls)
+    {
+        if (urls.length == 0) {
+            urls = new String[] {INSTANCE_URL};
+        }
+        HashSet<String> expectedUrls = new HashSet<>();
+        for (String url : urls) {
+            expectedUrls.add(url + "/v1/monitoring/service");
+        }
+
         try {
             executorService.elapseTime(1, MINUTES);
 
             ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
-            verify(processor).handle(captor.capture());
-            Request request = captor.getValue();
+            verify(processor, atLeastOnce()).handle(captor.capture());
+            List<Request> requests = captor.getAllValues();
 
-            assertEquals(request.getMethod(), "POST");
-            assertEquals(request.getUri(), URI.create("/v1/monitoring/service"));
-            assertEquals(request.getHeader("Content-Type"), "application/json");
+            for (Request request : requests) {
+                String uri = request.getUri().toString();
+                assertTrue(expectedUrls.remove(uri), uri + " expected");
+                assertEquals(request.getMethod(), "POST", uri + " method");
+                assertEquals(request.getHeader("Content-Type"), "application/json", uri + " content-type");
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            BodySourceTester.writeBodySourceTo(request.getBodySource(), outputStream);
-            assertEquals(OBJECT_JSON_CODEC.fromJson(outputStream.toByteArray()), expected);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                BodySourceTester.writeBodySourceTo(request.getBodySource(), outputStream);
+                assertEquals(OBJECT_JSON_CODEC.fromJson(outputStream.toByteArray()), expected, uri + " body");
+            }
+
+            assertEquals(expectedUrls, ImmutableSet.<String>of(), "URIs not sent a message");
         }
         catch (Exception e) {
             throw propagate(e);
