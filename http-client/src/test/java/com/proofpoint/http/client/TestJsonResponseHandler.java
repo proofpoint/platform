@@ -24,6 +24,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.fail;
 
 public class TestJsonResponseHandler
@@ -97,7 +98,7 @@ public class TestJsonResponseHandler
         }
         catch (RuntimeException e) {
             assertEquals(e.getMessage(), "Error reading JSON response from server");
-            assertEquals(e.getCause(), expectedException);
+            assertSame(e.getCause(), expectedException);
         }
     }
 }

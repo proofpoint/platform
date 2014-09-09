@@ -29,6 +29,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotSame;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -144,7 +145,7 @@ public class TestFullJsonResponseHandler
         }
         catch (RuntimeException e) {
             assertEquals(e.getMessage(), "Error reading JSON response from server");
-            assertEquals(e.getCause(), expectedException);
+            assertSame(e.getCause(), expectedException);
         }
     }
 
