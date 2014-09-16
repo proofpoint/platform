@@ -25,6 +25,7 @@ import java.net.URI;
 import java.util.Collection;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.proofpoint.platform.sample.Person.person;
 import static com.proofpoint.platform.sample.PersonWithSelf.createPersonWithSelf;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static org.testng.Assert.assertEquals;
@@ -53,15 +54,15 @@ public class TestPersonsResource
     @Test
     public void testListAll()
     {
-        store.put("foo", new Person("foo@example.com", "Mr Foo"));
-        store.put("bar", new Person("bar@example.com", "Mr Bar"));
+        store.put("foo", person("foo@example.com", "Mr Foo"));
+        store.put("bar", person("bar@example.com", "Mr Bar"));
 
         Response response = resource.listAll(MockUriInfo.from(URI.create("http://localhost/v1/person")));
         assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
         assertInstanceOf(response.getEntity(), Collection.class);
         assertEquals((Collection<?>) response.getEntity(), newArrayList(
-                createPersonWithSelf(new Person("foo@example.com", "Mr Foo"), URI.create("http://localhost/v1/person/foo")),
-                createPersonWithSelf(new Person("bar@example.com", "Mr Bar"), URI.create("http://localhost/v1/person/bar"))
+                createPersonWithSelf(person("foo@example.com", "Mr Foo"), URI.create("http://localhost/v1/person/foo")),
+                createPersonWithSelf(person("bar@example.com", "Mr Bar"), URI.create("http://localhost/v1/person/bar"))
         ));
     }
 }
