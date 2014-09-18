@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class Person
 {
-    static Person person(String email, String name)
+    static Person createPerson(String email, String name)
     {
         return new AutoValue_Person(email, name);
     }

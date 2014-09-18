@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import static com.proofpoint.platform.sample.Person.person;
+import static com.proofpoint.platform.sample.Person.createPerson;
 
 @AutoValue
 public abstract class PersonRepresentation
@@ -38,13 +38,13 @@ public abstract class PersonRepresentation
     abstract String getName();
 
     @JsonCreator
-    public static PersonRepresentation personRepresentation(@JsonProperty("email") String email, @JsonProperty("name") String name)
+    public static PersonRepresentation createPersonRepresentation(@JsonProperty("email") String email, @JsonProperty("name") String name)
     {
         return new AutoValue_PersonRepresentation(email, name);
     }
 
     public Person toPerson()
     {
-        return person(getEmail(), getName());
+        return createPerson(getEmail(), getName());
     }
 }

@@ -17,7 +17,7 @@ package com.proofpoint.platform.sample;
 
 import org.testng.annotations.Test;
 
-import static com.proofpoint.platform.sample.Person.person;
+import static com.proofpoint.platform.sample.Person.createPerson;
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 
 public class TestPerson
@@ -26,10 +26,10 @@ public class TestPerson
     public void testEquivalence()
     {
         equivalenceTester()
-                .addEquivalentGroup(person("foo@example.com", "Mr Foo"), person("foo@example.com", "Mr Foo"))
-                .addEquivalentGroup(person("bar@example.com", "Mr Bar"), person("bar@example.com", "Mr Bar"))
-                .addEquivalentGroup(person("foo@example.com", "Mr Bar"), person("foo@example.com", "Mr Bar"))
-                .addEquivalentGroup(person("bar@example.com", "Mr Foo"), person("bar@example.com", "Mr Foo"))
+                .addEquivalentGroup(createPerson("foo@example.com", "Mr Foo"), createPerson("foo@example.com", "Mr Foo"))
+                .addEquivalentGroup(createPerson("bar@example.com", "Mr Bar"), createPerson("bar@example.com", "Mr Bar"))
+                .addEquivalentGroup(createPerson("foo@example.com", "Mr Bar"), createPerson("foo@example.com", "Mr Bar"))
+                .addEquivalentGroup(createPerson("bar@example.com", "Mr Foo"), createPerson("bar@example.com", "Mr Foo"))
                 .check();
     }
 }

@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 import java.net.URI;
 
 import static com.proofpoint.json.testing.JsonTester.assertJsonEncode;
-import static com.proofpoint.platform.sample.Person.person;
+import static com.proofpoint.platform.sample.Person.createPerson;
 import static com.proofpoint.platform.sample.PersonWithSelf.createPersonWithSelf;
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 
@@ -30,10 +30,10 @@ public class TestPersonWithSelf
     @Test
     public void testEquivalence()
     {
-        Person fooPerson = person("foo@example.com", "Mr Foo");
-        Person fooPerson2 = person("foo@example.com", "Mr Foo");
-        Person barPerson = person("bar@example.com", "Mr Bar");
-        Person barPerson2 = person("bar@example.com", "Mr Bar");
+        Person fooPerson = createPerson("foo@example.com", "Mr Foo");
+        Person fooPerson2 = createPerson("foo@example.com", "Mr Foo");
+        Person barPerson = createPerson("bar@example.com", "Mr Bar");
+        Person barPerson2 = createPerson("bar@example.com", "Mr Bar");
         equivalenceTester()
                 .addEquivalentGroup(createPersonWithSelf(fooPerson, URI.create("http://example.com")), createPersonWithSelf(fooPerson2, URI.create("http://example.com")))
                 .addEquivalentGroup(createPersonWithSelf(fooPerson, URI.create("https://example.com")), createPersonWithSelf(fooPerson2, URI.create("https://example.com")))
@@ -45,7 +45,7 @@ public class TestPersonWithSelf
     @Test
     public void testJsonEncode()
     {
-        assertJsonEncode(createPersonWithSelf(person("alice@example.com", "Alice"), URI.create("http://example.com/foo")),
+        assertJsonEncode(createPersonWithSelf(createPerson("alice@example.com", "Alice"), URI.create("http://example.com/foo")),
                 ImmutableMap.of(
                         "self", "http://example.com/foo",
                         "name", "Alice",

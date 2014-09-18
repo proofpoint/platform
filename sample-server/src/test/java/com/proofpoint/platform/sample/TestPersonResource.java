@@ -24,11 +24,11 @@ import org.testng.annotations.Test;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
-import static com.proofpoint.platform.sample.Person.person;
+import static com.proofpoint.platform.sample.Person.createPerson;
 import static com.proofpoint.platform.sample.PersonEvent.personAdded;
 import static com.proofpoint.platform.sample.PersonEvent.personRemoved;
 import static com.proofpoint.platform.sample.PersonEvent.personUpdated;
-import static com.proofpoint.platform.sample.PersonRepresentation.personRepresentation;
+import static com.proofpoint.platform.sample.PersonRepresentation.createPersonRepresentation;
 import static com.proofpoint.platform.sample.PersonWithSelf.createPersonWithSelf;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
@@ -57,11 +57,11 @@ public class TestPersonResource
     @Test
     public void testGet()
     {
-        store.put("foo", person("foo@example.com", "Mr Foo"));
+        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
         Response response = resource.get("foo", MockUriInfo.from(URI.create("http://localhost/v1/person/1")));
         assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        assertEquals(response.getEntity(), createPersonWithSelf(person("foo@example.com", "Mr Foo"), URI.create("http://localhost/v1/person/1")));
+        assertEquals(response.getEntity(), createPersonWithSelf(createPerson("foo@example.com", "Mr Foo"), URI.create("http://localhost/v1/person/1")));
         assertNull(response.getMetadata().get("Content-Type")); // content type is set by jersey based on @Produces
     }
 
@@ -74,24 +74,24 @@ public class TestPersonResource
     @Test
     public void testAdd()
     {
-        Response response = resource.put("foo", personRepresentation("foo@example.com", "Mr Foo"));
+        Response response = resource.put("foo", createPersonRepresentation("foo@example.com", "Mr Foo"));
 
         assertEquals(response.getStatus(), Response.Status.CREATED.getStatusCode());
         assertNull(response.getEntity());
         assertNull(response.getMetadata().get("Content-Type")); // content type is set by jersey based on @Produces
 
-        assertEquals(store.get("foo"), person("foo@example.com", "Mr Foo"));
+        assertEquals(store.get("foo"), createPerson("foo@example.com", "Mr Foo"));
 
 
         assertEquals(eventClient.getEvents(), ImmutableList.of(
-                personAdded("foo", person("foo@example.com", "Mr Foo"))
+                personAdded("foo", createPerson("foo@example.com", "Mr Foo"))
         ));
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void testPutNullId()
     {
-        resource.put(null, personRepresentation("foo@example.com", "Mr Foo"));
+        resource.put(null, createPersonRepresentation("foo@example.com", "Mr Foo"));
     }
 
     @Test(expectedExceptions = NullPointerException.class)
@@ -103,26 +103,26 @@ public class TestPersonResource
     @Test
     public void testReplace()
     {
-        store.put("foo", person("foo@example.com", "Mr Foo"));
+        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
-        Response response = resource.put("foo", personRepresentation("bar@example.com", "Mr Bar"));
+        Response response = resource.put("foo", createPersonRepresentation("bar@example.com", "Mr Bar"));
 
         assertEquals(response.getStatus(), Response.Status.NO_CONTENT.getStatusCode());
         assertNull(response.getEntity());
         assertNull(response.getMetadata().get("Content-Type")); // content type is set by jersey based on @Produces
 
-        assertEquals(store.get("foo"), person("bar@example.com", "Mr Bar"));
+        assertEquals(store.get("foo"), createPerson("bar@example.com", "Mr Bar"));
 
         assertEquals(eventClient.getEvents(), ImmutableList.of(
-                personAdded("foo", person("foo@example.com", "Mr Foo")),
-                personUpdated("foo", person("bar@example.com", "Mr Bar"))
+                personAdded("foo", createPerson("foo@example.com", "Mr Foo")),
+                personUpdated("foo", createPerson("bar@example.com", "Mr Bar"))
         ));
     }
 
     @Test
     public void testDelete()
     {
-        store.put("foo", person("foo@example.com", "Mr Foo"));
+        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
         Response response = resource.delete("foo");
         assertEquals(response.getStatus(), Response.Status.NO_CONTENT.getStatusCode());
@@ -131,8 +131,8 @@ public class TestPersonResource
         assertNull(store.get("foo"));
 
         assertEquals(eventClient.getEvents(), ImmutableList.of(
-                personAdded("foo", person("foo@example.com", "Mr Foo")),
-                personRemoved("foo", person("foo@example.com", "Mr Foo"))
+                personAdded("foo", createPerson("foo@example.com", "Mr Foo")),
+                personRemoved("foo", createPerson("foo@example.com", "Mr Foo"))
         ));
     }
 
