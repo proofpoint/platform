@@ -181,7 +181,6 @@ public class Bootstrap
                                 new Message(module, "Configuration default for \"" + entry.getKey() + "\" set by both " + oldModule.toString() + " and " + module.toString()));
                     }
                     moduleDefaults.put(entry.getKey(), entry.getValue());
-                    moduleDefaultSource.put(entry.getKey(), configurationDefaultingModule);
                 }
             }
         }
