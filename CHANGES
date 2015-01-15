@@ -1,3 +1,10 @@
+Platform 1.11
+
+* Trace Token improvements
+
+  - TraceTokenManager methods are now all static.
+  - TraceTokenModule is no longer needed and has been deprecated.
+
 Platform 1.10
 
 * [Bug] NPE if config class bound both with and without a config prefix.
