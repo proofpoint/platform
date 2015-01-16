@@ -1,3 +1,14 @@
+Platform 1.11
+
+* Trace Token improvements
+  - TraceTokenManager.registerRequestToken() now returns a TraceTokenScope
+    which can be used with try-with-resources to restore the thread's previous
+    token state.
+  - TraceTokenManager methods are now all static.
+  - TraceTokenModule is no longer needed and has been deprecated.
+  - HttpClient now propagates the trace token to BodyGenerator and
+    ResponseHandler calls.
+
 Platform 1.10
 
 * [Bug] NPE if config class bound both with and without a config prefix.

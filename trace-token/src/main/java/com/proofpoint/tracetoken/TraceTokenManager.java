@@ -17,25 +17,40 @@ package com.proofpoint.tracetoken;
 
 import com.proofpoint.log.Logging;
 
+import javax.annotation.Nullable;
 import java.util.UUID;
 
-final public class TraceTokenManager
+public final class TraceTokenManager
 {
     private static final String TRACE_TOKEN = "TraceToken";
-    private final ThreadLocal<String> token = new ThreadLocal<>();
+    private static final ThreadLocal<String> token = new ThreadLocal<>();
 
-    public void registerRequestToken(String token)
+    /**
+     * @deprecated This is now a utility class. Instantiation is no longer required.
+     */
+    @Deprecated
+    public TraceTokenManager()
+    {}
+
+    public static TraceTokenScope registerRequestToken(@Nullable String token)
     {
-        this.token.set(token);
-        Logging.putMDC(TRACE_TOKEN, token);
+        String oldToken = TraceTokenManager.token.get();
+        TraceTokenManager.token.set(token);
+        if (token == null) {
+            Logging.removeMDC(TRACE_TOKEN);
+        }
+        else {
+            Logging.putMDC(TRACE_TOKEN, token);
+        }
+        return new TraceTokenScope(oldToken);
     }
 
-    public String getCurrentRequestToken()
+    public static String getCurrentRequestToken()
     {
-        return this.token.get();
+        return token.get();
     }
 
-    public String createAndRegisterNewRequestToken()
+    public static String createAndRegisterNewRequestToken()
     {
         String newToken = UUID.randomUUID().toString();
         registerRequestToken(newToken);
@@ -43,9 +58,9 @@ final public class TraceTokenManager
         return newToken;
     }
 
-    public void clearRequestToken()
+    public static void clearRequestToken()
     {
-        this.token.remove();
+        token.remove();
         Logging.removeMDC(TRACE_TOKEN);
     }
 }
