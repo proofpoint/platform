@@ -93,7 +93,7 @@ public class TestQueryParamExceptionMapper
     }
 
     @Test
-    public void testGetWithInvalidQueryParamFails()
+    public void testGetWithInvalidQueryParamReturnsBadRequest()
             throws Exception
     {
         StatusResponse response = client.execute(buildRequestWithQueryParam(GET, "string"), createStatusResponseHandler());
