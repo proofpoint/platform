@@ -703,9 +703,11 @@ public class JettyHttpClient
                 }
 
                 if (chunk == EXCEPTION) {
+                    bodyGeneratorThread.set(null);
                     throw Throwables.propagate(exception.get());
                 }
                 if (chunk == DONE) {
+                    bodyGeneratorThread.set(null);
                     return endOfData();
                 }
                 return chunk;
