@@ -25,6 +25,8 @@ public class JettyIoPool
     private final QueuedThreadPool executor;
     private final ByteBufferPool byteBufferPool;
     private final Scheduler scheduler;
+    private final QueuedThreadPool bodyGeneratorExecutor;
+    private final Scheduler bodyGeneratorScheduler;
 
     public JettyIoPool(String name, JettyIoPoolConfig config)
     {
@@ -32,16 +34,13 @@ public class JettyIoPool
         try {
             String baseName = "http-client-" + name;
 
-            ThreadGroup threadGroup = new ThreadGroup(baseName);
-            QueuedThreadPool threadPool = new JettyThreadPool(threadGroup, config);
-            threadPool.setName(baseName);
-            threadPool.setDaemon(true);
-            threadPool.start();
-            threadPool.setStopTimeout(2000);
+            JettyThreadPool threadPool = jettyThreadPool(baseName, config.getMaxThreads(), config.getMinThreads());
             executor = threadPool;
+            scheduler = threadPool.getScheduler();
 
-            scheduler = new JettyScheduler(threadGroup, baseName + "-scheduler");
-            scheduler.start();
+            threadPool = jettyThreadPool("http-client-bodygenerator" + name, config.getBodyGeneratorMaxThreads(), config.getBodyGeneratorMinThreads());
+            bodyGeneratorExecutor = threadPool;
+            bodyGeneratorScheduler = threadPool.getScheduler();
 
             byteBufferPool = new MappedByteBufferPool();
         }
@@ -59,6 +58,12 @@ public class JettyIoPool
         }
         finally {
             closeQuietly(scheduler);
+        }
+        try {
+            closeQuietly(bodyGeneratorExecutor);
+        }
+        finally {
+            closeQuietly(bodyGeneratorScheduler);
         }
     }
 
@@ -81,6 +86,11 @@ public class JettyIoPool
     public Executor getExecutor()
     {
         return executor;
+    }
+
+    public Executor getBodyGeneratorExecutor()
+    {
+        return bodyGeneratorExecutor;
     }
 
     public ByteBufferPool setByteBufferPool()
@@ -106,11 +116,18 @@ public class JettyIoPool
             extends QueuedThreadPool
     {
         private final ThreadGroup threadGroup;
+        private final Scheduler scheduler;
 
-        private JettyThreadPool(ThreadGroup threadGroup, JettyIoPoolConfig config)
+        private JettyThreadPool(String baseName, int maxThreads, int minThreads)
         {
-            super(config.getMaxThreads(), config.getMinThreads());
-            this.threadGroup = checkNotNull(threadGroup, "threadGroup is null");
+            super(maxThreads, minThreads);
+            this.threadGroup = new ThreadGroup(checkNotNull(baseName, "baseName is null"));
+            scheduler = new JettyScheduler(threadGroup, baseName + "-scheduler");
+        }
+
+        public Scheduler getScheduler()
+        {
+            return scheduler;
         }
 
         @Override
@@ -118,6 +135,18 @@ public class JettyIoPool
         {
             return new Thread(threadGroup, runnable);
         }
+    }
+
+    private static JettyThreadPool jettyThreadPool(String baseName, int maxThreads, int minThreads)
+            throws Exception
+    {
+        JettyThreadPool threadPool = new JettyThreadPool(baseName, maxThreads, minThreads);
+        threadPool.setName(baseName);
+        threadPool.setDaemon(true);
+        threadPool.start();
+        threadPool.setStopTimeout(2000);
+        threadPool.scheduler.start();
+        return threadPool;
     }
 
     // TODO: Jetty should have support for setting ThreadGroup

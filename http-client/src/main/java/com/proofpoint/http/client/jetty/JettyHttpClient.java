@@ -72,7 +72,7 @@ import static java.lang.Math.min;
 public class JettyHttpClient
         implements AsyncHttpClient
 {
-    private final static AtomicLong nameCounter = new AtomicLong();
+    private static final AtomicLong nameCounter = new AtomicLong();
 
     private final HttpClient httpClient;
     private final long maxContentLength;
@@ -80,6 +80,7 @@ public class JettyHttpClient
     private final List<HttpRequestFilter> requestFilters;
     private final Exception creationLocation = new Exception();
     private final String name;
+    private final Executor bodyGeneratorExecutor;
 
     public JettyHttpClient()
     {
@@ -119,6 +120,7 @@ public class JettyHttpClient
         httpClient.setExecutor(pool.getExecutor());
         httpClient.setByteBufferPool(pool.setByteBufferPool());
         httpClient.setScheduler(pool.setScheduler());
+        bodyGeneratorExecutor = pool.getBodyGeneratorExecutor();
 
         try {
             httpClient.start();
@@ -296,7 +298,7 @@ public class JettyHttpClient
                 jettyRequest.content(new BytesContentProvider(staticBodyGenerator.getBody()));
             }
             else {
-                jettyRequest.content(new BodyGeneratorContentProvider(bodyGenerator, httpClient.getExecutor()));
+                jettyRequest.content(new BodyGeneratorContentProvider(bodyGenerator, bodyGeneratorExecutor));
             }
         }
         jettyRequest.followRedirects(finalRequest.isFollowRedirects());
