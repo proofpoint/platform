@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import java.io.Closeable;
 import java.io.OutputStream;
 
 public interface DynamicBodySource extends BodySource
@@ -25,12 +24,14 @@ public interface DynamicBodySource extends BodySource
      *
      * @param out The @{link OutputStream} to write to
      * @return a @{link Writer} that writes to the indicated @link{OutputStream}.
-     *         The caller is guaranteed to call @{link Writer#close()} on the
-     *         returned value.
+     *         If the returned value implements @link{AutoCloseable}, the caller
+     *         is guaranteed to call @{link AutoCloseable#close()} on it.
+     * @throws Exception
      */
-    public Writer start(OutputStream out);
+    public Writer start(OutputStream out)
+            throws Exception;
 
-    public interface Writer extends Closeable
+    public interface Writer
     {
         /**
          * Write some data to the @{link OutputStream} specified when this was
