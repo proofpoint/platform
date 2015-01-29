@@ -17,7 +17,10 @@ public class TestJettyIoPoolConfig
     {
         assertRecordedDefaults(recordDefaults(JettyIoPoolConfig.class)
                 .setMaxThreads(200)
-                .setMinThreads(8));
+                .setMinThreads(8)
+                .setBodyGeneratorMaxThreads(200)
+                .setBodyGeneratorMinThreads(1)
+        );
     }
 
     @Test
@@ -26,11 +29,15 @@ public class TestJettyIoPoolConfig
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
                 .put("http-client.max-threads", "33")
                 .put("http-client.min-threads", "11")
+                .put("http-client.bodygenerator.max-threads", "44")
+                .put("http-client.bodygenerator.min-threads", "22")
                 .build();
 
         JettyIoPoolConfig expected = new JettyIoPoolConfig()
                 .setMaxThreads(33)
-                .setMinThreads(11);
+                .setMinThreads(11)
+                .setBodyGeneratorMaxThreads(44)
+                .setBodyGeneratorMinThreads(22);
 
         assertFullMapping(properties, expected);
     }

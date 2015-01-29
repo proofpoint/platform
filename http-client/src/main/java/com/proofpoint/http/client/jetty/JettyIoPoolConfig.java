@@ -9,6 +9,8 @@ public class JettyIoPoolConfig
 {
     private int maxThreads = 200;
     private int minThreads = 8;
+    private int bodyGeneratorMaxThreads = 200;
+    private int bodyGeneratorMinThreads = 1;
 
     @Min(1)
     public int getMaxThreads()
@@ -34,6 +36,32 @@ public class JettyIoPoolConfig
     public JettyIoPoolConfig setMinThreads(int minThreads)
     {
         this.minThreads = minThreads;
+        return this;
+    }
+
+    @Min(1)
+    public int getBodyGeneratorMaxThreads()
+    {
+        return bodyGeneratorMaxThreads;
+    }
+
+    @Config("http-client.bodygenerator.max-threads")
+    public JettyIoPoolConfig setBodyGeneratorMaxThreads(int bodyGeneratorMaxThreads)
+    {
+        this.bodyGeneratorMaxThreads = bodyGeneratorMaxThreads;
+        return this;
+    }
+
+    @Min(1)
+    public int getBodyGeneratorMinThreads()
+    {
+        return bodyGeneratorMinThreads;
+    }
+
+    @Config("http-client.bodygenerator.min-threads")
+    public JettyIoPoolConfig setBodyGeneratorMinThreads(int bodyGeneratorMinThreads)
+    {
+        this.bodyGeneratorMinThreads = bodyGeneratorMinThreads;
         return this;
     }
 }
