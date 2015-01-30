@@ -15,11 +15,11 @@
  */
 package com.proofpoint.event.client;
 
-import com.proofpoint.http.client.DynamicBodySource.Writer;
+import com.proofpoint.http.client.DynamicBodySource;
+import com.proofpoint.http.client.testing.BodySourceTester;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Throwables.propagate;
 
@@ -27,66 +27,36 @@ public class TestJsonEventWriterEventWriter
     extends AbstractTestJsonEventWriter
 {
     @Override
-    <T> void writeEvents(final Iterable<T> events, String token, final OutputStream out)
+    <T> void writeEvents(Iterable<T> events, String token, OutputStream out)
             throws IOException
     {
-        final AtomicBoolean closed = new AtomicBoolean(false);
-        Writer writer = eventWriter.createEventWriter(events.iterator(), token, new OutputStream()
+        try {
+            BodySourceTester.writeBodySourceTo(new EventWriterBodySource<>(events, token), out);
+        }
+        catch (IOException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw propagate(e);
+        }
+    }
+
+    private class EventWriterBodySource<T> implements DynamicBodySource
+    {
+        private final Iterable<T> events;
+        private final String token;
+
+        EventWriterBodySource(Iterable<T> events, String token)
         {
-            @Override
-            public void write(int b)
-                    throws IOException
-            {
-                out.write(b);
-            }
-
-            @Override
-            public void write(byte[] b)
-                    throws IOException
-            {
-                out.write(b);
-            }
-
-            @Override
-            public void write(byte[] b, int off, int len)
-                    throws IOException
-            {
-                out.write(b, off, len);
-            }
-
-            @Override
-            public void flush()
-                    throws IOException
-            {
-                out.flush();
-            }
-
-            @Override
-            public void close()
-            {
-                closed.set(true);
-            }
-        });
-
-        while (!closed.get()) {
-            try {
-                writer.write();
-            }
-            catch (IOException e) {
-                throw e;
-            }
-            catch (Exception e) {
-                throw propagate(e);
-            }
+            this.events = events;
+            this.token = token;
         }
 
-        if (writer instanceof AutoCloseable) {
-            try {
-                ((AutoCloseable) writer).close();
-            }
-            catch (Exception e) {
-                throw propagate(e);
-            }
+        @Override
+        public Writer start(OutputStream out)
+                throws Exception
+        {
+            return eventWriter.createEventWriter(events.iterator(), token, out);
         }
     }
 }
