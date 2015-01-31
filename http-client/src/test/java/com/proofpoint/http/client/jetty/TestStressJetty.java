@@ -62,7 +62,7 @@ public class TestStressJetty
     private URI baseURI;
     private String scheme = "http";
     private String host = "127.0.0.1";
-    private static final int NUM_ITERATIONS = 10_000;
+    private static final int NUM_REQUESTS = 10_000;
 
     @BeforeSuite
     public void setupSuite()
@@ -193,12 +193,12 @@ public class TestStressJetty
     private static void assertSimultaneousRequests(Request request)
             throws InterruptedException
     {
-        final CountDownLatch completionLatch = new CountDownLatch(NUM_ITERATIONS);
+        final CountDownLatch completionLatch = new CountDownLatch(NUM_REQUESTS);
         try (
                 JettyIoPool jettyIoPool = new JettyIoPool("test-private", new JettyIoPoolConfig().setMaxThreads(10));
-                JettyHttpClient client = new JettyHttpClient(new HttpClientConfig().setMaxRequestsQueuedPerDestination(NUM_ITERATIONS), jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()))
+                JettyHttpClient client = new JettyHttpClient(new HttpClientConfig().setMaxRequestsQueuedPerDestination(NUM_REQUESTS), jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()))
         ) {
-            for (int i = 0; i < NUM_ITERATIONS; i++) {
+            for (int i = 0; i < NUM_REQUESTS; i++) {
                 HttpResponseFuture<Integer> future = client.executeAsync(request, new ResponseStatusCodeHandler());
                 final int requestNumber = i;
                 Futures.addCallback(future, new FutureCallback<Integer>()
