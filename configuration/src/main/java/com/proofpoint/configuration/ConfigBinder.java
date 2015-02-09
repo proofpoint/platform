@@ -15,12 +15,18 @@
  */
 package com.proofpoint.configuration;
 
+import com.google.common.reflect.TypeParameter;
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Binder;
 import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.binder.AnnotatedBindingBuilder;
+import com.google.inject.multibindings.Multibinder;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -152,5 +158,28 @@ public final class ConfigBinder
             requireNonNull(prefix, "prefix is null");
             configurationProvider.setPrefix(prefix);
         }
+    }
+
+    private <T> void bindConfigDefaults(Key<T> key, ConfigDefaults<T> configDefaults)
+    {
+        createConfigDefaultsBinder(key).addBinding().toInstance(new ConfigDefaultsHolder<>(key, configDefaults));
+    }
+
+    private <T> Multibinder<ConfigDefaultsHolder<T>> createConfigDefaultsBinder(Key<T> key)
+    {
+        @SuppressWarnings("SerializableInnerClassWithNonSerializableOuterClass")
+        Type type = new TypeToken<ConfigDefaultsHolder<T>>() {}
+                .where(new TypeParameter<T>() {}, (TypeToken<T>) TypeToken.of(key.getTypeLiteral().getType()))
+                .getType();
+
+        TypeLiteral<ConfigDefaultsHolder<T>> typeLiteral = (TypeLiteral<ConfigDefaultsHolder<T>>) TypeLiteral.get(type);
+
+        if (key.getAnnotation() == null) {
+            return newSetBinder(binder, typeLiteral);
+        }
+        if (key.hasAttributes()) {
+            return newSetBinder(binder, typeLiteral, key.getAnnotation());
+        }
+        return newSetBinder(binder, typeLiteral, key.getAnnotationType());
     }
 }
