@@ -104,7 +104,6 @@ public class JaxrsModule
     }
 
     @Provides
-    @SuppressWarnings("unchecked")
     public ResourceConfig createResourceConfig(Application application, @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap)
     {
         ResourceConfig config = ResourceConfig.forApplication(application);
@@ -132,6 +131,7 @@ public class JaxrsModule
         config.register(new AbstractBinder()
         {
             @Override
+            @SuppressWarnings("unchecked")
             protected void configure()
             {
                 for (final Entry<Class<?>, Supplier<?>> entry : supplierMap.entrySet()) {
