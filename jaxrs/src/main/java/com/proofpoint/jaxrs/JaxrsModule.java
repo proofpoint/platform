@@ -131,27 +131,17 @@ public class JaxrsModule
         config.register(new AbstractBinder()
         {
             @Override
-            @SuppressWarnings("unchecked")
             protected void configure()
             {
                 for (final Entry<Class<?>, Supplier<?>> entry : supplierMap.entrySet()) {
-                    new InjectionProviderBinder(entry.getKey()).to(entry.getValue());
+                    bindSupplier(entry.getKey(), entry.getValue());
                 }
             }
 
-            class InjectionProviderBinder<T>
+            @SuppressWarnings("unchecked")
+            private <T> void bindSupplier(Class<T> type, Supplier<?> supplier)
             {
-                private final Class<T> type;
-
-                InjectionProviderBinder(Class<T> type)
-                {
-                    this.type = type;
-                }
-
-                public void to(final Supplier<? extends T> supplier)
-                {
-                    bindFactory(new InjectionProviderFactory<>(type, supplier, locatorReference)).to(type);
-                }
+                bindFactory(new InjectionProviderFactory<>(type, (Supplier<T>) supplier, locatorReference)).to(type);
             }
         });
 
