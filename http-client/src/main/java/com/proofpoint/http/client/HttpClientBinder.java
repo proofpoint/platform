@@ -52,10 +52,10 @@ public class HttpClientBinder
     {
         checkNotNull(name, "name is null");
         checkNotNull(annotation, "annotation is null");
-        return createBindingBuilder(new AsyncHttpClientModule(name, annotation, rootBinder));
+        return createBindingBuilder(new HttpClientModule(name, annotation, rootBinder));
     }
 
-    private HttpClientBindingBuilder createBindingBuilder(AsyncHttpClientModule module)
+    private HttpClientBindingBuilder createBindingBuilder(HttpClientModule module)
     {
         binder.install(module);
         return new HttpClientBindingBuilder(module,
@@ -70,10 +70,10 @@ public class HttpClientBinder
     {
         checkNotNull(name, "name is null");
         checkNotNull(annotation, "annotation is null");
-        return createAsyncBindingBuilder(new AsyncHttpClientModule(name, annotation, rootBinder));
+        return createAsyncBindingBuilder(new HttpClientModule(name, annotation, rootBinder));
     }
 
-    private HttpClientAsyncBindingBuilder createAsyncBindingBuilder(AsyncHttpClientModule module)
+    private HttpClientAsyncBindingBuilder createAsyncBindingBuilder(HttpClientModule module)
     {
         binder.install(module);
         return new HttpClientAsyncBindingBuilder(module,
@@ -83,7 +83,7 @@ public class HttpClientBinder
     public static class HttpClientBindingBuilder
         extends HttpClientAsyncBindingBuilder
     {
-        public HttpClientBindingBuilder(AsyncHttpClientModule module, Multibinder<HttpRequestFilter> multibinder)
+        public HttpClientBindingBuilder(HttpClientModule module, Multibinder<HttpRequestFilter> multibinder)
         {
             super(module, multibinder);
         }
@@ -91,10 +91,10 @@ public class HttpClientBinder
 
     public static class HttpClientAsyncBindingBuilder
     {
-        private final AsyncHttpClientModule module;
+        private final HttpClientModule module;
         private final Multibinder<HttpRequestFilter> multibinder;
 
-        private HttpClientAsyncBindingBuilder(AsyncHttpClientModule module, Multibinder<HttpRequestFilter> multibinder)
+        private HttpClientAsyncBindingBuilder(HttpClientModule module, Multibinder<HttpRequestFilter> multibinder)
         {
             this.module = module;
             this.multibinder = multibinder;

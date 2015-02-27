@@ -22,6 +22,7 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
@@ -44,22 +45,27 @@ import static com.proofpoint.http.client.CompositeQualifierImpl.compositeQualifi
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 
 @Beta
-public class AsyncHttpClientModule
-        extends AbstractHttpClientModule
+public class HttpClientModule
+        implements Module
 {
-    private static final Logger log = Logger.get(AsyncHttpClientModule.class);
+    private static final Logger log = Logger.get(HttpClientModule.class);
+    private final String name;
+    private final Class<? extends Annotation> annotation;
+    private final Binder rootBinder;
+    protected Binder binder;
 
-    protected AsyncHttpClientModule(String name, Class<? extends Annotation> annotation)
+    protected HttpClientModule(String name, Class<? extends Annotation> annotation)
     {
-        super(name, annotation, null);
+        this(name, annotation, null);
     }
 
-    protected AsyncHttpClientModule(String name, Class<? extends Annotation> annotation, Binder rootBinder)
+    protected HttpClientModule(String name, Class<? extends Annotation> annotation, Binder rootBinder)
     {
-        super(name, annotation, checkNotNull(rootBinder, "rootBinder is null"));
+        this.name = checkNotNull(name, "name is null");
+        this.annotation = checkNotNull(annotation, "annotation is null");
+        this.rootBinder = rootBinder;
     }
 
-    @Override
     public Annotation getFilterQualifier()
     {
         return filterQualifier(annotation);
@@ -72,20 +78,19 @@ public class AsyncHttpClientModule
     }
 
     @Override
-    public void configure()
+    public final void configure(Binder binder)
     {
+        this.binder = binder;
+
         // bind the configuration
         bindConfig(binder).annotatedWith(annotation).prefixedWith(name).to(HttpClientConfig.class);
 
         // Shared thread pool
-        bindConfig(rootBinder).to(com.proofpoint.http.client.jetty.JettyIoPoolConfig.class);
+        bindConfig(rootBinder).to(JettyIoPoolConfig.class);
         rootBinder.bind(JettyIoPoolManager.class).to(SharedJettyIoPoolManager.class).in(Scopes.SINGLETON);
 
-        // bind the async client
-        binder.bind(AsyncHttpClient.class).annotatedWith(annotation).toProvider(new HttpClientProvider(name, annotation)).in(Scopes.SINGLETON);
-
-        // bind the a sync client also
-        binder.bind(HttpClient.class).annotatedWith(annotation).to(Key.get(AsyncHttpClient.class, annotation));
+        // bind the client
+        this.binder.bind(HttpClient.class).annotatedWith(annotation).toProvider(new HttpClientProvider(name, annotation)).in(Scopes.SINGLETON);
 
         // kick off the binding for the filter set
         newSetBinder(binder, HttpRequestFilter.class, filterQualifier(annotation));
@@ -96,15 +101,13 @@ public class AsyncHttpClientModule
         }
     }
 
-    @Override
     public void addAlias(Class<? extends Annotation> alias)
     {
-        binder.bind(AsyncHttpClient.class).annotatedWith(alias).to(Key.get(AsyncHttpClient.class, annotation));
-        binder.bind(HttpClient.class).annotatedWith(alias).to(Key.get(AsyncHttpClient.class, annotation));
+        binder.bind(HttpClient.class).annotatedWith(alias).to(Key.get(HttpClient.class, annotation));
     }
 
     private static class HttpClientProvider
-            implements Provider<AsyncHttpClient>
+            implements Provider<HttpClient>
     {
         private final String name;
         private final Class<? extends Annotation> annotation;
@@ -123,7 +126,7 @@ public class AsyncHttpClientModule
         }
 
         @Override
-        public AsyncHttpClient get()
+        public HttpClient get()
         {
             HttpClientConfig config = injector.getInstance(Key.get(HttpClientConfig.class, annotation));
             Set<HttpRequestFilter> filters = injector.getInstance(filterKey(annotation));
@@ -222,6 +225,6 @@ public class AsyncHttpClientModule
 
     private static CompositeQualifier filterQualifier(Class<? extends Annotation> annotation)
     {
-        return compositeQualifier(annotation, AsyncHttpClient.class);
+        return compositeQualifier(annotation, HttpClient.class);
     }
 }

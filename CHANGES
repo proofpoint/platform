@@ -1,5 +1,10 @@
 Platform 1.16
 
+* Deprecated APIs removed
+
+  - AsyncHttpClient
+  - BalancingAsyncHttpClient
+
 * RC4 disabled
 
   We disabled all RC4 ciphers in both HttpServer and JettyHttpClient.
