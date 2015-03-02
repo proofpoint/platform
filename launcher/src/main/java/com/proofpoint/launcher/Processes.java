@@ -31,12 +31,14 @@ import java.util.Arrays;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 class Processes
 {
-    private static final POSIX posix = POSIXFactory.getPOSIX(new OurPOSIXHandler(), true);
+    private static final OurPOSIXHandler posixHandler = new OurPOSIXHandler();
+    private static final POSIX posix = POSIXFactory.getPOSIX(posixHandler, true);
     public static final File NULL_FILE;
 
     private Processes()
@@ -95,8 +97,18 @@ class Processes
         }
     }
 
+    public static void setVerbose(boolean verbose) {
+        posixHandler.setVerbose(verbose);
+    }
+
     private static final class OurPOSIXHandler implements POSIXHandler
     {
+        private final AtomicBoolean verbose = new AtomicBoolean(false);
+
+        void setVerbose(boolean verbose) {
+            this.verbose.set(verbose);
+        }
+
         @Override
         public void error(jnr.constants.platform.Errno error, String extraData)
         {
@@ -131,7 +143,7 @@ class Processes
         @Override
         public boolean isVerbose()
         {
-            return false;
+            return verbose.get();
         }
 
         @Override

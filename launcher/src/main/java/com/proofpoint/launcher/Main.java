@@ -117,6 +117,10 @@ public class Main
 
         LauncherCommand()
         {
+            if (verbose) {
+                Processes.setVerbose(true);
+            }
+
             URL launcherResource = Main.class.getProtectionDomain().getCodeSource().getLocation();
             if (launcherResource == null) {
                 System.err.print("Unable to get path of launcher jar\n");
