@@ -38,7 +38,6 @@ import java.util.logging.Logger;
 class Processes
 {
     private static final OurPOSIXHandler posixHandler = new OurPOSIXHandler();
-    private static final POSIX posix = POSIXFactory.getPOSIX(posixHandler, true);
     public static final File NULL_FILE;
 
     private Processes()
@@ -56,13 +55,13 @@ class Processes
 
     static int getpid()
     {
-        return posix.getpid();
+        return getPosix().getpid();
     }
 
     static void detach()
     {
         if (!System.getProperty("os.name").startsWith("Windows")) {
-            posix.setsid();
+            getPosix().setsid();
         }
     }
 
@@ -83,7 +82,7 @@ class Processes
         }
         else {
             int signal = new Signal(graceful ? "TERM" : "KILL").getNumber();
-            posix.kill(pid, signal);
+            getPosix().kill(pid, signal);
         }
     }
 
@@ -93,12 +92,20 @@ class Processes
             return false;
         }
         else {
-            return posix.kill(pid, 0) == 0;
+            return getPosix().kill(pid, 0) == 0;
         }
     }
 
     public static void setVerbose(boolean verbose) {
         posixHandler.setVerbose(verbose);
+    }
+
+    private static POSIX getPosix() {
+        return PosixSingletonHolder.instance;
+    }
+
+    private static class PosixSingletonHolder {
+        private static final POSIX instance = POSIXFactory.getPOSIX(posixHandler, true);
     }
 
     private static final class OurPOSIXHandler implements POSIXHandler
