@@ -117,10 +117,6 @@ public class Main
 
         LauncherCommand()
         {
-            if (verbose) {
-                Processes.setVerbose(true);
-            }
-
             URL launcherResource = Main.class.getProtectionDomain().getCodeSource().getLocation();
             if (launcherResource == null) {
                 System.err.print("Unable to get path of launcher jar\n");
@@ -149,6 +145,7 @@ public class Main
         {
             if (verbose) {
                 launcherArgs.add("-v");
+                Processes.setVerbose(true);
             }
             if (nodePropertiesPath == null) {
                 nodePropertiesPath = installPath + "/etc/node.properties";
