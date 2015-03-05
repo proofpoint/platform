@@ -349,33 +349,6 @@ public class TestHttpClientBinder
     }
 
     @Test
-    public void testPrivateBindAsyncClient()
-            throws Exception
-    {
-        Injector injector = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
-                .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                newExporter(binder).export(ManagedClass.class);
-                                PrivateBinder privateBinder = binder.newPrivateBinder();
-                                HttpClientBinder.httpClientPrivateBinder(privateBinder, binder).bindAsyncHttpClient("foo", FooClient.class);
-                                privateBinder.bind(ExposeHttpClient.class);
-                                privateBinder.expose(ExposeHttpClient.class);
-                            }
-                        })
-                .quiet()
-                .initialize();
-
-        assertNotNull(injector.getInstance(ExposeHttpClient.class).httpClient);
-
-        assertPoolsDestroyProperly(injector);
-    }
-
-    @Test
     public void testNormalAndPrivateBindClients()
             throws Exception
     {

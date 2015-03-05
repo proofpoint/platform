@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Key;
@@ -29,7 +28,6 @@ import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement.ServiceAnnouncementBuilder;
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerProvider;
 import com.proofpoint.http.client.HttpClient;
-import com.proofpoint.http.client.HttpClientBinder.HttpClientAsyncBindingBuilder;
 import com.proofpoint.http.client.HttpClientBinder.HttpClientBindingBuilder;
 import com.proofpoint.http.client.HttpRequestFilter;
 import com.proofpoint.http.client.balancing.BalancingHttpClient;
@@ -39,6 +37,7 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import org.weakref.jmx.ObjectNameBuilder;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
@@ -241,7 +240,7 @@ public class DiscoveryBinder
     {
         private final Binder binder;
         private final Key<HttpClient> key;
-        private final HttpClientAsyncBindingBuilder delegateBindingBuilder;
+        private final HttpClientBindingBuilder delegateBindingBuilder;
 
         public BalancingHttpClientBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, HttpClientBindingBuilder delegateBindingBuilder)
         {
@@ -266,7 +265,7 @@ public class DiscoveryBinder
             return this;
         }
 
-        public BalancingHttpClientBindingBuilder withAliases(ImmutableList<Class<? extends Annotation>> aliases)
+        public BalancingHttpClientBindingBuilder withAliases(Collection<Class<? extends Annotation>> aliases)
         {
             for (Class<? extends Annotation> alias : aliases) {
                 binder.bind(HttpClient.class).annotatedWith(alias).to(key);
