@@ -5,6 +5,12 @@ Platform 1.16
   - AsyncHttpClient
   - BalancingAsyncHttpClient
 
+* Deprecations
+
+  - HttpClientAsyncBindingBuilder has been deprecated. Use
+    HttpClientBindingBuilder instead.
+  - AsyncHttpClientModule has been deprecated. Use HttpClientModule instead.
+
 * RC4 disabled
 
   We disabled all RC4 ciphers in both HttpServer and JettyHttpClient.

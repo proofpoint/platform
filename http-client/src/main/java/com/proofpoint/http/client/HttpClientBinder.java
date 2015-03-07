@@ -55,13 +55,28 @@ public class HttpClientBinder
         return createBindingBuilder(new HttpClientModule(name, annotation, rootBinder));
     }
 
+    @SuppressWarnings("deprecation")
     private HttpClientBindingBuilder createBindingBuilder(HttpClientModule module)
     {
         binder.install(module);
-        return new HttpClientBindingBuilder(module,
+        return new HttpClientAsyncBindingBuilder(module,
                 newSetBinder(binder, HttpRequestFilter.class, module.getFilterQualifier()));
     }
 
+    /**
+     * @deprecated use {@link HttpClientBindingBuilder}
+     */
+    @Deprecated
+    public static class HttpClientAsyncBindingBuilder
+        extends HttpClientBindingBuilder
+    {
+        private HttpClientAsyncBindingBuilder(HttpClientModule module, Multibinder<HttpRequestFilter> multibinder)
+        {
+            super(module, multibinder);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
     public static class HttpClientBindingBuilder
     {
         private final HttpClientModule module;
@@ -73,18 +88,18 @@ public class HttpClientBinder
             this.multibinder = multibinder;
         }
 
-        public HttpClientBindingBuilder withAlias(Class<? extends Annotation> alias)
+        public HttpClientAsyncBindingBuilder withAlias(Class<? extends Annotation> alias)
         {
             module.addAlias(alias);
-            return this;
+            return (HttpClientAsyncBindingBuilder) this;
         }
 
-        public HttpClientBindingBuilder withAliases(Collection<Class<? extends Annotation>> aliases)
+        public HttpClientAsyncBindingBuilder withAliases(Collection<Class<? extends Annotation>> aliases)
         {
             for (Class<? extends Annotation> annotation : aliases) {
                 module.addAlias(annotation);
             }
-            return this;
+            return (HttpClientAsyncBindingBuilder) this;
         }
 
         public LinkedBindingBuilder<HttpRequestFilter> addFilterBinding()
@@ -92,21 +107,21 @@ public class HttpClientBinder
             return multibinder.addBinding();
         }
 
-        public HttpClientBindingBuilder withFilter(Class<? extends HttpRequestFilter> filterClass)
+        public HttpClientAsyncBindingBuilder withFilter(Class<? extends HttpRequestFilter> filterClass)
         {
             multibinder.addBinding().to(filterClass);
-            return this;
+            return (HttpClientAsyncBindingBuilder) this;
         }
 
-        public HttpClientBindingBuilder withTracing()
+        public HttpClientAsyncBindingBuilder withTracing()
         {
             return withFilter(TraceTokenRequestFilter.class);
         }
 
-        public HttpClientBindingBuilder withPrivateIoThreadPool()
+        public HttpClientAsyncBindingBuilder withPrivateIoThreadPool()
         {
             module.withPrivateIoThreadPool();
-            return this;
+            return (HttpClientAsyncBindingBuilder) this;
         }
     }
 }
