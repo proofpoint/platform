@@ -3,6 +3,7 @@ Platform 1.22
 * Library Upgrades
 
   - Joda-time to 2.8
+  - Jetty to 9.3.0
 
 Platform 1.21
 
