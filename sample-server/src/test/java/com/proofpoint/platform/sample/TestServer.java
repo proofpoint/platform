@@ -145,8 +145,8 @@ public class TestServer
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
         List<Object> expected = new ArrayList<>();
-        expected.add(ImmutableMap.of("self", uriFor("/v1/person/foo").toString(), "name", "Mr Foo", "email", "foo@example.com"));
-        expected.add(ImmutableMap.of("self", uriFor("/v1/person/bar").toString(), "name", "Mr Bar", "email", "bar@example.com"));
+        expected.add(ImmutableMap.of("name", "Mr Foo", "email", "foo@example.com"));
+        expected.add(ImmutableMap.of("name", "Mr Bar", "email", "bar@example.com"));
 
         List<Object> actual = client.execute(
                 prepareGet().setUri(uriFor("/v1/person")).build(),
@@ -162,8 +162,7 @@ public class TestServer
 
         URI requestUri = uriFor("/v1/person/foo");
 
-        Map<String, Object> expected = mapCodec.fromJson(Resources.toString(Resources.getResource("single.json"), Charsets.UTF_8));
-        expected.put("self", requestUri.toString());
+        Map<String, String> expected = ImmutableMap.of("name", "Mr Foo", "email", "foo@example.com");
 
         Map<String, Object> actual = client.execute(
                 prepareGet().setUri(requestUri).build(),
