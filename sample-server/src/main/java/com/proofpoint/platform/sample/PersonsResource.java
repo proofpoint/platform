@@ -15,8 +15,7 @@
  */
 package com.proofpoint.platform.sample;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
+import autovalue.shaded.com.google.common.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.proofpoint.platform.sample.PersonStore.StoreEntry;
 
@@ -24,7 +23,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.Collection;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -43,11 +42,11 @@ public class PersonsResource
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Person> listAll()
+    public Map<String, Person> listAll()
     {
-        Builder<Person> builder = ImmutableList.builder();
+        ImmutableMap.Builder<String, Person> builder = ImmutableMap.builder();
         for (StoreEntry entry : store.getAll()) {
-            builder.add(entry.getPerson());
+            builder.put(entry.getId(), entry.getPerson());
         }
         return builder.build();
     }

@@ -15,6 +15,7 @@
  */
 package com.proofpoint.platform.sample;
 
+import com.google.common.collect.ImmutableMap;
 import com.proofpoint.event.client.NullEventClient;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -38,7 +39,7 @@ public class TestPersonsResource
     @Test
     public void testEmpty()
     {
-        assertEquals(resource.listAll(), newArrayList());
+        assertEquals(resource.listAll(), ImmutableMap.of());
     }
 
     @Test
@@ -47,9 +48,9 @@ public class TestPersonsResource
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
         store.put("bar", createPerson("bar@example.com", "Mr Bar"));
 
-        assertEquals(resource.listAll(), newArrayList(
-                createPerson("foo@example.com", "Mr Foo"),
-                createPerson("bar@example.com", "Mr Bar")
+        assertEquals(resource.listAll(), ImmutableMap.of(
+                "foo", createPerson("foo@example.com", "Mr Foo"),
+                "bar", createPerson("bar@example.com", "Mr Bar")
         ));
     }
 }
