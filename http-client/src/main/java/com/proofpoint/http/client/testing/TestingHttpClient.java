@@ -33,24 +33,17 @@ public class TestingHttpClient
 
     public TestingHttpClient(Function<Request, Response> processor)
     {
-        this(processor, MoreExecutors.sameThreadExecutor());
+        this(processor, MoreExecutors.newDirectExecutorService());
     }
 
     public TestingHttpClient(Processor processor)
     {
-        this(processor, MoreExecutors.sameThreadExecutor());
+        this(processor, MoreExecutors.newDirectExecutorService());
     }
 
     public TestingHttpClient(final Function<Request, Response> processor, ExecutorService executor)
     {
-        this(new Processor()
-        {
-            @Override
-            public Response handle(Request request)
-            {
-                return processor.apply(request);
-            }
-        }, executor);
+        this((Processor) processor::apply, executor);
     }
 
     public TestingHttpClient(Processor processor, ExecutorService executor)
@@ -66,16 +59,8 @@ public class TestingHttpClient
         checkNotNull(responseHandler, "responseHandler is null");
         checkState(!closed.get(), "client is closed");
 
-        final AtomicReference<String> state = new AtomicReference<>("SENDING_REQUEST");
-        ListenableFuture<T> future = executor.submit(new Callable<T>()
-        {
-            @Override
-            public T call()
-                    throws Exception
-            {
-                return execute(request, responseHandler, state);
-            }
-        });
+        AtomicReference<String> state = new AtomicReference<>("SENDING_REQUEST");
+        ListenableFuture<T> future = executor.submit(() -> execute(request, responseHandler, state));
 
         return new TestingHttpResponseFuture<>(future, state);
     }

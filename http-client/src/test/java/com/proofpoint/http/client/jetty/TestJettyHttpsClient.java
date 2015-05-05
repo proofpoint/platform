@@ -33,7 +33,7 @@ public class TestJettyHttpsClient
     }
 
     @BeforeMethod
-    public void setUp()
+    public void setUpHttpClient()
     {
         jettyIoPool = new JettyIoPool("test-shared", new JettyIoPoolConfig());
 
@@ -46,7 +46,7 @@ public class TestJettyHttpsClient
     }
 
     @AfterMethod
-    public void tearDown()
+    public void tearDownHttpClient()
             throws Exception
     {
         closeQuietly(httpClient);
@@ -87,6 +87,7 @@ public class TestJettyHttpsClient
         executeRequest(request, new ResponseToStringHandler());
     }
 
+    @Override
     @Test(expectedExceptions = {IOException.class,  IllegalStateException.class})
     public void testConnectReadRequestClose()
             throws Exception
@@ -94,6 +95,7 @@ public class TestJettyHttpsClient
         super.testConnectReadRequestClose();
     }
 
+    @Override
     @Test(expectedExceptions = {IOException.class,  IllegalStateException.class})
     public void testConnectNoReadClose()
             throws Exception
@@ -101,6 +103,7 @@ public class TestJettyHttpsClient
         super.testConnectNoReadClose();
     }
 
+    @Override
     @Test(expectedExceptions = {IOException.class, TimeoutException.class, IllegalStateException.class})
     public void testConnectReadIncompleteClose()
             throws Exception

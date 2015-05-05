@@ -24,14 +24,17 @@ import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.ResponseTooLargeException;
 import com.proofpoint.http.client.StaticBodyGenerator;
 import com.proofpoint.log.Logger;
+import com.proofpoint.stats.Distribution;
 import com.proofpoint.tracetoken.TraceTokenScope;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpRequest;
+import org.eclipse.jetty.client.PoolingHttpDestination;
 import org.eclipse.jetty.client.Socks4Proxy;
 import org.eclipse.jetty.client.api.ContentProvider;
+import org.eclipse.jetty.client.api.Destination;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Response.Listener;
 import org.eclipse.jetty.client.api.Result;
@@ -45,8 +48,10 @@ import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
+import org.weakref.jmx.Nested;
 
 import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
@@ -57,6 +62,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.CancellationException;
@@ -68,6 +74,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Throwables.propagate;
@@ -92,6 +99,9 @@ public class JettyHttpClient
     private final HttpClient httpClient;
     private final long maxContentLength;
     private final RequestStats stats = new RequestStats();
+    private final CachedDistribution queuedRequestsPerDestination;
+    private final CachedDistribution activeConnectionsPerDestination;
+    private final CachedDistribution idleConnectionsPerDestination;
     private final List<HttpRequestFilter> requestFilters;
     private final Exception creationLocation = new Exception();
     private final String name;
@@ -123,38 +133,9 @@ public class JettyHttpClient
         checkNotNull(requestFilters, "requestFilters is null");
 
         maxContentLength = config.getMaxContentLength().toBytes();
-        httpClient = createHttpClient(config, creationLocation);
 
-        JettyIoPool pool = jettyIoPool.orNull();
-        if (pool == null) {
-            pool = new JettyIoPool("anonymous" + nameCounter.incrementAndGet(), new JettyIoPoolConfig());
-        }
+        creationLocation.fillInStackTrace();
 
-        name = pool.getName();
-        httpClient.setExecutor(pool.getExecutor());
-        httpClient.setByteBufferPool(pool.setByteBufferPool());
-        httpClient.setScheduler(pool.setScheduler());
-
-        try {
-            httpClient.start();
-
-            // remove the GZIP encoding from the client
-            // TODO: there should be a better way to to do this
-            httpClient.getContentDecoderFactories().clear();
-        }
-        catch (Exception e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            throw propagate(e);
-        }
-
-        this.requestFilters = ImmutableList.copyOf(requestFilters);
-    }
-
-    private HttpClient createHttpClient(HttpClientConfig config, Exception created)
-    {
-        created.fillInStackTrace();
         SslContextFactory sslContextFactory = new SslContextFactory();
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
         sslContextFactory.addExcludeProtocols("SSLv3", "SSLv2Hello");
@@ -164,7 +145,7 @@ public class JettyHttpClient
             sslContextFactory.setKeyStorePassword(config.getKeyStorePassword());
         }
 
-        HttpClient httpClient = new HttpClient(sslContextFactory);
+        httpClient = new HttpClient(sslContextFactory);
         httpClient.setMaxConnectionsPerDestination(config.getMaxConnectionsPerServer());
         httpClient.setMaxRequestsQueuedPerDestination(config.getMaxRequestsQueuedPerDestination());
 
@@ -192,7 +173,59 @@ public class JettyHttpClient
         if (socksProxy != null) {
             httpClient.getProxyConfiguration().getProxies().add(new Socks4Proxy(socksProxy.getHostText(), socksProxy.getPortOrDefault(1080)));
         }
-        return httpClient;
+
+        JettyIoPool pool = jettyIoPool.orNull();
+        if (pool == null) {
+            pool = new JettyIoPool("anonymous" + nameCounter.incrementAndGet(), new JettyIoPoolConfig());
+        }
+
+        name = pool.getName();
+        this.httpClient.setExecutor(pool.getExecutor());
+        this.httpClient.setByteBufferPool(pool.setByteBufferPool());
+        this.httpClient.setScheduler(pool.setScheduler());
+
+        try {
+            this.httpClient.start();
+
+            // remove the GZIP encoding from the client
+            // TODO: there should be a better way to to do this
+            this.httpClient.getContentDecoderFactories().clear();
+        }
+        catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw propagate(e);
+        }
+
+        this.requestFilters = ImmutableList.copyOf(requestFilters);
+
+        this.activeConnectionsPerDestination = new CachedDistribution(() -> {
+            Distribution distribution = new Distribution();
+            for (Destination destination : this.httpClient.getDestinations()) {
+                PoolingHttpDestination<?> poolingHttpDestination = (PoolingHttpDestination<?>) destination;
+                distribution.add(poolingHttpDestination.getConnectionPool().getActiveConnections().size());
+            }
+            return distribution;
+        });
+
+        this.idleConnectionsPerDestination = new CachedDistribution(() -> {
+            Distribution distribution = new Distribution();
+            for (Destination destination : this.httpClient.getDestinations()) {
+                PoolingHttpDestination<?> poolingHttpDestination = (PoolingHttpDestination<?>) destination;
+                distribution.add(poolingHttpDestination.getConnectionPool().getIdleConnections().size());
+            }
+            return distribution;
+        });
+
+        this.queuedRequestsPerDestination = new CachedDistribution(() -> {
+            Distribution distribution = new Distribution();
+            for (Destination destination : this.httpClient.getDestinations()) {
+                PoolingHttpDestination<?> poolingHttpDestination = (PoolingHttpDestination<?>) destination;
+                distribution.add(poolingHttpDestination.getHttpExchanges().size());
+            }
+            return distribution;
+        });
     }
 
     @Override
@@ -342,6 +375,27 @@ public class JettyHttpClient
     public RequestStats getStats()
     {
         return stats;
+    }
+
+    @Managed
+    @Nested
+    public CachedDistribution getActiveConnectionsPerDestination()
+    {
+        return activeConnectionsPerDestination;
+    }
+
+    @Managed
+    @Nested
+    public CachedDistribution getIdleConnectionsPerDestination()
+    {
+        return idleConnectionsPerDestination;
+    }
+
+    @Managed
+    @Nested
+    public CachedDistribution getQueuedRequestsPerDestination()
+    {
+        return queuedRequestsPerDestination;
     }
 
     @Managed
@@ -846,20 +900,15 @@ public class JettyHttpClient
             final ChunksQueue chunks = new ChunksQueue();
             final AtomicReference<Exception> exception = new AtomicReference<>();
 
-            executor.execute(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    BodyGeneratorOutputStream out = new BodyGeneratorOutputStream(chunks);
-                    try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
-                        bodyGenerator.write(out);
-                        out.close();
-                    }
-                    catch (Exception e) {
-                        exception.set(e);
-                        chunks.replaceAllWith(EXCEPTION);
-                    }
+            executor.execute(() -> {
+                BodyGeneratorOutputStream out = new BodyGeneratorOutputStream(chunks);
+                try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
+                    bodyGenerator.write(out);
+                    out.close();
+                }
+                catch (Exception e) {
+                    exception.set(e);
+                    chunks.replaceAllWith(EXCEPTION);
                 }
             });
 
@@ -1117,6 +1166,126 @@ public class JettyHttpClient
             else {
                 future.completed(result.getResponse(), new ByteArrayInputStream(buffer, 0, size));
             }
+        }
+    }
+
+    /*
+     * This class is needed because jmxutils only fetches a nested instance object once and holds on to it forever.
+     * todo remove this when https://github.com/martint/jmxutils/issues/26 is implemented
+     */
+    @ThreadSafe
+    public static class CachedDistribution
+    {
+        private final Supplier<Distribution> distributionSupplier;
+
+        @GuardedBy("this")
+        private Distribution distribution;
+        @GuardedBy("this")
+        private long lastUpdate = System.nanoTime();
+
+        public CachedDistribution(Supplier<Distribution> distributionSupplier)
+        {
+            this.distributionSupplier = distributionSupplier;
+        }
+
+        public synchronized Distribution getDistribution()
+        {
+            // refresh stats only once a second
+            if (TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - lastUpdate) > 1000) {
+                this.distribution = distributionSupplier.get();
+                this.lastUpdate = System.nanoTime();
+            }
+            return distribution;
+        }
+
+        @Managed
+        public double getMaxError()
+        {
+            return getDistribution().getMaxError();
+        }
+
+        @Managed
+        public double getCount()
+        {
+            return getDistribution().getCount();
+        }
+
+        @Managed
+        public double getTotal()
+        {
+            return getDistribution().getTotal();
+        }
+
+        @Managed
+        public long getP01()
+        {
+            return getDistribution().getP01();
+        }
+
+        @Managed
+        public long getP05()
+        {
+            return getDistribution().getP05();
+        }
+
+        @Managed
+        public long getP10()
+        {
+            return getDistribution().getP10();
+        }
+
+        @Managed
+        public long getP25()
+        {
+            return getDistribution().getP25();
+        }
+
+        @Managed
+        public long getP50()
+        {
+            return getDistribution().getP50();
+        }
+
+        @Managed
+        public long getP75()
+        {
+            return getDistribution().getP75();
+        }
+
+        @Managed
+        public long getP90()
+        {
+            return getDistribution().getP90();
+        }
+
+        @Managed
+        public long getP95()
+        {
+            return getDistribution().getP95();
+        }
+
+        @Managed
+        public long getP99()
+        {
+            return getDistribution().getP99();
+        }
+
+        @Managed
+        public long getMin()
+        {
+            return getDistribution().getMin();
+        }
+
+        @Managed
+        public long getMax()
+        {
+            return getDistribution().getMax();
+        }
+
+        @Managed
+        public Map<Double, Long> getPercentiles()
+        {
+            return getDistribution().getPercentiles();
         }
     }
 }

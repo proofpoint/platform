@@ -5,8 +5,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.ByteStreams;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
+import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
+import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.log.Logging;
 import com.proofpoint.testing.Assertions;
+import com.proofpoint.testing.Closeables;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -45,6 +48,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
@@ -54,6 +58,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.base.Throwables.propagateIfInstanceOf;
+import static com.google.common.base.Throwables.propagateIfPossible;
 import static com.proofpoint.concurrent.Threads.threadsNamed;
 import static com.proofpoint.http.client.Request.Builder.prepareDelete;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
@@ -66,6 +71,7 @@ import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRe
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 import static com.proofpoint.units.Duration.nanosSince;
 import static java.lang.String.format;
+import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testng.Assert.assertEquals;
@@ -319,7 +325,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
     }
 
     @Test
@@ -354,14 +360,14 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestMethod, "GET");
         if (servlet.requestUri.toString().endsWith("=")) {
             // todo jetty client rewrites the uri string for some reason
-            assertEquals(servlet.requestUri, new URI(uri.toString() + "="));
+            assertEquals(servlet.requestUri, new URI(uri + "="));
         }
         else {
             assertEquals(servlet.requestUri, uri);
         }
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
     }
 
     @Test
@@ -410,7 +416,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
     }
 
     @Test
@@ -432,7 +438,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 0.0);
     }
 
@@ -456,7 +462,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(servlet.requestBytes, body);
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
@@ -471,17 +477,11 @@ public abstract class AbstractHttpClientTest
                 .addHeader("foo", "bar")
                 .addHeader("dupe", "first")
                 .addHeader("dupe", "second")
-                .setBodyGenerator(new BodyGenerator()
-                {
-                    @Override
-                    public void write(OutputStream out)
-                            throws Exception
-                    {
-                        out.write(1);
-                        byte[] bytes = {2, 5};
-                        out.write(bytes);
-                        bytes[0] = 9;
-                    }
+                .setBodyGenerator(out -> {
+                    out.write(1);
+                    byte[] bytes = {2, 5};
+                    out.write(bytes);
+                    bytes[0] = 9;
                 })
                 .build();
 
@@ -491,7 +491,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
@@ -548,7 +548,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
@@ -563,36 +563,29 @@ public abstract class AbstractHttpClientTest
                 .addHeader("foo", "bar")
                 .addHeader("dupe", "first")
                 .addHeader("dupe", "second")
-                .setBodySource(new DynamicBodySource()
+                .setBodySource((DynamicBodySource) out -> new Writer()
                 {
+                    AtomicInteger invocation = new AtomicInteger(0);
+
                     @Override
-                    public Writer start(final OutputStream out)
+                    public void write()
+                            throws Exception
                     {
-                        return new Writer()
-                        {
-                            AtomicInteger invocation = new AtomicInteger(0);
+                        switch (invocation.getAndIncrement()) {
+                            case 0:
+                                out.write(1);
+                                break;
 
-                            @Override
-                            public void write()
-                                    throws Exception
-                            {
-                                switch (invocation.getAndIncrement()) {
-                                    case 0:
-                                        out.write(1);
-                                        break;
+                            case 1:
+                                byte[] bytes = {2, 5};
+                                out.write(bytes);
+                                bytes[0] = 9;
+                                out.close();
+                                break;
 
-                                    case 1:
-                                        byte[] bytes = {2, 5};
-                                        out.write(bytes);
-                                        bytes[0] = 9;
-                                        out.close();
-                                        break;
-
-                                    default:
-                                        fail("unexpected invocation of write()");
-                                }
-                            }
-                        };
+                            default:
+                                fail("unexpected invocation of write()");
+                        }
                     }
                 })
                 .build();
@@ -603,7 +596,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
@@ -619,15 +612,9 @@ public abstract class AbstractHttpClientTest
                 .addHeader("foo", "bar")
                 .addHeader("dupe", "first")
                 .addHeader("dupe", "second")
-                .setBodySource(new DynamicBodySource()
-                {
-                    @Override
-                    public Writer start(final OutputStream out)
-                            throws IOException
-                    {
-                        out.write(1);
-                        return new EdgeCaseTestWriter(out, closed);
-                    }
+                .setBodySource((DynamicBodySource) out -> {
+                    out.write(1);
+                    return new EdgeCaseTestWriter(out, closed);
                 })
                 .build();
 
@@ -637,7 +624,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
         assertTrue(closed.get(), "Writer was closed");
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
@@ -697,15 +684,7 @@ public abstract class AbstractHttpClientTest
                 .addHeader("foo", "bar")
                 .addHeader("dupe", "first")
                 .addHeader("dupe", "second")
-                .setBodyGenerator(new BodyGenerator()
-                {
-                    @Override
-                    public void write(OutputStream out)
-                            throws Exception
-                    {
-                        assertEquals(getCurrentRequestToken(), token);
-                    }
-                })
+                .setBodyGenerator(out -> assertEquals(getCurrentRequestToken(), token))
                 .build();
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
@@ -714,7 +693,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(servlet.requestBytes, new byte[] {});
     }
 
@@ -731,14 +710,9 @@ public abstract class AbstractHttpClientTest
                 .addHeader("foo", "bar")
                 .addHeader("dupe", "first")
                 .addHeader("dupe", "second")
-                .setBodySource(new DynamicBodySource()
-                {
-                    @Override
-                    public Writer start(final OutputStream out)
-                    {
-                        assertEquals(getCurrentRequestToken(), token);
-                        return new TraceTokenTestWriter(out, writeToken, closeToken);
-                    }
+                .setBodySource((DynamicBodySource) out -> {
+                    assertEquals(getCurrentRequestToken(), token);
+                    return new TraceTokenTestWriter(out, writeToken, closeToken);
                 })
                 .build();
 
@@ -748,7 +722,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestUri, uri);
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("customvalue"));
+        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(servlet.requestBytes, new byte[] {});
         assertEquals(writeToken.get(), token);
         assertEquals(closeToken.get(), token);
@@ -1048,14 +1022,14 @@ public abstract class AbstractHttpClientTest
     private ExecutorService executor;
 
     @BeforeClass
-    public void setup()
+    public final void setUp()
             throws Exception
     {
         executor = Executors.newCachedThreadPool(threadsNamed("test-%s"));
     }
 
     @AfterClass
-    public void tearDown()
+    public final void tearDown()
             throws Exception
     {
         if (executor != null) {
@@ -1162,21 +1136,15 @@ public abstract class AbstractHttpClientTest
             try {
                 Request request = preparePut()
                         .setUri(fakeServer.getUri())
-                        .setBodyGenerator(new BodyGenerator()
-                        {
-                            @Override
-                            public void write(OutputStream out)
-                                    throws Exception
-                            {
-                                bodyGeneratorCalled.set(true);
-                                try {
-                                    for (int i = 0; i < 100; ++i) {
-                                        out.write(new byte[1024]);
-                                    }
+                        .setBodyGenerator(out -> {
+                            bodyGeneratorCalled.set(true);
+                            try {
+                                for (int i = 0; i < 100; ++i) {
+                                    out.write(new byte[1024]);
                                 }
-                                catch (IOException e) {
-                                    throw e;
-                                }
+                            }
+                            catch (IOException e) {
+                                throw e;
                             }
                         })
                         .build();
@@ -1207,25 +1175,12 @@ public abstract class AbstractHttpClientTest
             try {
                 Request request = preparePut()
                         .setUri(fakeServer.getUri())
-                        .setBodySource(new DynamicBodySource()
-                        {
-                            @Override
-                            public Writer start(final OutputStream out)
-                            {
-                                return new Writer()
-                                {
-                                    @Override
-                                    public void write()
-                                            throws Exception
-                                    {
-                                        if (invocation.getAndIncrement() < 100) {
-                                            out.write(new byte[1024]);
-                                        }
-                                        else {
-                                            out.close();
-                                        }
-                                    }
-                                };
+                        .setBodySource((DynamicBodySource) out -> () -> {
+                            if (invocation.getAndIncrement() < 100) {
+                                out.write(new byte[1024]);
+                            }
+                            else {
+                                out.close();
                             }
                         })
                         .build();
@@ -1276,8 +1231,8 @@ public abstract class AbstractHttpClientTest
         private final byte[] writeBuffer;
         private final boolean closeConnectionImmediately;
         private final AtomicReference<Socket> connectionSocket = new AtomicReference<>();
-        private String scheme;
-        private String host;
+        private final String scheme;
+        private final String host;
 
 
         private FakeServer(String scheme, String host, long readBytes, byte[] writeBuffer, boolean closeConnectionImmediately)
@@ -1362,10 +1317,10 @@ public abstract class AbstractHttpClientTest
         }
     }
 
-    static class UnexpectedResponseStatusCodeHandler
+    private static class UnexpectedResponseStatusCodeHandler
             implements ResponseHandler<Integer, RuntimeException>
     {
-        private int expectedStatusCode;
+        private final int expectedStatusCode;
 
         UnexpectedResponseStatusCodeHandler(int expectedStatusCode)
         {
@@ -1517,9 +1472,7 @@ public abstract class AbstractHttpClientTest
         @Override
         public void close()
         {
-            for (Socket socket : clientSockets) {
-                closeQuietly(socket);
-            }
+            clientSockets.forEach(Closeables::closeQuietly);
             closeQuietly(serverSocket);
         }
 
@@ -1562,5 +1515,36 @@ public abstract class AbstractHttpClientTest
     {
         // Linux refuses connections immediately rather than queuing them
         return (t instanceof SocketTimeoutException) || (t instanceof SocketException);
+    }
+
+    public static <T, E extends Exception> T executeAsync(JettyHttpClient client, Request request, ResponseHandler<T, E> responseHandler)
+            throws E
+    {
+        HttpResponseFuture<T> future = null;
+        try {
+            future = client.executeAsync(request, responseHandler);
+        }
+        catch (Exception e) {
+            fail("Unexpected exception", e);
+        }
+
+        try {
+            return future.get();
+        }
+        catch (InterruptedException e) {
+            currentThread().interrupt();
+            throw propagate(e);
+        }
+        catch (ExecutionException e) {
+            propagateIfPossible(e.getCause());
+
+            if (e.getCause() instanceof Exception) {
+                // the HTTP client and ResponseHandler interface enforces this
+                throw (E) e.getCause();
+            }
+
+            // e.getCause() is some direct subclass of throwable
+            throw propagate(e.getCause());
+        }
     }
 }
