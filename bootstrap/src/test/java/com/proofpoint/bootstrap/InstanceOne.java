@@ -19,6 +19,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
+@SuppressWarnings("MethodMayBeStatic")
 public class InstanceOne
 {
     @Inject

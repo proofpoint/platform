@@ -19,6 +19,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Binder;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -62,10 +63,10 @@ import static java.util.Objects.requireNonNull;
  * <p>
  * This class will:
  * <ul>
- *  <li>load, validate and bind configurations</li>
- *  <li>initialize logging</li>
- *  <li>set up lifecycle management</li>
- *  <li>create an Guice injector</li>
+ * <li>load, validate and bind configurations</li>
+ * <li>initialize logging</li>
+ * <li>set up lifecycle management</li>
+ * <li>create an Guice injector</li>
  * </ul>
  * <p>
  * An application is started with an invocation such as:
@@ -280,6 +281,7 @@ public class Bootstrap
      * order to be injected. Default true.
      * @return the object, for chaining method calls.
      */
+    @SuppressWarnings("unused")
     public Bootstrap requireExplicitBindings(boolean requireExplicitBindings)
     {
         this.requireExplicitBindings = requireExplicitBindings;
@@ -348,12 +350,10 @@ public class Bootstrap
         warningsMonitor.loggingInitialized();
 
         // initialize configuration factory
-        for (Module module : modules) {
-            if (module instanceof ConfigurationAwareModule) {
-                ConfigurationAwareModule configurationAwareModule = (ConfigurationAwareModule) module;
-                configurationAwareModule.setConfigurationFactory(configurationFactory);
-            }
-        }
+        modules.stream()
+                .filter(ConfigurationAwareModule.class::isInstance)
+                .map(ConfigurationAwareModule.class::cast)
+                .forEach(module -> module.setConfigurationFactory(configurationFactory));
 
         // Validate configuration
         ConfigurationValidator configurationValidator = new ConfigurationValidator(configurationFactory);
@@ -376,12 +376,12 @@ public class Bootstrap
         moduleList.add(binder -> binder.bind(WarningsMonitor.class).toInstance(warningsMonitor));
         moduleList.add(binder -> binder.bindConstant().annotatedWith(QuietMode.class).to(quiet));
 
-        moduleList.add(binder -> {
-            binder.disableCircularProxies();
-            if (requireExplicitBindings) {
-                binder.requireExplicitBindings();
-            }
-        });
+        // disable broken Guice "features"
+        moduleList.add(Binder::disableCircularProxies);
+        if (requireExplicitBindings) {
+            moduleList.add(Binder::requireExplicitBindings);
+        }
+
         moduleList.addAll(modules);
 
         // create the injector

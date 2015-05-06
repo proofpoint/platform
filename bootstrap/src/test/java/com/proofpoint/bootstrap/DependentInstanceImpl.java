@@ -17,7 +17,8 @@ package com.proofpoint.bootstrap;
 
 import javax.inject.Inject;
 
-public class DependentInstanceImpl implements DependentBoundInstance
+public class DependentInstanceImpl
+        implements DependentBoundInstance
 {
     @Inject
     public DependentInstanceImpl()

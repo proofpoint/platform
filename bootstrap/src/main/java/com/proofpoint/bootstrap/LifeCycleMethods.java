@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.lang.String.format;
+
 class LifeCycleMethods
 {
     private final Multimap<Class<? extends Annotation>, Method> methodMap = ArrayListMultimap.create();
@@ -39,7 +41,7 @@ class LifeCycleMethods
     boolean hasFor(Class<? extends Annotation> annotation)
     {
         Collection<Method> methods = methodMap.get(annotation);
-        return (methods != null) && (methods.size() > 0);
+        return (methods != null) && (!methods.isEmpty());
     }
 
     Collection<Method> methodsFor(Class<? extends Annotation> annotation)
@@ -76,7 +78,8 @@ class LifeCycleMethods
         if (method.isAnnotationPresent(annotationClass)) {
             if (!usedSet.contains(method.getName())) {
                 if (method.getParameterTypes().length != 0) {
-                    throw new UnsupportedOperationException(String.format("@PostConstruct/@PreDestroy methods cannot have arguments: %s", method.getDeclaringClass().getName() + "." + method.getName() + "(...)"));
+                    throw new UnsupportedOperationException(format("@PostConstruct/@PreDestroy methods cannot have arguments: %s",
+                            method.getDeclaringClass().getName() + "." + method.getName() + "(...)"));
                 }
 
                 method.setAccessible(true);

@@ -17,6 +17,7 @@ package com.proofpoint.bootstrap;
 
 import javax.annotation.PreDestroy;
 
+@SuppressWarnings("MethodMayBeStatic")
 public class PreDestroyOnly
 {
     @PreDestroy
