@@ -15,26 +15,38 @@
  */
 package com.proofpoint.bootstrap;
 
+import com.google.common.collect.Lists;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkElementIndex;
+import static java.lang.Math.max;
 
 /**
  * A utility for outputting columnar text
  */
 class ColumnPrinter
 {
-    private final List<List<String>> data = new ArrayList<>();
-    private final List<String> columnNames = new ArrayList<>();
-    private int margin;
-
     private static final int DEFAULT_MARGIN = 2;
 
-    ColumnPrinter()
+    private final List<List<String>> data = new ArrayList<>();
+    private final List<String> columnNames = new ArrayList<>();
+    private final List<Integer> columnWidths = Lists.newArrayList();
+    private int margin;
+
+    public ColumnPrinter()
     {
-        margin = DEFAULT_MARGIN;
+        this(DEFAULT_MARGIN);
+    }
+
+    public ColumnPrinter(int margin)
+    {
+        this.margin = margin;
     }
 
     /**
@@ -42,10 +54,11 @@ class ColumnPrinter
      *
      * @param columnName name of the column
      */
-    void addColumn(String columnName)
+    public void addColumn(String columnName)
     {
-        data.add(new ArrayList<String>());
+        data.add(new ArrayList<>());
         columnNames.add(columnName);
+        columnWidths.add(columnName.length());
     }
 
     /**
@@ -54,35 +67,17 @@ class ColumnPrinter
      * @param columnName name of the column to add to
      * @param value value to add
      */
-    void addValue(String columnName, String value)
+    public void addValue(String columnName, String value)
     {
         addValue(columnNames.indexOf(columnName), value);
     }
 
-    /**
-     * Add a value to the nth column
-     *
-     * @param columnIndex n
-     * @param value value to add
-     */
-    void addValue(int columnIndex, String value)
+    private void addValue(int columnIndex, String value)
     {
-        if ((columnIndex < 0) || (columnIndex >= data.size())) {
-            throw new IllegalArgumentException();
-        }
+        checkElementIndex(columnIndex, data.size(), "columnIndex");
 
-        List<String> stringList = data.get(columnIndex);
-        stringList.add(value);
-    }
-
-    /**
-     * Change the margin from the default
-     *
-     * @param margin new margin between columns
-     */
-    void setMargin(int margin)
-    {
-        this.margin = margin;
+        data.get(columnIndex).add(value);
+        columnWidths.set(columnIndex, max(value.length(), columnWidths.get(columnIndex)));
     }
 
     /**
@@ -90,50 +85,46 @@ class ColumnPrinter
      *
      * @param out stream
      */
-    void print(PrintWriter out)
+    public void print(PrintWriter out)
     {
-        for (String s : generate()) {
-            out.println(s.trim());
+        for (String line : generateOutput()) {
+            out.println(line.trim());
         }
     }
 
-    /**
-     * Generate the output as a list of string lines
-     *
-     * @return lines
-     */
-    private List<String> generate()
+    private List<String> generateOutput()
     {
         List<String> lines = new ArrayList<>();
-        StringBuilder workStr = new StringBuilder();
+        StringBuilder buffer = new StringBuilder();
 
-        List<AtomicInteger> columnWidths = getColumnWidths();
-        List<Iterator<String>> dataIterators = getDataIterators();
+        List<Iterator<String>> dataIterators = data.stream()
+                .map(Collection::iterator)
+                .collect(Collectors.toList());
 
-        Iterator<AtomicInteger> columnWidthIterator = columnWidths.iterator();
+        Iterator<Integer> columnWidthIterator = columnWidths.iterator();
         for (String columnName : columnNames) {
-            int thisWidth = columnWidthIterator.next().intValue();
-            printValue(workStr, columnName, thisWidth);
+            int thisWidth = columnWidthIterator.next();
+            printValue(buffer, columnName, thisWidth);
         }
-        pushLine(lines, workStr);
+        pushLine(lines, buffer);
 
         boolean done = false;
         while (!done) {
             boolean hadValue = false;
             Iterator<Iterator<String>> rowIterator = dataIterators.iterator();
-            for (AtomicInteger width : columnWidths) {
+            for (int width : columnWidths) {
                 Iterator<String> thisDataIterator = rowIterator.next();
                 if (thisDataIterator.hasNext()) {
                     hadValue = true;
 
                     String value = thisDataIterator.next();
-                    printValue(workStr, value, width.intValue());
+                    printValue(buffer, value, width);
                 }
                 else {
-                    printValue(workStr, "", width.intValue());
+                    printValue(buffer, "", width);
                 }
             }
-            pushLine(lines, workStr);
+            pushLine(lines, buffer);
 
             if (!hadValue) {
                 done = true;
@@ -143,7 +134,7 @@ class ColumnPrinter
         return lines;
     }
 
-    private void pushLine(List<String> lines, StringBuilder workStr)
+    private static void pushLine(List<String> lines, StringBuilder workStr)
     {
         lines.add(workStr.toString());
         workStr.setLength(0);
@@ -157,32 +148,5 @@ class ColumnPrinter
     private String widthSpec(int thisWidth)
     {
         return "%-" + (thisWidth + margin) + "s";
-    }
-
-    private List<Iterator<String>> getDataIterators()
-    {
-        List<Iterator<String>> dataIterators = new ArrayList<>();
-        for (List<String> valueList : data) {
-            dataIterators.add(valueList.iterator());
-        }
-        return dataIterators;
-    }
-
-    private List<AtomicInteger> getColumnWidths()
-    {
-        List<AtomicInteger> columnWidths = new ArrayList<>();
-        for (String columnName : columnNames) {
-            columnWidths.add(new AtomicInteger(columnName.length()));
-        }
-
-        int columnIndex = 0;
-        for (List<String> valueList : data) {
-            AtomicInteger width = columnWidths.get(columnIndex++);
-            for (String value : valueList) {
-                width.set(Math.max(value.length(), width.intValue()));
-            }
-        }
-
-        return columnWidths;
     }
 }

@@ -36,11 +36,12 @@ import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 /**
  * Guice module for binding the LifeCycle manager
  */
-public class LifeCycleModule implements Module
+public class LifeCycleModule
+        implements Module
 {
     private final List<Object> injectedInstances = new ArrayList<>();
     private final LifeCycleMethodsMap lifeCycleMethodsMap = new LifeCycleMethodsMap();
-    private final AtomicReference<LifeCycleManager> lifeCycleManagerRef = new AtomicReference<>(null);
+    private final AtomicReference<LifeCycleManager> lifeCycleManager = new AtomicReference<>(null);
 
     @Override
     public void configure(Binder binder)
@@ -56,7 +57,7 @@ public class LifeCycleModule implements Module
             {
                 encounter.register((InjectionListener<T>) obj -> {
                     if (isLifeCycleClass(obj.getClass())) {
-                        LifeCycleManager lifeCycleManager = lifeCycleManagerRef.get();
+                        LifeCycleManager lifeCycleManager = LifeCycleModule.this.lifeCycleManager.get();
                         if (lifeCycleManager != null) {
                             try {
                                 lifeCycleManager.addInstance(obj);
@@ -80,7 +81,7 @@ public class LifeCycleModule implements Module
             throws Exception
     {
         LifeCycleManager lifeCycleManager = new LifeCycleManager(injectedInstances, lifeCycleMethodsMap, config);
-        lifeCycleManagerRef.set(lifeCycleManager);
+        this.lifeCycleManager.set(lifeCycleManager);
         return lifeCycleManager;
     }
 

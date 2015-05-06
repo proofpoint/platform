@@ -18,7 +18,8 @@ package com.proofpoint.bootstrap;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public class SimpleBaseImpl implements SimpleBase
+public class SimpleBaseImpl
+        implements SimpleBase
 {
     @Override
     public void foo()
