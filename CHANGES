@@ -52,6 +52,7 @@ Platform 1.18
 
   - Jersey to 2.17
   - logback to 1.1.3
+  - Jetty to 9.2.11.M0
 
 Platform 1.17
 
