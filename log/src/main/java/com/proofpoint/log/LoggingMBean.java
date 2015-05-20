@@ -15,58 +15,56 @@
  */
 package com.proofpoint.log;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import org.slf4j.LoggerFactory;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Maps;
 import org.weakref.jmx.Managed;
 
+import javax.inject.Inject;
+import java.util.Locale;
 import java.util.Map;
 
-import static ch.qos.logback.classic.Level.toLevel;
-import static com.google.common.collect.Maps.newTreeMap;
-import static org.slf4j.Logger.ROOT_LOGGER_NAME;
+import static com.google.common.base.Functions.toStringFunction;
 
 public class LoggingMBean
 {
-    @Managed
-    public String getLevel(String loggerName)
+    private final Logging logging;
+
+    @Inject
+    public LoggingMBean(Logging logging)
     {
-        return getLogger(loggerName).getEffectiveLevel().toString();
+        this.logging = logging;
     }
 
     @Managed
+    @SuppressWarnings("MethodMayBeStatic")
+    public String getLevel(String loggerName)
+    {
+        return logging.getLevel(loggerName).toString();
+    }
+
+    @Managed
+    @SuppressWarnings("MethodMayBeStatic")
     public void setLevel(String loggerName, String newLevel)
     {
-        getLogger(loggerName).setLevel(toLevel(newLevel));
+        logging.setLevel(loggerName, Level.valueOf(newLevel.toUpperCase(Locale.US)));
     }
 
     @Managed
     public String getRootLevel()
     {
-        return getLogger(ROOT_LOGGER_NAME).getEffectiveLevel().toString();
+        return logging.getRootLevel().toString();
     }
 
     @Managed
     public void setRootLevel(String newLevel)
     {
-        getLogger(ROOT_LOGGER_NAME).setLevel(toLevel(newLevel));
+        logging.setRootLevel(Level.valueOf(newLevel.toUpperCase(Locale.US)));
     }
 
     @Managed
+    @SuppressWarnings("MethodMayBeStatic")
     public Map<String, String> getAllLevels()
     {
-        Map<String, String> levels = newTreeMap();
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        for (Logger logger : context.getLoggerList()) {
-            if (logger.getLevel() != null) {
-                levels.put(logger.getName(), logger.getLevel().toString());
-            }
-        }
-        return levels;
-    }
-
-    private static Logger getLogger(String name)
-    {
-        return (Logger) LoggerFactory.getLogger(name);
+        return ImmutableSortedMap.copyOf(Maps.transformValues(logging.getAllLevels(), toStringFunction()));
     }
 }
