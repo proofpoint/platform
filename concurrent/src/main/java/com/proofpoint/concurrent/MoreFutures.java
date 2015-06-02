@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.isEmpty;
@@ -30,9 +31,25 @@ public final class MoreFutures
      */
     public static <V> CompletableFuture<V> unmodifiableFuture(CompletableFuture<V> future)
     {
+        return unmodifiableFuture(future, false);
+    }
+
+    /**
+     * Returns a future that can not be completed or optionally canceled.
+     */
+    public static <V> CompletableFuture<V> unmodifiableFuture(CompletableFuture<V> future, boolean propagateCancel)
+    {
         requireNonNull(future, "future is null");
 
-        UnmodifiableCompletableFuture<V> unmodifiableFuture = new UnmodifiableCompletableFuture<>();
+        Function<Boolean, Boolean> onCancelFunction;
+        if (propagateCancel) {
+            onCancelFunction = future::cancel;
+        }
+        else {
+            onCancelFunction = mayInterrupt -> false;
+        }
+
+        UnmodifiableCompletableFuture<V> unmodifiableFuture = new UnmodifiableCompletableFuture<>(onCancelFunction);
         future.whenComplete((value, exception) -> {
             if (exception != null) {
                 unmodifiableFuture.internalCompleteExceptionally(exception);
@@ -252,6 +269,13 @@ public final class MoreFutures
     private static class UnmodifiableCompletableFuture<V>
             extends CompletableFuture<V>
     {
+        private final Function<Boolean, Boolean> onCancel;
+
+        public UnmodifiableCompletableFuture(Function<Boolean, Boolean> onCancel)
+        {
+            this.onCancel = requireNonNull(onCancel, "onCancel is null");
+        }
+
         void internalComplete(V value)
         {
             super.complete(value);
@@ -265,8 +289,7 @@ public final class MoreFutures
         @Override
         public boolean cancel(boolean mayInterruptIfRunning)
         {
-            // ignore cancellation
-            return false;
+            return onCancel.apply(mayInterruptIfRunning);
         }
 
         @Override
@@ -278,9 +301,8 @@ public final class MoreFutures
         @Override
         public boolean completeExceptionally(Throwable ex)
         {
-            // ignore cancellation
             if (ex instanceof CancellationException) {
-                return false;
+                return cancel(false);
             }
             throw new UnsupportedOperationException();
         }
