@@ -1,5 +1,16 @@
 Platform 1.22
 
+* BalancingHttpClient
+
+  We a created HttpClientBinder.bindBalancingHttpClient(String name,
+  Class<? extends Annotation> annotation, Set<URI> baseUris) method for
+  binding a BalancingHttpClient with a fixed set of destination URIs.
+
+  We a created HttpClientBinder.bindBalancingHttpClient(String name,
+  Class<? extends Annotation> annotation,
+  Key<? extends HttpServiceBalancer> balancerKey) method for
+  binding a BalancingHttpClient with a custom HttpServiceBalancer.
+
 * Library Upgrades
 
   - Joda-time to 2.8
