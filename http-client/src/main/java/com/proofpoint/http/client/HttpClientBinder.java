@@ -33,6 +33,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
@@ -72,6 +73,7 @@ public class HttpClientBinder
         checkNotNull(name, "name is null");
         checkNotNull(annotation, "annotation is null");
         checkNotNull(baseUris, "baseUris is null");
+        checkArgument(!baseUris.isEmpty(), "baseUris is empty");
 
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).toProvider(new StaticHttpServiceBalancerProvider(annotation.getSimpleName(), baseUris));
