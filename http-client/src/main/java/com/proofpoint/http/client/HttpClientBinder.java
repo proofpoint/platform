@@ -48,7 +48,7 @@ public class HttpClientBinder
 
     private HttpClientBinder(Binder binder, Binder rootBinder)
     {
-        this.binder = checkNotNull(binder, "binder is null");
+        this.binder = checkNotNull(binder, "binder is null").skipSources(getClass());
         this.rootBinder = checkNotNull(rootBinder, "rootBinder is null");
     }
 
