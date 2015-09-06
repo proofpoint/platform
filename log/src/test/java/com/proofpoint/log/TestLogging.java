@@ -17,16 +17,20 @@ package com.proofpoint.log;
 
 import com.google.common.io.Files;
 import com.proofpoint.testing.FileUtils;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static com.google.common.io.Files.createTempDir;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 public class TestLogging
 {
@@ -133,5 +137,38 @@ public class TestLogging
         logging.setLevel("testChildLevelOverridesParent.child", Level.ERROR);
         assertFalse(logger.isDebugEnabled());
         assertFalse(logger.isInfoEnabled());
+    }
+
+    @Test
+    public void testAddLogTester()
+    {
+        Logging.initialize();
+        ArrayList<String> logRecords = new ArrayList<>();
+        Logging.addLogTester(TestAddLogHandler.class, (level, message) -> {
+            Assert.assertEquals(level, Level.INFO);
+            logRecords.add(message);
+        });
+        Logger.get(TestAddLogHandler.class).info("test log line");
+        assertEquals(logRecords.size(), 1);
+        assertEquals(logRecords.get(0), "test log line");
+    }
+
+    static private class TestAddLogHandler
+    {
+    }
+
+    @Test
+    public void testResetLogHandlers()
+    {
+        Logging.initialize();
+        Logging.addLogTester(TestResetLogHandlers.class, (level, message) -> {
+            fail("Unexpected call to publish");
+        });
+        Logging.resetLogTesters();
+        Logger.get(TestResetLogHandlers.class).info("test log line");
+    }
+
+    private static class TestResetLogHandlers
+    {
     }
 }
