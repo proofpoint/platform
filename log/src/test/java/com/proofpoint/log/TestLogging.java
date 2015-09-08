@@ -17,7 +17,6 @@ package com.proofpoint.log;
 
 import com.google.common.io.Files;
 import com.proofpoint.testing.FileUtils;
-import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -144,16 +143,37 @@ public class TestLogging
     {
         Logging.initialize();
         ArrayList<String> logRecords = new ArrayList<>();
-        Logging.addLogTester(TestAddLogHandler.class, (level, message) -> {
-            Assert.assertEquals(level, Level.INFO);
+        Logging.addLogTester(TestAddLogTester.class, (level, message, thrown) -> {
+            assertEquals(level, Level.INFO);
+            assertFalse(thrown.isPresent());
             logRecords.add(message);
         });
-        Logger.get(TestAddLogHandler.class).info("test log line");
+        Logger.get(TestAddLogTester.class).info("test log line");
         assertEquals(logRecords.size(), 1);
         assertEquals(logRecords.get(0), "test log line");
     }
 
-    static private class TestAddLogHandler
+    private static class TestAddLogTester
+    {
+    }
+
+    @Test
+    public void testAddLogTesterThrown()
+    {
+        Logging.initialize();
+        ArrayList<String> logRecords = new ArrayList<>();
+        Exception testingException = new Exception();
+        Logging.addLogTester(TestAddLogTesterThrown.class, (level, message, thrown) -> {
+            assertEquals(level, Level.WARN);
+            assertEquals(thrown.get(), testingException);
+            logRecords.add(message);
+        });
+        Logger.get(TestAddLogTesterThrown.class).warn(testingException, "test log line");
+        assertEquals(logRecords.size(), 1);
+        assertEquals(logRecords.get(0), "test log line");
+    }
+
+    private static class TestAddLogTesterThrown
     {
     }
 
@@ -161,7 +181,7 @@ public class TestLogging
     public void testResetLogHandlers()
     {
         Logging.initialize();
-        Logging.addLogTester(TestResetLogHandlers.class, (level, message) -> {
+        Logging.addLogTester(TestResetLogHandlers.class, (level, message, thrown) -> {
             fail("Unexpected call to publish");
         });
         Logging.resetLogTesters();

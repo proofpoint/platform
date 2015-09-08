@@ -21,6 +21,7 @@ import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
@@ -42,6 +43,7 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Handler;
@@ -157,6 +159,7 @@ public class Logging
      * @param clazz the class
      * @param logTester the LogTester
      */
+    @VisibleForTesting
     public static void addLogTester(Class<?> clazz, LogTester logTester)
     {
         addLogTester(clazz.getName(), logTester);
@@ -168,6 +171,7 @@ public class Logging
      * @param name the name of the logger
      * @param logTester the LogTester
      */
+    @VisibleForTesting
     public static void addLogTester(String name, LogTester logTester)
     {
         checkState(instance != null, "Logging is not initialized");
@@ -177,7 +181,7 @@ public class Logging
             @Override
             public void publish(LogRecord record)
             {
-                logTester.log(fromJulLevel(record.getLevel()), record.getMessage());
+                logTester.log(fromJulLevel(record.getLevel()), record.getMessage(), Optional.ofNullable(record.getThrown()));
             }
 
             @Override
@@ -197,6 +201,7 @@ public class Logging
     /**
      * Remove all installed {@link LogTester}s
      */
+    @VisibleForTesting
     public static void resetLogTesters()
     {
         if (instance == null) {

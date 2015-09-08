@@ -15,7 +15,12 @@
  */
 package com.proofpoint.log;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import java.util.Optional;
+
+@VisibleForTesting
 public interface LogTester
 {
-    void log(Level level, String message);
+    void log(Level level, String message, Optional<Throwable> thrown);
 }
