@@ -32,7 +32,9 @@ public class MaxGauge
     /**
      * Update the current value of the metric.
      *
-     * @param value The new value of the metric
+     * @param value The new value of the metric. Will be considered in
+     * subsequent minutes until changed again. This method is intended for
+     * measurements, such as the depth of a queue, that persist over time.
      */
     public void update(long value)
     {
@@ -43,7 +45,9 @@ public class MaxGauge
     /**
      * Apply an instantaneous value to the maximum, but do not change the current value.
      *
-     * @param value The new value of the metric
+     * @param value The new value of the metric. This method is intended for
+     * measurements, such as the size of a request, that should not be
+     * considered in subsequent minutes.
      */
     public void updateInstantaneous(long value)
     {
