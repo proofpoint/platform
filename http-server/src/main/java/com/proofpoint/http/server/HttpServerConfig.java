@@ -72,6 +72,7 @@ public class HttpServerConfig
     private Duration networkMaxIdleTime = new Duration(200, SECONDS);
     private Duration stopTimeout = new Duration(30, SECONDS);
     private DataSize maxRequestHeaderSize;
+    private int http2MaxConcurrentStreams = 16384;
 
     private String userAuthFile;
 
@@ -398,6 +399,20 @@ public class HttpServerConfig
     public HttpServerConfig setMaxRequestHeaderSize(DataSize maxRequestHeaderSize)
     {
         this.maxRequestHeaderSize = maxRequestHeaderSize;
+        return this;
+    }
+
+    @Min(100) // per RFC 7540 section 6.5.2
+    public int getHttp2MaxConcurrentStreams()
+    {
+        return http2MaxConcurrentStreams;
+    }
+
+    @Config("http-server.http2.max-concurrent-streams")
+    @ConfigDescription("Maximum concurrent streams per connection for HTTP/2")
+    public HttpServerConfig setHttp2MaxConcurrentStreams(int http2MaxConcurrentStreams)
+    {
+        this.http2MaxConcurrentStreams = http2MaxConcurrentStreams;
         return this;
     }
 

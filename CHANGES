@@ -1,3 +1,12 @@
+Platform 1.42
+
+* HTTP/2 support
+
+  The HTTP server now has experimental support for the HTTP/2
+  protocol for HTTP only (not HTTPS). The server supports the HTTP/2
+  cleartext upgrade mechanism (h2c) which allows running both versions
+  of the protocol on the same port. Both versions are always enabled.
+
 Platform 1.41
 
 * We re-enabled http-server support for the SSLv2Hello protocol that Jetty
@@ -8,7 +17,7 @@ Platform 1.41
 
 * HttpServer
 
-  We replaced the deprecated GzipFilter with GzipHandler
+  We replaced the deprecated GzipFilter with GzipHandler.
 
 * HttpClient
 
