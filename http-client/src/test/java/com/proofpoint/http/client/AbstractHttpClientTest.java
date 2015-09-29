@@ -12,6 +12,7 @@ import com.proofpoint.log.Logging;
 import com.proofpoint.testing.Assertions;
 import com.proofpoint.testing.Closeables;
 import com.proofpoint.units.Duration;
+import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -158,7 +159,10 @@ public abstract class AbstractHttpClientTest
             connector = new ServerConnector(server, sslConnectionFactory, new HttpConnectionFactory(httpConfiguration));
         }
         else {
-            connector = new ServerConnector(server, new HttpConnectionFactory(httpConfiguration));
+            HttpConnectionFactory http1 = new HttpConnectionFactory(httpConfiguration);
+            HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(httpConfiguration);
+
+            connector = new ServerConnector(server, http1, http2c);
         }
 
         connector.setIdleTimeout(30000);
