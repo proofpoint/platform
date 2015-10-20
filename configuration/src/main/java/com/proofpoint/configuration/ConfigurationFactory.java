@@ -240,13 +240,13 @@ public final class ConfigurationFactory
         for (ConstraintViolation<?> violation : VALIDATOR.validate(instance)) {
             AttributeMetadata attributeMetadata = configurationMetadata.getAttributes()
                     .get(LOWER_CAMEL.to(UPPER_CAMEL, violation.getPropertyPath().toString()));
-            if (attributeMetadata != null) {
-                problems.addError("Constraint violation for property '%s': %s (for class %s)",
-                        prefix + attributeMetadata.getInjectionPoint().getProperty(), violation.getMessage(), configClass.getName());
+            if (attributeMetadata != null && attributeMetadata.getInjectionPoint() != null) {
+                problems.addError("Invalid configuration property '%s': %s (for class %s.%s)",
+                        prefix + attributeMetadata.getInjectionPoint().getProperty(), violation.getMessage(), configClass.getName(), violation.getPropertyPath());
             }
             else {
-                problems.addError("Constraint violation with property prefix '%s': %s %s (for class %s)",
-                        prefix, violation.getPropertyPath(), violation.getMessage(), configClass.getName());
+                problems.addError("Invalid configuration property with prefix '%s': %s (for class %s.%s)",
+                        prefix, violation.getMessage(), configClass.getName(), violation.getPropertyPath());
             }
         }
 

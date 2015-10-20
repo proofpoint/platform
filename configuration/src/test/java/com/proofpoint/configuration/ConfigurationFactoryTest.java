@@ -705,8 +705,8 @@ public class ConfigurationFactoryTest
         } catch (CreationException e) {
             monitor.assertNumberOfErrors(2);
             monitor.assertNumberOfWarnings(0);
-            monitor.assertMatchingErrorRecorded("Constraint violation", "'int-value'", "must be less than or equal to 100", "BeanValidationClass");
-            monitor.assertMatchingErrorRecorded("Constraint violation", "'string-value'", "may not be null", "BeanValidationClass");
+            monitor.assertMatchingErrorRecorded("Invalid configuration property", "'int-value'", "must be less than or equal to 100", "BeanValidationClass");
+            monitor.assertMatchingErrorRecorded("Invalid configuration property", "'string-value'", "may not be null", "BeanValidationClass");
         }
     }
 
@@ -1086,8 +1086,8 @@ public class ConfigurationFactoryTest
         } catch (CreationException e) {
             monitor.assertNumberOfErrors(2);
             monitor.assertNumberOfWarnings(0);
-            monitor.assertMatchingErrorRecorded("Constraint violation", "'map-a.k.int-value'", "must be less than or equal to 100", "BeanValidationClass");
-            monitor.assertMatchingErrorRecorded("Constraint violation", "'map-a.k.string-value'", "may not be null", "BeanValidationClass");
+            monitor.assertMatchingErrorRecorded("Invalid configuration property", "'map-a.k.int-value'", "must be less than or equal to 100", "BeanValidationClass");
+            monitor.assertMatchingErrorRecorded("Invalid configuration property", "'map-a.k.string-value'", "may not be null", "BeanValidationClass");
         }
     }
 
