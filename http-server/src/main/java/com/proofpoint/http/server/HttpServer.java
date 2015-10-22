@@ -17,6 +17,7 @@ package com.proofpoint.http.server;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 import com.proofpoint.bootstrap.AcceptRequests;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
@@ -49,6 +50,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
 import org.weakref.jmx.Flatten;
+import org.weakref.jmx.Managed;
 import org.weakref.jmx.Nested;
 
 import javax.annotation.Nullable;
@@ -56,11 +58,23 @@ import javax.annotation.PreDestroy;
 import javax.management.MBeanServer;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static com.google.common.base.Preconditions.checkState;
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.util.Collections.list;
+import static java.util.Comparator.naturalOrder;
 import static java.util.Objects.requireNonNull;
 
 public class HttpServer
@@ -94,6 +108,8 @@ public class HttpServer
     private final ServerConnector adminConnector;
     private final RequestStats stats;
     private final MaxGauge busyThreads = new MaxGauge();
+
+    private final Optional<ZonedDateTime> certificateExpiration;
 
     @SuppressWarnings({"deprecation"})
     public HttpServer(HttpServerInfo httpServerInfo,
@@ -302,6 +318,11 @@ public class HttpServer
         }
         rootHandlers.addHandler(statsHandler);
         server.setHandler(rootHandlers);
+
+        certificateExpiration = loadAllX509Certificates(config).stream()
+                .map(X509Certificate::getNotAfter)
+                .min(naturalOrder())
+                .map(date -> ZonedDateTime.ofInstant(date.toInstant(), ZoneOffset.systemDefault()));
     }
 
     private static ServletContextHandler createServletContext(Servlet theServlet,
@@ -369,6 +390,13 @@ public class HttpServer
         return securityHandler;
     }
 
+    @Managed
+    public Long getDaysUntilCertificateExpiration()
+    {
+        return certificateExpiration.map(date -> ZonedDateTime.now().until(date, DAYS))
+                .orElse(null);
+    }
+
     @AcceptRequests
     public void start()
             throws Exception
@@ -416,6 +444,30 @@ public class HttpServer
             ThreadPool queuedThreadPool = (ThreadPool) executor;
             checkState(!queuedThreadPool.isLowOnThreads(), "insufficient threads configured for %s connector", name);
         }
+    }
 
+    private static Set<X509Certificate> loadAllX509Certificates(HttpServerConfig config)
+    {
+        ImmutableSet.Builder<X509Certificate> certificates = ImmutableSet.builder();
+        if (config.isHttpsEnabled()) {
+            try (InputStream keystoreInputStream = new FileInputStream(config.getKeystorePath())) {
+                KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+                keystore.load(keystoreInputStream, config.getKeystorePassword().toCharArray());
+
+                for (String alias : list(keystore.aliases())) {
+                    try {
+                        Certificate certificate = keystore.getCertificate(alias);
+                        if (certificate instanceof X509Certificate) {
+                            certificates.add((X509Certificate) certificate);
+                        }
+                    }
+                    catch (KeyStoreException ignored) {
+                    }
+                }
+            }
+            catch (Exception ignored) {
+            }
+        }
+        return certificates.build();
     }
 }

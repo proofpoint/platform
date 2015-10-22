@@ -59,6 +59,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -288,6 +289,31 @@ public class TestHttpServerProvider
             assertEquals(response.getStatusCode(), 500);
             assertTrue(!response.getBody().contains("ErrorServlet.java"));
         }
+    }
+
+    @Test
+    public void testHttpsDaysUntilCertificateExpiration()
+            throws Exception
+    {
+        config.setHttpEnabled(false)
+                .setHttpsEnabled(true)
+                .setHttpsPort(0)
+                .setKeystorePath(new File(getResource("localhost.keystore").toURI()).getAbsolutePath())
+                .setKeystorePassword("changeit");
+        createAndStartServer();
+        Long daysUntilCertificateExpiration = server.getDaysUntilCertificateExpiration();
+        assertNotNull(daysUntilCertificateExpiration);
+        assertTrue(daysUntilCertificateExpiration > 1000);
+    }
+
+    @Test
+    public void testNoHttpsDaysUntilCertificateExpiration()
+            throws Exception
+    {
+        config.setHttpEnabled(true)
+                .setHttpsPort(0);
+        createAndStartServer();
+        assertNull(server.getDaysUntilCertificateExpiration());
     }
 
     @Test(expectedExceptions = IllegalStateException.class, expectedExceptionsMessageRegExp = "Insufficient threads: .*")
