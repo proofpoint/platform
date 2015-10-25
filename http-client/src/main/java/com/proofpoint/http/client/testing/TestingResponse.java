@@ -1,5 +1,6 @@
 package com.proofpoint.http.client.testing;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
@@ -10,7 +11,9 @@ import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
 import com.proofpoint.http.client.HttpStatus;
 import com.proofpoint.http.client.Response;
+import com.proofpoint.json.ObjectMapperProvider;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +23,7 @@ import java.util.List;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Throwables.propagate;
 import static java.util.Objects.requireNonNull;
 
 public class TestingResponse
@@ -144,6 +148,7 @@ public class TestingResponse
         private final ListMultimap<String, String> headers = ArrayListMultimap.create();
         private byte[] bytes;
         private InputStream inputStream;
+        private String defaultContentType;
 
         private Builder()
         {
@@ -202,6 +207,23 @@ public class TestingResponse
         }
 
         /**
+         * Sets the response's body to the JSON encoding of an entity. Defaults the
+         * Content-Type: header to "application/json; charset=utf-8".
+         */
+        public Builder jsonBody(@Nullable Object entity)
+        {
+            checkState(this.bytes == null && this.inputStream == null, "body is already set");
+            defaultContentType = MediaType.JSON_UTF_8.toString();
+            try {
+                bytes = new ObjectMapperProvider().get().writeValueAsBytes(entity);
+            }
+            catch (JsonProcessingException e) {
+                throw propagate(e);
+            }
+            return this;
+        }
+
+        /**
          * Returns a newly created TestingResponse.
          */
         @SuppressWarnings("deprecation")
@@ -213,6 +235,19 @@ public class TestingResponse
                 }
                 else {
                     status = HttpStatus.OK;
+                }
+            }
+
+            if (defaultContentType != null) {
+                boolean haveType = false;
+                for (String header : headers.keys()) {
+                    if ("content-type".equalsIgnoreCase(header)) {
+                        haveType = true;
+                        break;
+                    }
+                }
+                if (!haveType) {
+                    header("Content-Type", defaultContentType);
                 }
             }
 
