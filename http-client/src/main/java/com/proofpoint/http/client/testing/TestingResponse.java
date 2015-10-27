@@ -26,6 +26,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
 import static java.util.Objects.requireNonNull;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 public class TestingResponse
         implements Response
@@ -192,6 +193,14 @@ public class TestingResponse
         }
 
         /**
+         * Adds a Content-Type: header to the response.
+         */
+        public Builder contentType(String type)
+        {
+            return header(HttpHeaders.CONTENT_TYPE, type);
+        }
+
+        /**
          * Sets the response's body to a byte array.
          */
         public Builder body(byte[] bytes)
@@ -235,7 +244,7 @@ public class TestingResponse
         public Builder jsonBody(@Nullable Object entity)
         {
             checkState(this.bytes == null && this.inputStream == null, "body is already set");
-            defaultContentType = MediaType.JSON_UTF_8.toString();
+            defaultContentType = APPLICATION_JSON;
             try {
                 bytes = new ObjectMapperProvider().get().writeValueAsBytes(entity);
             }

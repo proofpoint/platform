@@ -102,7 +102,7 @@ public class TestTestingResponse
     }
 
     @Test
-    public void testBuilderContentType()
+    public void testBuilderContentTypeMediaType()
     {
         assertResponse(
                 mockResponse()
@@ -111,6 +111,21 @@ public class TestTestingResponse
                 HttpStatus.NO_CONTENT,
                 ImmutableListMultimap.of(
                         "Content-Type", "image/jpeg"
+                ),
+                new byte[0]
+        );
+    }
+
+    @Test
+    public void testBuilderContentTypeString()
+    {
+        assertResponse(
+                mockResponse()
+                        .contentType("foo/bar")
+                        .build(),
+                HttpStatus.NO_CONTENT,
+                ImmutableListMultimap.of(
+                        "Content-Type", "foo/bar"
                 ),
                 new byte[0]
         );
@@ -157,7 +172,7 @@ public class TestTestingResponse
             throws UnsupportedEncodingException
     {
         assertResponse(mockResponse().jsonBody(new JsonClass()).build(),
-                HttpStatus.OK, ImmutableListMultimap.of("Content-Type", "application/json; charset=utf-8"), "{\"foo\":\"bar\"}".getBytes("utf-8"));
+                HttpStatus.OK, ImmutableListMultimap.of("Content-Type", "application/json"), "{\"foo\":\"bar\"}".getBytes("utf-8"));
     }
 
     @Test
@@ -165,7 +180,7 @@ public class TestTestingResponse
             throws UnsupportedEncodingException
     {
         assertResponse(mockResponse().jsonBody(null).build(),
-                HttpStatus.OK, ImmutableListMultimap.of("Content-Type", "application/json; charset=utf-8"), new byte[] { 'n', 'u', 'l', 'l'});
+                HttpStatus.OK, ImmutableListMultimap.of("Content-Type", "application/json"), new byte[] { 'n', 'u', 'l', 'l'});
     }
 
     @Test
