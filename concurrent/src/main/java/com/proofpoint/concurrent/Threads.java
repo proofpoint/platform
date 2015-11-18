@@ -1,14 +1,13 @@
 package com.proofpoint.concurrent;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.proofpoint.log.Logger;
 
 import java.util.concurrent.ThreadFactory;
 
+import static java.util.concurrent.Executors.defaultThreadFactory;
+
 public final class Threads
 {
-    private static final Logger log = Logger.get(Threads.class);
-
     private Threads() {}
 
     /**
@@ -23,10 +22,9 @@ public final class Threads
      */
     public static ThreadFactory threadsNamed(String nameFormat)
     {
-        GroupedThreadFactory delegate = new GroupedThreadFactory(threadGroupName(nameFormat));
         return new ThreadFactoryBuilder()
                 .setNameFormat(nameFormat)
-                .setThreadFactory(new ContextClassLoaderThreadFactory(Thread.currentThread().getContextClassLoader(), delegate))
+                .setThreadFactory(new ContextClassLoaderThreadFactory(Thread.currentThread().getContextClassLoader(), defaultThreadFactory()))
                 .build();
     }
 
@@ -39,21 +37,11 @@ public final class Threads
      */
     public static ThreadFactory daemonThreadsNamed(String nameFormat)
     {
-        GroupedThreadFactory delegate = new GroupedThreadFactory(threadGroupName(nameFormat));
         return new ThreadFactoryBuilder()
                 .setNameFormat(nameFormat)
                 .setDaemon(true)
-                .setThreadFactory(new ContextClassLoaderThreadFactory(Thread.currentThread().getContextClassLoader(), delegate))
+                .setThreadFactory(new ContextClassLoaderThreadFactory(Thread.currentThread().getContextClassLoader(), defaultThreadFactory()))
                 .build();
-    }
-
-    private static String threadGroupName(String nameFormat)
-    {
-        String groupFormat = nameFormat.replace("%d", "%s");
-        if (!nameFormat.equals(groupFormat)) {
-            log.warn("Invalid thread group nameFormat: %s", nameFormat);
-        }
-        return String.format(groupFormat, "group");
     }
 
     private static class ContextClassLoaderThreadFactory
@@ -74,28 +62,6 @@ public final class Threads
             Thread thread = delegate.newThread(runnable);
             thread.setContextClassLoader(classLoader);
             return thread;
-        }
-    }
-
-    private static final class GroupedThreadFactory
-            implements ThreadFactory
-    {
-        private final ThreadGroup threadGroup;
-
-        public GroupedThreadFactory(String name)
-        {
-            this(new ThreadGroup(name));
-        }
-
-        public GroupedThreadFactory(ThreadGroup threadGroup)
-        {
-            this.threadGroup = threadGroup;
-        }
-
-        @Override
-        public Thread newThread(Runnable runnable)
-        {
-            return new Thread(threadGroup, runnable);
         }
     }
 }
