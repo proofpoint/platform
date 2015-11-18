@@ -11,6 +11,8 @@ Platform 1.41
 
   We added a FullJsonResponseHandler.getResponseSize() method.
 
+* We removed all usage of ThreadGroup.
+
 * Library Upgrades
 
   - jmxutils to 1.19 (from 1.18) fixes the server not starting when LogJmxModule
