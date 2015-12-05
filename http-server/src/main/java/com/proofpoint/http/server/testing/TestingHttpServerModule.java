@@ -35,13 +35,25 @@ import static com.google.inject.multibindings.Multibinder.newSetBinder;
 public class TestingHttpServerModule
         implements Module
 {
+    private final int httpPort;
+
+    public TestingHttpServerModule()
+    {
+        this(0);
+    }
+
+    public TestingHttpServerModule(int httpPort)
+    {
+        this.httpPort = httpPort;
+    }
+
     @Override
     public void configure(Binder binder)
     {
         binder.disableCircularProxies();
 
         // Jetty scales required threads based on processor count, so pick a safe number
-        HttpServerConfig config = new HttpServerConfig().setMinThreads(1).setMaxThreads(20).setHttpPort(0);
+        HttpServerConfig config = new HttpServerConfig().setMinThreads(1).setMaxThreads(20).setHttpPort(httpPort);
 
         binder.bind(HttpServerConfig.class).toInstance(config);
         binder.bind(HttpServerInfo.class).in(Scopes.SINGLETON);
