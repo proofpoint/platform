@@ -1,3 +1,9 @@
+Platform 1.30
+
+* Skeleton server
+
+  We have updated the skeleton server to run HTTPS by default.
+
 Platform 1.29
 
 * HttpClient

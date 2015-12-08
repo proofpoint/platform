@@ -56,9 +56,12 @@ public class Main
                             new ReportingModule(),
                             new ReportingClientModule(),
                             new MainModule()
-                    ).withApplicationDefaults(ImmutableMap.of(
-                            "http-server.http.port", "8080"
-                    ));
+                    ).withApplicationDefaults(ImmutableMap.<String, String>builder()
+                            .put("http-server.http.enabled", "false")
+                            .put("http-server.https.enabled", "true")
+                            .put("http-server.https.port", "8443")
+                            .build()
+                    );
 
             Injector injector = app.initialize();
             injector.getInstance(Announcer.class).start();
