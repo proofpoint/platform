@@ -4,6 +4,10 @@ Platform 1.30
 
   We have updated the skeleton server to run HTTPS by default.
 
+* Library Upgrades
+
+  - Guava to 19.0
+
 Platform 1.29
 
 * HttpClient
