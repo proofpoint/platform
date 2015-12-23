@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -16,6 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
 import static com.proofpoint.concurrent.MoreFutures.addTimeout;
+import static com.proofpoint.concurrent.MoreFutures.allAsList;
 import static com.proofpoint.concurrent.MoreFutures.failedFuture;
 import static com.proofpoint.concurrent.MoreFutures.getFutureValue;
 import static com.proofpoint.concurrent.MoreFutures.toCompletableFuture;
@@ -323,6 +325,99 @@ public class TestMoreFutures
 
         assertEquals(tryGetFutureValue(toCompletableFuture(SettableFuture.create()), 10, MILLISECONDS), Optional.empty());
         assertEquals(tryGetFutureValue(toListenableFuture(new CompletableFuture<>()), 10, MILLISECONDS), Optional.empty());
+    }
+
+    @Test
+    public void testEmptyAllAsList()
+            throws Exception
+    {
+        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of());
+        assertTrue(future.isDone());
+        assertFalse(future.isCompletedExceptionally());
+        assertFalse(future.isCancelled());
+        assertEquals(future.join(), ImmutableList.of());
+    }
+
+    @Test
+    public void testSingleElementAllAsList()
+            throws Exception
+    {
+        CompletableFuture<String> element1 = new CompletableFuture<>();
+
+        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(element1));
+        assertFalse(future.isDone());
+        assertFalse(future.isCancelled());
+
+        element1.complete("a");
+        assertTrue(future.isDone());
+        assertFalse(future.isCompletedExceptionally());
+        assertFalse(future.isCancelled());
+        assertEquals(future.join(), ImmutableList.of("a"));
+    }
+
+    @Test
+    public void testExceptionalSingleElementAllAsList()
+            throws Exception
+    {
+        CompletableFuture<String> element1 = new CompletableFuture<>();
+
+        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(element1));
+        assertFalse(future.isDone());
+        assertFalse(future.isCancelled());
+
+        element1.completeExceptionally(new RuntimeException());
+        assertTrue(future.isDone());
+        assertTrue(future.isCompletedExceptionally());
+        assertFalse(future.isCancelled());
+    }
+
+    @Test
+    public void testMultipleElementAllAsList()
+            throws Exception
+    {
+        CompletableFuture<String> element1 = new CompletableFuture<>();
+        CompletableFuture<String> element2 = new CompletableFuture<>();
+
+        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(element1, element2));
+        assertFalse(future.isDone());
+        assertFalse(future.isCancelled());
+
+        element1.complete("a");
+        assertFalse(future.isDone());
+        assertFalse(future.isCompletedExceptionally());
+        assertFalse(future.isCancelled());
+
+        element2.complete("b");
+        assertTrue(future.isDone());
+        assertFalse(future.isCompletedExceptionally());
+        assertFalse(future.isCancelled());
+        assertEquals(future.join(), ImmutableList.of("a", "b"));
+    }
+
+    @Test
+    public void testExceptionalMultipleElementAllAsList()
+            throws Exception
+    {
+        CompletableFuture<String> element1 = new CompletableFuture<>();
+        CompletableFuture<String> element2 = new CompletableFuture<>();
+
+        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(element1, element2));
+        assertFalse(future.isDone());
+        assertFalse(future.isCompletedExceptionally());
+        assertFalse(future.isCancelled());
+
+        element1.completeExceptionally(new RuntimeException());
+        assertTrue(future.isDone());
+        assertTrue(future.isCompletedExceptionally());
+        assertFalse(future.isCancelled());
+    }
+
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void testUnmodifiableAllAsList()
+            throws Exception
+    {
+        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(new CompletableFuture<String>()));
+        future.complete(null);
     }
 
     @Test(enabled = false) // intermittently fails per https://github.com/airlift/airlift/issues/447
