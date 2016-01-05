@@ -21,15 +21,13 @@ import com.google.common.collect.ImmutableMap;
 import com.proofpoint.json.JsonCodec;
 import org.testng.annotations.Test;
 
-import java.io.ByteArrayOutputStream;
-
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static com.proofpoint.json.JsonCodec.listJsonCodec;
 import static org.testng.Assert.assertEquals;
 
 public abstract class AbstractCodecBodyGeneratorTest
 {
-    protected abstract <T> BodyGenerator createBodyGenerator(JsonCodec<T> jsonCodec, T instance);
+    protected abstract <T> StaticBodyGenerator createBodyGenerator(JsonCodec<T> jsonCodec, T instance);
 
     protected abstract Object decodeBody(byte[] body)
             throws Exception;
@@ -38,7 +36,7 @@ public abstract class AbstractCodecBodyGeneratorTest
     public void testEncodeSimple()
             throws Exception
     {
-        BodyGenerator bodyGenerator = createBodyGenerator(jsonCodec(JsonClass.class),
+        StaticBodyGenerator bodyGenerator = createBodyGenerator(jsonCodec(JsonClass.class),
                 new JsonClass("first", "second"));
         ImmutableMap<String, String> expected = ImmutableMap.of(
                 "firstField", "first",
@@ -51,7 +49,7 @@ public abstract class AbstractCodecBodyGeneratorTest
     public void testEncodeList()
             throws Exception
     {
-        BodyGenerator bodyGenerator = createBodyGenerator(listJsonCodec(JsonClass.class),
+        StaticBodyGenerator bodyGenerator = createBodyGenerator(listJsonCodec(JsonClass.class),
                 ImmutableList.of(new JsonClass("first", "second"), new JsonClass("third", "fourth")));
         ImmutableList<ImmutableMap<String, String>> expected = ImmutableList.of(
                 ImmutableMap.of(
@@ -65,16 +63,10 @@ public abstract class AbstractCodecBodyGeneratorTest
         assertEncodes(bodyGenerator, expected);
     }
 
-    private void assertEncodes(BodyGenerator bodyGenerator, Object expected)
+    private void assertEncodes(StaticBodyGenerator bodyGenerator, Object expected)
             throws Exception
     {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bodyGenerator.write(outputStream);
-        assertEquals(decodeBody(outputStream.toByteArray()), expected);
-
-        ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
-        bodyGenerator.write(outputStream2);
-        assertEquals(outputStream2.toByteArray(), outputStream.toByteArray());
+        assertEquals(decodeBody(bodyGenerator.getBody()), expected);
     }
 
     public static class JsonClass

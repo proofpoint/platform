@@ -4,6 +4,7 @@ Platform 1.31
 
   - TraceTokenModule
   - The TraceTokenManager constructor has been made private.
+  - StaticBodyGenerator implements BodySource instead of BodyGenerator.
   - EventClient.post(EventGenerator), EventGenerator, and EventPoster.
   - NodeInfo.getBinarySpec(), NodeInfo.getConfigSpec(),
     NodeInfo.getInstanceId(), and the NodeInfo constructor that takes

@@ -24,7 +24,7 @@ public class TestJsonBodyGenerator
     extends AbstractCodecBodyGeneratorTest
 {
     @Override
-    protected <T> BodyGenerator createBodyGenerator(JsonCodec<T> jsonCodec, T instance)
+    protected <T> StaticBodyGenerator createBodyGenerator(JsonCodec<T> jsonCodec, T instance)
     {
         return jsonBodyGenerator(jsonCodec, instance);
     }

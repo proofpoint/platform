@@ -25,7 +25,7 @@ public class TestSmileBodyGenerator
     extends AbstractCodecBodyGeneratorTest
 {
     @Override
-    protected <T> BodyGenerator createBodyGenerator(JsonCodec<T> jsonCodec, T instance)
+    protected <T> StaticBodyGenerator createBodyGenerator(JsonCodec<T> jsonCodec, T instance)
     {
         return smileBodyGenerator(jsonCodec, instance);
     }

@@ -17,11 +17,9 @@ package com.proofpoint.http.client;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-@SuppressWarnings("deprecation")
-public class StaticBodyGenerator implements BodyGenerator
+public class StaticBodyGenerator implements BodySource
 {
     public static StaticBodyGenerator createStaticBodyGenerator(String body, Charset charset)
     {
@@ -44,13 +42,5 @@ public class StaticBodyGenerator implements BodyGenerator
     public byte[] getBody()
     {
         return body;
-    }
-
-    @Override
-    @Deprecated
-    public void write(OutputStream out)
-            throws Exception
-    {
-        out.write(body);
     }
 }

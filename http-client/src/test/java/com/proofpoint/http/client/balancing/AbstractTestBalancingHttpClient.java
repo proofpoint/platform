@@ -27,7 +27,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -655,12 +654,6 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
                 fail("TestingLimitedRetryableSource called twice");
             }
             return super.getBody();
-        }
-
-        @Override
-        public void write(OutputStream out)
-        {
-            throw new UnsupportedOperationException();
         }
 
         @Override
