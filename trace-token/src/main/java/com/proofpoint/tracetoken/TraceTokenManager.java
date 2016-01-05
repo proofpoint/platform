@@ -22,11 +22,7 @@ public final class TraceTokenManager
 {
     private static final ThreadLocal<String> token = new ThreadLocal<>();
 
-    /**
-     * @deprecated This is now a utility class. Instantiation is no longer required.
-     */
-    @Deprecated
-    public TraceTokenManager()
+    private TraceTokenManager()
     {}
 
     public static TraceTokenScope registerRequestToken(@Nullable String token)

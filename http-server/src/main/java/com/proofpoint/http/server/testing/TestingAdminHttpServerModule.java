@@ -29,7 +29,6 @@ import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.TheAdminServlet;
 import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.http.server.testing.TestingAdminHttpServer.NullServlet;
-import com.proofpoint.tracetoken.TraceTokenManager;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
@@ -64,7 +63,6 @@ public class TestingAdminHttpServerModule
         int threads = Math.max(200, Runtime.getRuntime().availableProcessors() * 2);
         HttpServerConfig config = new HttpServerConfig().setMinThreads(1).setMaxThreads(threads).setHttpPort(0);
 
-        binder.bind(TraceTokenManager.class).in(Scopes.SINGLETON);
         binder.bind(HttpServerConfig.class).toInstance(config);
         binder.bind(HttpServerInfo.class).in(Scopes.SINGLETON);
         binder.bind(TestingAdminHttpServer.class).in(Scopes.SINGLETON);
