@@ -89,16 +89,6 @@ public class Request
         return bodySource;
     }
 
-    /**
-     * @deprecated Use @{link #getBodySource()}.
-     */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public BodyGenerator getBodyGenerator()
-    {
-        return (BodyGenerator) bodySource;
-    }
-
     public boolean isFollowRedirects()
     {
         return followRedirects;

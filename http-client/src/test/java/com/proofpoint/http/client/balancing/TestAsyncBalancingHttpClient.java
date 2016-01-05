@@ -160,7 +160,7 @@ public class TestAsyncBalancingHttpClient
                     });
                 }
                 catch (Exception e) {
-                    fail("BodyGenerator exception", e);
+                    fail("BodySource exception", e);
                 }
             }
 

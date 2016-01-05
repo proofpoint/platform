@@ -1,6 +1,5 @@
 package com.proofpoint.http.client.testing;
 
-import com.proofpoint.http.client.BodyGenerator;
 import com.proofpoint.http.client.BodySource;
 import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
@@ -18,15 +17,11 @@ public class BodySourceTester
     {
     }
 
-    @SuppressWarnings("deprecation")
     public static void writeBodySourceTo(BodySource bodySource, final OutputStream out)
             throws Exception
     {
         if (bodySource instanceof StaticBodyGenerator) {
             out.write(((StaticBodyGenerator) bodySource).getBody());
-        }
-        else if (bodySource instanceof BodyGenerator) {
-            ((BodyGenerator) bodySource).write(out);
         }
         else if (bodySource instanceof InputStreamBodySource) {
             InputStream in = ((InputStreamBodySource) bodySource).getInputStream();

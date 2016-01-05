@@ -20,14 +20,13 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import com.proofpoint.http.client.InputStreamBodySource;
-import com.proofpoint.http.client.ResponseStatusCodeHandler;
-import com.proofpoint.http.client.BodyGenerator;
 import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
 import com.proofpoint.http.client.HttpClientConfig;
 import com.proofpoint.http.client.HttpRequestFilter;
+import com.proofpoint.http.client.InputStreamBodySource;
 import com.proofpoint.http.client.Request;
+import com.proofpoint.http.client.ResponseStatusCodeHandler;
 import com.proofpoint.http.client.TestingRequestFilter;
 import com.proofpoint.log.Logging;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -206,30 +205,6 @@ public class TestStressJetty
                                 }
                             }
                         };
-                    }
-                })
-                .build();
-
-        assertSimultaneousRequests(request);
-    }
-
-    @Test(enabled = false, description = "Deadlocks JettyHttpClient")
-    @SuppressWarnings("deprecation")
-    public void testSimultaneousPutsBodyGenerator()
-            throws Exception
-    {
-        URI uri = baseURI.resolve("/road/to/nowhere?query");
-        Request request = preparePut()
-                .setUri(uri)
-                .setBodySource(new BodyGenerator()
-                {
-                    @Override
-                    public void write(OutputStream out)
-                            throws Exception
-                    {
-                        for (int i = 0; i < 100; ++i) {
-                            out.write(new byte[1000]);
-                        }
                     }
                 })
                 .build();
