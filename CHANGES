@@ -4,6 +4,7 @@ Platform 1.31
 
   - The "http-client.max-connections" and "http-server.log-retention-time"
     configuration options.
+  - The "etc/log.config" file. Use "etc/log.properties" instead.
 
 Platform 1.30
 

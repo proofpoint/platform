@@ -134,8 +134,7 @@ public class Main
 
             logLevelsPath = installPath + "/etc/log.properties";
             if (!(new File(logLevelsPath).canRead()) && new File(installPath + "/etc/log.config").canRead()) {
-                System.err.print("Did not find a log.properties file, but found a log.config instead.  log.config is deprecated, please use log.properties.");
-                logLevelsPath = installPath + "/etc/log.config";
+                System.err.print("Did not find a log.properties file, but found a log.config instead.  log.config is no longer supported, please use log.properties.");
             }
         }
 
