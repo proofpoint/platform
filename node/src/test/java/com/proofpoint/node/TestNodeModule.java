@@ -32,7 +32,7 @@ public class TestNodeModule
     {
         long testStartTime = System.currentTimeMillis();
 
-        ConfigurationFactory configFactory = new ConfigurationFactory(ImmutableMap.<String, String>of("node.environment", "environment"));
+        ConfigurationFactory configFactory = new ConfigurationFactory(ImmutableMap.of("node.environment", "environment"));
         Injector injector = Guice.createInjector(new NodeModule(), new ConfigurationModule(configFactory), new ApplicationNameModule("test-application"));
         NodeInfo nodeInfo = injector.getInstance(NodeInfo.class);
         Assert.assertNotNull(nodeInfo);
@@ -41,11 +41,6 @@ public class TestNodeModule
         Assert.assertEquals(nodeInfo.getPool(), "general");
         Assert.assertNotNull(nodeInfo.getNodeId());
         Assert.assertNotNull(nodeInfo.getLocation());
-        Assert.assertNull(nodeInfo.getBinarySpec());
-        Assert.assertNull(nodeInfo.getConfigSpec());
-        Assert.assertNotNull(nodeInfo.getInstanceId());
-
-        Assertions.assertNotEquals(nodeInfo.getNodeId(), nodeInfo.getInstanceId());
 
         Assert.assertNotNull(nodeInfo.getInternalIp());
         Assert.assertFalse(nodeInfo.getInternalIp().isAnyLocalAddress());
@@ -87,11 +82,6 @@ public class TestNodeModule
         Assert.assertEquals(nodeInfo.getPool(), pool);
         Assert.assertEquals(nodeInfo.getNodeId(), nodeId);
         Assert.assertEquals(nodeInfo.getLocation(), location);
-        Assert.assertNull(nodeInfo.getBinarySpec());
-        Assert.assertNull(nodeInfo.getConfigSpec());
-        Assert.assertNotNull(nodeInfo.getInstanceId());
-
-        Assertions.assertNotEquals(nodeInfo.getNodeId(), nodeInfo.getInstanceId());
 
         Assert.assertEquals(nodeInfo.getInternalIp(), InetAddresses.forString(publicIp));
         Assert.assertEquals(nodeInfo.getInternalHostname(), "internal.hostname");

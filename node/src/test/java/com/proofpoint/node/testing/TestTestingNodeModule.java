@@ -45,11 +45,6 @@ public class TestTestingNodeModule
         assertEquals(nodeInfo.getPool(), "general");
         assertNotNull(nodeInfo.getNodeId());
         assertNotNull(nodeInfo.getLocation());
-        assertNull(nodeInfo.getBinarySpec());
-        assertNull(nodeInfo.getConfigSpec());
-        assertNotNull(nodeInfo.getInstanceId());
-
-        assertNotEquals(nodeInfo.getNodeId(), nodeInfo.getInstanceId());
 
         assertEquals(nodeInfo.getInternalIp().toString(), "localhost/127.0.0.1");
         assertEquals(nodeInfo.getBindIp(), nodeInfo.getInternalIp());

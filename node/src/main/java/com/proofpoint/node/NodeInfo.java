@@ -74,25 +74,6 @@ public class NodeInfo
         );
     }
 
-    /**
-     * @deprecated Replaced by {@link #NodeInfo(String, String, String, String, InetAddress, String, InetAddress, String, String)}.
-     */
-    @Deprecated
-    public NodeInfo(String application,
-            String environment,
-            String pool,
-            String nodeId,
-            InetAddress internalIp,
-            String internalHostname,
-            InetAddress bindIp,
-            String externalAddress,
-            String location,
-            String binarySpec,
-            String configSpec)
-    {
-        this(application, environment, pool, nodeId, internalIp, internalHostname, bindIp, externalAddress, location);
-    }
-
     public NodeInfo(String application,
             String environment,
             String pool,
@@ -202,36 +183,6 @@ public class NodeInfo
     public String getLocation()
     {
         return location;
-    }
-
-    /**
-     * Binary this JavaVM is running.
-     * @deprecated Always null.
-     */
-    @Deprecated
-    public String getBinarySpec()
-    {
-        return null;
-    }
-
-    /**
-     * Configuration this JavaVM is running.
-     * @deprecated Always null.
-     */
-    @Deprecated
-    public String getConfigSpec()
-    {
-        return null;
-    }
-
-    /**
-     * The unique id of this JavaVM instance.  This id will change every time the vm is restarted.
-     */
-    @Managed
-    @Deprecated
-    public String getInstanceId()
-    {
-        return instanceId;
     }
 
     /**

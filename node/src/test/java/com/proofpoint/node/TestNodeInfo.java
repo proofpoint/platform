@@ -46,11 +46,6 @@ public class TestNodeInfo
         Assert.assertEquals(nodeInfo.getPool(), POOL);
         Assert.assertEquals(nodeInfo.getNodeId(), nodeId);
         Assert.assertEquals(nodeInfo.getLocation(), location);
-        Assert.assertNull(nodeInfo.getBinarySpec());
-        Assert.assertNull(nodeInfo.getConfigSpec());
-        Assert.assertNotNull(nodeInfo.getInstanceId());
-
-        Assertions.assertNotEquals(nodeInfo.getNodeId(), nodeInfo.getInstanceId());
 
         Assert.assertEquals(nodeInfo.getInternalIp(), internalIp);
         Assert.assertEquals(nodeInfo.getExternalAddress(), externalAddress);
