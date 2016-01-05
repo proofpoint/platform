@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
 import com.proofpoint.node.NodeInfo;
-import com.proofpoint.event.client.EventClient.EventGenerator;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -67,46 +66,9 @@ class JsonEventWriter
 
         jsonGenerator.writeStartArray();
 
-        return new Writer()
-        {
-            @Override
-            public void write()
-                    throws Exception
-            {
-                if (eventIterator.hasNext()) {
-                    T event = eventIterator.next();
-                    JsonSerializer<T> serializer = getSerializer(event, token);
-                    if (serializer == null) {
-                        throw new InvalidEventException("Event class [%s] has not been registered as an event", event.getClass().getName());
-                    }
-
-                    serializer.serialize(event, jsonGenerator, null);
-                }
-                else {
-                    jsonGenerator.writeEndArray();
-                    jsonGenerator.flush();
-                    out.close();
-                }
-            }
-        };
-    }
-
-    public <T> void writeEvents(EventGenerator<T> events, @Nullable final String token, OutputStream out)
-            throws IOException
-    {
-        checkNotNull(events, "events is null");
-        checkNotNull(out, "out is null");
-
-        final JsonGenerator jsonGenerator = jsonFactory.createGenerator(out, JsonEncoding.UTF8);
-
-        jsonGenerator.writeStartArray();
-
-        events.generate(new EventClient.EventPoster<T>()
-        {
-            @Override
-            public void post(T event)
-                    throws IOException
-            {
+        return () -> {
+            if (eventIterator.hasNext()) {
+                T event = eventIterator.next();
                 JsonSerializer<T> serializer = getSerializer(event, token);
                 if (serializer == null) {
                     throw new InvalidEventException("Event class [%s] has not been registered as an event", event.getClass().getName());
@@ -114,10 +76,12 @@ class JsonEventWriter
 
                 serializer.serialize(event, jsonGenerator, null);
             }
-        });
-
-        jsonGenerator.writeEndArray();
-        jsonGenerator.flush();
+            else {
+                jsonGenerator.writeEndArray();
+                jsonGenerator.flush();
+                out.close();
+            }
+        };
     }
 
     @SuppressWarnings("unchecked")

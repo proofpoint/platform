@@ -16,12 +16,8 @@
 package com.proofpoint.event.client;
 
 import com.google.common.collect.ImmutableList;
-import com.proofpoint.event.client.EventClient.EventGenerator;
-import com.proofpoint.event.client.EventClient.EventPoster;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
 
 public abstract class AbstractTestInMemoryEventClient
 {
@@ -62,25 +58,6 @@ public abstract class AbstractTestInMemoryEventClient
     public void testPostIterable()
     {
         eventClient.post(ImmutableList.of(event1, event2, event3));
-
-        Assert.assertEquals(eventClient.getEvents(),
-                ImmutableList.of(event1, event2, event3));
-    }
-
-    @Test
-    public void testPostEventPoster()
-    {
-        eventClient.post(new EventGenerator<Object>()
-        {
-            @Override
-            public void generate(EventPoster<Object> objectEventPoster)
-                    throws IOException
-            {
-                objectEventPoster.post(event1);
-                objectEventPoster.post(event2);
-                objectEventPoster.post(event3);
-            }
-        });
 
         Assert.assertEquals(eventClient.getEvents(),
                 ImmutableList.of(event1, event2, event3));

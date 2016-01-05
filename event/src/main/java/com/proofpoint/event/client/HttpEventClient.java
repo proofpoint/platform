@@ -19,7 +19,6 @@ import com.google.common.io.CharStreams;
 import com.google.common.net.MediaType;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Inject;
-import com.proofpoint.http.client.BodyGenerator;
 import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
@@ -31,11 +30,9 @@ import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 import org.weakref.jmx.Flatten;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.Arrays;
 
@@ -93,55 +90,9 @@ public class HttpEventClient
                 .setUri(URI.create("v2/event"))
                 .setHeader("User-Agent", nodeInfo.getNodeId())
                 .setHeader("Content-Type", MEDIA_TYPE_JSON.toString())
-                .setBodySource(new DynamicBodySource()
-                {
-                    @Override
-                    public Writer start(OutputStream out)
-                            throws IOException
-                    {
-                        return eventWriter.createEventWriter(events.iterator(), token, out);
-                    }
-                })
+                .setBodySource((DynamicBodySource) out -> eventWriter.createEventWriter(events.iterator(), token, out))
                 .build();
         return httpClient.executeAsync(request, EVENT_RESPONSE_HANDLER);
-    }
-
-    @Override
-    @Deprecated
-    public <T> ListenableFuture<Void> post(EventGenerator<T> eventGenerator)
-    {
-        checkNotNull(eventGenerator, "eventGenerator is null");
-        String token = getCurrentRequestToken();
-
-        Request request = preparePost()
-                .setUri(URI.create("v2/event"))
-                .setHeader("User-Agent", nodeInfo.getNodeId())
-                .setHeader("Content-Type", MEDIA_TYPE_JSON.toString())
-                .setBodySource(new JsonEntityWriter<>(eventWriter, eventGenerator, token))
-                .build();
-        return httpClient.executeAsync(request, EVENT_RESPONSE_HANDLER);
-    }
-
-    private static class JsonEntityWriter<T>
-            implements BodyGenerator
-    {
-        private final JsonEventWriter eventWriter;
-        private final EventGenerator<T> events;
-        private final String token;
-
-        JsonEntityWriter(JsonEventWriter eventWriter, EventGenerator<T> events, @Nullable String token)
-        {
-            this.eventWriter = checkNotNull(eventWriter, "eventWriter is null");
-            this.events = checkNotNull(events, "events is null");
-            this.token = token;
-        }
-
-        @Override
-        public void write(OutputStream out)
-                throws Exception
-        {
-            eventWriter.writeEvents(events, token, out);
-        }
     }
 
     private static class EventResponseHandler implements ResponseHandler<Void, Exception>

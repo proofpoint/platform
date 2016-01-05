@@ -18,8 +18,6 @@ package com.proofpoint.event.client;
 import com.google.common.annotations.Beta;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.io.IOException;
-
 @Beta
 public interface EventClient
 {
@@ -28,21 +26,4 @@ public interface EventClient
 
     <T> ListenableFuture<Void> post(Iterable<T> events)
             throws IllegalArgumentException;
-
-    @Deprecated
-    <T> ListenableFuture<Void> post(EventGenerator<T> eventGenerator)
-            throws IllegalArgumentException;
-
-    @Deprecated
-    public interface EventGenerator<T>
-    {
-        void generate(EventPoster<T> eventPoster)
-                throws IOException;
-    }
-
-    public interface EventPoster<T>
-    {
-        void post(T event)
-                throws IOException;
-    }
 }

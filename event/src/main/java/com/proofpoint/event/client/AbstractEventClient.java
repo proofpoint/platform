@@ -25,36 +25,11 @@ public abstract class AbstractEventClient
             throws IllegalArgumentException
     {
         checkNotNull(events, "events is null");
-        return post(new EventGenerator<T>()
-        {
-            @Override
-            public void generate(EventPoster<T> eventPoster)
-                    throws IOException
-            {
-                for (T event : events) {
-                    checkNotNull(event, "event is null");
-                    eventPoster.post(event);
-                }
-            }
-        });
-    }
-
-    @Override
-    @Deprecated
-    public final <T> ListenableFuture<Void> post(EventGenerator<T> eventGenerator)
-            throws IllegalArgumentException
-    {
         try {
-            eventGenerator.generate(new EventPoster<T>()
-            {
-                @Override
-                public void post(T event)
-                        throws IOException
-                {
-                    checkNotNull(event, "event is null");
-                    postEvent(event);
-                }
-            });
+            for (T event : events) {
+                checkNotNull(event, "event is null");
+                postEvent(event);
+            }
         }
         catch (IOException e) {
             return Futures.immediateFailedCheckedFuture(e);
