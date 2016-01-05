@@ -28,7 +28,23 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-@DefunctConfig({"jetty.http.enabled", "jetty.http.port", "jetty.https.enabled", "jetty.https.port", "jetty.https.keystore.path", "jetty.https.keystore.password", "http-server.https.keystore.password", "jetty.log.path", "jetty.threads.max", "jetty.threads.min", "jetty.threads.max-idle-time-ms", "jetty.log.retain-days", "jetty.auth.users-file", "jetty.net.max-idle-time-ms"})
+@DefunctConfig({
+        "jetty.http.enabled",
+        "jetty.http.port",
+        "jetty.https.enabled",
+        "jetty.https.port",
+        "jetty.https.keystore.path",
+        "jetty.https.keystore.password",
+        "http-server.https.keystore.password",
+        "jetty.log.path",
+        "jetty.threads.max",
+        "jetty.threads.min",
+        "jetty.threads.max-idle-time-ms",
+        "jetty.log.retain-days",
+        "jetty.auth.users-file",
+        "jetty.net.max-idle-time-ms",
+        "http-server.log.retention-time"
+})
 public class HttpServerConfig
 {
     private boolean httpEnabled = true;
@@ -41,7 +57,6 @@ public class HttpServerConfig
     private String keystorePassword = "keystore";
 
     private String logPath = "var/log/http-request.log";
-    private Duration logRetentionTime = new Duration(90, TimeUnit.DAYS);
     private DataSize logMaxSegmentSize = new DataSize(100, Unit.MEGABYTE);
     private int logMaxHistory = 30;
 
@@ -191,20 +206,6 @@ public class HttpServerConfig
     public HttpServerConfig setThreadMaxIdleTime(Duration threadMaxIdleTime)
     {
         this.threadMaxIdleTime = threadMaxIdleTime;
-        return this;
-    }
-
-    @Deprecated
-    public Duration getLogRetentionTime()
-    {
-        return logRetentionTime;
-    }
-
-    @Deprecated
-    @Config("http-server.log.retention-time")
-    public HttpServerConfig setLogRetentionTime(Duration logRetentionTime)
-    {
-        this.logRetentionTime = logRetentionTime;
         return this;
     }
 

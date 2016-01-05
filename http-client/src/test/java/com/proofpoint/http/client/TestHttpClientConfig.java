@@ -45,7 +45,6 @@ public class TestHttpClientConfig
                 .setRequestTimeout(null)
                 .setIdleTimeout(new Duration(1, TimeUnit.MINUTES))
                 .setKeepAliveInterval(null)
-                .setMaxConnections(200)
                 .setMaxConnectionsPerServer(20)
                 .setMaxRequestsQueuedPerDestination(20)
                 .setMaxContentLength(new DataSize(16, Unit.MEGABYTE))
@@ -62,7 +61,6 @@ public class TestHttpClientConfig
                 .put("http-client.request-timeout", "15s")
                 .put("http-client.idle-timeout", "5s")
                 .put("http-client.keep-alive-interval", "6s")
-                .put("http-client.max-connections", "12")
                 .put("http-client.max-connections-per-server", "3")
                 .put("http-client.max-requests-queued-per-destination", "10")
                 .put("http-client.max-content-length", "1MB")
@@ -76,7 +74,6 @@ public class TestHttpClientConfig
                 .setRequestTimeout(new Duration(15, TimeUnit.SECONDS))
                 .setIdleTimeout(new Duration(5, TimeUnit.SECONDS))
                 .setKeepAliveInterval(new Duration(6, TimeUnit.SECONDS))
-                .setMaxConnections(12)
                 .setMaxConnectionsPerServer(3)
                 .setMaxRequestsQueuedPerDestination(10)
                 .setMaxContentLength(new DataSize(1, Unit.MEGABYTE))
@@ -106,7 +103,6 @@ public class TestHttpClientConfig
     {
         assertFailsValidation(new HttpClientConfig().setConnectTimeout(null), "connectTimeout", "may not be null", NotNull.class);
         assertFailsValidation(new HttpClientConfig().setIdleTimeout(null), "idleTimeout", "may not be null", NotNull.class);
-        assertFailsValidation(new HttpClientConfig().setMaxConnections(0), "maxConnections", "must be greater than or equal to 1", Min.class);
         assertFailsValidation(new HttpClientConfig().setMaxConnectionsPerServer(0), "maxConnectionsPerServer", "must be greater than or equal to 1", Min.class);
         assertFailsValidation(new HttpClientConfig().setMaxRequestsQueuedPerDestination(-1), "maxRequestsQueuedPerDestination", "must be greater than or equal to 0", Min.class);
         assertFailsValidation(new HttpClientConfig().setMaxContentLength(null), "maxContentLength", "may not be null", NotNull.class);

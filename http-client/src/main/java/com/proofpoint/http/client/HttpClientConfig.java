@@ -15,10 +15,9 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.annotations.Beta;
 import com.google.common.net.HostAndPort;
 import com.proofpoint.configuration.Config;
-import com.proofpoint.configuration.ConfigDescription;
+import com.proofpoint.configuration.DefunctConfig;
 import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
@@ -27,10 +26,9 @@ import com.proofpoint.units.MinDuration;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-
 import java.util.concurrent.TimeUnit;
 
-@Beta
+@DefunctConfig({"http-client.max-connections"})
 public class HttpClientConfig
 {
     public static final String JAVAX_NET_SSL_KEY_STORE = "javax.net.ssl.keyStore";
@@ -40,7 +38,6 @@ public class HttpClientConfig
     private Duration requestTimeout = null;
     private Duration idleTimeout = new Duration(1, TimeUnit.MINUTES);
     private Duration keepAliveInterval = null;
-    private int maxConnections = 200;
     private int maxConnectionsPerServer = 20;
     private int maxRequestsQueuedPerDestination = 20;
     private DataSize maxContentLength = new DataSize(16, Unit.MEGABYTE);
@@ -101,22 +98,6 @@ public class HttpClientConfig
     public HttpClientConfig setKeepAliveInterval(Duration keepAliveInterval)
     {
         this.keepAliveInterval = keepAliveInterval;
-        return this;
-    }
-
-    @Min(1)
-    @Deprecated
-    public int getMaxConnections()
-    {
-        return maxConnections;
-    }
-
-    @Config("http-client.max-connections")
-    @ConfigDescription("unused")
-    @Deprecated
-    public HttpClientConfig setMaxConnections(int maxConnections)
-    {
-        this.maxConnections = maxConnections;
         return this;
     }
 
