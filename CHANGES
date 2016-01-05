@@ -12,6 +12,10 @@ Platform 1.31
     configuration options.
   - The "etc/log.config" file. Use "etc/log.properties" instead.
 
+  Additionally, Request.Builder.setBodyGenerator(BodyGenerator) changed to
+  Request.Builder.setBodyGenerator(StaticBodyGenerator) (and remains
+  deprecated).
+
 Platform 1.30
 
 * Skeleton server

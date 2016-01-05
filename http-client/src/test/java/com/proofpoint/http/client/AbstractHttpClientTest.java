@@ -492,35 +492,6 @@ public abstract class AbstractHttpClientTest
     }
 
     @Test
-    public void testPutMethodWithDynamicBodyGenerator()
-            throws Exception
-    {
-        URI uri = baseURI.resolve("/road/to/nowhere");
-        Request request = preparePut()
-                .setUri(uri)
-                .addHeader("foo", "bar")
-                .addHeader("dupe", "first")
-                .addHeader("dupe", "second")
-                .setBodyGenerator(out -> {
-                    out.write(1);
-                    byte[] bytes = {2, 5};
-                    out.write(bytes);
-                    bytes[0] = 9;
-                })
-                .build();
-
-        int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
-        assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
-        assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
-        assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
-    }
-
-    @Test
     public void testPutMethodWithInputStreamBodySource()
             throws Exception
     {
@@ -696,30 +667,6 @@ public abstract class AbstractHttpClientTest
         {
             closed.set(true);
         }
-    }
-
-    @Test
-    public void testBodyGeneratorSeesTraceToken()
-            throws Exception
-    {
-        final String token = createAndRegisterNewRequestToken();
-        URI uri = baseURI.resolve("/road/to/nowhere");
-        Request request = preparePut()
-                .setUri(uri)
-                .addHeader("foo", "bar")
-                .addHeader("dupe", "first")
-                .addHeader("dupe", "second")
-                .setBodyGenerator(out -> assertEquals(getCurrentRequestToken(), token))
-                .build();
-
-        int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
-        assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
-        assertEquals(servlet.requestBytes, new byte[] {});
     }
 
     @Test
@@ -1140,45 +1087,6 @@ public abstract class AbstractHttpClientTest
             config.setIdleTimeout(new Duration(5, SECONDS));
 
             executeRequest(fakeServer, config);
-        }
-    }
-
-    @Test(expectedExceptions = IOException.class)
-    public void testBodyGeneratorConnectWriteRequestClose()
-            throws Exception
-    {
-        try (FakeServer fakeServer = new FakeServer(scheme, host, 1024, null, true)) {
-            HttpClientConfig config = new HttpClientConfig();
-            config.setConnectTimeout(new Duration(5, SECONDS));
-            config.setIdleTimeout(new Duration(5, SECONDS));
-
-            // kick the fake server
-            executor.execute(fakeServer);
-
-            // timing based check to assure we don't hang
-            long start = System.nanoTime();
-            final AtomicBoolean bodyGeneratorCalled = new AtomicBoolean(false);
-            try {
-                Request request = preparePut()
-                        .setUri(fakeServer.getUri())
-                        .setBodyGenerator(out -> {
-                            bodyGeneratorCalled.set(true);
-                            try {
-                                for (int i = 0; i < 100; ++i) {
-                                    out.write(new byte[1024]);
-                                }
-                            }
-                            catch (IOException e) {
-                                throw e;
-                            }
-                        })
-                        .build();
-                executeRequest(config, request, new ResponseToStringHandler());
-            }
-            finally {
-                assertTrue(bodyGeneratorCalled.get(), "BodyGenerator called");
-                assertLessThan(nanosSince(start), new Duration(1, SECONDS), "Expected request to finish quickly");
-            }
         }
     }
 

@@ -220,7 +220,7 @@ public class Request
          */
         @Deprecated
         @SuppressWarnings("deprecation")
-        public Builder setBodyGenerator(BodyGenerator bodyGenerator)
+        public Builder setBodyGenerator(StaticBodyGenerator bodyGenerator)
         {
             this.bodySource = bodyGenerator;
             return this;
