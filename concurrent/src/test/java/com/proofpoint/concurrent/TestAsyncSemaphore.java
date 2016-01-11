@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
-import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
+import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorService;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.testing.Assertions.assertLessThanOrEqual;
 import static java.util.concurrent.Executors.newCachedThreadPool;
@@ -45,7 +45,7 @@ public class TestAsyncSemaphore
     public void testInlineExecution()
             throws Exception
     {
-        AsyncSemaphore<Runnable> asyncSemaphore = new AsyncSemaphore<>(1, executor, task -> sameThreadExecutor().submit(task));
+        AsyncSemaphore<Runnable> asyncSemaphore = new AsyncSemaphore<>(1, executor, task -> newDirectExecutorService().submit(task));
 
         final AtomicInteger count = new AtomicInteger();
 
