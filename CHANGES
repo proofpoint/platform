@@ -1,3 +1,8 @@
+Platform 1.41
+
+* AsyncSemaphore now uses JDK Function instead of Guava Function. This change
+  is generally source-compatible but not binary-compatible.
+
 Platform 1.40
 
 * We re-enabled the SHA1 ciphers that Jetty disabled in the http client
