@@ -111,6 +111,9 @@ public class TestingHttpClient
             long responseStart = System.nanoTime();
             Duration requestProcessingTime = new Duration(responseStart - requestStart, TimeUnit.NANOSECONDS);
             if (e instanceof Exception) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 try {
                     return responseHandler.handleException(request, (Exception) e);
                 }
