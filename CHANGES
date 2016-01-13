@@ -7,6 +7,7 @@ Platform 1.30
 * Library Upgrades
 
   - Guava to 19.0
+  - Jackson to 2.6.4
 
 Platform 1.29
 
