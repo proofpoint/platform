@@ -3,6 +3,11 @@ Platform 1.41
 * AsyncSemaphore now uses JDK Function instead of Guava Function. This change
   is generally source-compatible but not binary-compatible.
 
+* Library Upgrades
+
+  - jmxutils to 1.19 (from 1.18) fixes the server not starting when LogJmxModule
+    is used due to a Java 8 compatibility issue with jmxutils.
+
 Platform 1.40
 
 * We re-enabled the SHA1 ciphers that Jetty disabled in the http client
