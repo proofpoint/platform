@@ -119,6 +119,7 @@ public class JettyHttpClient
     private static final String PLATFORM_STATS_KEY = "platform_stats";
     private static final long SWEEP_PERIOD_MILLIS = 5000;
 
+    private final JettyIoPool anonymousPool;
     private final HttpClient httpClient;
     private final long maxContentLength;
     private final Long requestTimeoutMillis;
@@ -233,6 +234,10 @@ public class JettyHttpClient
         JettyIoPool pool = jettyIoPool.orNull();
         if (pool == null) {
             pool = new JettyIoPool("anonymous" + nameCounter.incrementAndGet(), new JettyIoPoolConfig());
+            anonymousPool = pool;
+        }
+        else {
+            anonymousPool = null;
         }
 
         name = pool.getName();
@@ -663,6 +668,9 @@ public class JettyHttpClient
             Thread.currentThread().interrupt();
         }
         catch (Exception ignored) {
+        }
+        if (anonymousPool != null) {
+            anonymousPool.close();
         }
     }
 
