@@ -33,7 +33,7 @@ class LifeCycleMethods
 
     LifeCycleMethods(Class<?> clazz)
     {
-        addLifeCycleMethods(clazz, new HashSet<String>(), new HashSet<String>());
+        addLifeCycleMethods(clazz, new HashSet<>(), new HashSet<>());
     }
 
     boolean hasFor(Class<? extends Annotation> annotation)
@@ -61,6 +61,7 @@ class LifeCycleMethods
 
             processMethod(method, PostConstruct.class, usedConstructNames);
             processMethod(method, AcceptRequests.class, usedConstructNames);
+            processMethod(method, StopTraffic.class, usedDestroyNames);
             processMethod(method, PreDestroy.class, usedDestroyNames);
         }
 

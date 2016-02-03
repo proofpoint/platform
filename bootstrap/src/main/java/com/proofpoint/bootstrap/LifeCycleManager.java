@@ -20,6 +20,7 @@ import com.proofpoint.log.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -27,7 +28,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Manages PostConstruct and PreDestroy life cycles
@@ -38,7 +42,9 @@ public final class LifeCycleManager
     private final AtomicReference<State> state = new AtomicReference<>(State.LATENT);
     private final Queue<Object> managedInstances = new ConcurrentLinkedQueue<>();
     private final Queue<Object> acceptRequestInstances = new ConcurrentLinkedQueue<>();
+    private final Queue<Object> stopTrafficInstances = new ConcurrentLinkedQueue<>();
     private final LifeCycleMethodsMap methodsMap;
+    private final LifeCycleConfig config;
 
     private enum State
     {
@@ -52,12 +58,14 @@ public final class LifeCycleManager
     /**
      * @param managedInstances list of objects that have life cycle annotations
      * @param methodsMap existing or new methods map
+     * @param config configuration
      * @throws Exception exceptions starting instances (depending on mode)
      */
-    public LifeCycleManager(List<Object> managedInstances, LifeCycleMethodsMap methodsMap)
+    public LifeCycleManager(List<Object> managedInstances, LifeCycleMethodsMap methodsMap, LifeCycleConfig config)
             throws Exception
     {
         this.methodsMap = (methodsMap != null) ? methodsMap : new LifeCycleMethodsMap();
+        this.config = requireNonNull(config, "config is null");
         for (Object instance : managedInstances) {
             addInstance(instance);
         }
@@ -70,7 +78,7 @@ public final class LifeCycleManager
      */
     public int size()
     {
-        return managedInstances.size() + acceptRequestInstances.size();
+        return managedInstances.size() + acceptRequestInstances.size() + stopTrafficInstances.size();
     }
 
     /**
@@ -131,16 +139,24 @@ public final class LifeCycleManager
         }
 
         log.info("Life cycle stopping...");
-        stopList(acceptRequestInstances);
+        stopList(stopTrafficInstances, StopTraffic.class);
+
+        log.info("Life cycle unannounced...");
+        long stopTrafficDelay = config.getStopTrafficDelay().toMillis();
+        if (stopTrafficDelay != 0) {
+            Thread.sleep(stopTrafficDelay);
+        }
+
+        stopList(acceptRequestInstances, PreDestroy.class);
 
         log.info("Life cycle stopped accepting new requests...");
-        stopList(managedInstances);
+        stopList(managedInstances, PreDestroy.class);
 
         state.set(State.STOPPED);
         log.info("Life cycle stopped.");
     }
 
-    private void stopList(Queue<Object> instances)
+    private void stopList(Queue<Object> instances, Class<? extends Annotation> annotation)
             throws IllegalAccessException, InvocationTargetException
     {
         List<Object> reversedInstances = Lists.newArrayList(instances);
@@ -149,7 +165,7 @@ public final class LifeCycleManager
         for (Object obj : reversedInstances) {
             log.debug("Stopping %s", obj.getClass().getName());
             LifeCycleMethods methods = methodsMap.get(obj.getClass());
-            for (Method preDestroy : methods.methodsFor(PreDestroy.class)) {
+            for (Method preDestroy : methods.methodsFor(annotation)) {
                 log.debug("\t%s()", preDestroy.getName());
                 preDestroy.invoke(obj);
             }
@@ -177,6 +193,9 @@ public final class LifeCycleManager
             }
             else if (methods.hasFor(PreDestroy.class)) {
                 managedInstances.add(instance);
+            }
+            if (methods.hasFor(StopTraffic.class)) {
+                stopTrafficInstances.add(instance);
             }
         }
     }
