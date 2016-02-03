@@ -16,6 +16,8 @@
 package com.proofpoint.bootstrap;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
 import com.google.inject.Binder;
 import com.google.inject.CreationException;
@@ -25,13 +27,18 @@ import com.google.inject.Module;
 import com.google.inject.PrivateModule;
 import com.google.inject.Scopes;
 import com.google.inject.Stage;
-import org.testng.Assert;
+import com.proofpoint.configuration.ConfigurationFactoryBuilder;
+import com.proofpoint.configuration.ConfigurationModule;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import static com.proofpoint.testing.Assertions.assertGreaterThanOrEqual;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 public class TestLifeCycleManager
 {
@@ -53,14 +60,10 @@ public class TestLifeCycleManager
     public void testImmediateStarts()
             throws Exception
     {
-        Module module = new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                binder.bind(InstanceThatRequiresStart.class).in(Scopes.SINGLETON);
-                binder.bind(InstanceThatUsesInstanceThatRequiresStart.class).in(Scopes.SINGLETON);
-            }
+        Module module = binder -> {
+            initializeConfig(binder);
+            binder.bind(InstanceThatRequiresStart.class).in(Scopes.SINGLETON);
+            binder.bind(InstanceThatUsesInstanceThatRequiresStart.class).in(Scopes.SINGLETON);
         };
 
         Injector injector = Guice.createInjector(
@@ -72,29 +75,25 @@ public class TestLifeCycleManager
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
 
-        Assert.assertEquals(stateLog, ImmutableList.of("InstanceThatUsesInstanceThatRequiresStart:OK"));
+        assertEquals(stateLog, ImmutableList.of("InstanceThatUsesInstanceThatRequiresStart:OK"));
     }
 
     @Test
     public void testPrivateModule()
             throws Exception
     {
-        Module module = new Module()
-        {
-            @Override
-            public void configure(Binder binder)
+        Module module = binder -> {
+            initializeConfig(binder);
+            final PrivateModule privateModule = new PrivateModule()
             {
-                final PrivateModule privateModule = new PrivateModule()
+                @Override
+                protected void configure()
                 {
-                    @Override
-                    protected void configure()
-                    {
-                        binder().bind(SimpleBase.class).to(SimpleBaseImpl.class).in(Scopes.SINGLETON);
-                        binder().expose(SimpleBase.class);
-                    }
-                };
-                binder.install(privateModule);
-            }
+                    binder().bind(SimpleBase.class).to(SimpleBaseImpl.class).in(Scopes.SINGLETON);
+                    binder().expose(SimpleBase.class);
+                }
+            };
+            binder.install(privateModule);
         };
 
         Injector injector = Guice.createInjector(
@@ -104,23 +103,19 @@ public class TestLifeCycleManager
         );
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        Assert.assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl"));
+        assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl"));
 
         lifeCycleManager.stop();
-        Assert.assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl", "preSimpleBaseImpl"));
+        assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl", "preSimpleBaseImpl"));
     }
 
     @Test
     public void testSubClassAnnotated()
             throws Exception
     {
-        Module module = new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                binder.bind(SimpleBase.class).to(SimpleBaseImpl.class).in(Scopes.SINGLETON);
-            }
+        Module module = binder -> {
+            initializeConfig(binder);
+            binder.bind(SimpleBase.class).to(SimpleBaseImpl.class).in(Scopes.SINGLETON);
         };
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
@@ -129,11 +124,11 @@ public class TestLifeCycleManager
         );
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        Assert.assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl"));
+        assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl"));
 
         lifeCycleManager.stop();
 
-        Assert.assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl", "preSimpleBaseImpl"));
+        assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl", "preSimpleBaseImpl"));
     }
 
     @Test
@@ -143,13 +138,9 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(ExecutedInstance.class).in(Scopes.SINGLETON);
-                    }
+                binder -> {
+                    initializeConfig(binder);
+                    binder.bind(ExecutedInstance.class).in(Scopes.SINGLETON);
                 }
         );
         ExecutedInstance instance = injector.getInstance(ExecutedInstance.class);
@@ -157,27 +148,23 @@ public class TestLifeCycleManager
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
         instance.waitForStart();
-        Assert.assertEquals(stateLog, ImmutableList.of("Starting"));
+        assertEquals(stateLog, ImmutableList.of("Starting"));
 
         lifeCycleManager.stop();
         instance.waitForEnd();
 
-        Assert.assertEquals(stateLog, ImmutableList.of("Starting", "Done"));
+        assertEquals(stateLog, ImmutableList.of("Starting", "Done"));
     }
 
     @Test
     public void testDeepDependency()
             throws Exception
     {
-        Module module = new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                binder.bind(AnInstance.class).in(Scopes.SINGLETON);
-                binder.bind(AnotherInstance.class).in(Scopes.SINGLETON);
-                binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
-            }
+        Module module = binder -> {
+            initializeConfig(binder);
+            binder.bind(AnInstance.class).in(Scopes.SINGLETON);
+            binder.bind(AnotherInstance.class).in(Scopes.SINGLETON);
+            binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
         };
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
@@ -189,24 +176,20 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        Assert.assertEquals(stateLog, ImmutableList.of("postDependentInstance"));
+        assertEquals(stateLog, ImmutableList.of("postDependentInstance"));
 
         lifeCycleManager.stop();
-        Assert.assertEquals(stateLog, ImmutableList.of("postDependentInstance", "preDependentInstance"));
+        assertEquals(stateLog, ImmutableList.of("postDependentInstance", "preDependentInstance"));
     }
 
     @Test
     public void testDependencyStartedFirst()
             throws Exception
     {
-        Module module = new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                binder.bind(DependingInstance.class).in(Scopes.SINGLETON);
-                binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
-            }
+        Module module = binder -> {
+            initializeConfig(binder);
+            binder.bind(DependingInstance.class).in(Scopes.SINGLETON);
+            binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
         };
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
@@ -218,24 +201,20 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        Assert.assertEquals(stateLog, ImmutableList.of("postDependentInstance", "postDependingInstance"));
+        assertEquals(stateLog, ImmutableList.of("postDependentInstance", "postDependingInstance"));
 
         lifeCycleManager.stop();
-        Assert.assertEquals(stateLog, ImmutableList.of("postDependentInstance", "postDependingInstance", "preDependingInstance", "preDependentInstance"));
+        assertEquals(stateLog, ImmutableList.of("postDependentInstance", "postDependingInstance", "preDependingInstance", "preDependentInstance"));
     }
 
     @Test
     public void testAcceptRequests()
             throws Exception
     {
-        Module module = new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                binder.bind(AcceptDependingInstance.class).in(Scopes.SINGLETON);
-                binder.bind(AcceptRequestsInstance.class).in(Scopes.SINGLETON);
-            }
+        Module module = binder -> {
+            initializeConfig(binder);
+            binder.bind(AcceptDependingInstance.class).in(Scopes.SINGLETON);
+            binder.bind(AcceptRequestsInstance.class).in(Scopes.SINGLETON);
         };
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
@@ -247,10 +226,35 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        Assert.assertEquals(stateLog, ImmutableList.of("postDependingInstance", "postDependentInstance", "acceptRequestsInstance"));
+        assertEquals(stateLog, ImmutableList.of("postDependingInstance", "postDependentInstance", "acceptRequestsInstance"));
 
         lifeCycleManager.stop();
-        Assert.assertEquals(stateLog, ImmutableList.of("postDependingInstance", "postDependentInstance", "acceptRequestsInstance", "preAcceptRequestsInstance", "preDependentInstance", "preDependingInstance"));
+        assertEquals(stateLog, ImmutableList.of("postDependingInstance", "postDependentInstance", "acceptRequestsInstance", "preAcceptRequestsInstance", "preDependentInstance", "preDependingInstance"));
+    }
+
+    @Test
+    public void testStopTraffic()
+            throws Exception
+    {
+        Injector injector = Guice.createInjector(
+                Stage.PRODUCTION,
+                new LifeCycleModule(),
+                binder -> {
+                    initializeConfig(binder, "lifecycle.stop-traffic.delay", "100ms");
+                    binder.bind(StopTrafficOnly.class).in(Scopes.SINGLETON);
+                    binder.bind(AcceptRequestsInstance.class).in(Scopes.SINGLETON);
+                }
+        );
+
+        LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+        lifeCycleManager.start();
+        assertEquals(stateLog, ImmutableList.of("acceptRequestsInstance"));
+
+        long beforeStopNanos = System.nanoTime();
+        lifeCycleManager.stop();
+        long afterStopNanos = System.nanoTime();
+        assertEquals(stateLog, ImmutableList.of("acceptRequestsInstance", "stopTrafficInstance", "preAcceptRequestsInstance"));
+        assertGreaterThanOrEqual(afterStopNanos - beforeStopNanos, 100_000_000L);
     }
 
     @Test
@@ -265,12 +269,13 @@ public class TestLifeCycleManager
                         @Override
                         public void configure(Binder binder)
                         {
+                            initializeConfig(binder);
                             binder.bind(IllegalInstance.class).in(Scopes.SINGLETON);
                         }
                     },
                     new LifeCycleModule()
             );
-            Assert.fail();
+            fail("expected CreationException");
         }
         catch (CreationException dummy) {
             // correct behavior
@@ -288,6 +293,7 @@ public class TestLifeCycleManager
                     @Override
                     public void configure(Binder binder)
                     {
+                        initializeConfig(binder);
                         binder.bind(FooTestInstance.class).in(Scopes.SINGLETON);
                     }
                 },
@@ -298,7 +304,7 @@ public class TestLifeCycleManager
         lifeCycleManager.start();
         lifeCycleManager.stop();
 
-        Assert.assertEquals(stateLog, ImmutableList.of("foo"));
+        assertEquals(stateLog, ImmutableList.of("foo"));
     }
 
     @Test
@@ -308,14 +314,10 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(AnInstance.class).in(Scopes.SINGLETON);
-                        binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
-                    }
+                binder -> {
+                    initializeConfig(binder);
+                    binder.bind(AnInstance.class).in(Scopes.SINGLETON);
+                    binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
                 }
         );
         injector.getInstance(AnInstance.class);
@@ -324,7 +326,7 @@ public class TestLifeCycleManager
         lifeCycleManager.start();
         lifeCycleManager.stop();
 
-        Assert.assertEquals(stateLog, ImmutableList.of("postDependentInstance", "preDependentInstance"));
+        assertEquals(stateLog, ImmutableList.of("postDependentInstance", "preDependentInstance"));
     }
 
     @Test
@@ -334,41 +336,33 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(PostConstructOnly.class).in(Scopes.SINGLETON);
-                        binder.bind(PreDestroyOnly.class).in(Scopes.SINGLETON);
-                    }
+                binder -> {
+                    initializeConfig(binder);
+                    binder.bind(PostConstructOnly.class).in(Scopes.SINGLETON);
+                    binder.bind(PreDestroyOnly.class).in(Scopes.SINGLETON);
                 }
         );
         injector.getInstance(PostConstructOnly.class);
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        Assert.assertEquals(stateLog, ImmutableList.of("makeMe"));
+        assertEquals(stateLog, ImmutableList.of("makeMe"));
 
         lifeCycleManager.stop();
-        Assert.assertEquals(stateLog, ImmutableList.of("makeMe", "unmakeMe"));
+        assertEquals(stateLog, ImmutableList.of("makeMe", "unmakeMe"));
     }
 
     @Test
     public void testModule()
             throws Exception
     {
-        Module module = new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                binder.bind(DependentBoundInstance.class).to(DependentInstanceImpl.class).in(Scopes.SINGLETON);
+        Module module = binder -> {
+            initializeConfig(binder);
+            binder.bind(DependentBoundInstance.class).to(DependentInstanceImpl.class).in(Scopes.SINGLETON);
 
-                binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
-                binder.bind(InstanceOne.class).in(Scopes.SINGLETON);
-                binder.bind(InstanceTwo.class).in(Scopes.SINGLETON);
-            }
+            binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
+            binder.bind(InstanceOne.class).in(Scopes.SINGLETON);
+            binder.bind(InstanceTwo.class).in(Scopes.SINGLETON);
         };
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
@@ -381,6 +375,15 @@ public class TestLifeCycleManager
         lifeCycleManager.stop();
 
         Set<String> stateLogSet = Sets.newHashSet(stateLog);
-        Assert.assertEquals(stateLogSet, Sets.newHashSet("postDependentBoundInstance", "postDependentInstance", "postMakeOne", "postMakeTwo", "preDestroyTwo", "preDestroyOne", "preDependentInstance", "preDependentBoundInstance"));
+        assertEquals(stateLogSet, Sets.newHashSet("postDependentBoundInstance", "postDependentInstance", "postMakeOne", "postMakeTwo", "preDestroyTwo", "preDestroyOne", "preDependentInstance", "preDependentBoundInstance"));
+    }
+
+    private void initializeConfig(Binder binder, String... properties)
+    {
+        Builder<String, String> builder = ImmutableMap.builder();
+        for (int i = 0; i < properties.length; i+=2) {
+            builder.put(properties[i], properties[i+1]);
+        }
+        binder.install(new ConfigurationModule(new ConfigurationFactoryBuilder().withRequiredProperties(builder.build()).build()));
     }
 }

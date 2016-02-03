@@ -204,14 +204,9 @@ public class Bootstrap
 
         // create warning logger now that we have logging initialized
         final List<String> warnings = new ArrayList<>();
-        final WarningsMonitor warningsMonitor = new WarningsMonitor()
-        {
-            @Override
-            public void onWarning(String message)
-            {
-                log.warn(message);
-                warnings.add(message);
-            }
+        final WarningsMonitor warningsMonitor = message -> {
+            log.warn(message);
+            warnings.add(message);
         };
 
         // initialize configuration factory
@@ -241,24 +236,14 @@ public class Bootstrap
         if (!messages.isEmpty()) {
             moduleList.add(new ValidationErrorModule(messages));
         }
-        moduleList.add(new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                binder.bind(WarningsMonitor.class).toInstance(warningsMonitor);
-            }
+        moduleList.add(binder -> {
+            binder.bind(WarningsMonitor.class).toInstance(warningsMonitor);
         });
 
-        moduleList.add(new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                binder.disableCircularProxies();
-                if (requireExplicitBindings) {
-                    binder.requireExplicitBindings();
-                }
+        moduleList.add(binder -> {
+            binder.disableCircularProxies();
+            if (requireExplicitBindings) {
+                binder.requireExplicitBindings();
             }
         });
         moduleList.addAll(modules);

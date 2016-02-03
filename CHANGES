@@ -1,5 +1,15 @@
 Platform 1.32
 
+* Bootstrap
+
+  We added support to LifeCycleManager for a new @StopTraffic annotation. Upon
+  server shutdown, methods annotated with @StopTraffic are called first, then
+  shutdown waits for the duration in the "lifecycle.stop-traffic.delay"
+  configuration option (default "0s"), then shutdown continues with calling
+  methods annotated with @PreDestroy.
+
+  We changed the Discovery service de-announcement to @StopTraffic.
+
 * Reporting
 
   reportBinder.bindReportCollection() can now bind a report collection to an

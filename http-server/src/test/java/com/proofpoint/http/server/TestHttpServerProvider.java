@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import com.google.common.net.InetAddresses;
+import com.proofpoint.bootstrap.LifeCycleConfig;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.HttpClientConfig;
@@ -43,7 +44,6 @@ import javax.servlet.Filter;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
 import java.net.ConnectException;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
@@ -98,7 +98,7 @@ public class TestHttpServerProvider
                 .setNodeInternalHostname("localhost")
         );
         httpServerInfo = new HttpServerInfo(config, nodeInfo);
-        lifeCycleManager = new LifeCycleManager(ImmutableList.of(), null);
+        lifeCycleManager = new LifeCycleManager(ImmutableList.of(), null, new LifeCycleConfig());
     }
 
     @AfterMethod

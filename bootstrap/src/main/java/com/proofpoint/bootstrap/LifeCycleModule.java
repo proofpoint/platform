@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.inject.matcher.Matchers.any;
+import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 
 /**
  * Guice module for binding the LifeCycle manager
@@ -45,6 +46,8 @@ public class LifeCycleModule implements Module
     public void configure(Binder binder)
     {
         binder.disableCircularProxies();
+
+        bindConfig(binder).to(LifeCycleConfig.class);
 
         binder.bindListener(any(), new TypeListener()
         {
@@ -73,10 +76,10 @@ public class LifeCycleModule implements Module
 
     @Provides
     @Singleton
-    public LifeCycleManager getServerManager()
+    public LifeCycleManager getServerManager(LifeCycleConfig config)
             throws Exception
     {
-        LifeCycleManager lifeCycleManager = new LifeCycleManager(injectedInstances, lifeCycleMethodsMap);
+        LifeCycleManager lifeCycleManager = new LifeCycleManager(injectedInstances, lifeCycleMethodsMap, config);
         lifeCycleManagerRef.set(lifeCycleManager);
         return lifeCycleManager;
     }
@@ -84,6 +87,6 @@ public class LifeCycleModule implements Module
     private boolean isLifeCycleClass(Class<?> clazz)
     {
         LifeCycleMethods methods = lifeCycleMethodsMap.get(clazz);
-        return methods.hasFor(PostConstruct.class) || methods.hasFor(AcceptRequests.class) || methods.hasFor(PreDestroy.class);
+        return methods.hasFor(PostConstruct.class) || methods.hasFor(AcceptRequests.class) || methods.hasFor(PreDestroy.class) || methods.hasFor(StopTraffic.class);
     }
 }

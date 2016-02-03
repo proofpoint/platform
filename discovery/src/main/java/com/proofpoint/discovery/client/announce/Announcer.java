@@ -23,12 +23,12 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Inject;
+import com.proofpoint.bootstrap.StopTraffic;
 import com.proofpoint.discovery.client.DiscoveryException;
 import com.proofpoint.discovery.client.ExponentialBackOff;
 import com.proofpoint.log.Logger;
 import com.proofpoint.units.Duration;
 
-import javax.annotation.PreDestroy;
 import java.net.ConnectException;
 import java.util.Set;
 import java.util.UUID;
@@ -83,7 +83,7 @@ public class Announcer
         }
     }
 
-    @PreDestroy
+    @StopTraffic
     public void destroy()
     {
         executor.shutdownNow();
