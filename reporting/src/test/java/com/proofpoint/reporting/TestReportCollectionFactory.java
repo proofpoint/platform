@@ -75,29 +75,6 @@ public class TestReportCollectionFactory
         assertSame(reportCaptor.getValue(), someObject);
     }
 
-    @Test
-    public void testExpiration()
-            throws Exception
-    {
-        KeyedDistribution keyedDistribution = reportCollectionFactory.createReportCollection(KeyedDistribution.class);
-        keyedDistribution.add("value", false);
-        ticker.advance(5, TimeUnit.MINUTES);
-        keyedDistribution.add("value", false);
-        ticker.advance(14, TimeUnit.MINUTES);
-        ticker.advance(59, TimeUnit.SECONDS);
-        keyedDistribution.add("value", true);
-
-        verify(reportExporter, never()).unexport(any(String.class));
-
-        ticker.advance(1, TimeUnit.SECONDS);
-        keyedDistribution.add("value2", true);
-
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-
-        verify(reportExporter).unexport(stringCaptor.capture());
-        assertEquals(stringCaptor.getValue(), "com.proofpoint.reporting:type=KeyedDistribution,name=Add,foo=value,bar=false");
-    }
-
     private interface KeyedDistribution
     {
         SomeObject add(@Key("foo") String key, @NotNull @Key("bar") boolean bool);

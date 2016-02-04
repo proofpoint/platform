@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
@@ -43,6 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -109,7 +109,7 @@ public class ReportCollectionFactory
             ImmutableList.Builder<Optional<String>> argBuilder = ImmutableList.builder();
             for (Object arg : args) {
                 if (arg == null) {
-                    argBuilder.add(Optional.<String>absent());
+                    argBuilder.add(Optional.<String>empty());
                 }
                 else {
                     argBuilder.add(Optional.of(arg.toString()));
