@@ -165,7 +165,9 @@ class with a public no-arg constructor. The capitalized form of the method
 name is used for the "name" property. The `@Key` annotation must be on every
 parameter and specifies the tag name. (By convention, the parameter name should
 match the tag name.) The `.toString()` of parameter's value
-is used for the corresponding tag value.
+is used for the corresponding tag value. If the value is a java.util.Optional,
+the `.toString()` of the contained value is used instead. If the value is null
+or java.util.Optional.empty(), the tag is omitted.
 
 Subsequent calls to the same interface method with parameters that have the
 same set of `.toString()` values will result in the same returned object. After

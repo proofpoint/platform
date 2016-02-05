@@ -1,5 +1,9 @@
 Platform 1.32
 
+* Reporting
+
+  Report collections now handle java.util.Optional values.
+
 * Library Upgrades
 
   - Jetty to 9.3.7

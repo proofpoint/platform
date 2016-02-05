@@ -22,11 +22,10 @@ import org.testng.annotations.Test;
 import org.weakref.jmx.ObjectNameBuilder;
 
 import javax.validation.constraints.NotNull;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertSame;
@@ -75,9 +74,29 @@ public class TestReportCollectionFactory
         assertSame(reportCaptor.getValue(), someObject);
     }
 
+    @Test
+    public void testOptionalValue()
+            throws Exception
+    {
+        OptionalKeyedDistribution optionalKeyedDistribution = reportCollectionFactory.createReportCollection(OptionalKeyedDistribution.class);
+        SomeObject someObject = optionalKeyedDistribution.add(Optional.empty(), Optional.of(false));
+
+        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<SomeObject> reportCaptor = ArgumentCaptor.forClass(SomeObject.class);
+
+        verify(reportExporter).export(stringCaptor.capture(), reportCaptor.capture());
+        assertEquals(stringCaptor.getValue(), "com.proofpoint.reporting:type=OptionalKeyedDistribution,name=Add,bar=false");
+        assertSame(reportCaptor.getValue(), someObject);
+    }
+
     private interface KeyedDistribution
     {
         SomeObject add(@Key("foo") String key, @NotNull @Key("bar") boolean bool);
+    }
+
+    private interface OptionalKeyedDistribution
+    {
+        SomeObject add(@Key("foo") Optional<String> key, @Key("bar") Optional<Boolean> bool);
     }
 
     @Test

@@ -111,6 +111,9 @@ public class ReportCollectionFactory
                 if (arg == null) {
                     argBuilder.add(Optional.<String>empty());
                 }
+                else if (arg instanceof Optional) {
+                    argBuilder.add(((Optional<?>)arg).map(Object::toString));
+                }
                 else {
                     argBuilder.add(Optional.of(arg.toString()));
                 }
