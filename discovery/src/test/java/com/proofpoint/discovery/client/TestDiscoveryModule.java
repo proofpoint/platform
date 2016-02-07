@@ -16,9 +16,12 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.Scopes;
 import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.configuration.ConfigurationFactory;
@@ -28,39 +31,54 @@ import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.testing.TestingNodeModule;
+import com.proofpoint.reporting.HealthTester;
 import com.proofpoint.reporting.ReportingModule;
-import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.weakref.jmx.MBeanExporter;
 import org.weakref.jmx.testing.TestingMBeanModule;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
+import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
+import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 public class TestDiscoveryModule
 {
-    @Test
-    public void testBinding()
-            throws Exception
+    private Injector injector;
+
+    @BeforeMethod
+    public void setup()
     {
-        Injector injector = Guice.createInjector(
+        injector = Guice.createInjector(
                 new ApplicationNameModule("test-application"),
                 new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of("testing.discovery.uri", "fake://server"))),
                 new JsonModule(),
                 new TestingNodeModule(),
                 new TestingMBeanModule(),
                 new ReportingModule(),
+                binder -> {
+                    binder.bind(MBeanExporter.class).in(Scopes.SINGLETON);
+                    discoveryBinder(binder).bindServiceAnnouncement(serviceAnnouncement("test").build());
+                },
                 new DiscoveryModule()
         );
+    }
 
+    @Test
+    public void testBinding()
+            throws Exception
+    {
         // should produce a discovery announcement client and a lookup client
-        Assert.assertNotNull(injector.getInstance(DiscoveryAnnouncementClient.class));
-        Assert.assertNotNull(injector.getInstance(DiscoveryLookupClient.class));
+        assertNotNull(injector.getInstance(DiscoveryAnnouncementClient.class));
+        assertNotNull(injector.getInstance(DiscoveryLookupClient.class));
         // should produce an Announcer
-        Assert.assertNotNull(injector.getInstance(Announcer.class));
+        assertNotNull(injector.getInstance(Announcer.class));
     }
 
     @Test
@@ -85,5 +103,19 @@ public class TestDiscoveryModule
         assertFalse(executor.isShutdown());
         lifeCycleManager.stop();
         assertTrue(executor.isShutdown());
+    }
+
+    @Test
+    public void testHealthCheckRegistered()
+    {
+        injector.getInstance(Announcer.class).start();
+        HealthTester.assertHealthCheckRegistered(injector, "Discovery announcement");
+    }
+
+    @Test
+    public void testHealthCheckNotRegisteredNotStarted()
+    {
+        injector.getInstance(Announcer.class);
+        HealthTester.assertHealthCheckNotRegistered(injector, "Discovery announcement");
     }
 }

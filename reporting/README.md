@@ -2,6 +2,9 @@ The reporting module is an annotation-based API for
 reporting metrics into a [KairosDB](https://code.google.com/p/kairosdb)
 time-series database.
 
+It also provides an annotation-based API for reporting health status
+into a Nagios-based monitoring service.
+
 Collecting data
 ===============
 
@@ -229,11 +232,29 @@ class TestStoreStatsRecorder {
 }
 ```
 
+Health checks
+=============
+
+The `@HealthCheck` annotation may be placed on either a method with no
+arguments or a field of type `AtomicReference`. When the object is bound with
+`HealthBinder`, the method will be called or the field will be examined every
+minute and the resulting health status will be sent to the monitoring-acceptor
+service. A value of `null` indicates healthy; any other value indicates
+a critical problem, with the `toString()` used as the message.
+
+The `value` field of the `@HealthCheck` annotation is the base name of the
+check. This is prepended with the application name. If the object was bound
+with a name or annotation, that is appended in parentheses to the name of the
+check.
+
+The /admin/health resource on the server's admin port returns a list of the
+server's health checks.
+
 Reporting client
 ================
 
 `ReportingClientModule` enables reporting of collected data to the time-series
-database.
+database and health checks to the monitoring-acceptor service.
 
 Metric naming
 -------------

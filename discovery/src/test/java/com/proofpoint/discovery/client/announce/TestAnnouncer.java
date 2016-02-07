@@ -17,12 +17,15 @@ package com.proofpoint.discovery.client.announce;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.Futures;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceDescriptors;
 import com.proofpoint.discovery.client.ServiceType;
 import com.proofpoint.discovery.client.testing.InMemoryDiscoveryClient;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
+import com.proofpoint.reporting.HealthExporter;
 import com.proofpoint.units.Duration;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -30,24 +33,33 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
+import static com.proofpoint.testing.Assertions.assertContains;
+import static com.proofpoint.testing.Assertions.assertInstanceOf;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.fail;
 
 public class TestAnnouncer
 {
-    public static final Duration MAX_AGE = new Duration(1, TimeUnit.MILLISECONDS);
+    public static final Duration MAX_AGE = new Duration(10, TimeUnit.MILLISECONDS);
     private final ServiceType serviceType = serviceType("foo");
     private Announcer announcer;
     private InMemoryDiscoveryClient discoveryClient;
     private ServiceAnnouncement serviceAnnouncement;
     private NodeInfo nodeInfo;
+    private HealthExporter healthExporter;
 
     @BeforeMethod
     protected void setUp()
@@ -56,7 +68,8 @@ public class TestAnnouncer
         nodeInfo = new NodeInfo("test-application", new NodeConfig().setEnvironment("test").setPool("pool"));
         discoveryClient = new InMemoryDiscoveryClient(nodeInfo, MAX_AGE);
         serviceAnnouncement = ServiceAnnouncement.serviceAnnouncement(serviceType.value()).addProperty("a", "apple").build();
-        announcer = new Announcer(discoveryClient, ImmutableSet.of(serviceAnnouncement));
+        healthExporter = mock(HealthExporter.class);
+        announcer = new Announcer(discoveryClient, ImmutableSet.of(serviceAnnouncement), healthExporter);
     }
 
     @AfterMethod
@@ -118,7 +131,7 @@ public class TestAnnouncer
             throws Exception
     {
         discoveryClient = spy(discoveryClient);
-        announcer = new Announcer(discoveryClient, ImmutableSet.of(serviceAnnouncement));
+        announcer = new Announcer(discoveryClient, ImmutableSet.of(serviceAnnouncement), healthExporter);
 
         announcer.destroy();
 
@@ -136,8 +149,9 @@ public class TestAnnouncer
         ServiceAnnouncement newAnnouncement = ServiceAnnouncement.serviceAnnouncement(serviceType.value()).addProperty("a", "apple").build();
         announcer.addServiceAnnouncement(newAnnouncement);
 
-        Thread.sleep(100);
+        Thread.sleep(30);
         assertAnnounced(serviceAnnouncement, newAnnouncement);
+        assertNull(announcer.checkAnnouncementHealth());
     }
 
     @Test
@@ -150,8 +164,44 @@ public class TestAnnouncer
 
         announcer.removeServiceAnnouncement(serviceAnnouncement.getId());
 
-        Thread.sleep(100);
+        Thread.sleep(30);
         assertAnnounced();
+        assertNull(announcer.checkAnnouncementHealth());
+    }
+
+    @Test
+    public void testExceptionFromClient()
+            throws Exception
+    {
+        final RuntimeException testException = new RuntimeException("test exception");
+        DiscoveryAnnouncementClient discoveryClient = mock(DiscoveryAnnouncementClient.class);
+        when(discoveryClient.announce(any(Set.class))).thenReturn(Futures.<Duration>immediateFailedFuture(testException));
+        when(discoveryClient.unannounce()).thenReturn(Futures.<Void>immediateFuture(null));
+
+        announcer = new Announcer(discoveryClient, ImmutableSet.of(serviceAnnouncement), healthExporter);
+        announcer.start();
+
+        Thread.sleep(30);
+        assertSame(announcer.checkAnnouncementHealth(), testException);
+    }
+
+    @Test
+    public void testClientHang()
+            throws Exception
+    {
+        DiscoveryAnnouncementClient discoveryClient = mock(DiscoveryAnnouncementClient.class);
+        when(discoveryClient.announce(any(Set.class))).thenReturn(new AbstractFuture<Duration>()
+        {
+        });
+        when(discoveryClient.unannounce()).thenReturn(Futures.<Void>immediateFuture(null));
+
+        announcer = new Announcer(discoveryClient, ImmutableSet.of(serviceAnnouncement), healthExporter);
+        announcer.start();
+
+        Thread.sleep(30);
+        Object health = announcer.checkAnnouncementHealth();
+        assertInstanceOf(health, String.class, "Class of " + health);
+        assertContains((String) health, "Overdue for ");
     }
 
     private void assertAnnounced(ServiceAnnouncement... serviceAnnouncements)

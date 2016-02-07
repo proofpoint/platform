@@ -19,14 +19,14 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import javax.management.RuntimeErrorException;
 import javax.management.RuntimeOperationsException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 final class ReflectionUtils
@@ -80,16 +80,16 @@ final class ReflectionUtils
             }
         }
         catch (RuntimeException e) {
-            throw new RuntimeOperationsException(e, "RuntimeException occured while invoking " + toSimpleName(method));
+            throw new RuntimeOperationsException(e, "RuntimeException occurred while invoking " + toSimpleName(method));
         }
         catch (IllegalAccessException e) {
-            throw new ReflectionException(e, "IllegalAccessException occured while invoking " + toSimpleName(method));
+            throw new ReflectionException(e, "IllegalAccessException occurred while invoking " + toSimpleName(method));
         }
         catch (Error err) {
-            throw new RuntimeErrorException(err, "Error occured while invoking " + toSimpleName(method));
+            throw new RuntimeErrorException(err, "Error occurred while invoking " + toSimpleName(method));
         }
         catch (Exception e) {
-            throw new ReflectionException(e, "Exception occured while invoking " + toSimpleName(method));
+            throw new ReflectionException(e, "Exception occurred while invoking " + toSimpleName(method));
         }
     }
 
@@ -107,10 +107,15 @@ final class ReflectionUtils
     public static String getAttributeName(Method method)
     {
         Matcher matcher = getterOrSetterPattern.matcher(method.getName());
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("method does not represent a getter or setter");
+        if (matcher.matches()) {
+            return matcher.group(2);
         }
-        return matcher.group(2);
+        return LOWER_CAMEL.to(UPPER_CAMEL, method.getName());
+    }
+
+    public static String getAttributeName(Field field)
+    {
+        return LOWER_CAMEL.to(UPPER_CAMEL, field.getName());
     }
 
     public static boolean isValidGetter(Method getter)
