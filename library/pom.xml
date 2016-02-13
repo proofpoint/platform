@@ -355,6 +355,7 @@
                             <ignoredResource>plugin\.properties</ignoredResource>
                             <ignoredResource>.*\.java</ignoredResource>
                             <ignoredResource>THIRD-PARTY</ignoredResource>
+                            <ignoredResource>javac.sh</ignoredResource>
                         </ignoredResources>
 
                         <ignoredDependencies>
