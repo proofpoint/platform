@@ -19,6 +19,7 @@ import com.google.inject.Key;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 
+import static java.util.Objects.requireNonNull;
 import static org.weakref.jmx.ObjectNames.generatedNameOf;
 
 public class NamedReportBinder
@@ -55,6 +56,6 @@ public class NamedReportBinder
 
     public void as(String name)
     {
-        binder.addBinding().toInstance(new Mapping(name, key));
+        binder.addBinding().toInstance(new Mapping(requireNonNull(name, "name is null"), key));
     }
 }
