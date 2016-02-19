@@ -102,13 +102,8 @@ public class TestReportBinder
     public void testGauge() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(GaugeClass.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(GaugeClass.class).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), gaugeClassName);
         assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), gaugeClassName);
@@ -118,13 +113,8 @@ public class TestReportBinder
     public void testGaugeWithAnnotation() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), annotatedGaugeClassName);
         assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), annotatedGaugeClassName);
@@ -134,13 +124,8 @@ public class TestReportBinder
     public void testGaugeWithNameAnnotation() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(GaugeClass.class).annotatedWith(Names.named("TestingAnnotation")).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(GaugeClass.class).annotatedWith(Names.named("TestingAnnotation")).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), annotatedGaugeClassName);
         assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), annotatedGaugeClassName);
@@ -150,13 +135,8 @@ public class TestReportBinder
     public void testGaugeWithName() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(GaugeClass.class).as(annotatedGaugeClassName.getCanonicalName());
-                    }
+                binder -> {
+                    reportBinder(binder).export(GaugeClass.class).as(annotatedGaugeClassName.getCanonicalName());
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), annotatedGaugeClassName);
         assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), annotatedGaugeClassName);
@@ -166,13 +146,8 @@ public class TestReportBinder
     public void testReportedOnly() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(ReportedClass.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(ReportedClass.class).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Reported"), reportedClassName);
         assertJmxRegistration(ImmutableSet.<String>of(), reportedClassName); // todo make jmxutils not register if empty
@@ -182,13 +157,8 @@ public class TestReportBinder
     public void testManagedOnly() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(ManagedClass.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(ManagedClass.class).withGeneratedName();
                 });
         assertNoReportRegistration(injector);
         assertJmxRegistration(ImmutableSet.of("Managed"), managedClassName);
@@ -198,13 +168,8 @@ public class TestReportBinder
     public void testNested() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(NestedClass.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(NestedClass.class).withGeneratedName();
                 });
         injector.getInstance(NestedClass.class);
         assertReportRegistration(injector, ImmutableSet.of("Nested.Gauge", "Nested.Reported"), nestedClassName);
@@ -215,13 +180,8 @@ public class TestReportBinder
     public void testFlatten() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(FlattenClass.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(FlattenClass.class).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), flattenClassName);
         assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), flattenClassName);
@@ -231,13 +191,8 @@ public class TestReportBinder
     public void testBucketed() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(BucketedClass.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(BucketedClass.class).withGeneratedName();
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(BucketedClass.class));
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), bucketedClassName);
@@ -248,13 +203,8 @@ public class TestReportBinder
     public void testNestedBucketed() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(NestedBucketedClass.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(NestedBucketedClass.class).withGeneratedName();
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(NestedBucketedClass.class));
         BucketedClass.assertProviderSupplied(injector.getInstance(NestedBucketedClass.class).getNested());
@@ -269,13 +219,8 @@ public class TestReportBinder
     public void testFlattenBucketed() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(FlattenBucketedClass.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(FlattenBucketedClass.class).withGeneratedName();
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(FlattenBucketedClass.class).getFlatten());
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), flattenBucketedClassName);
@@ -286,13 +231,8 @@ public class TestReportBinder
     public void testDeepBucketed() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        reportBinder(binder).export(DeepBucketedClass.class).withGeneratedName();
-                    }
+                binder -> {
+                    reportBinder(binder).export(DeepBucketedClass.class).withGeneratedName();
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getNested());
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getFlatten());
@@ -330,14 +270,7 @@ public class TestReportBinder
                     @Singleton
                     BucketIdProvider getBucketIdProvider()
                     {
-                        return new BucketIdProvider()
-                        {
-                            @Override
-                            public int get()
-                            {
-                                return 0;
-                            }
-                        };
+                        return () -> 0;
                     }
                 });
         KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
@@ -372,17 +305,80 @@ public class TestReportBinder
                     @Singleton
                     BucketIdProvider getBucketIdProvider()
                     {
-                        return new BucketIdProvider()
-                        {
-                            @Override
-                            public int get()
-                            {
-                                return 0;
-                            }
-                        };
+                        return () -> 0;
                     }
                 });
         KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
+        keyedDistribution.add("value", false);
+        ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
+        assertEquals(reportedBeanRegistry.getReportedBeans().keySet(), ImmutableSet.of(ObjectName.getInstance("com.example:type=\"Foo\\\",Bar\",a=b,name=Add,foo=value,bar=false")));
+    }
+
+    @Test
+    public void testReportCollectionAnnotation()
+            throws MalformedObjectNameException
+    {
+        Injector injector = Guice.createInjector(
+                new MBeanModule(),
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.requireExplicitBindings();
+                        binder.disableCircularProxies();
+                        binder.bind(MBeanServer.class).toInstance(jmxMbeanServer);
+                        binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
+                        binder.bind(ReportExporter.class).asEagerSingleton();
+                        newSetBinder(binder, Mapping.class);
+                        binder.bind(ReportedBeanRegistry.class).in(Scopes.SINGLETON);
+
+                        reportBinder(binder).bindReportCollection(KeyedDistribution.class).annotatedWith(TestingAnnotation.class).as("com.example:type=\"Foo\\\",Bar\",a=b");
+                    }
+
+                    @Provides
+                    @Singleton
+                    BucketIdProvider getBucketIdProvider()
+                    {
+                        return () -> 0;
+                    }
+                });
+        KeyedDistribution keyedDistribution = injector.getInstance(com.google.inject.Key.get(KeyedDistribution.class, TestingAnnotation.class));
+        keyedDistribution.add("value", false);
+        ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
+        assertEquals(reportedBeanRegistry.getReportedBeans().keySet(), ImmutableSet.of(ObjectName.getInstance("com.example:type=\"Foo\\\",Bar\",a=b,name=Add,foo=value,bar=false")));
+    }
+
+    @Test
+    public void testReportCollectionNameAnnotated()
+            throws MalformedObjectNameException
+    {
+        Injector injector = Guice.createInjector(
+                new MBeanModule(),
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.requireExplicitBindings();
+                        binder.disableCircularProxies();
+                        binder.bind(MBeanServer.class).toInstance(jmxMbeanServer);
+                        binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
+                        binder.bind(ReportExporter.class).asEagerSingleton();
+                        newSetBinder(binder, Mapping.class);
+                        binder.bind(ReportedBeanRegistry.class).in(Scopes.SINGLETON);
+
+                        reportBinder(binder).bindReportCollection(KeyedDistribution.class).annotatedWith(Names.named("testing")).as("com.example:type=\"Foo\\\",Bar\",a=b");
+                    }
+
+                    @Provides
+                    @Singleton
+                    BucketIdProvider getBucketIdProvider()
+                    {
+                        return () -> 0;
+                    }
+                });
+        KeyedDistribution keyedDistribution = injector.getInstance(com.google.inject.Key.get(KeyedDistribution.class, Names.named("testing")));
         keyedDistribution.add("value", false);
         ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
         assertEquals(reportedBeanRegistry.getReportedBeans().keySet(), ImmutableSet.of(ObjectName.getInstance("com.example:type=\"Foo\\\",Bar\",a=b,name=Add,foo=value,bar=false")));
@@ -540,14 +536,7 @@ public class TestReportBinder
         @Singleton
         BucketIdProvider getBucketIdProvider()
         {
-            return new BucketIdProvider()
-            {
-                @Override
-                public int get()
-                {
-                    return 0;
-                }
-            };
+            return () -> 0;
         }
     }
 

@@ -18,6 +18,8 @@ package com.proofpoint.reporting;
 import com.google.inject.Binder;
 import com.google.inject.Scopes;
 
+import java.lang.annotation.Annotation;
+
 public class ReportCollectionBinder<T>
 {
     private final Binder binder;
@@ -37,5 +39,15 @@ public class ReportCollectionBinder<T>
     public void as(String name)
     {
         binder.bind(iface).toProvider(new ReportCollectionProvider<>(iface, name)).in(Scopes.SINGLETON);
+    }
+
+    public NamedReportCollectionBinder<T> annotatedWith(Annotation annotation)
+    {
+        return new NamedReportCollectionBinder<>(binder, iface, com.google.inject.Key.get(iface, annotation));
+    }
+
+    public NamedReportCollectionBinder<T> annotatedWith(Class<? extends Annotation> annotationClass)
+    {
+        return new NamedReportCollectionBinder<>(binder, iface, com.google.inject.Key.get(iface, annotationClass));
     }
 }

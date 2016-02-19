@@ -2,6 +2,9 @@ Platform 1.32
 
 * Reporting
 
+  reportBinder.bindReportCollection() can now bind a report collection to an
+  annotation.
+
   Report collections now handle java.util.Optional values.
 
 * Library Upgrades
