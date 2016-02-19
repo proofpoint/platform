@@ -21,6 +21,8 @@ import com.google.inject.Scopes;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
 
+import static java.util.Objects.requireNonNull;
+
 public class NamedReportCollectionBinder<T>
 {
     private final Binder binder;
@@ -46,6 +48,6 @@ public class NamedReportCollectionBinder<T>
             annotatedWith = bindingBuilder.annotatedWith(key.getAnnotation());
         }
 
-        annotatedWith.toProvider(new ReportCollectionProvider<>(iface, name)).in(Scopes.SINGLETON);
+        annotatedWith.toProvider(new ReportCollectionProvider<>(iface, requireNonNull(name, "name is null"))).in(Scopes.SINGLETON);
     }
 }
