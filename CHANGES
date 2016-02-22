@@ -15,6 +15,7 @@ Platform 1.32
 * Library Upgrades
 
   - Jetty to 9.3.7 (from 9.3.6)
+  - SLF4J to 1.7.16 (from 1.7.12)
 
 Platform 1.31
 
