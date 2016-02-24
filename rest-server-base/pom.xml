@@ -289,6 +289,7 @@
                                              <location>${project.build.directory}/launcher/bin</location>
                                              <excludes>
                                                  <exclude>**/init.redhat</exclude>
+                                                 <exclude>**/platform.service</exclude>
                                              </excludes>
                                          </source>
                                          <source>
@@ -303,6 +304,7 @@
                             <!-- Service control -->
                                  <mapping>
                                      <directory>/etc/init.d</directory>
+                                     <directoryIncluded>false</directoryIncluded>
                                      <sources>
                                          <softlinkSource>
                                              <location>/opt/proofpoint/${project.artifactId}/bin/init.redhat</location>
@@ -312,6 +314,20 @@
                                      <username>root</username>
                                      <groupname>root</groupname>
                                      <filemode>755</filemode>
+                                 </mapping>
+                                 <mapping>
+                                     <directory>/usr/lib/systemd/system</directory>
+                                     <directoryIncluded>false</directoryIncluded>
+                                     <sources>
+                                         <source>
+                                             <location>${project.build.directory}/launcher/bin/platform.service</location>
+                                             <destination>${project.artifactId}.service</destination>
+                                             <filter>true</filter>
+                                         </source>
+                                     </sources>
+                                     <username>root</username>
+                                     <groupname>root</groupname>
+                                     <filemode>644</filemode>
                                  </mapping>
                             <!-- Libraries -->
                                  <mapping>
@@ -351,6 +367,9 @@
                             <preremoveScriptlet>
                                 <script>/sbin/service ${project.artifactId} stop</script>
                             </preremoveScriptlet>
+                            <postinstallScriptlet>
+                                <script>if [ -f /bin/systemctl ] ; then /bin/systemctl daemon-reload ; fi</script>
+                            </postinstallScriptlet>
                         </configuration>
                     </plugin>
                 </plugins>
