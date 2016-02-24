@@ -1,3 +1,10 @@
+Platform 1.33
+
+* RPM Packaging
+
+  In order to support CentOS 7, the RPM created for a Platform service now
+  includes a systemd service file.
+
 Platform 1.32
 
 * Bootstrap

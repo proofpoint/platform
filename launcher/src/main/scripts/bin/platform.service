@@ -1,0 +1,21 @@
+[Unit]
+Description=${project.artifactId} service
+After=network.target
+
+[Service]
+Type=forking
+User=${project.rpm.username}
+WorkingDirectory=/opt/proofpoint/${project.artifactId}
+ExecStart=/opt/proofpoint/${project.artifactId}/bin/launcher start
+ExecStop=/opt/proofpoint/${project.artifactId}/bin/launcher stop
+PIDFile=/opt/proofpoint/${project.artifactId}/var/run/platform.pid
+TimeoutSec=0
+Restart=always
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
