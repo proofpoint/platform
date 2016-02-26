@@ -30,6 +30,7 @@ import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -41,10 +42,10 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -325,7 +326,7 @@ public class HttpServer
                 .map(date -> ZonedDateTime.ofInstant(date.toInstant(), ZoneOffset.systemDefault()));
     }
 
-    private static ServletContextHandler createServletContext(Servlet theServlet,
+    private static Handler createServletContext(Servlet theServlet,
             Map<String, String> parameters,
             boolean isAdmin,
             Set<Filter> filters,
@@ -344,8 +345,6 @@ public class HttpServer
         context.addFilter(new FilterHolder(queryStringFilter), "/*", null);
         context.addFilter(new FilterHolder(new TraceTokenFilter()), "/*", null);
 
-        // -- gzip response filter
-        context.addFilter(GzipFilter.class, "/*", null);
         // -- gzip request filter
         context.addFilter(GZipRequestFilter.class, "/*", null);
         // -- security handler
@@ -369,7 +368,11 @@ public class HttpServer
             virtualHosts[i] = "@" + connectorNames[i];
         }
         context.setVirtualHosts(virtualHosts);
-        return context;
+
+        GzipHandler gzipHandler = new GzipHandler();
+        gzipHandler.setHandler(context);
+
+        return gzipHandler;
     }
 
     private static SecurityHandler createSecurityHandler(LoginService loginService)
