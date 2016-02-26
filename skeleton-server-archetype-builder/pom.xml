@@ -37,6 +37,8 @@
                                     </fileset>
                                 </copy>
 
+                                <touch file="${project.build.directory}/project/README.txt" />
+
                                 <!-- Various maven plugins refuse to copy .gitignore files -->
                                 <copy file="${project.basedir}/../.gitignore" tofile="${project.build.directory}/project/gitignore" />
 
