@@ -24,11 +24,15 @@ import org.weakref.jmx.ObjectNameBuilder;
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
+import static org.testng.Assert.assertTrue;
 
 public class TestReportCollectionFactory
 {
@@ -103,7 +107,7 @@ public class TestReportCollectionFactory
     public void testNamedCollection()
             throws Exception
     {
-        String name = new ObjectNameBuilder(KeyedDistribution.class.getPackage().getName())
+        String name = new ObjectNameBuilder("com.example")
                 .withProperty("a", "fooval")
                 .withProperty("b", "with\"quote")
                 .withProperty("c", "with,comma")
@@ -116,7 +120,7 @@ public class TestReportCollectionFactory
         ArgumentCaptor<SomeObject> reportCaptor = ArgumentCaptor.forClass(SomeObject.class);
 
         verify(reportExporter).export(stringCaptor.capture(), reportCaptor.capture());
-        assertEquals(stringCaptor.getValue(), "com.proofpoint.reporting:a=fooval,b=\"with\\\"quote\",c=\"with,comma\",d=with\\backslash,name=Add,foo=value,bar=false");
+        assertEquals(stringCaptor.getValue(), "com.example:a=fooval,b=\"with\\\"quote\",c=\"with,comma\",d=with\\backslash,name=Add,foo=value,bar=false");
         assertSame(reportCaptor.getValue(), someObject);
     }
 
@@ -144,16 +148,74 @@ public class TestReportCollectionFactory
         ConstructorNeedsArgument add(@Key("foo") String key, @Key("bar") boolean bool);
     }
 
-    @Test(expectedExceptions = RuntimeException.class,
-            expectedExceptionsMessageRegExp = "com\\.proofpoint\\.reporting\\.TestReportCollectionFactory\\$MissingParameters\\.add\\(\\) has no parameters")
+    @Test
     public void testNoParameters()
     {
-        reportCollectionFactory.createReportCollection(MissingParameters.class);
+        TrackInstantiation.reset();
+        NoParameters noParameters = reportCollectionFactory.createReportCollection(NoParameters.class);
+
+        TrackInstantiation.assertInstantiated();
+
+        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<TrackInstantiation> reportCaptor = ArgumentCaptor.forClass(TrackInstantiation.class);
+
+        verify(reportExporter).export(stringCaptor.capture(), reportCaptor.capture());
+        assertEquals(stringCaptor.getValue(), "com.proofpoint.reporting:type=NoParameters,name=Add");
+        assertNotNull(reportCaptor.getValue());
+
+        assertNotNull(noParameters.add());
     }
 
-    private interface MissingParameters
+
+    @Test
+    public void testNamedNoParameters()
+            throws Exception
     {
-        SomeObject add();
+        TrackInstantiation.reset();
+        String name = new ObjectNameBuilder("com.example")
+                .withProperty("a", "fooval")
+                .withProperty("b", "with\"quote")
+                .withProperty("c", "with,comma")
+                .withProperty("d", "with\\backslash")
+                .build();
+        NoParameters noParameters = reportCollectionFactory.createReportCollection(NoParameters.class, name);
+
+        TrackInstantiation.assertInstantiated();
+
+        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<TrackInstantiation> reportCaptor = ArgumentCaptor.forClass(TrackInstantiation.class);
+
+        verify(reportExporter).export(stringCaptor.capture(), reportCaptor.capture());
+        assertEquals(stringCaptor.getValue(), "com.example:a=fooval,b=\"with\\\"quote\",c=\"with,comma\",d=with\\backslash,name=Add");
+        assertNotNull(reportCaptor.getValue());
+
+        assertNotNull(noParameters.add());
+    }
+
+    private interface NoParameters
+    {
+        TrackInstantiation add();
+    }
+
+    private static class TrackInstantiation
+    {
+        private static final AtomicBoolean isInstantiated = new AtomicBoolean();
+
+        public TrackInstantiation()
+        {
+            checkState(!isInstantiated.get());
+            isInstantiated.set(true);
+        }
+
+        public static void reset()
+        {
+            isInstantiated.set(false);
+        }
+
+        public static void assertInstantiated()
+        {
+            assertTrue(isInstantiated.get());
+        }
     }
 
     public static class SomeObject

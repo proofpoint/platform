@@ -49,12 +49,16 @@ import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
 import static java.lang.reflect.Proxy.newProxyInstance;
 
 public class ReportCollectionFactory
 {
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     private final Ticker ticker;
     private final ReportExporter reportExporter;
 
@@ -91,15 +95,20 @@ public class ReportCollectionFactory
 
     private class StatInvocationHandler implements InvocationHandler
     {
-        private final Map<Method, PerMethodCache> cacheMap;
+        private final Map<Method, MethodImplementation> implementationMap;
 
         public <T> StatInvocationHandler(Class<T> aClass, @Nullable String name)
         {
-            Builder<Method, PerMethodCache> cacheBuilder = ImmutableMap.builder();
+            Builder<Method, MethodImplementation> cacheBuilder = ImmutableMap.builder();
             for (Method method : aClass.getMethods()) {
-                cacheBuilder.put(method, new PerMethodCache(aClass, method, name));
+                if (method.getParameterTypes().length == 0) {
+                    cacheBuilder.put(method, new SingletonImplementation(aClass, method, name));
+                }
+                else {
+                    cacheBuilder.put(method, new CacheImplementation(aClass, method, name));
+                }
             }
-            cacheMap = cacheBuilder.build();
+            implementationMap = cacheBuilder.build();
         }
 
         @Override
@@ -107,7 +116,7 @@ public class ReportCollectionFactory
                 throws Throwable
         {
             ImmutableList.Builder<Optional<String>> argBuilder = ImmutableList.builder();
-            for (Object arg : args) {
+            for (Object arg : firstNonNull(args, EMPTY_OBJECT_ARRAY)) {
                 if (arg == null) {
                     argBuilder.add(Optional.<String>empty());
                 }
@@ -118,12 +127,51 @@ public class ReportCollectionFactory
                     argBuilder.add(Optional.of(arg.toString()));
                 }
             }
-            return cacheMap.get(method).get(argBuilder.build());
+            return implementationMap.get(method).get(argBuilder.build());
         }
 
     }
 
-    private class PerMethodCache {
+    private interface MethodImplementation
+    {
+        Object get(List<Optional<String>> key)
+                throws ExecutionException;
+    }
+
+    private class SingletonImplementation implements MethodImplementation
+    {
+        private final Object returnValue;
+
+        SingletonImplementation(Class<?> aClass, Method method, String name)
+        {
+            checkArgument(method.getParameterTypes().length == 0, "method has parameters");
+            returnValue = getReturnValueSupplier(method).get();
+
+            MethodInfo methodInfo = MethodInfo.methodInfo(aClass, method, name);
+            String packageName = methodInfo.getPackageName();
+            Map<String, String> properties = methodInfo.getProperties();
+            String upperMethodName = methodInfo.getUpperMethodName();
+
+            ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(packageName);
+            for (Entry<String, String> entry : properties.entrySet()) {
+                objectNameBuilder = objectNameBuilder.withProperty(entry.getKey(), entry.getValue());
+            }
+            objectNameBuilder = objectNameBuilder.withProperty("name", upperMethodName);
+            String objectName = objectNameBuilder.build();
+
+            reportExporter.export(objectName, returnValue);
+        }
+
+        @Override
+        public Object get(List<Optional<String>> key)
+                throws ExecutionException
+        {
+            return returnValue;
+        }
+    }
+
+    private class CacheImplementation implements MethodImplementation
+    {
         private final LoadingCache<List<Optional<String>>, Object> loadingCache;
         @GuardedBy("registeredMap")
         private final Map<List<Optional<String>>, Object> registeredMap = new HashMap<>();
@@ -132,11 +180,9 @@ public class ReportCollectionFactory
         @GuardedBy("registeredMap")
         private final Map<Object, String> objectNameMap = new HashMap<>();
 
-        <T> PerMethodCache(Class<T> aClass, Method method, String name)
+        CacheImplementation(Class<?> aClass, Method method, String name)
         {
-            if (method.getParameterTypes().length == 0) {
-                throw new RuntimeException(methodName(method) + " has no parameters");
-            }
+            checkState(method.getParameterTypes().length != 0);
 
             final Supplier<Object> returnValueSupplier = getReturnValueSupplier(method);
 
@@ -157,8 +203,142 @@ public class ReportCollectionFactory
                             + " has no @com.proofpoint.reporting.Key annotation");
                 }
             }
-            final String packageName;
-            final Map<String, String> properties = new LinkedHashMap<>();
+            MethodInfo methodInfo = MethodInfo.methodInfo(aClass, method, name);
+            String packageName = methodInfo.getPackageName();
+            Map<String, String> properties = methodInfo.getProperties();
+            String upperMethodName = methodInfo.getUpperMethodName();
+            final List<String> keyNames = keyNameBuilder.build();
+            loadingCache = CacheBuilder.newBuilder()
+                    .ticker(ticker)
+                    .expireAfterAccess(15, TimeUnit.MINUTES)
+                    .removalListener(new UnexportRemovalListener())
+                    .build(new CacheLoader<List<Optional<String>>, Object>()
+                    {
+                        @Override
+                        public Object load(List<Optional<String>> key)
+                                throws Exception
+                        {
+                            Object returnValue = returnValueSupplier.get();
+
+                            ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(packageName);
+                            for (Entry<String, String> entry : properties.entrySet()) {
+                                objectNameBuilder = objectNameBuilder.withProperty(entry.getKey(), entry.getValue());
+                            }
+                            objectNameBuilder = objectNameBuilder.withProperty("name", upperMethodName);
+                            for (int i = 0; i < keyNames.size(); ++i) {
+                                if (key.get(i).isPresent()) {
+                                    objectNameBuilder = objectNameBuilder.withProperty(keyNames.get(i), key.get(i).get());
+                                }
+                            }
+                            String objectName = objectNameBuilder.build();
+
+                            synchronized (registeredMap) {
+                                Object existingStat = registeredMap.get(key);
+                                if (existingStat != null) {
+                                    reinsertedSet.add(existingStat);
+                                    return existingStat;
+                                }
+                                registeredMap.put(key, returnValue);
+                                reportExporter.export(objectName, returnValue);
+                                objectNameMap.put(returnValue, objectName);
+                            }
+                            return returnValue;
+                        }
+                    });
+        }
+
+        @Override
+        public Object get(List<Optional<String>> key)
+                throws ExecutionException
+        {
+            return loadingCache.get(key);
+        }
+
+        private class UnexportRemovalListener implements RemovalListener<List<Optional<String>>, Object>
+        {
+            @Override
+            public void onRemoval(RemovalNotification<List<Optional<String>>, Object> notification)
+            {
+                synchronized (registeredMap) {
+                    if (reinsertedSet.remove(notification.getValue())) {
+                        return;
+                    }
+                    String objectName = objectNameMap.remove(notification.getValue());
+                    reportExporter.unexport(objectName);
+                    registeredMap.remove(notification.getKey());
+                }
+            }
+        }
+    }
+
+    protected Supplier<Object> getReturnValueSupplier(Method method) {
+        final Constructor<?> constructor;
+        try {
+            constructor = method.getReturnType().getConstructor();
+        }
+        catch (NoSuchMethodException e) {
+            throw new RuntimeException(methodName(method) + " return type " + method.getReturnType().getSimpleName()
+                    + " has no public no-arg constructor");
+        }
+
+        return () -> {
+            try {
+                return constructor.newInstance();
+            }
+            catch (Exception e) {
+                throw propagate(e);
+            }
+        };
+    }
+
+    private static String methodName(Method method)
+    {
+        StringBuilder builder = new StringBuilder(method.getDeclaringClass().getName());
+        builder.append(".").append(method.getName()).append('(');
+        boolean first = true;
+        for (Class<?> type : method.getParameterTypes()) {
+            if (!first) {
+                builder.append(", ");
+            }
+            builder.append(type.getName());
+            first = false;
+        }
+        builder.append(')');
+        return builder.toString();
+    }
+
+    private static class MethodInfo
+    {
+        private final String packageName;
+        private final Map<String, String> properties;
+        private final String upperMethodName;
+
+        private MethodInfo(String packageName, Map<String, String> properties, String upperMethodName)
+        {
+            this.packageName = packageName;
+            this.properties = properties;
+            this.upperMethodName = upperMethodName;
+        }
+
+        public String getPackageName()
+        {
+            return packageName;
+        }
+
+        public Map<String, String> getProperties()
+        {
+            return properties;
+        }
+
+        public String getUpperMethodName()
+        {
+            return upperMethodName;
+        }
+
+        public static MethodInfo methodInfo(Class<?> aClass, Method method, String name)
+        {
+            String packageName;
+            Map<String, String> properties = new LinkedHashMap<>();
             if (name == null) {
                 packageName = aClass.getPackage().getName();
                 properties.put("type", aClass.getSimpleName());
@@ -206,108 +386,8 @@ public class ReportCollectionFactory
                     properties.put(key, value);
                 }
             }
-            final String upperMethodName = LOWER_CAMEL.to(UPPER_CAMEL, method.getName());
-            final List<String> keyNames = keyNameBuilder.build();
-            loadingCache = CacheBuilder.newBuilder()
-                    .ticker(ticker)
-                    .expireAfterAccess(15, TimeUnit.MINUTES)
-                    .removalListener(new UnexportRemovalListener())
-                    .build(new CacheLoader<List<Optional<String>>, Object>()
-                    {
-                        @Override
-                        public Object load(List<Optional<String>> key)
-                                throws Exception
-                        {
-                            Object returnValue = returnValueSupplier.get();
-
-                            ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(packageName);
-                            for (Entry<String, String> entry : properties.entrySet()) {
-                                objectNameBuilder = objectNameBuilder.withProperty(entry.getKey(), entry.getValue());
-                            }
-                            objectNameBuilder = objectNameBuilder.withProperty("name", upperMethodName);
-                            for (int i = 0; i < keyNames.size(); ++i) {
-                                if (key.get(i).isPresent()) {
-                                    objectNameBuilder = objectNameBuilder.withProperty(keyNames.get(i), key.get(i).get());
-                                }
-                            }
-                            String objectName = objectNameBuilder.build();
-
-                            synchronized (registeredMap) {
-                                Object existingStat = registeredMap.get(key);
-                                if (existingStat != null) {
-                                    reinsertedSet.add(existingStat);
-                                    return existingStat;
-                                }
-                                registeredMap.put(key, returnValue);
-                                reportExporter.export(objectName, returnValue);
-                                objectNameMap.put(returnValue, objectName);
-                            }
-                            return returnValue;
-                        }
-                    });
+            String upperMethodName = LOWER_CAMEL.to(UPPER_CAMEL, method.getName());
+            return new MethodInfo(packageName, properties, upperMethodName);
         }
-
-        Object get(List<Optional<String>> key)
-                throws ExecutionException
-        {
-            return loadingCache.get(key);
-        }
-
-        private class UnexportRemovalListener implements RemovalListener<List<Optional<String>>, Object>
-        {
-            @Override
-            public void onRemoval(RemovalNotification<List<Optional<String>>, Object> notification)
-            {
-                synchronized (registeredMap) {
-                    if (reinsertedSet.remove(notification.getValue())) {
-                        return;
-                    }
-                    String objectName = objectNameMap.remove(notification.getValue());
-                    reportExporter.unexport(objectName);
-                    registeredMap.remove(notification.getKey());
-                }
-            }
-        }
-    }
-
-    protected Supplier<Object> getReturnValueSupplier(Method method) {
-        final Constructor<?> constructor;
-        try {
-            constructor = method.getReturnType().getConstructor();
-        }
-        catch (NoSuchMethodException e) {
-            throw new RuntimeException(methodName(method) + " return type " + method.getReturnType().getSimpleName()
-                    + " has no public no-arg constructor");
-        }
-
-        return new Supplier<Object>()
-        {
-            @Override
-            public Object get()
-            {
-                try {
-                    return constructor.newInstance();
-                }
-                catch (Exception e) {
-                    throw propagate(e);
-                }
-            }
-        };
-    }
-
-    private static String methodName(Method method)
-    {
-        StringBuilder builder = new StringBuilder(method.getDeclaringClass().getName());
-        builder.append(".").append(method.getName()).append('(');
-        boolean first = true;
-        for (Class<?> type : method.getParameterTypes()) {
-            if (!first) {
-                builder.append(", ");
-            }
-            builder.append(type.getName());
-            first = false;
-        }
-        builder.append(')');
-        return builder.toString();
     }
 }
