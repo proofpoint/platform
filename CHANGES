@@ -3,6 +3,10 @@ Platform 1.41
 * AsyncSemaphore now uses JDK Function instead of Guava Function. This change
   is generally source-compatible but not binary-compatible.
 
+* HttpServer
+
+  We replaced the deprecated GzipFilter with GzipHandler
+
 * Library Upgrades
 
   - jmxutils to 1.19 (from 1.18) fixes the server not starting when LogJmxModule
