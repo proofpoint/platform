@@ -175,6 +175,9 @@ some minutes of a particular returned object not being returned again, the
 object will be unexported from reporting and JMX and allowed to be garbage
 collected.
 
+If a method has no arguments, the singleton returned object is constructed
+and exported when the report collection implementation is created.
+
 Sparse stats objects
 --------------------
 
@@ -183,6 +186,9 @@ The stats objects `SparseCounterStat`, `SparseDistributionStat`, and
 `TimeStat` which are intended for use with report collections.
 They do not report any metrics for minutes in which no data
 were added to the object. They also do not export any attributes to JMX.
+
+Methods which have no arguments should normally return non-sparse stats
+objects.
 
 Testing report collections
 --------------------------
