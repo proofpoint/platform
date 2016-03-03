@@ -1,5 +1,10 @@
 Platform 1.34
 
+* We demoted a dependency from the log module to the testing module to test
+  scope. Projects that were inadvertently using this dependency to pull in
+  the testing module will need to add their own dependency on testing in their
+  pom.xml
+
 * [Bug] We fixed the skeleton server archetype to provide a blank README.txt
 
 Platform 1.33
