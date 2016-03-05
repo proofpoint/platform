@@ -28,7 +28,7 @@ import com.google.inject.Inject;
 import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
-import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
+import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 
@@ -46,7 +46,7 @@ import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.http.client.Request.Builder.preparePost;
-import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
+import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 
 class ReportClient
 {
@@ -89,9 +89,9 @@ class ReportClient
                 .setBodySource(new CompressBodySource(systemTimeMillis, collectedData))
                 .build();
         try {
-            StatusResponse response = httpClient.execute(request, createStatusResponseHandler());
+            StringResponse response = httpClient.execute(request, createStringResponseHandler());
             if (response.getStatusCode() != 204) {
-                logger.warn("Failed to report stats: %s %s", response.getStatusCode(), response.getStatusMessage());
+                logger.warn("Failed to report stats: %s %s %s", response.getStatusCode(), response.getStatusMessage(), response.getBody());
             }
         }
         catch (RuntimeException e) {
