@@ -24,19 +24,15 @@ import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 import org.weakref.jmx.Nested;
-import org.weakref.jmx.guice.MBeanModule;
-import org.weakref.jmx.testing.TestingMBeanServer;
 
 import javax.inject.Qualifier;
 import javax.inject.Singleton;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
-import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.validation.constraints.NotNull;
@@ -54,7 +50,6 @@ import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 public class TestReportBinder
 {
@@ -62,15 +57,12 @@ public class TestReportBinder
     private final ObjectName gaugeClassName;
     private final ObjectName annotatedGaugeClassName;
     private final ObjectName reportedClassName;
-    private final ObjectName managedClassName;
     private final ObjectName nestedClassName;
     private final ObjectName flattenClassName;
     private final ObjectName bucketedClassName;
     private final ObjectName nestedBucketedClassName;
     private final ObjectName flattenBucketedClassName;
     private final ObjectName deepBucketedClassName;
-    private final int baseMbeanCount;
-    private MBeanServer jmxMbeanServer;
 
     public TestReportBinder()
             throws MalformedObjectNameException
@@ -78,7 +70,6 @@ public class TestReportBinder
         gaugeClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "GaugeClass");
         annotatedGaugeClassName = ObjectName.getInstance(PACKAGE_NAME + ":type=GaugeClass,name=TestingAnnotation");
         reportedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "ReportedClass");
-        managedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "ManagedClass");
         nestedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "NestedClass");
         flattenClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "FlattenClass");
         bucketedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "BucketedClass");
@@ -86,16 +77,7 @@ public class TestReportBinder
         flattenBucketedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "FlattenBucketedClass");
         deepBucketedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "DeepBucketedClass");
 
-        jmxMbeanServer = new TestingMBeanServer();
         Guice.createInjector(new TestingModule());
-        baseMbeanCount = jmxMbeanServer.getMBeanCount();
-        jmxMbeanServer = null;
-    }
-
-    @BeforeMethod
-    public void setup()
-    {
-        jmxMbeanServer = new TestingMBeanServer();
     }
 
     @Test
@@ -106,7 +88,6 @@ public class TestReportBinder
                     reportBinder(binder).export(GaugeClass.class).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), gaugeClassName);
-        assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), gaugeClassName);
     }
 
     @Test
@@ -117,7 +98,6 @@ public class TestReportBinder
                     reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), annotatedGaugeClassName);
-        assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), annotatedGaugeClassName);
     }
 
     @Test
@@ -128,7 +108,6 @@ public class TestReportBinder
                     reportBinder(binder).export(GaugeClass.class).annotatedWith(Names.named("TestingAnnotation")).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), annotatedGaugeClassName);
-        assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), annotatedGaugeClassName);
     }
 
     @Test
@@ -139,7 +118,6 @@ public class TestReportBinder
                     reportBinder(binder).export(GaugeClass.class).as(annotatedGaugeClassName.getCanonicalName());
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), annotatedGaugeClassName);
-        assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), annotatedGaugeClassName);
     }
 
     @Test
@@ -150,7 +128,6 @@ public class TestReportBinder
                     reportBinder(binder).export(ReportedClass.class).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Reported"), reportedClassName);
-        assertJmxRegistration(ImmutableSet.<String>of(), reportedClassName); // todo make jmxutils not register if empty
     }
 
     @Test
@@ -161,7 +138,6 @@ public class TestReportBinder
                     reportBinder(binder).export(ManagedClass.class).withGeneratedName();
                 });
         assertNoReportRegistration(injector);
-        assertJmxRegistration(ImmutableSet.of("Managed"), managedClassName);
     }
 
     @Test
@@ -173,7 +149,6 @@ public class TestReportBinder
                 });
         injector.getInstance(NestedClass.class);
         assertReportRegistration(injector, ImmutableSet.of("Nested.Gauge", "Nested.Reported"), nestedClassName);
-        assertJmxRegistration(ImmutableSet.of("Nested.Gauge", "Nested.Managed"), nestedClassName);
     }
 
     @Test
@@ -184,7 +159,6 @@ public class TestReportBinder
                     reportBinder(binder).export(FlattenClass.class).withGeneratedName();
                 });
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), flattenClassName);
-        assertJmxRegistration(ImmutableSet.of("Gauge", "Managed"), flattenClassName);
     }
 
     @Test
@@ -196,7 +170,6 @@ public class TestReportBinder
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(BucketedClass.class));
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), bucketedClassName);
-        assertJmxRegistration(ImmutableSet.<String>of(), bucketedClassName);
     }
 
     @Test
@@ -212,7 +185,6 @@ public class TestReportBinder
                 "Gauge", "Reported",
                 "Nested.Gauge", "Nested.Reported"
         ), nestedBucketedClassName);
-        assertJmxRegistration(ImmutableSet.<String>of(), nestedBucketedClassName);
     }
 
     @Test
@@ -224,7 +196,6 @@ public class TestReportBinder
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(FlattenBucketedClass.class).getFlatten());
         assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), flattenBucketedClassName);
-        assertJmxRegistration(ImmutableSet.<String>of(), flattenBucketedClassName);
     }
 
     @Test
@@ -241,7 +212,6 @@ public class TestReportBinder
                 "Gauge", "Reported",
                 "Nested.Gauge", "Nested.Reported"
         ), deepBucketedClassName);
-        assertJmxRegistration(ImmutableSet.<String>of(), deepBucketedClassName);
     }
 
     @Test
@@ -249,7 +219,6 @@ public class TestReportBinder
             throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
-                new MBeanModule(),
                 new Module()
                 {
                     @Override
@@ -257,7 +226,6 @@ public class TestReportBinder
                     {
                         binder.requireExplicitBindings();
                         binder.disableCircularProxies();
-                        binder.bind(MBeanServer.class).toInstance(jmxMbeanServer);
                         binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
                         binder.bind(ReportExporter.class).asEagerSingleton();
                         newSetBinder(binder, Mapping.class);
@@ -284,7 +252,6 @@ public class TestReportBinder
             throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
-                new MBeanModule(),
                 new Module()
                 {
                     @Override
@@ -292,7 +259,6 @@ public class TestReportBinder
                     {
                         binder.requireExplicitBindings();
                         binder.disableCircularProxies();
-                        binder.bind(MBeanServer.class).toInstance(jmxMbeanServer);
                         binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
                         binder.bind(ReportExporter.class).asEagerSingleton();
                         newSetBinder(binder, Mapping.class);
@@ -319,7 +285,6 @@ public class TestReportBinder
             throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
-                new MBeanModule(),
                 new Module()
                 {
                     @Override
@@ -327,7 +292,6 @@ public class TestReportBinder
                     {
                         binder.requireExplicitBindings();
                         binder.disableCircularProxies();
-                        binder.bind(MBeanServer.class).toInstance(jmxMbeanServer);
                         binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
                         binder.bind(ReportExporter.class).asEagerSingleton();
                         newSetBinder(binder, Mapping.class);
@@ -354,7 +318,6 @@ public class TestReportBinder
             throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
-                new MBeanModule(),
                 new Module()
                 {
                     @Override
@@ -362,7 +325,6 @@ public class TestReportBinder
                     {
                         binder.requireExplicitBindings();
                         binder.disableCircularProxies();
-                        binder.bind(MBeanServer.class).toInstance(jmxMbeanServer);
                         binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
                         binder.bind(ReportExporter.class).asEagerSingleton();
                         newSetBinder(binder, Mapping.class);
@@ -403,20 +365,6 @@ public class TestReportBinder
 
         Map<ObjectName, ReportedBean> reportedBeans = beanServer.getReportedBeans();
         assertEquals(reportedBeans.keySet(), ImmutableSet.<ObjectName>of());
-    }
-
-    private void assertJmxRegistration(Set<String> expectedAttribues, ObjectName objectName)
-    {
-        MBeanInfo mBeanInfo = null;
-        try {
-            mBeanInfo = jmxMbeanServer.getMBeanInfo(objectName);
-        }
-        catch (Exception e) {
-            fail("unexpected exception", e);
-        }
-
-        assertEquals((int)jmxMbeanServer.getMBeanCount(), baseMbeanCount + 1);
-        assertAttributes(mBeanInfo, expectedAttribues);
     }
 
     private void assertAttributes(MBeanInfo mBeanInfo, Set<String> expected)
@@ -494,7 +442,6 @@ public class TestReportBinder
         {
             binder.requireExplicitBindings();
             binder.disableCircularProxies();
-            binder.bind(MBeanServer.class).toInstance(jmxMbeanServer);
             binder.bind(GaugeClass.class).in(Scopes.SINGLETON);
             binder.bind(GaugeClass.class).annotatedWith(TestingAnnotation.class).to(GaugeClass.class).in(Scopes.SINGLETON);
             binder.bind(GaugeClass.class).annotatedWith(Names.named("TestingAnnotation")).to(GaugeClass.class).in(Scopes.SINGLETON);
@@ -503,7 +450,6 @@ public class TestReportBinder
             binder.bind(NestedClass.class).in(Scopes.SINGLETON);
             binder.bind(FlattenClass.class).in(Scopes.SINGLETON);
             binder.bind(FlattenBucketedClass.class).in(Scopes.SINGLETON);
-            binder.install(new MBeanModule());
 
             binder.bind(ReportExporter.class).asEagerSingleton();
             binder.bind(GuiceReportExporter.class).asEagerSingleton();

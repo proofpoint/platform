@@ -21,7 +21,6 @@ import com.proofpoint.reporting.ReportException.Reason;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.weakref.jmx.MBeanExporter;
 import org.weakref.jmx.Nested;
 
 import javax.management.MalformedObjectNameException;
@@ -59,8 +58,6 @@ public class TestReportExporter
     private ReportedBeanRegistry registry;
     @Mock
     private BucketIdProvider bucketIdProvider;
-    @Mock
-    private MBeanExporter mBeanExporter;
     private ReportExporter reportExporter;
 
     @BeforeMethod
@@ -68,7 +65,7 @@ public class TestReportExporter
     {
         initMocks(this);
         registry = new ReportedBeanRegistry();
-        reportExporter = new ReportExporter(registry, bucketIdProvider, mBeanExporter);
+        reportExporter = new ReportExporter(registry, bucketIdProvider);
     }
 
     @Test
@@ -221,8 +218,6 @@ public class TestReportExporter
     {
         assertEquals(registry.getReportedBeans().keySet(), ImmutableSet.of(TESTING_OBJECT_NAME));
         assertEquals(registry.getReportedBeans().get(TESTING_OBJECT_NAME).getMBeanInfo(), ReportedBean.forTarget(TESTING_OBJECT).getMBeanInfo());
-
-        verify(mBeanExporter).export(TESTING_OBJECT_NAME, TESTING_OBJECT);
     }
 
     private static class TestingBucketed

@@ -38,6 +38,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
+import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 @Beta
 public class HttpClientBinder
@@ -82,6 +83,7 @@ public class HttpClientBinder
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
         reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
+        newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
     }
@@ -99,6 +101,7 @@ public class HttpClientBinder
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
         reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
+        newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
     }
@@ -144,9 +147,7 @@ public class HttpClientBinder
 
         public HttpClientAsyncBindingBuilder withAliases(Collection<Class<? extends Annotation>> aliases)
         {
-            for (Class<? extends Annotation> annotation : aliases) {
-                module.addAlias(annotation);
-            }
+            aliases.forEach(module::addAlias);
             return (HttpClientAsyncBindingBuilder) this;
         }
 

@@ -16,6 +16,11 @@ Platform 1.34
 
 * Reporting
 
+  Objects exported to the reporting subsystem (using ReportBinder,
+  ReportExporter, or report collections) are no longer also exported to JMX.
+  If you need them to continue to be exported to JMX, add corresponding calls
+  to either ExportBinder or MBeanExporter.
+
   We added support for report collection methods which take no arguments.
   The singleton object returned from such methods is constructed and exported
   when the report collection implementation is created. Such methods should
