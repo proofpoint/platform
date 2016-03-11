@@ -18,7 +18,6 @@ package com.proofpoint.discovery.client;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
@@ -36,7 +35,6 @@ import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.weakref.jmx.testing.TestingMBeanModule;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;
@@ -60,14 +58,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.<String, String>of(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindServiceAnnouncement(new ServiceAnnouncementProvider().get());
-                    }
-                }
+                binder -> discoveryBinder(binder).bindServiceAnnouncement(new ServiceAnnouncementProvider().get())
         );
 
         Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
@@ -82,14 +73,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.<String, String>of(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindServiceAnnouncement(ServiceAnnouncementProvider.class);
-                    }
-                }
+                binder -> discoveryBinder(binder).bindServiceAnnouncement(ServiceAnnouncementProvider.class)
         );
 
         Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
@@ -104,14 +88,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.<String, String>of(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindServiceAnnouncement(new ServiceAnnouncementProvider());
-                    }
-                }
+                binder -> discoveryBinder(binder).bindServiceAnnouncement(new ServiceAnnouncementProvider())
         );
 
         Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
@@ -126,14 +103,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.<String, String>of(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindSelector("apple");
-                    }
-                }
+                binder -> discoveryBinder(binder).bindSelector("apple")
         );
 
         assertCanCreateServiceSelector(injector, "apple", ServiceSelectorConfig.DEFAULT_POOL);
@@ -145,14 +115,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.<String, String>of(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindSelector(serviceType("apple"));
-                    }
-                }
+                binder -> discoveryBinder(binder).bindSelector(serviceType("apple"))
         );
 
         assertCanCreateServiceSelector(injector, "apple", ServiceSelectorConfig.DEFAULT_POOL);
@@ -164,14 +127,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.of("discovery.apple.pool", "apple-pool"),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindSelector("apple");
-                    }
-                }
+                binder -> discoveryBinder(binder).bindSelector("apple")
         );
 
         assertCanCreateServiceSelector(injector, "apple", "apple-pool");
@@ -183,14 +139,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.of("discovery.apple.pool", "apple-pool"),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindSelector(serviceType("apple"));
-                    }
-                }
+                binder -> discoveryBinder(binder).bindSelector(serviceType("apple"))
         );
 
         assertCanCreateServiceSelector(injector, "apple", "apple-pool");
@@ -202,14 +151,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.<String, String>of(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindHttpBalancer("apple");
-                    }
-                }
+                binder -> discoveryBinder(binder).bindHttpBalancer("apple")
         );
 
         Assert.assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
@@ -221,14 +163,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.<String, String>of(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindHttpBalancer(serviceType("apple"));
-                    }
-                }
+                binder -> discoveryBinder(binder).bindHttpBalancer(serviceType("apple"))
         );
 
         Assert.assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
@@ -240,14 +175,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.of("discovery.apple.pool", "apple-pool"),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindHttpBalancer("apple");
-                    }
-                }
+                binder -> discoveryBinder(binder).bindHttpBalancer("apple")
         );
 
         Assert.assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
@@ -259,14 +187,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.of("discovery.apple.pool", "apple-pool"),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindHttpBalancer(serviceType("apple"));
-                    }
-                }
+                binder -> discoveryBinder(binder).bindHttpBalancer(serviceType("apple"))
         );
 
         Assert.assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
@@ -282,14 +203,7 @@ public class TestDiscoveryBinder
                         "foo.http-client.read-timeout", "1s",
                         "foo.http-client.max-attempts", "2"
                 ),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindDiscoveredHttpClient("foo");
-                    }
-                }
+                binder -> discoveryBinder(binder).bindDiscoveredHttpClient("foo")
         );
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, serviceType("foo"))));
@@ -305,14 +219,7 @@ public class TestDiscoveryBinder
                         "bar.http-client.read-timeout", "1s",
                         "bar.http-client.max-attempts", "2"
                 ),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindDiscoveredHttpClient("bar", serviceType("foo"));
-                    }
-                });
+                binder -> discoveryBinder(binder).bindDiscoveredHttpClient("bar", serviceType("foo")));
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, serviceType("foo"))));
     }
@@ -323,14 +230,7 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.of("discovery.foo.pool", "foo-pool"),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class);
-                    }
-                }
+                binder -> discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
         );
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
@@ -342,16 +242,9 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.of("discovery.foo.pool", "foo-pool"),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
-                                .withAlias(FooAlias1.class)
-                                .withAliases(ImmutableList.of(FooAlias2.class, FooAlias3.class));
-                    }
-                }
+                binder -> discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
+                        .withAlias(FooAlias1.class)
+                        .withAliases(ImmutableList.of(FooAlias2.class, FooAlias3.class))
         );
 
         HttpClient client = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
@@ -369,20 +262,15 @@ public class TestDiscoveryBinder
                 ImmutableMap.of(
                         "discovery.foo.pool", "foo-pool",
                         "discovery.bar.pool", "bar-pool"),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
-                                .withFilter(TestingRequestFilter.class)
-                                .withFilter(AnotherHttpRequestFilter.class)
-                                .withTracing();
+                binder -> {
+                    discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
+                            .withFilter(TestingRequestFilter.class)
+                            .withFilter(AnotherHttpRequestFilter.class)
+                            .withTracing();
 
-                        BalancingHttpClientBindingBuilder builder = discoveryBinder(binder).bindDiscoveredHttpClient("bar", BarClient.class);
-                        builder.withFilter(TestingRequestFilter.class);
-                        builder.addFilterBinding().to(AnotherHttpRequestFilter.class);
-                    }
+                    BalancingHttpClientBindingBuilder builder = discoveryBinder(binder).bindDiscoveredHttpClient("bar", BarClient.class);
+                    builder.withFilter(TestingRequestFilter.class);
+                    builder.addFilterBinding().to(AnotherHttpRequestFilter.class);
                 });
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
@@ -395,15 +283,8 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.of("discovery.foo.pool", "foo-pool"),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
-                                .withPrivateIoThreadPool();
-                    }
-                }
+                binder -> discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
+                        .withPrivateIoThreadPool()
         );
 
         HttpClient fooClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
@@ -426,7 +307,6 @@ public class TestDiscoveryBinder
                 .withModules(
                         new TestingNodeModule(),
                         new TestingDiscoveryModule(),
-                        new TestingMBeanModule(),
                         new ReportingModule(),
                         module
                 )
