@@ -18,11 +18,9 @@ package com.proofpoint.discovery.client;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.Module;
 import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.configuration.ConfigurationModule;
 import com.proofpoint.discovery.client.testing.InMemoryDiscoveryClient;
@@ -32,7 +30,6 @@ import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.weakref.jmx.testing.TestingMBeanModule;
 
 import java.net.URI;
 
@@ -56,15 +53,9 @@ public class TestHttpServiceSelectorBinder
                 new ConfigurationModule(new ConfigurationFactory(ImmutableMap.<String, String>of())),
                 new TestingNodeModule(),
                 new TestingDiscoveryModule(),
-                new TestingMBeanModule(),
                 new ReportingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindHttpSelector("apple");
-                    }
+                binder -> {
+                    discoveryBinder(binder).bindHttpSelector("apple");
                 }
         );
     }
@@ -87,15 +78,9 @@ public class TestHttpServiceSelectorBinder
                 new ConfigurationModule(new ConfigurationFactory(ImmutableMap.<String, String>of())),
                 new TestingNodeModule(),
                 new TestingDiscoveryModule(),
-                new TestingMBeanModule(),
                 new ReportingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        discoveryBinder(binder).bindHttpSelector(serviceType("apple"));
-                    }
+                binder -> {
+                    discoveryBinder(binder).bindHttpSelector(serviceType("apple"));
                 }
         );
 

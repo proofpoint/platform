@@ -86,11 +86,6 @@
             <artifactId>guice-multibindings</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.weakref</groupId>
-            <artifactId>jmxutils</artifactId>
-        </dependency>
-
         <!-- for testing -->
         <dependency>
             <groupId>javax.servlet</groupId>

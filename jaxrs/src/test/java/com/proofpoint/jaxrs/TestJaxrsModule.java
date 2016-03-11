@@ -17,7 +17,6 @@ import com.proofpoint.testing.Closeables;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
-import org.weakref.jmx.testing.TestingMBeanModule;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -136,7 +135,6 @@ public class TestJaxrsModule
                 explicitJaxrsModule(),
                 new JsonModule(),
                 new ReportingModule(),
-                new TestingMBeanModule(),
                 new TestingHttpServerModule(),
                 module)
                 .getInstance(TestingHttpServer.class);

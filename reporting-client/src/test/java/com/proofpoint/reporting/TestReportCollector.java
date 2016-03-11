@@ -31,7 +31,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.weakref.jmx.testing.TestingMBeanModule;
 
 import javax.management.ObjectName;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +81,6 @@ public class TestReportCollector
                 new ApplicationNameModule("test-application"),
                 new TestingNodeModule(),
                 new TestingDiscoveryModule(),
-                new TestingMBeanModule(),
                 new ConfigurationModule(new ConfigurationFactory(ImmutableMap.<String, String>of())),
                 new JsonModule(),
                 new ReportingModule(),
