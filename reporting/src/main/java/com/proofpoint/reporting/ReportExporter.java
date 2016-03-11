@@ -18,7 +18,6 @@ package com.proofpoint.reporting;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.proofpoint.reporting.ReportException.Reason;
-import org.weakref.jmx.MBeanExporter;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -38,14 +37,12 @@ public class ReportExporter
 {
     private final ReportedBeanRegistry registry;
     private final BucketIdProvider bucketIdProvider;
-    private final MBeanExporter mBeanExporter;
 
     @Inject
-    ReportExporter(ReportedBeanRegistry registry, BucketIdProvider bucketIdProvider, MBeanExporter mBeanExporter)
+    ReportExporter(ReportedBeanRegistry registry, BucketIdProvider bucketIdProvider)
     {
         this.registry = checkNotNull(registry, "registry is null");
         this.bucketIdProvider = checkNotNull(bucketIdProvider, "bucketIdProvider is null");
-        this.mBeanExporter = checkNotNull(mBeanExporter, "mBeanExporter is null");
     }
 
     public void export(String name, Object object)
@@ -73,7 +70,6 @@ public class ReportExporter
                 throw new ReportException(Reason.INSTANCE_ALREADY_EXISTS, e.getMessage());
             }
         }
-        mBeanExporter.export(objectName, object);
     }
 
     public void unexport(String name)
@@ -98,7 +94,6 @@ public class ReportExporter
         catch (InstanceNotFoundException e) {
             throw new ReportException(Reason.INSTANCE_NOT_FOUND, e.getMessage());
         }
-        mBeanExporter.unexport(objectName);
     }
 
     @VisibleForTesting

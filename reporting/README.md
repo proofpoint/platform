@@ -40,7 +40,7 @@ will cause the getter to be called every minute and the returned value to be
 reported with the metric name `ReportedObject.Value`.
 The attribute is also exposed through JMX with the
 attribute `Value` of ObjectName `"com.example:name=ReportedObject"`,
-just as if `ReportedObject` had been bound with
+if `ReportedObject` is also bound with
 `ExportBinder.newExporter(binder).export(ReportedObject).withGeneratedName()`.
 
 If the attribute is not to be exported to JMX, the `@Reported`
@@ -93,12 +93,11 @@ abstract class in order to report one minute bucketed metrics.
 Exporting report objects
 ------------------------
 
-The `ReportBinder.export()` methods behave like the jmxutils
-`ExportBinder.export()` except they cause the bound objects to be exported to
-both reporting and JMX.
+The `ReportBinder.export()` methods expose an EDSL for exporting objects to
+reporting.
 
 `ReportExporter` may be used to dynamically export and unexport objects to
-both reporting and JMX. It works like the jmxutils `MBeanExporter`.
+reporting.
 
 Report collections
 ------------------
@@ -152,10 +151,9 @@ class StoreStatsRecorder {
 }
 ```
 A call to `storeStats.added(mediaType.TEXT_PLAIN, SUCCESS)` will
-return a `SparseCounterStat` exported to both reporting and JMX with the name
-`"type=StoreStats,name=Added,mediaType=text/plain,status=success"`. Such a
-name will result in a metric named `StoreStats.Added.Count` to be reported
-with tags `"mediaType=text/plain"` and `"status=success"`.
+return a `SparseCounterStat` exported to reporting with the name prefix
+`StoreStats.Added` and tags `"mediaType=text/plain"` and `"status=success"`. Such a
+name prefix will result in a metric named `StoreStats.Added.Count` to be reported.
 
 Alternatively, `ReportCollectionFactory.createReportCollection()` may be used
 to dynamically create a report collection implementation.
@@ -172,7 +170,7 @@ or java.util.Optional.empty(), the tag is omitted.
 Subsequent calls to the same interface method with parameters that have the
 same set of `.toString()` values will result in the same returned object. After
 some minutes of a particular returned object not being returned again, the
-object will be unexported from reporting and JMX and allowed to be garbage
+object will be unexported from reporting and allowed to be garbage
 collected.
 
 If a method has no arguments, the singleton returned object is constructed
