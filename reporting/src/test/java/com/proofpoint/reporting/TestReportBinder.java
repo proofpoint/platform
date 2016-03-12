@@ -15,6 +15,8 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.inject.Binder;
@@ -24,6 +26,7 @@ import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
+import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 import org.testng.annotations.Test;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
@@ -39,6 +42,7 @@ import javax.validation.constraints.NotNull;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
@@ -54,28 +58,12 @@ import static org.testng.Assert.assertTrue;
 public class TestReportBinder
 {
     private static final String PACKAGE_NAME = "com.proofpoint.reporting";
-    private final ObjectName gaugeClassName;
     private final ObjectName annotatedGaugeClassName;
-    private final ObjectName reportedClassName;
-    private final ObjectName nestedClassName;
-    private final ObjectName flattenClassName;
-    private final ObjectName bucketedClassName;
-    private final ObjectName nestedBucketedClassName;
-    private final ObjectName flattenBucketedClassName;
-    private final ObjectName deepBucketedClassName;
 
     public TestReportBinder()
             throws MalformedObjectNameException
     {
-        gaugeClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "GaugeClass");
         annotatedGaugeClassName = ObjectName.getInstance(PACKAGE_NAME + ":type=GaugeClass,name=TestingAnnotation");
-        reportedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "ReportedClass");
-        nestedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "NestedClass");
-        flattenClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "FlattenClass");
-        bucketedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "BucketedClass");
-        nestedBucketedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "NestedBucketedClass");
-        flattenBucketedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "FlattenBucketedClass");
-        deepBucketedClassName = ObjectName.getInstance(PACKAGE_NAME, "name", "DeepBucketedClass");
 
         Guice.createInjector(new TestingModule());
     }
@@ -87,7 +75,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).withGeneratedName();
                 });
-        assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), gaugeClassName);
+        assertReportRegistration(injector, "GaugeClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
@@ -97,7 +85,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class).withGeneratedName();
                 });
-        assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), annotatedGaugeClassName);
+        assertReportRegistration(injector, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
@@ -107,7 +95,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).annotatedWith(Names.named("TestingAnnotation")).withGeneratedName();
                 });
-        assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), annotatedGaugeClassName);
+        assertReportRegistration(injector, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
@@ -117,7 +105,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).as(annotatedGaugeClassName.getCanonicalName());
                 });
-        assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), annotatedGaugeClassName);
+        assertReportRegistration(injector, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
@@ -127,7 +115,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(ReportedClass.class).withGeneratedName();
                 });
-        assertReportRegistration(injector, ImmutableSet.of("Reported"), reportedClassName);
+        assertReportRegistration(injector, "ReportedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Reported")));
     }
 
     @Test
@@ -148,7 +136,7 @@ public class TestReportBinder
                     reportBinder(binder).export(NestedClass.class).withGeneratedName();
                 });
         injector.getInstance(NestedClass.class);
-        assertReportRegistration(injector, ImmutableSet.of("Nested.Gauge", "Nested.Reported"), nestedClassName);
+        assertReportRegistration(injector, "NestedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Nested.Gauge", "Nested.Reported")));
     }
 
     @Test
@@ -158,7 +146,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(FlattenClass.class).withGeneratedName();
                 });
-        assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), flattenClassName);
+        assertReportRegistration(injector, "FlattenClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
@@ -169,7 +157,7 @@ public class TestReportBinder
                     reportBinder(binder).export(BucketedClass.class).withGeneratedName();
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(BucketedClass.class));
-        assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), bucketedClassName);
+        assertReportRegistration(injector, "BucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
@@ -181,10 +169,10 @@ public class TestReportBinder
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(NestedBucketedClass.class));
         BucketedClass.assertProviderSupplied(injector.getInstance(NestedBucketedClass.class).getNested());
-        assertReportRegistration(injector, ImmutableSet.of(
+        assertReportRegistration(injector, "NestedBucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of(
                 "Gauge", "Reported",
                 "Nested.Gauge", "Nested.Reported"
-        ), nestedBucketedClassName);
+        )));
     }
 
     @Test
@@ -195,7 +183,7 @@ public class TestReportBinder
                     reportBinder(binder).export(FlattenBucketedClass.class).withGeneratedName();
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(FlattenBucketedClass.class).getFlatten());
-        assertReportRegistration(injector, ImmutableSet.of("Gauge", "Reported"), flattenBucketedClassName);
+        assertReportRegistration(injector, "FlattenBucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
@@ -208,10 +196,10 @@ public class TestReportBinder
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getNested());
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getFlatten());
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getFlatten().getNested());
-        assertReportRegistration(injector, ImmutableSet.of(
+        assertReportRegistration(injector, "DeepBucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of(
                 "Gauge", "Reported",
                 "Nested.Gauge", "Nested.Reported"
-        ), deepBucketedClassName);
+        )));
     }
 
     @Test
@@ -243,8 +231,7 @@ public class TestReportBinder
                 });
         KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
         keyedDistribution.add("value", false);
-        ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
-        assertEquals(reportedBeanRegistry.getReportedBeans().keySet(), ImmutableSet.of(ObjectName.getInstance("com.proofpoint.reporting:type=KeyedDistribution,name=Add,foo=value,bar=false")));
+        assertReportRegistration(injector, "KeyedDistribution.Add", ImmutableMap.of("foo", "value", "bar", "false"), Optional.empty());
     }
 
     @Test
@@ -276,8 +263,7 @@ public class TestReportBinder
                 });
         KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
         keyedDistribution.add("value", false);
-        ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
-        assertEquals(reportedBeanRegistry.getReportedBeans().keySet(), ImmutableSet.of(ObjectName.getInstance("com.example:type=\"Foo\\\",Bar\",a=b,name=Add,foo=value,bar=false")));
+        assertReportRegistration(injector, "Foo\",Bar.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "b"), Optional.empty());
     }
 
     @Test
@@ -309,8 +295,7 @@ public class TestReportBinder
                 });
         KeyedDistribution keyedDistribution = injector.getInstance(com.google.inject.Key.get(KeyedDistribution.class, TestingAnnotation.class));
         keyedDistribution.add("value", false);
-        ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
-        assertEquals(reportedBeanRegistry.getReportedBeans().keySet(), ImmutableSet.of(ObjectName.getInstance("com.example:type=\"Foo\\\",Bar\",a=b,name=Add,foo=value,bar=false")));
+        assertReportRegistration(injector, "Foo\",Bar.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "b"), Optional.empty());
     }
 
     @Test
@@ -342,29 +327,26 @@ public class TestReportBinder
                 });
         KeyedDistribution keyedDistribution = injector.getInstance(com.google.inject.Key.get(KeyedDistribution.class, Names.named("testing")));
         keyedDistribution.add("value", false);
-        ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
-        assertEquals(reportedBeanRegistry.getReportedBeans().keySet(), ImmutableSet.of(ObjectName.getInstance("com.example:type=\"Foo\\\",Bar\",a=b,name=Add,foo=value,bar=false")));
-    }
-
-    private void assertReportRegistration(Injector injector, Set<String> expectedAttribues, ObjectName objectName)
-    {
-        ReportedBeanRegistry beanServer = injector.getInstance(ReportedBeanRegistry.class);
-
-        Map<ObjectName, ReportedBean> reportedBeans = beanServer.getReportedBeans();
-        assertEquals(reportedBeans.keySet(), ImmutableSet.of(
-                objectName
-        ));
-
-        MBeanInfo mBeanInfo = getOnlyElement(reportedBeans.values()).getMBeanInfo();
-        assertAttributes(mBeanInfo, expectedAttribues);
+        assertReportRegistration(injector, "Foo\",Bar.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "b"), Optional.empty());
     }
 
     private void assertNoReportRegistration(Injector injector)
     {
-        ReportedBeanRegistry beanServer = injector.getInstance(ReportedBeanRegistry.class);
+        ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
+        assertEquals(reportedBeanRegistry.getReportedBeans(), ImmutableList.<RegistrationInfo>of());
+    }
 
-        Map<ObjectName, ReportedBean> reportedBeans = beanServer.getReportedBeans();
-        assertEquals(reportedBeans.keySet(), ImmutableSet.<ObjectName>of());
+    private void assertReportRegistration(Injector injector, String namePrefix, Map<String, String> tags, Optional<Set<String>> expectedAttributes)
+    {
+        ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
+        RegistrationInfo registrationInfo = getOnlyElement(reportedBeanRegistry.getReportedBeans());
+        assertEquals(registrationInfo.getNamePrefix(), namePrefix, "name prefix");
+        assertEquals(registrationInfo.getTags(), tags, "tags");
+
+        if (expectedAttributes.isPresent()) {
+            MBeanInfo mBeanInfo = registrationInfo.getReportedBean().getMBeanInfo();
+            assertAttributes(mBeanInfo, expectedAttributes.get());
+        }
     }
 
     private void assertAttributes(MBeanInfo mBeanInfo, Set<String> expected)

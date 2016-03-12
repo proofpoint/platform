@@ -33,9 +33,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.management.ObjectName;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.proofpoint.reporting.ReportCollector.REPORT_COLLECTOR_OBJECT_NAME;
 import static com.proofpoint.testing.Assertions.assertBetweenInclusive;
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
 import static java.lang.System.currentTimeMillis;
@@ -60,7 +60,7 @@ public class TestReportCollector
     private ReportCollector reportCollector;
 
     @Captor
-    ArgumentCaptor<Table<ObjectName, String, Object>> tableCaptor;
+    ArgumentCaptor<Table<String, Map<String, String>, Object>> tableCaptor;
 
     @BeforeMethod
     public void setup()
@@ -104,15 +104,65 @@ public class TestReportCollector
 
         assertBetweenInclusive(longCaptor.getValue(), lowerBound, upperBound);
 
-        Table<ObjectName, String, Object> table = tableCaptor.getValue();
-        assertEquals(table.cellSet(), ImmutableTable.<ObjectName, String, Object>builder()
-                .put(REPORT_COLLECTOR_OBJECT_NAME, "ServerStart", 1)
+        Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
+        assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
+                .put("ReportCollector.ServerStart", ImmutableMap.of(), 1)
                 .build()
                 .cellSet());
     }
 
     @Test
     public void testCollection()
+            throws Exception
+    {
+        testReportsStartup();
+
+        collectorExecutor.elapseTime(59, TimeUnit.SECONDS);
+        verifyNoMoreInteractions(reportClient);
+
+        when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(12345L);
+        Object reported = new Object()
+        {
+            private int metric = 0;
+
+            @Reported
+            public int getMetric()
+            {
+                return ++metric;
+            }
+        };
+        reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), "TestObject", ImmutableMap.of());
+
+        collectorExecutor.elapseTime(1, TimeUnit.SECONDS);
+
+        verify(reportClient).report(eq(12345L), tableCaptor.capture());
+        verifyNoMoreInteractions(reportClient);
+        // We don't actually care which submit method variant got called, just that it got called on the client executor
+        verify(clientExecutor, times(2)).submit(any(Runnable.class));
+
+        Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
+        assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
+                .put("TestObject.Metric", ImmutableMap.of(), 1)
+                .put("ReportCollector.NumMetrics", ImmutableMap.of(), 1)
+                .build()
+                .cellSet());
+
+        when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(67890L);
+        collectorExecutor.elapseTime(1, TimeUnit.MINUTES);
+
+        verify(reportClient).report(eq(67890L), tableCaptor.capture());
+        verifyNoMoreInteractions(reportClient);
+
+        table = tableCaptor.getValue();
+        assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
+                .put("TestObject.Metric", ImmutableMap.of(), 2)
+                .put("ReportCollector.NumMetrics", ImmutableMap.of(), 1)
+                .build()
+                .cellSet());
+    }
+
+    @Test
+    public void testCollectionLegacy()
             throws Exception
     {
         testReportsStartup();
@@ -140,10 +190,10 @@ public class TestReportCollector
         // We don't actually care which submit method variant got called, just that it got called on the client executor
         verify(clientExecutor, times(2)).submit(any(Runnable.class));
 
-        Table<ObjectName, String, Object> table = tableCaptor.getValue();
-        assertEquals(table.cellSet(), ImmutableTable.<ObjectName, String, Object>builder()
-                .put(objectName, "Metric", 1)
-                .put(REPORT_COLLECTOR_OBJECT_NAME, "NumMetrics", 1)
+        Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
+        assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
+                .put("TestObject.Metric", ImmutableMap.of(), 1)
+                .put("ReportCollector.NumMetrics", ImmutableMap.of(), 1)
                 .build()
                 .cellSet());
 
@@ -154,9 +204,9 @@ public class TestReportCollector
         verifyNoMoreInteractions(reportClient);
 
         table = tableCaptor.getValue();
-        assertEquals(table.cellSet(), ImmutableTable.<ObjectName, String, Object>builder()
-                .put(objectName, "Metric", 2)
-                .put(REPORT_COLLECTOR_OBJECT_NAME, "NumMetrics", 1)
+        assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
+                .put("TestObject.Metric", ImmutableMap.of(), 2)
+                .put("ReportCollector.NumMetrics", ImmutableMap.of(), 1)
                 .build()
                 .cellSet());
     }
@@ -168,8 +218,7 @@ public class TestReportCollector
         testReportsStartup();
 
         when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(12345L);
-        ObjectName objectName = ObjectName.getInstance("com.proofpoint.reporting.test", "name", "TestObject");
-        reportedBeanRegistry.register(ReportedBean.forTarget(new Object()
+        Object reported = new Object()
         {
             @Reported
             public double getDoubleMetric()
@@ -314,27 +363,28 @@ public class TestReportCollector
             {
                 throw new UnsupportedOperationException();
             }
-        }), objectName);
+        };
+        reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), "TestObject", ImmutableMap.of());
 
         collectorExecutor.elapseTime(1, TimeUnit.MINUTES);
 
         verify(reportClient).report(eq(12345L), tableCaptor.capture());
         verifyNoMoreInteractions(reportClient);
 
-        Table<ObjectName, String, Object> table = tableCaptor.getValue();
-        assertEqualsIgnoreOrder(table.cellSet(), ImmutableTable.<ObjectName, String, Object>builder()
-                .put(objectName, "DoubleMetric", 0.0)
-                .put(objectName, "FloatMetric", 0F)
-                .put(objectName, "LongMetric", 0L)
-                .put(objectName, "IntegerMetric", 0)
-                .put(objectName, "ShortMetric", (short) 0)
-                .put(objectName, "ByteMetric", (byte) 0)
-                .put(objectName, "MaxByteMetric", Byte.MAX_VALUE)
-                .put(objectName, "MinByteMetric", Byte.MIN_VALUE)
-                .put(objectName, "FalseBooleanMetric", 0)
-                .put(objectName, "TrueBooleanMetric", 1)
-                .put(objectName, "TestingValueMetric", "testing toString value")
-                .put(REPORT_COLLECTOR_OBJECT_NAME, "NumMetrics", 11)
+        Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
+        assertEqualsIgnoreOrder(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
+                .put("TestObject.DoubleMetric", ImmutableMap.of(), 0.0)
+                .put("TestObject.FloatMetric", ImmutableMap.of(), 0F)
+                .put("TestObject.LongMetric", ImmutableMap.of(), 0L)
+                .put("TestObject.IntegerMetric", ImmutableMap.of(), 0)
+                .put("TestObject.ShortMetric", ImmutableMap.of(), (short) 0)
+                .put("TestObject.ByteMetric", ImmutableMap.of(), (byte) 0)
+                .put("TestObject.MaxByteMetric", ImmutableMap.of(), Byte.MAX_VALUE)
+                .put("TestObject.MinByteMetric", ImmutableMap.of(), Byte.MIN_VALUE)
+                .put("TestObject.FalseBooleanMetric", ImmutableMap.of(), 0)
+                .put("TestObject.TrueBooleanMetric", ImmutableMap.of(), 1)
+                .put("TestObject.TestingValueMetric", ImmutableMap.of(), "testing toString value")
+                .put("ReportCollector.NumMetrics", ImmutableMap.of(), 11)
                 .build()
                 .cellSet());
     }
