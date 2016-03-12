@@ -89,7 +89,7 @@ public class ReportExporter
     public void unexport(ObjectName objectName)
     {
         try {
-            registry.unregister(objectName);
+            registry.unregisterLegacy(objectName);
         }
         catch (InstanceNotFoundException e) {
             throw new ReportException(Reason.INSTANCE_NOT_FOUND, e.getMessage());

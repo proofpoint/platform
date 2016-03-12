@@ -15,18 +15,17 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import com.google.inject.Inject;
+import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 
 import javax.annotation.PostConstruct;
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,24 +35,11 @@ import static java.lang.System.currentTimeMillis;
 
 class ReportCollector
 {
-    @VisibleForTesting
-    static final ObjectName REPORT_COLLECTOR_OBJECT_NAME;
-
     private final ScheduledExecutorService collectionExecutorService;
     private final MinuteBucketIdProvider bucketIdProvider;
     private final ReportedBeanRegistry reportedBeanRegistry;
     private final ExecutorService clientExecutorService;
     private final ReportClient reportClient;
-
-    static {
-        ObjectName objectName = null;
-        try {
-            objectName = ObjectName.getInstance("com.proofpoint.reporting", "name", "ReportCollector");
-        }
-        catch (MalformedObjectNameException ignored) {
-        }
-        REPORT_COLLECTOR_OBJECT_NAME = objectName;
-    }
 
     @Inject
     ReportCollector(
@@ -73,32 +59,18 @@ class ReportCollector
     @PostConstruct
     public void start()
     {
-        collectionExecutorService.scheduleAtFixedRate(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                collectData();
-            }
-        }, 1, 1, TimeUnit.MINUTES);
+        collectionExecutorService.scheduleAtFixedRate((Runnable) this::collectData, 1, 1, TimeUnit.MINUTES);
 
-        clientExecutorService.submit(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                reportClient.report(currentTimeMillis(), ImmutableTable.of(REPORT_COLLECTOR_OBJECT_NAME, "ServerStart", (Object) 1));
-            }
-        });
+        clientExecutorService.submit((Runnable) () -> reportClient.report(currentTimeMillis(), ImmutableTable.of("ReportCollector.ServerStart", ImmutableMap.of(), (Object) 1)));
     }
 
     private void collectData()
     {
         final long lastSystemTimeMillis = bucketIdProvider.getLastSystemTimeMillis();
-        ImmutableTable.Builder<ObjectName, String, Object> builder = ImmutableTable.builder();
+        ImmutableTable.Builder<String, Map<String, String>, Object> builder = ImmutableTable.builder();
         int numAttributes = 0;
-        for (Entry<ObjectName, ReportedBean> reportedBeanEntry : reportedBeanRegistry.getReportedBeans().entrySet()) {
-            for (ReportedBeanAttribute attribute : reportedBeanEntry.getValue().getAttributes()) {
+        for (RegistrationInfo registrationInfo : reportedBeanRegistry.getReportedBeans()) {
+            for (ReportedBeanAttribute attribute : registrationInfo.getReportedBean().getAttributes()) {
                 Object value = null;
 
                 try {
@@ -113,20 +85,13 @@ class ReportCollector
                     }
 
                     ++numAttributes;
-                    builder.put(reportedBeanEntry.getKey(), attribute.getName(), value);
+                    builder.put(registrationInfo.getNamePrefix() + '.' + attribute.getName(), registrationInfo.getTags(), value);
                 }
             }
         }
-        builder.put(REPORT_COLLECTOR_OBJECT_NAME, "NumMetrics", numAttributes);
-        final Table<ObjectName, String, Object> collectedData = builder.build();
-        clientExecutorService.submit(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                reportClient.report(lastSystemTimeMillis, collectedData);
-            }
-        });
+        builder.put("ReportCollector.NumMetrics", ImmutableMap.of(), numAttributes);
+        final Table<String, Map<String, String>, Object> collectedData = builder.build();
+        clientExecutorService.submit((Runnable) () -> reportClient.report(lastSystemTimeMillis, collectedData));
     }
 
     private static boolean isReportable(Object value)
