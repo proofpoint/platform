@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import com.google.inject.Inject;
+import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 
 import javax.annotation.PostConstruct;
@@ -30,30 +31,35 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.lang.System.currentTimeMillis;
+import static java.util.Objects.requireNonNull;
 
 class ReportCollector
 {
-    private final ScheduledExecutorService collectionExecutorService;
+    private final String applicationPrefix;
     private final MinuteBucketIdProvider bucketIdProvider;
     private final ReportedBeanRegistry reportedBeanRegistry;
+    private final ScheduledExecutorService collectionExecutorService;
     private final ExecutorService clientExecutorService;
     private final ReportClient reportClient;
 
     @Inject
     ReportCollector(
+            NodeInfo nodeInfo,
             MinuteBucketIdProvider bucketIdProvider,
             ReportedBeanRegistry reportedBeanRegistry,
             ReportClient reportClient,
             @ForReportCollector ScheduledExecutorService collectionExecutorService,
             @ForReportClient ExecutorService clientExecutorService)
     {
-        this.bucketIdProvider = checkNotNull(bucketIdProvider, "bucketIdProvider is null");
-        this.reportedBeanRegistry = checkNotNull(reportedBeanRegistry, "reportedBeanRegistry is null");
-        this.reportClient = checkNotNull(reportClient, "reportClient is null");
-        this.collectionExecutorService = checkNotNull(collectionExecutorService, "collectionExecutorService is null");
-        this.clientExecutorService = checkNotNull(clientExecutorService, "clientExecutorService is null");
+        applicationPrefix = LOWER_HYPHEN.to(UPPER_CAMEL, nodeInfo.getApplication()) + ".";
+        this.bucketIdProvider = requireNonNull(bucketIdProvider, "bucketIdProvider is null");
+        this.reportedBeanRegistry = requireNonNull(reportedBeanRegistry, "reportedBeanRegistry is null");
+        this.reportClient = requireNonNull(reportClient, "reportClient is null");
+        this.collectionExecutorService = requireNonNull(collectionExecutorService, "collectionExecutorService is null");
+        this.clientExecutorService = requireNonNull(clientExecutorService, "clientExecutorService is null");
     }
 
     @PostConstruct
@@ -85,7 +91,16 @@ class ReportCollector
                     }
 
                     ++numAttributes;
-                    builder.put(registrationInfo.getNamePrefix() + '.' + attribute.getName(), registrationInfo.getTags(), value);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    if (registrationInfo.isApplicationPrefix()) {
+                        stringBuilder.append(applicationPrefix);
+                    }
+                    String name = stringBuilder
+                            .append(registrationInfo.getNamePrefix())
+                            .append('.')
+                            .append(attribute.getName())
+                            .toString();
+                    builder.put(name, registrationInfo.getTags(), value);
                 }
             }
         }
