@@ -64,8 +64,16 @@ public class TestReportedBeanRegistry
     public void testRegister()
             throws Exception
     {
-        registry.register(new Object(), TESTING_REPORTED_BEAN, "TestingObject", TESTING_TAGS);
-        assertEquals(registry.getReportedBeans(), ImmutableList.of(registrationInfo(TESTING_REPORTED_BEAN, "TestingObject", TESTING_TAGS)));
+        registry.register(new Object(), TESTING_REPORTED_BEAN, false, "TestingObject", TESTING_TAGS);
+        assertEquals(registry.getReportedBeans(), ImmutableList.of(registrationInfo(TESTING_REPORTED_BEAN, false, "TestingObject", TESTING_TAGS)));
+    }
+
+    @Test
+    public void testRegisterApplicationPrefix()
+            throws Exception
+    {
+        registry.register(new Object(), TESTING_REPORTED_BEAN, true, "TestingObject", TESTING_TAGS);
+        assertEquals(registry.getReportedBeans(), ImmutableList.of(registrationInfo(TESTING_REPORTED_BEAN, true, "TestingObject", TESTING_TAGS)));
     }
 
     @Test
@@ -73,7 +81,7 @@ public class TestReportedBeanRegistry
             throws Exception
     {
         Object object = new Object();
-        registry.register(object, TESTING_REPORTED_BEAN, "TestingObject", TESTING_TAGS);
+        registry.register(object, TESTING_REPORTED_BEAN, false, "TestingObject", TESTING_TAGS);
         registry.unregister(object);
         assertEquals(registry.getReportedBeans(), ImmutableList.of());
     }
@@ -83,7 +91,7 @@ public class TestReportedBeanRegistry
             throws Exception
     {
         registry.register(TESTING_REPORTED_BEAN, TESTING_OBJECT_NAME);
-        assertEquals(registry.getReportedBeans(), ImmutableList.of(registrationInfo(TESTING_REPORTED_BEAN, "TestingObject", ImmutableMap.of())));
+        assertEquals(registry.getReportedBeans(), ImmutableList.of(registrationInfo(TESTING_REPORTED_BEAN, false, "TestingObject", ImmutableMap.of())));
     }
 
     @Test

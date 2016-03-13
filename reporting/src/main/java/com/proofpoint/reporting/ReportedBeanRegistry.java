@@ -48,11 +48,11 @@ class ReportedBeanRegistry
         return reportedBeans.values();
     }
 
-    void register(Object object, ReportedBean reportedBean, String namePrefix, Map<String, String> tags)
+    void register(Object object, ReportedBean reportedBean, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
             throws InstanceAlreadyExistsException
     {
         requireNonNull(object, "object is null");
-        if (reportedBeans.putIfAbsent(new Reference(object), registrationInfo(reportedBean, namePrefix, tags)) != null) {
+        if (reportedBeans.putIfAbsent(new Reference(object), registrationInfo(reportedBean, applicationPrefix, namePrefix, tags)) != null) {
             throw new InstanceAlreadyExistsException(object + " is already registered");
         }
     }
@@ -95,7 +95,7 @@ class ReportedBeanRegistry
         }
 
         try {
-            register(reportedBean, reportedBean, nameBuilder.toString(), tagsBuilder.build());
+            register(reportedBean, reportedBean, false, nameBuilder.toString(), tagsBuilder.build());
         }
         catch (InstanceAlreadyExistsException e) {
             legacyReportedBeans.remove(name);
@@ -159,12 +159,14 @@ class ReportedBeanRegistry
     @AutoValue
     abstract static class RegistrationInfo
     {
-        static RegistrationInfo registrationInfo(ReportedBean reportedBean, String namePrefix, Map<String, String> tags)
+        static RegistrationInfo registrationInfo(ReportedBean reportedBean, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
         {
-            return new AutoValue_ReportedBeanRegistry_RegistrationInfo(reportedBean, namePrefix, ImmutableMap.copyOf(tags));
+            return new AutoValue_ReportedBeanRegistry_RegistrationInfo(reportedBean, applicationPrefix, namePrefix, ImmutableMap.copyOf(tags));
         }
 
         abstract ReportedBean getReportedBean();
+
+        abstract boolean isApplicationPrefix();
 
         abstract String getNamePrefix();
 
