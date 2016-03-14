@@ -15,47 +15,27 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.inject.Key;
-import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Named;
-
 import static java.util.Objects.requireNonNull;
-import static org.weakref.jmx.ObjectNames.generatedNameOf;
 
 public class NamedReportBinder
 {
-    protected final Multibinder<Mapping> binder;
-    protected final Key<?> key;
+    protected final Mapping mapping;
 
-    NamedReportBinder(Multibinder<Mapping> binder, Key<?> key)
+    NamedReportBinder(Mapping mapping)
     {
-        this.binder = binder;
-        this.key = key;
+        this.mapping = mapping;
     }
 
     /**
-     * Names the metric according to {@link org.weakref.jmx.ObjectNames} name generator methods.
+     * @deprecated No longer necessary.
      */
+    @Deprecated
     public void withGeneratedName()
     {
-        if (key.getAnnotation() != null) {
-            if (key.getAnnotation() instanceof Named) {
-                as(generatedNameOf(key.getTypeLiteral().getRawType(), (Named) key.getAnnotation()));
-            }
-            else {
-                as(generatedNameOf(key.getTypeLiteral().getRawType(), key.getAnnotation()));
-            }
-        }
-        else if (key.getAnnotationType() != null) {
-            as(generatedNameOf(key.getTypeLiteral().getRawType(), key.getAnnotationType()));
-        }
-        else {
-            as(generatedNameOf(key.getTypeLiteral().getRawType()));
-        }
     }
 
     public void as(String name)
     {
-        binder.addBinding().toInstance(new Mapping(requireNonNull(name, "name is null"), key));
+        mapping.setLegacyName(requireNonNull(name, "name is null"));
     }
 }

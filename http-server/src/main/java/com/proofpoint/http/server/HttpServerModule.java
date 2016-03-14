@@ -70,7 +70,7 @@ public class HttpServerModule
         Multibinder.newSetBinder(binder, Filter.class, TheAdminServlet.class);
         Multibinder.newSetBinder(binder, HttpResourceBinding.class, TheServlet.class);
 
-        reportBinder(binder).export(HttpServer.class).withGeneratedName();
+        reportBinder(binder).export(HttpServer.class);
         newExporter(binder).export(HttpServer.class).withGeneratedName();
         reportBinder(binder).bindReportCollection(DetailedRequestStats.class).as(
                 new ObjectNameBuilder(RequestStats.class.getPackage().getName())

@@ -39,6 +39,7 @@ import javax.management.MBeanInfo;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.validation.constraints.NotNull;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
@@ -57,13 +58,21 @@ import static org.testng.Assert.assertTrue;
 
 public class TestReportBinder
 {
-    private static final String PACKAGE_NAME = "com.proofpoint.reporting";
-    private final ObjectName annotatedGaugeClassName;
+    public static final TestingAnnotation TESTING_ANNOTATION = new TestingAnnotation()
+    {
+        @Override
+        public Class<? extends Annotation> annotationType()
+        {
+            return TestingAnnotation.class;
+        }
+    };
+
+    private final ObjectName testingClassName;
 
     public TestReportBinder()
             throws MalformedObjectNameException
     {
-        annotatedGaugeClassName = ObjectName.getInstance(PACKAGE_NAME + ":type=GaugeClass,name=TestingAnnotation");
+        testingClassName = ObjectName.getInstance("com.example:type=TestingClass,name=TestingAnnotation");
 
         Guice.createInjector(new TestingModule());
     }
@@ -73,17 +82,17 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(GaugeClass.class).withGeneratedName();
+                    reportBinder(binder).export(GaugeClass.class);
                 });
         assertReportRegistration(injector, "GaugeClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
-    public void testGaugeWithAnnotation() {
+    public void testGaugeWithAnnotationClass() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class).withGeneratedName();
+                    reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class);
                 });
         assertReportRegistration(injector, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
@@ -93,19 +102,79 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(GaugeClass.class).annotatedWith(Names.named("TestingAnnotation")).withGeneratedName();
+                    reportBinder(binder).export(GaugeClass.class).annotatedWith(Names.named("TestingAnnotation"));
                 });
         assertReportRegistration(injector, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
-    public void testGaugeWithName() {
+    public void testGaugeWithAnnotation() {
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(GaugeClass.class).as(annotatedGaugeClassName.getCanonicalName());
+                    reportBinder(binder).export(GaugeClass.class).annotatedWith(TESTING_ANNOTATION);
                 });
         assertReportRegistration(injector, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+    }
+
+    @Test
+    public void testGaugeWithLegacyName() {
+        Injector injector = Guice.createInjector(
+                new TestingModule(),
+                binder -> {
+                    reportBinder(binder).export(GaugeClass.class).as(testingClassName.getCanonicalName());
+                });
+        assertReportRegistration(injector, "TestingClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+    }
+
+    @Test
+    public void testGaugeKey() {
+        Injector injector = Guice.createInjector(
+                new TestingModule(),
+                binder -> {
+                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class));
+                });
+        assertReportRegistration(injector, "GaugeClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+    }
+
+    @Test
+    public void testGaugeKeyWithAnnotationClass() {
+        Injector injector = Guice.createInjector(
+                new TestingModule(),
+                binder -> {
+                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class, TestingAnnotation.class));
+                });
+        assertReportRegistration(injector, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+    }
+
+    @Test
+    public void testGaugeKeyWithNameAnnotation() {
+        Injector injector = Guice.createInjector(
+                new TestingModule(),
+                binder -> {
+                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class, Names.named("TestingAnnotation")));
+                });
+        assertReportRegistration(injector, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+    }
+
+    @Test
+    public void testGaugeKeyWithAnnotation() {
+        Injector injector = Guice.createInjector(
+                new TestingModule(),
+                binder -> {
+                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class, TESTING_ANNOTATION));
+                });
+        assertReportRegistration(injector, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+    }
+
+    @Test
+    public void testGaugeKeyWithLegacyName() {
+        Injector injector = Guice.createInjector(
+                new TestingModule(),
+                binder -> {
+                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class)).as(testingClassName.getCanonicalName());
+                });
+        assertReportRegistration(injector, "TestingClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
 
     @Test
@@ -113,7 +182,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(ReportedClass.class).withGeneratedName();
+                    reportBinder(binder).export(ReportedClass.class);
                 });
         assertReportRegistration(injector, "ReportedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Reported")));
     }
@@ -123,7 +192,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(ManagedClass.class).withGeneratedName();
+                    reportBinder(binder).export(ManagedClass.class);
                 });
         assertNoReportRegistration(injector);
     }
@@ -133,7 +202,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(NestedClass.class).withGeneratedName();
+                    reportBinder(binder).export(NestedClass.class);
                 });
         injector.getInstance(NestedClass.class);
         assertReportRegistration(injector, "NestedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Nested.Gauge", "Nested.Reported")));
@@ -144,7 +213,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(FlattenClass.class).withGeneratedName();
+                    reportBinder(binder).export(FlattenClass.class);
                 });
         assertReportRegistration(injector, "FlattenClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
@@ -154,7 +223,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(BucketedClass.class).withGeneratedName();
+                    reportBinder(binder).export(BucketedClass.class);
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(BucketedClass.class));
         assertReportRegistration(injector, "BucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
@@ -165,7 +234,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(NestedBucketedClass.class).withGeneratedName();
+                    reportBinder(binder).export(NestedBucketedClass.class);
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(NestedBucketedClass.class));
         BucketedClass.assertProviderSupplied(injector.getInstance(NestedBucketedClass.class).getNested());
@@ -180,7 +249,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(FlattenBucketedClass.class).withGeneratedName();
+                    reportBinder(binder).export(FlattenBucketedClass.class);
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(FlattenBucketedClass.class).getFlatten());
         assertReportRegistration(injector, "FlattenBucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
@@ -191,7 +260,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(DeepBucketedClass.class).withGeneratedName();
+                    reportBinder(binder).export(DeepBucketedClass.class);
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getNested());
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getFlatten());
@@ -427,6 +496,7 @@ public class TestReportBinder
             binder.bind(GaugeClass.class).in(Scopes.SINGLETON);
             binder.bind(GaugeClass.class).annotatedWith(TestingAnnotation.class).to(GaugeClass.class).in(Scopes.SINGLETON);
             binder.bind(GaugeClass.class).annotatedWith(Names.named("TestingAnnotation")).to(GaugeClass.class).in(Scopes.SINGLETON);
+            binder.bind(GaugeClass.class).annotatedWith(TESTING_ANNOTATION).to(GaugeClass.class).in(Scopes.SINGLETON);
             binder.bind(ReportedClass.class).in(Scopes.SINGLETON);
             binder.bind(ManagedClass.class).in(Scopes.SINGLETON);
             binder.bind(NestedClass.class).in(Scopes.SINGLETON);
