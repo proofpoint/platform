@@ -18,6 +18,7 @@ package com.proofpoint.reporting;
 import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Named;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
@@ -39,17 +40,39 @@ public class ReportBinder
 
     public AnnotatedReportBinder export(Class<?> clazz)
     {
-        return new AnnotatedReportBinder(multibinder, Key.get(clazz));
+        Mapping mapping = createMapping(Key.get(clazz));
+        return new AnnotatedReportBinder(mapping);
     }
 
     public NamedReportBinder export(Key<?> key)
     {
-        return new NamedReportBinder(multibinder, key);
+        Mapping mapping = createMapping(key);
+        return new NamedReportBinder(mapping);
     }
-
-    // todo: map and set
 
     public <T> ReportCollectionBinder<T> bindReportCollection(Class<T> iface) {
         return new ReportCollectionBinder<>(binder, iface);
+    }
+
+    private Mapping createMapping(Key<?> key)
+    {
+        String namePrefix;
+        if (key.getAnnotation() != null) {
+            if (key.getAnnotation() instanceof Named) {
+                namePrefix = key.getTypeLiteral().getRawType().getSimpleName() + "." + ((Named) key.getAnnotation()).value();
+            }
+            else {
+                namePrefix = key.getTypeLiteral().getRawType().getSimpleName() + "." + key.getAnnotation().annotationType().getSimpleName();
+            }
+        }
+        else if (key.getAnnotationType() != null) {
+            namePrefix = key.getTypeLiteral().getRawType().getSimpleName() + "." + key.getAnnotationType().getSimpleName();
+        }
+        else {
+            namePrefix = key.getTypeLiteral().getRawType().getSimpleName();
+        }
+        Mapping mapping = new Mapping(key, namePrefix);
+        multibinder.addBinding().toInstance(mapping);
+        return mapping;
     }
 }

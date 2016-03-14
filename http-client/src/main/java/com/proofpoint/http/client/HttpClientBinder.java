@@ -82,7 +82,7 @@ public class HttpClientBinder
         bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
-        reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
+        reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
         newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
@@ -100,7 +100,7 @@ public class HttpClientBinder
         bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
-        reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
+        reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
         newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);

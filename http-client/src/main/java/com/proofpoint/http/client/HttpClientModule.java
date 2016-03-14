@@ -98,7 +98,7 @@ public class HttpClientModule
 
         // export stats
         if (rootBinder == binder) {
-            reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
+            reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
             newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
         }
     }

@@ -32,7 +32,7 @@ public class MyModule
     public void configure(Binder binder)
     {
         ...
-        ReportBinder.reportBinder(binder).export(ReportedObject.class).withGeneratedName();
+        ReportBinder.reportBinder(binder).export(ReportedObject.class);
     }
 }
 ```
@@ -276,7 +276,7 @@ public class HttpServerModule
     {
        // ...
         reportBinder(binder).bindReportCollection(DetailedRequestStats.class).withGeneratedName();
-        reportBinder(binder).export(RequestStats.class).withGeneratedName();
+        reportBinder(binder).export(RequestStats.class);
     }
 }
 
