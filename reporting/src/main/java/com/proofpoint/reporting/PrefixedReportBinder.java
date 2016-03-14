@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Proofpoint, Inc.
+ * Copyright 2016 Proofpoint, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
  */
 package com.proofpoint.reporting;
 
-import java.util.Map;
-
 import static java.util.Objects.requireNonNull;
 
-public class NamedReportBinder
-    extends PrefixedReportBinder
+public class PrefixedReportBinder
+    extends TaggedReportBinder
 {
-    NamedReportBinder(Mapping mapping)
+    PrefixedReportBinder(Mapping mapping)
     {
         super(mapping);
     }
@@ -30,26 +28,9 @@ public class NamedReportBinder
     /**
      * See the EDSL description at {@link ReportBinder}.
      */
-    public PrefixedReportBinder withApplicationPrefix()
+    public TaggedReportBinder withNamePrefix(String namePrefix)
     {
-        mapping.setApplicationPrefix(true);
-        return new PrefixedReportBinder(mapping);
-    }
-
-    /**
-     * @deprecated No longer necessary.
-     */
-    @Deprecated
-    public void withGeneratedName()
-    {
-    }
-
-    /**
-     * @deprecated Use {@link #withNamePrefix} and/or {@link #withTags}.
-     */
-    @Deprecated
-    public void as(String name)
-    {
-        mapping.setLegacyName(requireNonNull(name, "name is null"));
+        mapping.setNamePrefix(requireNonNull(namePrefix, "namePrefix is null"));
+        return new TaggedReportBinder(mapping);
     }
 }

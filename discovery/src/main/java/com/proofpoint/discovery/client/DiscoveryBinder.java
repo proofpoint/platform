@@ -163,12 +163,13 @@ public class DiscoveryBinder
         bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
         privateBinder.bind(HttpClient.class).annotatedWith(serviceType).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
         privateBinder.expose(HttpClient.class).annotatedWith(serviceType);
-        String objectName = new ObjectNameBuilder(HttpClient.class.getPackage().getName())
+        String serviceName = LOWER_CAMEL.to(UPPER_CAMEL, serviceType.value());
+        reportBinder(binder).export(HttpClient.class).annotatedWith(serviceType).withNamePrefix("HttpClient." + serviceName);
+        newExporter(binder).export(HttpClient.class).annotatedWith(serviceType).as(new ObjectNameBuilder(HttpClient.class.getPackage().getName())
                 .withProperty("type", "HttpClient")
-                .withProperty("name", LOWER_CAMEL.to(UPPER_CAMEL, serviceType.value()))
-                .build();
-        reportBinder(binder).export(HttpClient.class).annotatedWith(serviceType).as(objectName);
-        newExporter(binder).export(HttpClient.class).annotatedWith(serviceType).as(objectName);
+                .withProperty("name", serviceName)
+                .build()
+        );
 
         return new BalancingHttpClientBindingBuilder(binder, serviceType, delegateBindingBuilder);
     }
