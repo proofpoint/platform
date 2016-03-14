@@ -97,7 +97,7 @@ Exporting report objects
 ------------------------
 
 The `ReportBinder.export()` methods expose an EDSL for exporting objects to
-reporting.
+reporting. See the `ReportBinder` javadoc for examples.
 
 `ReportExporter` may be used to dynamically export and unexport objects to
 reporting.

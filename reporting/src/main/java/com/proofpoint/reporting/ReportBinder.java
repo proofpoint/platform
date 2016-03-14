@@ -23,6 +23,76 @@ import com.google.inject.name.Named;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 
+/**
+ * Exports Guice-bound objects to the reporting subsystem.
+ *
+ * <h3>The Report Binding EDSL</h3>
+ *
+ * <pre>
+ *     reportBinder(binder).export(Service.class);</pre>
+ *
+ * Exports the implementation that {@code Service} is bound to using the
+ * metric name prefix {@code Service} and no tags.
+ *
+ * <pre>
+ *     reportBinder(binder).export(Service.class)
+ *         .annotatedWith(Red.class);</pre>
+ *
+ * Exports the implementation that {@code Key.get(Service.class, Red.class)}
+ * is bound to using the metric name prefix {@code Service.Red}.
+ *
+ * <pre>
+ *     reportBinder(binder).export(Service.class)
+ *         .annotatedWith(Names.named("red"));</pre>
+ *
+ * Exports the implementation that {@code Key.get(Service.class, Names.named("red"))}
+ * is bound to using the metric name prefix {@code Service.Red}.
+ * The semantic of using the value of the annotation is specific to
+ * {@link Named}; other annotation types use the annotation type in the metric
+ * name prefix.
+ *
+ * <pre>
+ *     reportBinder(binder).export(Key.get(Service.class, Names.named("red"));</pre>
+ *
+ * Exports the implementation that {@code Key.get(Service.class, Names.named("red"))}
+ * is bound to using the metric name prefix {@code Service.Red}.
+ * The semantic of using the value of the annotation is specific to
+ * {@link Named}; other annotation types use the annotation type in the metric
+ * name prefix.
+ *
+ * <pre>
+ *     reportBinder(binder).export(Service.class)
+ *         .withApplicationPrefix();</pre>
+ *
+ * Given the application is named {@code application-name}, exports the
+ * implementation that {@code Service} is bound to using the
+ * metric name prefix {@code ApplicationName.Service}.
+ *
+ * {@code .annotatedWith(...)} may be used before this and subsequent methods.
+ *
+ * <pre>
+ *     reportBinder(binder).export(Service.class)
+ *         .withNamePrefix("Name");</pre>
+ *
+ * Exports the implementation that {@code Service} is bound to using the
+ * metric name prefix {@code Name}.
+ *
+ * <pre>
+ *     reportBinder(binder).export(Service.class)
+ *         .withApplicationPrefix()
+ *         .withNamePrefix("Name");</pre>
+ *
+ * .withApplicationPrefix() may be used before .withNamePrefix(String); this
+ * exports using the metric name prefix {@code ApplicationName.Name}.
+ *
+ * <pre>
+ *     reportBinder(binder).export(Service.class)
+ *         .withTags(ImmutableMap.of("tag", "value"));</pre>
+ *
+ * Adds tags and their corresponding values to the metric being reported.
+ * The previous methods may be used before this.
+ *
+ */
 public class ReportBinder
 {
     private final Binder binder;
@@ -34,16 +104,27 @@ public class ReportBinder
         this.multibinder = newSetBinder(binder, Mapping.class);
     }
 
+    /**
+     * Creates a new {@link ReportBinder}. See the EDSL examples at {@link ReportBinder}.
+     *
+     * @param binder The Guice {@link Binder} to use.
+     */
     public static ReportBinder reportBinder(Binder binder) {
         return new ReportBinder(binder);
     }
 
+    /**
+     * See the EDSL description at {@link ReportBinder}.
+     */
     public AnnotatedReportBinder export(Class<?> clazz)
     {
         Mapping mapping = createMapping(Key.get(clazz));
         return new AnnotatedReportBinder(mapping);
     }
 
+    /**
+     * See the EDSL description at {@link ReportBinder}.
+     */
     public NamedReportBinder export(Key<?> key)
     {
         Mapping mapping = createMapping(key);
