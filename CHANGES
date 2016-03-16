@@ -1,3 +1,9 @@
+Platform 1.38
+
+* Library Upgrades
+
+  - Jetty to 9.3.10 (from 9.3.7)
+
 Platform 1.37
 
 * We changed the logging of configuration upon startup to sort by property.
