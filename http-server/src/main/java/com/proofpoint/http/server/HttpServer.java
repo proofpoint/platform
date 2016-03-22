@@ -297,7 +297,9 @@ public class HttpServer
         HandlerCollection handlers = new HandlerCollection();
 
         for (HttpResourceBinding resource : resources) {
-            handlers.addHandler(new ClassPathResourceHandler(resource.getBaseUri(), resource.getClassPathResourceBase(), resource.getWelcomeFiles()));
+            GzipHandler gzipHandler = new GzipHandler();
+            gzipHandler.setHandler(new ClassPathResourceHandler(resource.getBaseUri(), resource.getClassPathResourceBase(), resource.getWelcomeFiles()));
+            handlers.addHandler(gzipHandler);
         }
 
         handlers.addHandler(createServletContext(theServlet, parameters, false, filters, queryStringFilter, loginService, "http", "https"));
@@ -326,7 +328,7 @@ public class HttpServer
                 .map(date -> ZonedDateTime.ofInstant(date.toInstant(), ZoneOffset.systemDefault()));
     }
 
-    private static Handler createServletContext(Servlet theServlet,
+    private static ServletContextHandler createServletContext(Servlet theServlet,
             Map<String, String> parameters,
             boolean isAdmin,
             Set<Filter> filters,
@@ -344,6 +346,9 @@ public class HttpServer
         context.addFilter(new FilterHolder(new TimingFilter()), "/*", null);
         context.addFilter(new FilterHolder(queryStringFilter), "/*", null);
         context.addFilter(new FilterHolder(new TraceTokenFilter()), "/*", null);
+
+        // -- gzip handler
+        context.setGzipHandler(new GzipHandler());
 
         // -- gzip request filter
         context.addFilter(GZipRequestFilter.class, "/*", null);
@@ -369,10 +374,7 @@ public class HttpServer
         }
         context.setVirtualHosts(virtualHosts);
 
-        GzipHandler gzipHandler = new GzipHandler();
-        gzipHandler.setHandler(context);
-
-        return gzipHandler;
+        return context;
     }
 
     private static SecurityHandler createSecurityHandler(LoginService loginService)
