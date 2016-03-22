@@ -16,7 +16,6 @@
 package com.proofpoint.reporting.testing;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
 import com.google.common.base.Ticker;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
@@ -28,6 +27,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -116,14 +116,7 @@ public class TestingReportCollectionFactory
     protected Supplier<Object> getReturnValueSupplier(Method method)
     {
         final Supplier<Object> superSupplier = super.getReturnValueSupplier(method);
-        return new Supplier<Object>()
-        {
-            @Override
-            public Object get()
-            {
-                return spy(superSupplier.get());
-            }
-        };
+        return () -> spy(superSupplier.get());
     }
 
     private static class TestingInvocationHandler<T>
