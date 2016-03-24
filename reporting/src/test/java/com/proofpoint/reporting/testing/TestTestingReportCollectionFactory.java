@@ -15,6 +15,7 @@
  */
 package com.proofpoint.reporting.testing;
 
+import com.google.common.collect.ImmutableMap;
 import com.proofpoint.reporting.Key;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -50,7 +51,15 @@ public class TestTestingReportCollectionFactory
     }
 
     @Test
-    public void testGetNamedArgumentVerifier()
+    public void testGetPrefixedArgumentVerifier()
+    {
+        KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class, true, null, ImmutableMap.of());
+        assertNotNull(reportCollection);
+        assertNotNull(factory.getArgumentVerifier(reportCollection));
+    }
+
+    @Test
+    public void testGetLegacyNamedArgumentVerifier()
     {
         assertNotNull(factory.createReportCollection(KeyedDistribution.class, "foo"));
         assertNotNull(factory.createReportCollection(KeyedDistribution.class, "bar"));
@@ -78,7 +87,17 @@ public class TestTestingReportCollectionFactory
     }
 
     @Test
-    public void testNamedArgumentVerifier()
+    public void testPrefixedArgumentVerifier()
+    {
+        KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class, true, null, ImmutableMap.of());
+        reportCollection.add("foo", true);
+        KeyedDistribution keyedDistribution = factory.getArgumentVerifier(reportCollection);
+        verify(keyedDistribution).add("foo", true);
+        verifyNoMoreInteractions(keyedDistribution);
+    }
+
+    @Test
+    public void testLegacyNamedArgumentVerifier()
     {
         factory.createReportCollection(KeyedDistribution.class, "name")
                 .add("foo", true);
@@ -98,7 +117,15 @@ public class TestTestingReportCollectionFactory
     }
 
     @Test
-    public void testGetNamedReportCollection()
+    public void testGetPrefixedReportCollection()
+    {
+        KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class, false, "Prefix", ImmutableMap.of());
+        assertNotNull(reportCollection);
+        assertNotNull(factory.getReportCollection(reportCollection));
+    }
+
+    @Test
+    public void testGetLegacyNamedReportCollection()
     {
         assertNotNull(factory.createReportCollection(KeyedDistribution.class, "foo"));
         assertNotNull(factory.createReportCollection(KeyedDistribution.class, "bar"));
@@ -135,7 +162,26 @@ public class TestTestingReportCollectionFactory
     }
 
     @Test
-    public void testNamedReturnValueSpy()
+    public void testPrefixedReturnValueSpy()
+    {
+        KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class, false, "Prefix", ImmutableMap.of());
+        reportCollection.add("foo", true).put("bar");
+        reportCollection.add("foo", false).put("other");
+
+        KeyedDistribution keyedDistribution = factory.getReportCollection(reportCollection);
+        SomeObject someObject = keyedDistribution.add("foo", true);
+
+        verify(someObject).put("bar");
+        verifyNoMoreInteractions(someObject);
+
+        assertEquals(someObject.get(), "bar");
+
+        // Verify calls on getReportCollection() don't affect verification of getArgumentVerifier()
+        verify(factory.getArgumentVerifier(reportCollection)).add("foo", true);
+    }
+
+    @Test
+    public void testLegacyNamedReturnValueSpy()
     {
         KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class, "name");
         reportCollection.add("foo", true).put("bar");
@@ -160,8 +206,15 @@ public class TestTestingReportCollectionFactory
         factory.createReportCollection(KeyedDistribution.class);
     }
 
+    @Test
+    public void testDuplicatePrefixedClass()
+    {
+        factory.createReportCollection(KeyedDistribution.class, true, "Prefix", ImmutableMap.of());
+        factory.createReportCollection(KeyedDistribution.class, true, "Prefix", ImmutableMap.of());
+    }
+
     @Test(expectedExceptions = Error.class, expectedExceptionsMessageRegExp = "Duplicate ReportCollection for interface .*")
-    public void testDuplicateNamedClassFails()
+    public void testDuplicateLegacyNamedClassFails()
     {
         factory.createReportCollection(KeyedDistribution.class, "foo");
         factory.createReportCollection(KeyedDistribution.class, "foo");

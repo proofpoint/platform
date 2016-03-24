@@ -15,8 +15,8 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableMap;
+import com.proofpoint.testing.TestingTicker;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -27,12 +27,10 @@ import org.weakref.jmx.ObjectNameBuilder;
 import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.testng.Assert.assertEquals;
@@ -44,7 +42,6 @@ public class TestReportCollectionFactory
 {
     @Mock
     private ReportExporter reportExporter;
-    private TestTicker ticker;
     private ReportCollectionFactory reportCollectionFactory;
 
     @Captor
@@ -54,8 +51,7 @@ public class TestReportCollectionFactory
     public void setup()
     {
         initMocks(this);
-        ticker = new TestTicker();
-        reportCollectionFactory = new ReportCollectionFactory(reportExporter, ticker);
+        reportCollectionFactory = new ReportCollectionFactory(reportExporter, new TestingTicker());
     }
 
     @Test
@@ -117,7 +113,64 @@ public class TestReportCollectionFactory
     }
 
     @Test
-    public void testNamedCollection()
+    public void testPrefixedCollection()
+            throws Exception
+    {
+        KeyedDistribution keyedDistribution = reportCollectionFactory.createReportCollection(
+                KeyedDistribution.class,
+                true,
+                "Prefix",
+                ImmutableMap.of("a", "fooval", "b", "with\"quote", "c", "with,comma", "d", "with\\backslash")
+        );
+        SomeObject someObject = keyedDistribution.add("value", false);
+
+        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<SomeObject> reportCaptor = ArgumentCaptor.forClass(SomeObject.class);
+
+        verify(reportExporter).export(reportCaptor.capture(), eq(true), stringCaptor.capture(), tagCaptor.capture());
+        assertEquals(stringCaptor.getValue(), "Prefix.Add");
+        assertEquals(tagCaptor.getValue(), ImmutableMap.builder()
+                .put("a", "fooval")
+                .put("b", "with\"quote")
+                .put("c", "with,comma")
+                .put("d", "with\\backslash")
+                .put("foo", "value")
+                .put("bar", "false")
+                .build());
+        assertSame(reportCaptor.getValue(), someObject);
+    }
+
+    @Test
+    public void testPrefixAbsentCollection()
+            throws Exception
+    {
+        KeyedDistribution keyedDistribution = reportCollectionFactory.createReportCollection(
+                KeyedDistribution.class,
+                false,
+                null,
+                ImmutableMap.of("a", "fooval", "b", "with\"quote", "c", "with,comma", "d", "with\\backslash")
+        );
+        SomeObject someObject = keyedDistribution.add("value", false);
+
+        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<SomeObject> reportCaptor = ArgumentCaptor.forClass(SomeObject.class);
+
+        verify(reportExporter).export(reportCaptor.capture(), eq(false), stringCaptor.capture(), tagCaptor.capture());
+        assertEquals(stringCaptor.getValue(), "Add");
+        assertEquals(tagCaptor.getValue(), ImmutableMap.builder()
+                .put("a", "fooval")
+                .put("b", "with\"quote")
+                .put("c", "with,comma")
+                .put("d", "with\\backslash")
+                .put("foo", "value")
+                .put("bar", "false")
+                .build());
+        assertSame(reportCaptor.getValue(), someObject);
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testLegacyNamedCollection()
             throws Exception
     {
         String name = new ObjectNameBuilder("com.example")
@@ -188,9 +241,66 @@ public class TestReportCollectionFactory
         assertNotNull(noParameters.add());
     }
 
+    @Test
+    public void testPrefixedNoParameters()
+    {
+        TrackInstantiation.reset();
+        NoParameters noParameters = reportCollectionFactory.createReportCollection(
+                NoParameters.class,
+                true,
+                "Prefix",
+                ImmutableMap.of("a", "fooval", "b", "with\"quote", "c", "with,comma", "d", "with\\backslash")
+        );
+
+        TrackInstantiation.assertInstantiated();
+
+        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<TrackInstantiation> reportCaptor = ArgumentCaptor.forClass(TrackInstantiation.class);
+
+        verify(reportExporter).export(reportCaptor.capture(), eq(true), stringCaptor.capture(), tagCaptor.capture());
+        assertEquals(stringCaptor.getValue(), "Prefix.Add");
+        assertEquals(tagCaptor.getValue(), ImmutableMap.builder()
+                .put("a", "fooval")
+                .put("b", "with\"quote")
+                .put("c", "with,comma")
+                .put("d", "with\\backslash")
+                .build());
+        assertNotNull(reportCaptor.getValue());
+
+        assertNotNull(noParameters.add());
+    }
 
     @Test
-    public void testNamedNoParameters()
+    public void testPrefixAbsentNoParameters()
+    {
+        TrackInstantiation.reset();
+        NoParameters noParameters = reportCollectionFactory.createReportCollection(
+                NoParameters.class,
+                false,
+                null,
+                ImmutableMap.of("a", "fooval", "b", "with\"quote", "c", "with,comma", "d", "with\\backslash")
+        );
+
+        TrackInstantiation.assertInstantiated();
+
+        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<TrackInstantiation> reportCaptor = ArgumentCaptor.forClass(TrackInstantiation.class);
+
+        verify(reportExporter).export(reportCaptor.capture(), eq(false), stringCaptor.capture(), tagCaptor.capture());
+        assertEquals(stringCaptor.getValue(), "Add");
+        assertEquals(tagCaptor.getValue(), ImmutableMap.builder()
+                .put("a", "fooval")
+                .put("b", "with\"quote")
+                .put("c", "with,comma")
+                .put("d", "with\\backslash")
+                .build());
+        assertNotNull(reportCaptor.getValue());
+
+        assertNotNull(noParameters.add());
+    }
+
+    @Test
+    public void testLegacyNamedNoParameters()
             throws Exception
     {
         TrackInstantiation.reset();
@@ -254,22 +364,6 @@ public class TestReportCollectionFactory
     {
         public ConstructorNeedsArgument(int something)
         {
-        }
-    }
-
-    private static class TestTicker extends Ticker
-    {
-        private long nanos = 0;
-
-        @Override
-        public long read()
-        {
-            return nanos;
-        }
-
-        public void advance(int amount, TimeUnit unit)
-        {
-            nanos += unit.toNanos(amount);
         }
     }
 }

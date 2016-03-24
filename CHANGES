@@ -27,6 +27,11 @@ Platform 1.34
   We have added support for prefixing the metric name with the application
   name.
 
+  We have added an easier to use
+  ReportCollectionFactory.createReportCollection() method. See the method
+  JavaDoc for details. We have deprecated the ObjectName-based
+  ReportCollectionFactory.createReportCollection() method.
+
   We added support for report collection methods which take no arguments.
   The singleton object returned from such methods is constructed and exported
   when the report collection implementation is created. Such methods should
