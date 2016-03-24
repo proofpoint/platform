@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.inject.Inject;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -70,15 +71,46 @@ public class ReportCollectionFactory
         this.ticker = ticker;
     }
 
+    /**
+     * Creates a report collection with a name prefix of the interface class.
+     *
+     * @param aClass The interface class of the created report collection
+     */
     @SuppressWarnings("unchecked")
     public <T> T createReportCollection(Class<T> aClass)
     {
         requireNonNull(aClass, "class is null");
         return (T) newProxyInstance(aClass.getClassLoader(),
                 new Class[]{aClass},
-                new StatInvocationHandler(aClass, Optional.of(aClass.getSimpleName()), ImmutableMap.of()));
+                new StatInvocationHandler(aClass, false, Optional.of(aClass.getSimpleName()), ImmutableMap.of()));
     }
 
+    /**
+     * Creates a report collection with a name prefix of the interface class.
+     *
+     * @param aClass The interface class of the created report collection
+     * @param applicationPrefix Whether to prefix the metric names with the application name
+     * @param namePrefix Name prefix for all metrics reported out of the report collection
+     * @param tags Tags for all metrics reported out of the report collection
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T createReportCollection(Class<T> aClass, boolean applicationPrefix, @Nullable String namePrefix, Map<String, String> tags)
+    {
+        requireNonNull(aClass, "class is null");
+        requireNonNull(tags, "tags is null");
+
+        if ("".equals(namePrefix)) {
+            namePrefix = null;
+        }
+        return (T) newProxyInstance(aClass.getClassLoader(),
+                new Class[] {aClass},
+                new StatInvocationHandler(aClass, applicationPrefix, Optional.ofNullable(namePrefix), ImmutableMap.copyOf(tags)));
+    }
+
+    /**
+     * @deprecated Use {@link #createReportCollection(Class, boolean, String, Map)}.
+     */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public <T> T createReportCollection(Class<T> aClass, String name)
     {
@@ -138,14 +170,14 @@ public class ReportCollectionFactory
 
         return (T) newProxyInstance(aClass.getClassLoader(),
                 new Class[]{aClass},
-                new StatInvocationHandler(aClass, namePrefix, tagsBuilder.build()));
+                new StatInvocationHandler(aClass, false, namePrefix, tagsBuilder.build()));
     }
 
     private class StatInvocationHandler implements InvocationHandler
     {
         private final Map<Method, MethodImplementation> implementationMap;
 
-        <T> StatInvocationHandler(Class<T> aClass, Optional<String> namePrefix, Map<String, String> tags)
+        <T> StatInvocationHandler(Class<T> aClass, boolean applicationPrefix, Optional<String> namePrefix, Map<String, String> tags)
         {
             Builder<Method, MethodImplementation> cacheBuilder = ImmutableMap.builder();
             for (Method method : aClass.getMethods()) {
@@ -155,10 +187,10 @@ public class ReportCollectionFactory
                 }
                 builder.append(LOWER_CAMEL.to(UPPER_CAMEL, method.getName()));
                 if (method.getParameterTypes().length == 0) {
-                    cacheBuilder.put(method, new SingletonImplementation(method, builder.toString(), tags));
+                    cacheBuilder.put(method, new SingletonImplementation(method, applicationPrefix, builder.toString(), tags));
                 }
                 else {
-                    cacheBuilder.put(method, new CacheImplementation(method, builder.toString(), tags));
+                    cacheBuilder.put(method, new CacheImplementation(method, applicationPrefix, builder.toString(), tags));
                 }
             }
             implementationMap = cacheBuilder.build();
@@ -195,12 +227,12 @@ public class ReportCollectionFactory
     {
         private final Object returnValue;
 
-        SingletonImplementation(Method method, String namePrefix, Map<String, String> tags)
+        SingletonImplementation(Method method, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
         {
             checkArgument(method.getParameterTypes().length == 0, "method has parameters");
             returnValue = getReturnValueSupplier(method).get();
 
-            reportExporter.export(returnValue, false, namePrefix, tags);
+            reportExporter.export(returnValue, applicationPrefix, namePrefix, tags);
         }
 
         @Override
@@ -219,7 +251,7 @@ public class ReportCollectionFactory
         @GuardedBy("registeredMap")
         private final Set<Object> reinsertedSet = new HashSet<>();
 
-        CacheImplementation(Method method, String namePrefix, Map<String, String> tags)
+        CacheImplementation(Method method, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
         {
             checkState(method.getParameterTypes().length != 0);
 
@@ -270,7 +302,7 @@ public class ReportCollectionFactory
                                         tagBuilder.put(keyNames.get(i), keyValue.get());
                                     }
                                 }
-                                reportExporter.export(returnValue, false, namePrefix, tagBuilder.build());
+                                reportExporter.export(returnValue, applicationPrefix, namePrefix, tagBuilder.build());
                             }
                             return returnValue;
                         }

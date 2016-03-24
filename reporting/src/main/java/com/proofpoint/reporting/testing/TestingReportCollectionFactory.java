@@ -116,6 +116,29 @@ public class TestingReportCollectionFactory
 
     @SuppressWarnings("unchecked")
     @Override
+    public <T> T createReportCollection(Class<T> aClass, boolean applicationPrefix, @Nullable String namePrefix, Map<String, String> tags)
+    {
+        requireNonNull(aClass, "class is null");
+        requireNonNull(tags, "tags is null");
+
+        T argumentVerifier = mock(aClass);
+        T superCollection = super.createReportCollection(aClass);
+        T reportCollection = (T) newProxyInstance(
+                aClass.getClassLoader(),
+                new Class[] {aClass},
+                new TestingInvocationHandler(argumentVerifier, superCollection));
+        argumentVerifierMap.put(reportCollection, argumentVerifier);
+        superMap.put(reportCollection, superCollection);
+
+        return reportCollection;
+    }
+
+    /**
+     * @deprecated Use {@link #createReportCollection(Class, boolean, String, Map)}.
+     */
+    @Deprecated
+    @SuppressWarnings("unchecked")
+    @Override
     public <T> T createReportCollection(Class<T> aClass, String name)
     {
         requireNonNull(aClass, "class is null");
@@ -146,7 +169,8 @@ public class TestingReportCollectionFactory
     }
 
     /**
-     * @deprecated Use {@link #getArgumentVerifier(Object)} with the testing report collection.
+     * @deprecated Use {@link #getArgumentVerifier(Object)} with the testing
+     * report collection.
      */
     @Deprecated
     public <T> T getArgumentVerifier(Class<T> aClass)
@@ -154,7 +178,12 @@ public class TestingReportCollectionFactory
         return namedArgumentVerifierMap.get(null, aClass);
     }
 
-    // Will be deprecated in a subsequent commit
+    /**
+     * @deprecated Use {@link #createReportCollection(Class, boolean, String, Map)}
+     * to create the testing report collection and {@link #getArgumentVerifier(Object)}
+     * to get the argument verifier.
+     */
+    @Deprecated
     public <T> T getArgumentVerifier(Class<T> aClass, String name)
     {
         requireNonNull(name, "name is null");
@@ -184,7 +213,12 @@ public class TestingReportCollectionFactory
         return namedSuperMap.get(null, aClass);
     }
 
-    // Will be deprecated in a subsequent commit
+    /**
+     * @deprecated Use {@link #createReportCollection(Class, boolean, String, Map)}
+     * to create the testing report collection and {@link #getReportCollection(Object)}
+     * to get the report collection that doesn't affect the argument verifier.
+     */
+    @Deprecated
     public <T> T getReportCollection(Class<T> aClass, String name)
     {
         requireNonNull(name, "name is null");
