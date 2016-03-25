@@ -130,7 +130,7 @@ public class MyModule
     public void configure(Binder binder)
     {
         ...
-        reportBinder.bindReportCollection(StoreStats.class).withGeneratedName();
+        reportBinder.bindReportCollection(StoreStats.class);
     }
 }
 ```
@@ -295,7 +295,7 @@ public class HttpServerModule
     public void configure(Binder binder)
     {
        // ...
-        reportBinder(binder).bindReportCollection(DetailedRequestStats.class).withGeneratedName();
+        reportBinder(binder).bindReportCollection(DetailedRequestStats.class);
         reportBinder(binder).export(RequestStats.class);
     }
 }

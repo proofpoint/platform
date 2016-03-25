@@ -360,7 +360,7 @@ public class TestReportBinder
                         newSetBinder(binder, Mapping.class);
                         binder.bind(ReportedBeanRegistry.class).in(Scopes.SINGLETON);
 
-                        reportBinder(binder).bindReportCollection(KeyedDistribution.class).withGeneratedName();
+                        reportBinder(binder).bindReportCollection(KeyedDistribution.class);
                     }
 
                     @Provides
