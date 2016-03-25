@@ -26,20 +26,59 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static com.google.common.base.Optional.fromNullable;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.reflect.Proxy.newProxyInstance;
+import static java.util.Objects.requireNonNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
+/**
+ * Produces report collection implementations for use in unit tests.
+ *
+ * For any report collection created by {@link #createReportCollection},
+ * interactions may be verified through objects returned by
+ * {@link #getArgumentVerifier} and {@link #getReportCollection}.
+ *
+ * <p>Example:
+ * <pre class="code"><code class="java">
+ * class TestStoreStatsRecorder {
+ *     private TestingReportCollectionFactory factory;
+ *     private StoreStats storeStats;
+ *     private StoreStatsRecorder storeStatsRecorder;
+ *
+ *     &#064;BeforeMethod
+ *     public void setup()
+ *     {
+ *         factory = new TestingReportCollectionFactory();
+ *         storeStats = factory.createReportCollection(StoreStats.class);
+ *         storeStatsRecorder = new StoreStatsRecorder(storeStats);
+ *     }
+ *
+ *     &#064;Test
+ *     public void testRecordSuccessfulAdd()
+ *     {
+ *         storeStatsRecorder.recordSuccessfulAdd(TEXT_PLAIN);
+ *
+ *         verify(factory.getArgumentVerifier(storeStats)).added(TEXT_PLAIN, SUCCESS);
+ *         verifyNoMoreInteractions(factory.getArgumentVerifier(storeStats));
+ *
+ *         verify(factory.getReportCollection(storeStats).added(TEXT_PLAIN, SUCCESS)).add(1);
+ *         verifyNoMoreInteractions(factory.getReportCollection(storeStats).added(TEXT_PLAIN, SUCCESS));
+ *     }
+ * }
+ * </code></pre>
+ */
 public class TestingReportCollectionFactory
     extends ReportCollectionFactory
 {
-    private final NamedInstanceMap argumentVerifierMap = new NamedInstanceMap();
-    private final NamedInstanceMap superMap = new NamedInstanceMap();
+    private final InstanceMap argumentVerifierMap = new InstanceMap();
+    private final InstanceMap superMap = new InstanceMap();
+    private final NamedInstanceMap namedArgumentVerifierMap = new NamedInstanceMap();
+    private final NamedInstanceMap namedSuperMap = new NamedInstanceMap();
 
     public TestingReportCollectionFactory()
     {
@@ -57,32 +96,36 @@ public class TestingReportCollectionFactory
     @Override
     public <T> T createReportCollection(Class<T> aClass)
     {
-        checkNotNull(aClass, "class is null");
+        requireNonNull(aClass, "class is null");
 
         T argumentVerifier = mock(aClass);
-        argumentVerifierMap.put(null, aClass, argumentVerifier);
+        namedArgumentVerifierMap.put(null, aClass, argumentVerifier);
 
         T superCollection = super.createReportCollection(aClass);
-        superMap.put(null, aClass, superCollection);
+        namedSuperMap.put(null, aClass, superCollection);
 
-        return (T) newProxyInstance(
+        T reportCollection = (T) newProxyInstance(
                 aClass.getClassLoader(),
-                new Class[]{aClass},
+                new Class[] {aClass},
                 new TestingInvocationHandler(argumentVerifier, superCollection));
+        argumentVerifierMap.put(reportCollection, argumentVerifier);
+        superMap.put(reportCollection, superCollection);
+
+        return reportCollection;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> T createReportCollection(Class<T> aClass, String name)
     {
-        checkNotNull(aClass, "class is null");
-        checkNotNull(name, "name is null");
+        requireNonNull(aClass, "class is null");
+        requireNonNull(name, "name is null");
 
         T argumentVerifier = mock(aClass);
-        argumentVerifierMap.put(name, aClass, argumentVerifier);
+        namedArgumentVerifierMap.put(name, aClass, argumentVerifier);
 
         T superCollection = super.createReportCollection(aClass);
-        superMap.put(name, aClass, superCollection);
+        namedSuperMap.put(name, aClass, superCollection);
 
         return (T) newProxyInstance(
                 aClass.getClassLoader(),
@@ -90,26 +133,62 @@ public class TestingReportCollectionFactory
                 new TestingInvocationHandler(argumentVerifier, superCollection));
     }
 
+    /**
+     * Returns a mock that can be used with {@link org.mockito.Mockito#verify}
+     * to verify arguments to the testing report collection methods.
+     *
+     * @param testingReportCollection The testing report collection returned by
+     *      {@link #createReportCollection}.
+     */
+    public <T> T getArgumentVerifier(T testingReportCollection)
+    {
+        return argumentVerifierMap.get(testingReportCollection);
+    }
+
+    /**
+     * @deprecated Use {@link #getArgumentVerifier(Object)} with the testing report collection.
+     */
+    @Deprecated
     public <T> T getArgumentVerifier(Class<T> aClass)
     {
-        return argumentVerifierMap.get(null, aClass);
+        return namedArgumentVerifierMap.get(null, aClass);
     }
 
+    // Will be deprecated in a subsequent commit
     public <T> T getArgumentVerifier(Class<T> aClass, String name)
     {
-        checkNotNull(name, "name is null");
-        return argumentVerifierMap.get(name, aClass);
+        requireNonNull(name, "name is null");
+        return namedArgumentVerifierMap.get(name, aClass);
     }
 
+    /**
+     * Returns an implementation returning the same values as the testing
+     * report collection but which does not affect the argument verifier.
+     * All returned values are Mockito spies, so can have their method calls
+     * verified with with {@link org.mockito.Mockito#verify}.
+     *
+     * @param testingReportCollection The testing report collection returned by
+     *      {@link #createReportCollection}.
+     */
+    public <T> T getReportCollection(T testingReportCollection)
+    {
+        return superMap.get(testingReportCollection);
+    }
+
+    /**
+     * @deprecated Use {@link #getReportCollection(Object)} with the testing report collection.
+     */
+    @Deprecated
     public <T> T getReportCollection(Class<T> aClass)
     {
-        return superMap.get(null, aClass);
+        return namedSuperMap.get(null, aClass);
     }
 
+    // Will be deprecated in a subsequent commit
     public <T> T getReportCollection(Class<T> aClass, String name)
     {
-        checkNotNull(name, "name is null");
-        return superMap.get(name, aClass);
+        requireNonNull(name, "name is null");
+        return namedSuperMap.get(name, aClass);
     }
 
     @Override
@@ -125,7 +204,7 @@ public class TestingReportCollectionFactory
         private final T argumentVerifier;
         private final T superCollection;
 
-        public TestingInvocationHandler(T argumentVerifier, T superCollection)
+        TestingInvocationHandler(T argumentVerifier, T superCollection)
         {
             this.argumentVerifier = argumentVerifier;
             this.superCollection = superCollection;
@@ -137,6 +216,22 @@ public class TestingReportCollectionFactory
         {
             method.invoke(argumentVerifier, args);
             return method.invoke(superCollection, args);
+        }
+    }
+
+    private static class InstanceMap
+    {
+        private final Map<Object, Object> map = new IdentityHashMap<>();
+
+        public synchronized <T> void put(T key, T value)
+        {
+            map.put(key, value);
+        }
+
+        @SuppressWarnings("unchecked")
+        public synchronized <T> T get(T key)
+        {
+            return (T) map.get(key);
         }
     }
 

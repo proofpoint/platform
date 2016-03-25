@@ -208,15 +208,16 @@ All returned values are Mockito spies, so can have their method calls verified.
 
 ```java
 class TestStoreStatsRecorder {
-    private StoreStatsRecorder storeStatsRecorder;
     private TestingReportCollectionFactory factory;
+    private StoreStats storeStats;
+    private StoreStatsRecorder storeStatsRecorder;
 
     @BeforeMethod
     public void setup()
     {
         factory = new TestingReportCollectionFactory();
-        storeStatsRecorder = new StoreStatsRecorder(
-            factory.createReportCollection(StoreStats.class));
+        storeStats = factory.createReportCollection(StoreStats.class);
+        storeStatsRecorder = new StoreStatsRecorder(storeStats);
     }
 
     @Test
@@ -224,11 +225,11 @@ class TestStoreStatsRecorder {
     {
         storeStatsRecorder.recordSuccessfulAdd(TEXT_PLAIN);
 
-        verify(factory.getArgumentVerifier(StoreStats.class)).added(TEXT_PLAIN, SUCCESS);
-        verifyNoMoreInteractions(factory.getArgumentVerifier(StoreStats.class));
+        verify(factory.getArgumentVerifier(storeStats)).added(TEXT_PLAIN, SUCCESS);
+        verifyNoMoreInteractions(factory.getArgumentVerifier(storeStats));
 
-        verify(factory.getReportCollection(StoreStats.class).added(TEXT_PLAIN, SUCCESS)).add(1);
-        verifyNoMoreInteractions(factory.getReportCollection(StoreStats.class).added(TEXT_PLAIN, SUCCESS));
+        verify(factory.getReportCollection(storeStats).added(TEXT_PLAIN, SUCCESS)).add(1);
+        verifyNoMoreInteractions(factory.getReportCollection(storeStats).added(TEXT_PLAIN, SUCCESS));
     }
 }
 ```
