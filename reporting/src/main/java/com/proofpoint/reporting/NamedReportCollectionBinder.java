@@ -15,39 +15,17 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.inject.Binder;
-import com.google.inject.Key;
-import com.google.inject.Scopes;
-import com.google.inject.binder.AnnotatedBindingBuilder;
-import com.google.inject.binder.LinkedBindingBuilder;
-
-import static java.util.Objects.requireNonNull;
-
 public class NamedReportCollectionBinder<T>
 {
-    private final Binder binder;
-    private final Class<T> iface;
-    private final com.google.inject.Key<? extends T> key;
+    private final ReportCollectionProvider<T> provider;
 
-    NamedReportCollectionBinder(Binder binder, Class<T> iface, Key<? extends T> key)
+    NamedReportCollectionBinder(ReportCollectionProvider<T> provider)
     {
-        this.binder = binder;
-        this.iface = iface;
-        this.key = key;
+        this.provider = provider;
     }
 
     public void as(String name)
     {
-        AnnotatedBindingBuilder<T> bindingBuilder = binder.bind(iface);
-
-        LinkedBindingBuilder<T> annotatedWith;
-        if (key.getAnnotation() == null) {
-            annotatedWith = bindingBuilder.annotatedWith(key.getAnnotationType());
-        }
-        else {
-            annotatedWith = bindingBuilder.annotatedWith(key.getAnnotation());
-        }
-
-        annotatedWith.toProvider(new ReportCollectionProvider<>(iface, requireNonNull(name, "name is null"))).in(Scopes.SINGLETON);
+        provider.setLegacyName(name);
     }
 }

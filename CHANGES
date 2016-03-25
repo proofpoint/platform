@@ -16,8 +16,9 @@ Platform 1.34
   ReportBinder class JavaDoc for details. We have deprecated the
   ObjectName-based .as() method.
 
-  We have deprecated the .withGeneratedName() method of the
-  ReportBinder.export() EDSL as it is no longer necessary.
+  We have deprecated the .withGeneratedName() methods of the
+  ReportBinder.export() and ReportBinder.bindReportCollection() EDSLs as
+  they are no longer necessary.
 
   We have added an easier to use ReportExporter.export() method (and
   corresponding ReportExporter.unexportObject() method). See the method
