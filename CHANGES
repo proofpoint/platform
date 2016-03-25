@@ -41,6 +41,12 @@ Platform 1.34
   when the report collection implementation is created. Such methods should
   normally be declared to return the non-sparse stats objects.
 
+  We have added to TestingReportCollectionFactory .getArgumentVerifier(T)
+  and .getReportCollection(T) methods that take the testing report collection
+  returned from .createReportCollection(...) as their argument. These are now
+  the preferred methods--the previous .getArgumentVerifier(Class) and
+  .getReportCollection(Class) methods have been deprecated.
+
 * We re-enabled the RSA-SHA1 ciphers that Jetty disabled in the http client
   in Platform 1.32.
 

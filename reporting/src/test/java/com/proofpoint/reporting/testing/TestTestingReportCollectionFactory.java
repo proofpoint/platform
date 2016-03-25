@@ -27,10 +27,10 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNotSame;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 
 public class TestTestingReportCollectionFactory
 {
-
     private TestingReportCollectionFactory factory;
 
     @BeforeMethod
@@ -42,8 +42,10 @@ public class TestTestingReportCollectionFactory
     @Test
     public void testGetArgumentVerifier()
     {
-        assertNotNull(factory.createReportCollection(KeyedDistribution.class));
-        assertNotNull(factory.getArgumentVerifier(KeyedDistribution.class));
+        KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class);
+        assertNotNull(reportCollection);
+        assertNotNull(factory.getArgumentVerifier(reportCollection));
+        assertSame(factory.getArgumentVerifier(KeyedDistribution.class), factory.getArgumentVerifier(reportCollection));
         assertNull(factory.getArgumentVerifier(KeyedDistribution2.class));
     }
 
@@ -68,9 +70,9 @@ public class TestTestingReportCollectionFactory
     @Test
     public void testArgumentVerifier()
     {
-        factory.createReportCollection(KeyedDistribution.class)
-                .add("foo", true);
-        KeyedDistribution keyedDistribution = factory.getArgumentVerifier(KeyedDistribution.class);
+        KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class);
+        reportCollection.add("foo", true);
+        KeyedDistribution keyedDistribution = factory.getArgumentVerifier(reportCollection);
         verify(keyedDistribution).add("foo", true);
         verifyNoMoreInteractions(keyedDistribution);
     }
@@ -88,8 +90,10 @@ public class TestTestingReportCollectionFactory
     @Test
     public void testGetReportCollection()
     {
-        assertNotNull(factory.createReportCollection(KeyedDistribution.class));
-        assertNotNull(factory.getReportCollection(KeyedDistribution.class));
+        KeyedDistribution reportCollection = factory.createReportCollection(KeyedDistribution.class);
+        assertNotNull(reportCollection);
+        assertNotNull(factory.getReportCollection(reportCollection));
+        assertSame(factory.getReportCollection(KeyedDistribution.class), factory.getReportCollection(reportCollection));
         assertNull(factory.getArgumentVerifier(KeyedDistribution2.class));
     }
 
@@ -118,7 +122,7 @@ public class TestTestingReportCollectionFactory
         reportCollection.add("foo", true).put("bar");
         reportCollection.add("foo", false).put("other");
 
-        KeyedDistribution keyedDistribution = factory.getReportCollection(KeyedDistribution.class);
+        KeyedDistribution keyedDistribution = factory.getReportCollection(reportCollection);
         SomeObject someObject = keyedDistribution.add("foo", true);
 
         verify(someObject).put("bar");
@@ -127,7 +131,7 @@ public class TestTestingReportCollectionFactory
         assertEquals(someObject.get(), "bar");
 
         // Verify calls on getReportCollection() don't affect verification of getArgumentVerifier()
-        verify(factory.getArgumentVerifier(KeyedDistribution.class)).add("foo", true);
+        verify(factory.getArgumentVerifier(reportCollection)).add("foo", true);
     }
 
     @Test
