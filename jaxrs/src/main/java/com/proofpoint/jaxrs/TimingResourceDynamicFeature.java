@@ -17,9 +17,9 @@ package com.proofpoint.jaxrs;
 
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.proofpoint.reporting.ReportCollectionFactory;
-import org.weakref.jmx.ObjectNameBuilder;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.Path;
@@ -27,7 +27,6 @@ import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
-
 import java.lang.reflect.Method;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -42,9 +41,9 @@ class TimingResourceDynamicFeature
             .build(new CacheLoader<String, RequestStats>()
             {
                 @Override
-                public RequestStats load(@Nonnull String objectName)
+                public RequestStats load(@Nonnull String namePrefix)
                 {
-                    return reportCollectionFactory.createReportCollection(RequestStats.class, objectName);
+                    return reportCollectionFactory.createReportCollection(RequestStats.class, false, namePrefix, ImmutableMap.of());
                 }
             });
 
@@ -68,10 +67,7 @@ class TimingResourceDynamicFeature
             return;
         }
 
-        String objectName = new ObjectNameBuilder(resourceClass.getPackage().getName())
-                .withProperty("type", resourceClass.getSimpleName())
-                .build();
-        RequestStats requestStats = requestStatsLoadingCache.getUnchecked(objectName);
+        RequestStats requestStats = requestStatsLoadingCache.getUnchecked(resourceClass.getSimpleName());
 
         featureContext.register(new TimingFilter(resourceMethod.getName(), requestStats));
     }

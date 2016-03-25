@@ -34,7 +34,6 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
-import org.weakref.jmx.ObjectNameBuilder;
 
 import javax.annotation.PreDestroy;
 import java.util.Map;
@@ -110,12 +109,9 @@ public class DiscoveryModule
     public synchronized HttpServiceBalancerImpl getHttpServiceBalancerImpl(ReportExporter reportExporter, ReportCollectionFactory reportCollectionFactory)
     {
         if (discoveryBalancer == null) {
-            String name = new ObjectNameBuilder(HttpServiceBalancerStats.class.getPackage().getName())
-                    .withProperty("type", "ServiceClient")
-                    .withProperty("serviceType", "discovery")
-                    .build();
-            discoveryBalancer = new HttpServiceBalancerImpl("discovery", reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, name));
-            reportExporter.export(name, discoveryBalancer);
+            Map<String, String> tags = ImmutableMap.of("serviceType", "discovery");
+            discoveryBalancer = new HttpServiceBalancerImpl("discovery", reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags));
+            reportExporter.export(discoveryBalancer, false, "ServiceClient", tags);
         }
         return discoveryBalancer;
     }
