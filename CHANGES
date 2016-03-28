@@ -7,6 +7,10 @@ Platform 1.41
 
   We replaced the deprecated GzipFilter with GzipHandler
 
+* HttpClient
+
+  We added a FullJsonResponseHandler.getResponseSize() method.
+
 * Library Upgrades
 
   - jmxutils to 1.19 (from 1.18) fixes the server not starting when LogJmxModule
