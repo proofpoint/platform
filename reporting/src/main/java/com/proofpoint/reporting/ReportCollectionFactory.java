@@ -264,7 +264,9 @@ public class ReportCollectionFactory
                 boolean found = false;
                 for (Annotation annotation : annotations) {
                     if (Key.class.isAssignableFrom(annotation.annotationType())) {
-                        keyNameBuilder.add(((Key)annotation).value());
+                        String keyName = ((Key) annotation).value();
+                        checkArgument(!tags.containsKey(keyName), methodName(method) + " @Key(\"" + keyName + "\") duplicates tag on entire report collection");
+                        keyNameBuilder.add(keyName);
                         found = true;
                         break;
                     }
