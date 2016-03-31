@@ -111,6 +111,8 @@ public abstract class AbstractHttpClientTest
         this.keystore = keystore;
     }
 
+    protected abstract HttpClientConfig createClientConfig();
+
     public abstract <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)
             throws Exception;
 
@@ -222,7 +224,7 @@ public abstract class AbstractHttpClientTest
             throws Exception
     {
         try (BackloggedServer server = new BackloggedServer()) {
-            HttpClientConfig config = new HttpClientConfig();
+            HttpClientConfig config = createClientConfig();
             config.setConnectTimeout(new Duration(5, MILLISECONDS));
             config.setIdleTimeout(new Duration(2, SECONDS));
 
@@ -251,7 +253,7 @@ public abstract class AbstractHttpClientTest
     {
         int port = findUnusedPort();
 
-        HttpClientConfig config = new HttpClientConfig();
+        HttpClientConfig config = createClientConfig();
         config.setConnectTimeout(new Duration(5, MILLISECONDS));
 
         Request request = prepareGet()
@@ -274,7 +276,7 @@ public abstract class AbstractHttpClientTest
     {
         int port = findUnusedPort();
 
-        HttpClientConfig config = new HttpClientConfig();
+        HttpClientConfig config = createClientConfig();
         config.setConnectTimeout(new Duration(5, MILLISECONDS));
 
         Request request = prepareGet()
@@ -293,7 +295,7 @@ public abstract class AbstractHttpClientTest
         String invalidHost = "nonexistent.invalid";
         assertUnknownHost(invalidHost);
 
-        HttpClientConfig config = new HttpClientConfig();
+        HttpClientConfig config = createClientConfig();
         config.setConnectTimeout(new Duration(5, SECONDS));
 
         Request request = prepareGet()
@@ -314,7 +316,7 @@ public abstract class AbstractHttpClientTest
     public void testBadPort()
             throws Exception
     {
-        HttpClientConfig config = new HttpClientConfig();
+        HttpClientConfig config = createClientConfig();
         config.setConnectTimeout(new Duration(5, MILLISECONDS));
 
         Request request = prepareGet()
@@ -894,7 +896,7 @@ public abstract class AbstractHttpClientTest
         final String token = createAndRegisterNewRequestToken();
         int port = findUnusedPort();
 
-        HttpClientConfig config = new HttpClientConfig();
+        HttpClientConfig config = createClientConfig();
         config.setConnectTimeout(new Duration(5, MILLISECONDS));
 
         Request request = prepareGet()
@@ -1023,7 +1025,7 @@ public abstract class AbstractHttpClientTest
     public void testReadTimeout()
             throws Exception
     {
-        HttpClientConfig config = new HttpClientConfig()
+        HttpClientConfig config = createClientConfig()
                 .setIdleTimeout(new Duration(500, MILLISECONDS));
 
         URI uri = URI.create(baseURI.toASCIIString() + "/?sleep=1000");
@@ -1154,7 +1156,7 @@ public abstract class AbstractHttpClientTest
             throws Exception
     {
         try (FakeServer fakeServer = new FakeServer(scheme, host, 0, null, false)) {
-            HttpClientConfig config = new HttpClientConfig();
+            HttpClientConfig config = createClientConfig();
             config.setConnectTimeout(new Duration(5, SECONDS));
             config.setIdleTimeout(new Duration(10, MILLISECONDS));
 
@@ -1168,7 +1170,7 @@ public abstract class AbstractHttpClientTest
     {
         try (FakeServer fakeServer = new FakeServer(scheme, host, 0, null, true)) {
 
-            HttpClientConfig config = new HttpClientConfig();
+            HttpClientConfig config = createClientConfig();
             config.setConnectTimeout(new Duration(5, SECONDS));
             config.setIdleTimeout(new Duration(5, SECONDS));
 
@@ -1182,7 +1184,7 @@ public abstract class AbstractHttpClientTest
             throws Exception
     {
         try (FakeServer fakeServer = new FakeServer(scheme, host, 10, null, false)) {
-            HttpClientConfig config = new HttpClientConfig();
+            HttpClientConfig config = createClientConfig();
             config.setConnectTimeout(new Duration(5, SECONDS));
             config.setIdleTimeout(new Duration(10, MILLISECONDS));
 
@@ -1196,7 +1198,7 @@ public abstract class AbstractHttpClientTest
             throws Exception
     {
         try (FakeServer fakeServer = new FakeServer(scheme, host, 10, null, true)) {
-            HttpClientConfig config = new HttpClientConfig();
+            HttpClientConfig config = createClientConfig();
             config.setConnectTimeout(new Duration(500, MILLISECONDS));
             config.setIdleTimeout(new Duration(500, MILLISECONDS));
 
@@ -1209,7 +1211,7 @@ public abstract class AbstractHttpClientTest
             throws Exception
     {
         try (FakeServer fakeServer = new FakeServer(scheme, host, Long.MAX_VALUE, null, true)) {
-            HttpClientConfig config = new HttpClientConfig();
+            HttpClientConfig config = createClientConfig();
             config.setConnectTimeout(new Duration(5, SECONDS));
             config.setIdleTimeout(new Duration(5, SECONDS));
 
@@ -1222,7 +1224,7 @@ public abstract class AbstractHttpClientTest
             throws Exception
     {
         try (FakeServer fakeServer = new FakeServer(scheme, host, 10, "THIS\nIS\nJUNK\n\n".getBytes(), false)) {
-            HttpClientConfig config = new HttpClientConfig();
+            HttpClientConfig config = createClientConfig();
             config.setConnectTimeout(new Duration(5, SECONDS));
             config.setIdleTimeout(new Duration(5, SECONDS));
 
@@ -1235,7 +1237,7 @@ public abstract class AbstractHttpClientTest
             throws Exception
     {
         try (FakeServer fakeServer = new FakeServer(scheme, host, 1024, null, true)) {
-            HttpClientConfig config = new HttpClientConfig();
+            HttpClientConfig config = createClientConfig();
             config.setConnectTimeout(new Duration(5, SECONDS));
             config.setIdleTimeout(new Duration(5, SECONDS));
 
@@ -1327,7 +1329,7 @@ public abstract class AbstractHttpClientTest
         final Request request = prepareGet()
                 .setUri(uriBuilderFrom(baseURI).addParameter("latch").build())
                 .build();
-        final ClientTester clientTester = clientTester(new HttpClientConfig()
+        final ClientTester clientTester = clientTester(createClientConfig()
                 .setMaxConnectionsPerServer(2)
                 .setMaxRequestsQueuedPerDestination(0));
 
