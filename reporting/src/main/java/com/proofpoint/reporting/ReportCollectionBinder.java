@@ -23,13 +23,13 @@ import java.lang.annotation.Annotation;
 import static com.google.inject.Scopes.SINGLETON;
 
 public class ReportCollectionBinder<T>
+    extends NamedReportCollectionBinder<T>
 {
-    private final ReportCollectionProvider<T> provider;
     private final AnnotatedBindingBuilder<T> bindingBuilder;
 
     ReportCollectionBinder(Binder binder, Class<T> iface)
     {
-        provider = new ReportCollectionProvider<>(iface);
+        super(new ReportCollectionProvider<>(iface));
         bindingBuilder = binder.bind(iface);
         bindingBuilder.toProvider(provider).in(SINGLETON);
     }
@@ -40,11 +40,6 @@ public class ReportCollectionBinder<T>
     @Deprecated
     public void withGeneratedName()
     {
-    }
-
-    public void as(String name)
-    {
-        provider.setLegacyName(name);
     }
 
     public NamedReportCollectionBinder<T> annotatedWith(Annotation annotation)

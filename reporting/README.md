@@ -240,15 +240,8 @@ Reporting client
 `ReportingClientModule` enables reporting of collected data to the time-series
 database.
 
-Metric naming
--------------
-
-The "type" and "name" parameters, if present, are prepended to the metric
-name, separated by ".", when the metric is reported to KairosDB. For example,
-the attribute `Count` in an object exported with type `StoreStat` and name
-`Added` will be reported as `StoreStat.Added.Count`.
-
-All other `ObjectName` parameters will be reported as tag/value pairs.
+Added tags
+----------
 
 The application name that was supplied to `Bootstrap.bootstrapApplication()`
 will be reported as the value of the `application` tag.

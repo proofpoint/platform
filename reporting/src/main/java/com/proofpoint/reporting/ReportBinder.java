@@ -92,6 +92,65 @@ import static com.google.inject.multibindings.Multibinder.newSetBinder;
  * Adds tags and their corresponding values to the metric being reported.
  * The previous methods may be used before this.
  *
+ * <pre>
+ *     reportBinder(binder).bindReportCollection(StatsInterface.class);</pre>
+ *
+ * Binds the report collection interface {@code StatsInterface.class} to an
+ * implementation that reports metrics using the
+ * metric name prefix {@code StatsInterface} and no tags.
+ *
+ * <pre>
+ *     reportBinder(binder).bindReportCollection(StatsInterface.class)
+ *         .annotatedWith(Red.class);</pre>
+ *
+ * Binds the report collection interface
+ * {@code Key.get(StatsInterface.class, Red.class)}
+ * to an implementation that reports metrics using the
+ * metric name prefix {@code StatsInterface} and no tags.
+ *
+ * <pre>
+ *     reportBinder(binder).bindReportCollection(StatsInterface.class)
+ *         .annotatedWith(Names.named("red"));</pre>
+ *
+ * Binds the report collection interface
+ * {@code Key.get(StatsInterface.class, Names.named("red"))}
+ * to an implementation that reports metrics using the
+ * metric name prefix {@code StatsInterface} and no tags.
+ *
+ * <pre>
+ *     reportBinder(binder).bindReportCollection(StatsInterface.class)
+ *         .withApplicationPrefix();</pre>
+ *
+ * Given the application is named {@code application-name}, binds the report
+ * collection interface {@code StatsInterface.class} to an implementation that
+ * reports metrics using the metric name prefix
+ * {@code ApplicationName.Service}.
+ *
+ * {@code .annotatedWith(...)} may be used before this and subsequent methods.
+ *
+ * <pre>
+ *     reportBinder(binder).bindReportCollection(StatsInterface.class)
+ *         .withNamePrefix("Name");</pre>
+ *
+ * Binds the report collection interface {@code StatsInterface.class} to an
+ * implementation that reports metrics using the
+ * metric name prefix {@code Name}.
+ *
+ * <pre>
+ *     reportBinder(binder).bindReportCollection(StatsInterface.class)
+ *         .withApplicationPrefix()
+ *         .withNamePrefix("Name");</pre>
+ *
+ * .withApplicationPrefix() may be used before .withNamePrefix(String); this
+ * reports using the metric name prefix @code{ApplicationName.Name}.
+ *
+ * <pre>
+ *     reportBinder(binder).bindReportCollection(StatsInterface.class)
+ *         .withTags(ImmutableMap.of("tag", "value"));</pre>
+ *
+ * Adds tags and their corresponding values to the metrics being reported.
+ * The previous methods may be used before this.
+ *
  */
 public class ReportBinder
 {
@@ -131,6 +190,9 @@ public class ReportBinder
         return new NamedReportBinder(mapping);
     }
 
+    /**
+     * See the EDSL description at {@link ReportBinder}.
+     */
     public <T> ReportCollectionBinder<T> bindReportCollection(Class<T> iface) {
         return new ReportCollectionBinder<>(binder, iface);
     }

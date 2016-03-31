@@ -12,9 +12,10 @@ Platform 1.34
   If you need them to continue to be exported to JMX, add corresponding calls
   to either ExportBinder or MBeanExporter.
 
-  We have added an easier to use ReportBinder.export() EDSL. See the
+  We have added easier to use ReportBinder.export() and
+  ReportBinder.bindReportCollection() EDSLs. See the
   ReportBinder class JavaDoc for details. We have deprecated the
-  ObjectName-based .as() method.
+  ObjectName-based .as() methods.
 
   We have deprecated the .withGeneratedName() methods of the
   ReportBinder.export() and ReportBinder.bindReportCollection() EDSLs as

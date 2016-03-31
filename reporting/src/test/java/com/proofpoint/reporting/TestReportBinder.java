@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
@@ -58,7 +59,7 @@ import static org.testng.Assert.assertTrue;
 
 public class TestReportBinder
 {
-    public static final TestingAnnotation TESTING_ANNOTATION = new TestingAnnotation()
+    private static final TestingAnnotation TESTING_ANNOTATION = new TestingAnnotation()
     {
         @Override
         public Class<? extends Annotation> annotationType()
@@ -133,7 +134,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class));
+                    reportBinder(binder).export(Key.get(GaugeClass.class));
                 });
         assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
@@ -143,7 +144,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class, TestingAnnotation.class));
+                    reportBinder(binder).export(Key.get(GaugeClass.class, TestingAnnotation.class));
                 });
         assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
@@ -153,7 +154,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class, Names.named("TestingAnnotation")));
+                    reportBinder(binder).export(Key.get(GaugeClass.class, Names.named("TestingAnnotation")));
                 });
         assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
@@ -163,7 +164,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class, TESTING_ANNOTATION));
+                    reportBinder(binder).export(Key.get(GaugeClass.class, TESTING_ANNOTATION));
                 });
         assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
@@ -174,7 +175,7 @@ public class TestReportBinder
         Injector injector = Guice.createInjector(
                 new TestingModule(),
                 binder -> {
-                    reportBinder(binder).export(com.google.inject.Key.get(GaugeClass.class)).as(testingClassName.getCanonicalName());
+                    reportBinder(binder).export(Key.get(GaugeClass.class)).as(testingClassName.getCanonicalName());
                 });
         assertReportRegistration(injector, false, "TestingClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
     }
@@ -344,129 +345,220 @@ public class TestReportBinder
     }
 
     @Test
-    public void testReportCollectionGeneratedName()
-            throws MalformedObjectNameException
+    public void testReportCollectionDefaultName()
     {
         Injector injector = Guice.createInjector(
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.requireExplicitBindings();
-                        binder.disableCircularProxies();
-                        binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
-                        binder.bind(ReportExporter.class).asEagerSingleton();
-                        newSetBinder(binder, Mapping.class);
-                        binder.bind(ReportedBeanRegistry.class).in(Scopes.SINGLETON);
-
-                        reportBinder(binder).bindReportCollection(KeyedDistribution.class);
-                    }
-
-                    @Provides
-                    @Singleton
-                    BucketIdProvider getBucketIdProvider()
-                    {
-                        return () -> 0;
-                    }
-                });
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class);
+                }
+        );
         KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
         keyedDistribution.add("value", false);
         assertReportRegistration(injector, false, "KeyedDistribution.Add", ImmutableMap.of("foo", "value", "bar", "false"), Optional.empty());
     }
 
     @Test
-    public void testReportCollectionSpecifiedName()
+    public void testReportCollectionWithAnnotationClass()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).annotatedWith(TestingAnnotation.class);
+                });
+        KeyedDistribution keyedDistribution = injector.getInstance(Key.get(KeyedDistribution.class, TestingAnnotation.class));
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, false, "KeyedDistribution.Add", ImmutableMap.of("foo", "value", "bar", "false"), Optional.empty());
+    }
+
+    @Test
+    public void testReportCollectionWithAnnotation()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).annotatedWith(TESTING_ANNOTATION);
+                });
+        KeyedDistribution keyedDistribution = injector.getInstance(Key.get(KeyedDistribution.class, TESTING_ANNOTATION));
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, false, "KeyedDistribution.Add", ImmutableMap.of("foo", "value", "bar", "false"), Optional.empty());
+    }
+
+    @Test
+    public void testReportCollectionWithNamePrefix()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).withNamePrefix("TestingNamePrefix");
+                }
+        );
+        KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, false, "TestingNamePrefix.Add", ImmutableMap.of("foo", "value", "bar", "false"), Optional.empty());
+    }
+
+    @Test
+    public void testReportCollectionWithNullNamePrefix()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).withNamePrefix(null);
+                }
+        );
+        KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, false, "Add", ImmutableMap.of("foo", "value", "bar", "false"), Optional.empty());
+    }
+
+    @Test
+    public void testReportCollectionWithTags()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).withTags(ImmutableMap.of("a", "bar", "b", "quux"));
+                }
+        );
+        KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, false, "KeyedDistribution.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "bar", "b", "quux"), Optional.empty());
+    }
+
+//    TODO - catch this early
+//    @Test
+//    @ExpectedExceptions...
+//    public void testReportCollectionWithConflictingTags()
+//    {
+//        Injector injector = Guice.createInjector(
+//                new TestingCollectionModule(),
+//                binder -> {
+//                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).withTags(ImmutableMap.of("foo", "bar"));
+//                }
+//        );
+//    }
+
+    @Test
+    public void testReportCollectionWithNamePrefixAndTags()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class)
+                            .withNamePrefix("TestingNamePrefix")
+                            .withTags(ImmutableMap.of("a", "bar", "b", "quux"));
+                }
+        );
+        KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, false, "TestingNamePrefix.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "bar", "b", "quux"), Optional.empty());
+    }
+
+    @Test
+    public void testReportCollectionWithApplicationPrefix()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).withApplicationPrefix();
+                }
+        );
+        KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, true, "KeyedDistribution.Add", ImmutableMap.of("foo", "value", "bar", "false"), Optional.empty());
+    }
+
+    @Test
+    public void testReportCollectionWithApplicationAndNamePrefix()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class)
+                            .withApplicationPrefix()
+                            .withNamePrefix("TestingNamePrefix");
+                }
+        );
+        KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, true, "TestingNamePrefix.Add", ImmutableMap.of("foo", "value", "bar", "false"), Optional.empty());
+    }
+
+    @Test
+    public void testReportCollectionWithApplicationPrefixAndTags()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class)
+                            .withApplicationPrefix()
+                            .withTags(ImmutableMap.of("a", "bar", "b", "quux"));
+                }
+        );
+        KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, true, "KeyedDistribution.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "bar", "b", "quux"), Optional.empty());
+    }
+
+    @Test
+    public void testReportCollectionWithApplicationAndNamePrefixAndTags()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class)
+                            .withApplicationPrefix()
+                            .withNamePrefix("TestingNamePrefix")
+                            .withTags(ImmutableMap.of("a", "bar", "b", "quux"));
+                }
+        );
+        KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
+        keyedDistribution.add("value", false);
+        assertReportRegistration(injector, true, "TestingNamePrefix.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "bar", "b", "quux"), Optional.empty());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testReportCollectionWithLegacyName()
             throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.requireExplicitBindings();
-                        binder.disableCircularProxies();
-                        binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
-                        binder.bind(ReportExporter.class).asEagerSingleton();
-                        newSetBinder(binder, Mapping.class);
-                        binder.bind(ReportedBeanRegistry.class).in(Scopes.SINGLETON);
-
-                        reportBinder(binder).bindReportCollection(KeyedDistribution.class).as("com.example:type=\"Foo\\\",Bar\",a=b");
-                    }
-
-                    @Provides
-                    @Singleton
-                    BucketIdProvider getBucketIdProvider()
-                    {
-                        return () -> 0;
-                    }
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).as("com.example:type=\"Foo\\\",Bar\",a=b");
                 });
         KeyedDistribution keyedDistribution = injector.getInstance(KeyedDistribution.class);
         keyedDistribution.add("value", false);
         assertReportRegistration(injector, false, "Foo\",Bar.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "b"), Optional.empty());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
-    public void testReportCollectionAnnotation()
+    public void testReportCollectionWithLegacyNameAndAnnotation()
             throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.requireExplicitBindings();
-                        binder.disableCircularProxies();
-                        binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
-                        binder.bind(ReportExporter.class).asEagerSingleton();
-                        newSetBinder(binder, Mapping.class);
-                        binder.bind(ReportedBeanRegistry.class).in(Scopes.SINGLETON);
-
-                        reportBinder(binder).bindReportCollection(KeyedDistribution.class).annotatedWith(TestingAnnotation.class).as("com.example:type=\"Foo\\\",Bar\",a=b");
-                    }
-
-                    @Provides
-                    @Singleton
-                    BucketIdProvider getBucketIdProvider()
-                    {
-                        return () -> 0;
-                    }
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).annotatedWith(TestingAnnotation.class).as("com.example:type=\"Foo\\\",Bar\",a=b");
                 });
-        KeyedDistribution keyedDistribution = injector.getInstance(com.google.inject.Key.get(KeyedDistribution.class, TestingAnnotation.class));
+        KeyedDistribution keyedDistribution = injector.getInstance(Key.get(KeyedDistribution.class, TestingAnnotation.class));
         keyedDistribution.add("value", false);
         assertReportRegistration(injector, false, "Foo\",Bar.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "b"), Optional.empty());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
-    public void testReportCollectionNameAnnotated()
+    public void testReportCollectionLegacyNameAndNameAnnotated()
             throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.requireExplicitBindings();
-                        binder.disableCircularProxies();
-                        binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
-                        binder.bind(ReportExporter.class).asEagerSingleton();
-                        newSetBinder(binder, Mapping.class);
-                        binder.bind(ReportedBeanRegistry.class).in(Scopes.SINGLETON);
-
-                        reportBinder(binder).bindReportCollection(KeyedDistribution.class).annotatedWith(Names.named("testing")).as("com.example:type=\"Foo\\\",Bar\",a=b");
-                    }
-
-                    @Provides
-                    @Singleton
-                    BucketIdProvider getBucketIdProvider()
-                    {
-                        return () -> 0;
-                    }
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).annotatedWith(Names.named("testing")).as("com.example:type=\"Foo\\\",Bar\",a=b");
                 });
-        KeyedDistribution keyedDistribution = injector.getInstance(com.google.inject.Key.get(KeyedDistribution.class, Names.named("testing")));
+        KeyedDistribution keyedDistribution = injector.getInstance(Key.get(KeyedDistribution.class, Names.named("testing")));
         keyedDistribution.add("value", false);
         assertReportRegistration(injector, false, "Foo\",Bar.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "b"), Optional.empty());
     }
@@ -559,7 +651,7 @@ public class TestReportBinder
         }
     }
 
-    private class TestingModule implements Module
+    private static class TestingModule implements Module
     {
         @Override
         public void configure(Binder binder)
@@ -601,6 +693,27 @@ public class TestReportBinder
         DeepBucketedClass getDeepBucketedClass()
         {
             return DeepBucketedClass.createDeepBucketedClass();
+        }
+
+        @Provides
+        @Singleton
+        BucketIdProvider getBucketIdProvider()
+        {
+            return () -> 0;
+        }
+    }
+
+    private static class TestingCollectionModule implements Module
+    {
+        @Override
+        public void configure(Binder binder)
+        {
+            binder.requireExplicitBindings();
+            binder.disableCircularProxies();
+            binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
+            binder.bind(ReportExporter.class).asEagerSingleton();
+            newSetBinder(binder, Mapping.class);
+            binder.bind(ReportedBeanRegistry.class).in(Scopes.SINGLETON);
         }
 
         @Provides
@@ -701,7 +814,7 @@ public class TestReportBinder
 
     private interface KeyedDistribution
     {
-        SomeObject add(@Key("foo") String key, @NotNull @Key("bar") boolean bool);
+        SomeObject add(@com.proofpoint.reporting.Key("foo") String key, @NotNull @com.proofpoint.reporting.Key("bar") boolean bool);
     }
 
     public static class SomeObject
