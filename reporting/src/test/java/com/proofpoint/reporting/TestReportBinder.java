@@ -25,6 +25,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provides;
+import com.google.inject.ProvisionException;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
@@ -426,18 +427,18 @@ public class TestReportBinder
         assertReportRegistration(injector, false, "KeyedDistribution.Add", ImmutableMap.of("foo", "value", "bar", "false", "a", "bar", "b", "quux"), Optional.empty());
     }
 
-//    TODO - catch this early
-//    @Test
-//    @ExpectedExceptions...
-//    public void testReportCollectionWithConflictingTags()
-//    {
-//        Injector injector = Guice.createInjector(
-//                new TestingCollectionModule(),
-//                binder -> {
-//                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).withTags(ImmutableMap.of("foo", "bar"));
-//                }
-//        );
-//    }
+    @Test(expectedExceptions = ProvisionException.class,
+            expectedExceptionsMessageRegExp = ".*KeyedDistribution\\.add\\(java\\.lang\\.String, boolean\\) @Key\\(\"foo\"\\) duplicates tag on entire report collection.*")
+    public void testReportCollectionWithConflictingTags()
+    {
+        Injector injector = Guice.createInjector(
+                new TestingCollectionModule(),
+                binder -> {
+                    reportBinder(binder).bindReportCollection(KeyedDistribution.class).withTags(ImmutableMap.of("foo", "bar"));
+                }
+        );
+        injector.getInstance(KeyedDistribution.class);
+    }
 
     @Test
     public void testReportCollectionWithNamePrefixAndTags()

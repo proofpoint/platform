@@ -168,6 +168,19 @@ public class TestReportCollectionFactory
         assertSame(reportCaptor.getValue(), someObject);
     }
 
+    @Test(expectedExceptions = IllegalArgumentException.class,
+            expectedExceptionsMessageRegExp = ".*KeyedDistribution\\.add\\(java\\.lang\\.String, boolean\\) @Key\\(\"foo\"\\) duplicates tag on entire report collection.*")
+    public void testPrefixedCollectionWithConflictingTags()
+            throws Exception
+    {
+        reportCollectionFactory.createReportCollection(
+                KeyedDistribution.class,
+                true,
+                "Prefix",
+                ImmutableMap.of("foo", "fooval")
+        );
+    }
+
     @Test
     @SuppressWarnings("deprecation")
     public void testLegacyNamedCollection()
