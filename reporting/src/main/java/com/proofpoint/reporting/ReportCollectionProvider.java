@@ -15,9 +15,12 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
+import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -27,12 +30,16 @@ class ReportCollectionProvider<T> implements Provider<T>
 {
     private final Class<T> iface;
     private final AtomicBoolean provided = new AtomicBoolean();
+    private boolean applicationPrefix = false;
+    private String namePrefix;
+    private Map<String, String> tags = ImmutableMap.of();
     private String legacyName = null;
     private ReportCollectionFactory reportCollectionFactory;
 
     ReportCollectionProvider(Class<T> iface)
     {
         this.iface = requireNonNull(iface, "iface is null");
+        namePrefix = iface.getSimpleName();
     }
 
     @Inject
@@ -46,9 +53,24 @@ class ReportCollectionProvider<T> implements Provider<T>
     {
         provided.set(true);
         if (legacyName == null) {
-            return reportCollectionFactory.createReportCollection(iface);
+            return reportCollectionFactory.createReportCollection(iface, applicationPrefix, namePrefix, tags);
         }
         return reportCollectionFactory.createReportCollection(iface, legacyName);
+    }
+
+    public void setApplicationPrefix(boolean applicationPrefix)
+    {
+        this.applicationPrefix = applicationPrefix;
+    }
+
+    void setNamePrefix(@Nullable String namePrefix)
+    {
+        this.namePrefix = namePrefix;
+    }
+
+    void setTags(Map<String, String> tags)
+    {
+        this.tags = ImmutableMap.copyOf(tags);
     }
 
     void setLegacyName(String legacyName)

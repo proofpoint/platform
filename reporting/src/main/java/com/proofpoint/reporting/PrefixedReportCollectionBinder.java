@@ -15,10 +15,12 @@
  */
 package com.proofpoint.reporting;
 
-public class NamedReportCollectionBinder<T>
-    extends PrefixedReportCollectionBinder<T>
+import javax.annotation.Nullable;
+
+public class PrefixedReportCollectionBinder<T>
+    extends TaggedReportCollectionBinder<T>
 {
-    NamedReportCollectionBinder(ReportCollectionProvider<T> provider)
+    PrefixedReportCollectionBinder(ReportCollectionProvider<T> provider)
     {
         super(provider);
     }
@@ -26,18 +28,9 @@ public class NamedReportCollectionBinder<T>
     /**
      * See the EDSL description at {@link ReportBinder}.
      */
-    public PrefixedReportCollectionBinder<T> withApplicationPrefix()
+    public TaggedReportCollectionBinder<T> withNamePrefix(@Nullable String namePrefix)
     {
-        provider.setApplicationPrefix(true);
-        return new PrefixedReportCollectionBinder<>(provider);
-    }
-
-    /**
-     * @deprecated Use {@link #withNamePrefix} and/or {@link #withTags}.
-     */
-    @Deprecated
-    public void as(String name)
-    {
-        provider.setLegacyName(name);
+        provider.setNamePrefix(namePrefix);
+        return new TaggedReportCollectionBinder<>(provider);
     }
 }
