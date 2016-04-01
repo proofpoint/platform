@@ -9,6 +9,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.io.CountingInputStream;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
+import com.proofpoint.http.client.HeaderName;
 import com.proofpoint.http.client.HttpStatus;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.json.ObjectMapperProvider;
@@ -19,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -32,7 +33,7 @@ public class TestingResponse
         implements Response
 {
     private final HttpStatus status;
-    private final ListMultimap<String, String> headers;
+    private final ListMultimap<HeaderName, String> headers;
     private final CountingInputStream countingInputStream;
 
     /**
@@ -52,7 +53,7 @@ public class TestingResponse
     public TestingResponse(HttpStatus status, ListMultimap<String, String> headers, InputStream input)
     {
         this.status = requireNonNull(status, "status is null");
-        this.headers = ImmutableListMultimap.copyOf(requireNonNull(headers, "headers is null"));
+        this.headers = ImmutableListMultimap.copyOf(toHeaderMap(checkNotNull(headers, "headers is null")));
         this.countingInputStream = new CountingInputStream(requireNonNull(input, "input is null"));
     }
 
@@ -69,14 +70,7 @@ public class TestingResponse
     }
 
     @Override
-    public String getHeader(String name)
-    {
-        List<String> list = getHeaders().get(name);
-        return list.isEmpty() ? null : list.get(0);
-    }
-
-    @Override
-    public ListMultimap<String, String> getHeaders()
+    public ListMultimap<HeaderName, String> getHeaders()
     {
         return headers;
     }
@@ -288,5 +282,14 @@ public class TestingResponse
 
             return new TestingResponse(status, headers, firstNonNull(bytes, ZERO_LENGTH_BYTES));
         }
+    }
+
+    private static ListMultimap<HeaderName, String> toHeaderMap(ListMultimap<String, String> headers)
+    {
+        ImmutableListMultimap.Builder<HeaderName, String> builder = ImmutableListMultimap.builder();
+        for (Map.Entry<String, String> entry : headers.entries()) {
+            builder.put(HeaderName.of(entry.getKey()), entry.getValue());
+        }
+        return builder.build();
     }
 }

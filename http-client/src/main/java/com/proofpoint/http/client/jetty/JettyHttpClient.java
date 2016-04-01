@@ -16,6 +16,7 @@ import com.google.common.util.concurrent.AbstractFuture;
 import com.proofpoint.http.client.BodySource;
 import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
+import com.proofpoint.http.client.HeaderName;
 import com.proofpoint.http.client.HttpClientConfig;
 import com.proofpoint.http.client.HttpRequestFilter;
 import com.proofpoint.http.client.InputStreamBodySource;
@@ -680,11 +681,13 @@ public class JettyHttpClient
     {
         private final Response response;
         private final CountingInputStream inputStream;
+        private final ListMultimap<HeaderName, String> headers;
 
         JettyResponse(Response response, InputStream inputStream)
         {
             this.response = response;
             this.inputStream = new CountingInputStream(inputStream);
+            this.headers = toHeadersMap(response.getHeaders());
         }
 
         @Override
@@ -700,23 +703,9 @@ public class JettyHttpClient
         }
 
         @Override
-        public String getHeader(String name)
+        public ListMultimap<HeaderName, String> getHeaders()
         {
-            return response.getHeaders().get(name);
-        }
-
-        @Override
-        public ListMultimap<String, String> getHeaders()
-        {
-            HttpFields headers = response.getHeaders();
-
-            ImmutableListMultimap.Builder<String, String> builder = ImmutableListMultimap.builder();
-            for (String name : headers.getFieldNamesCollection()) {
-                for (String value : headers.getValuesList(name)) {
-                    builder.put(name, value);
-                }
-            }
-            return builder.build();
+            return headers;
         }
 
         @Override
@@ -739,6 +728,17 @@ public class JettyHttpClient
                     .add("statusMessage", getStatusMessage())
                     .add("headers", getHeaders())
                     .toString();
+        }
+
+        private static ListMultimap<HeaderName, String> toHeadersMap(HttpFields headers)
+        {
+            ImmutableListMultimap.Builder<HeaderName, String> builder = ImmutableListMultimap.builder();
+            for (String name : headers.getFieldNamesCollection()) {
+                for (String value : headers.getValuesList(name)) {
+                    builder.put(HeaderName.of(name), value);
+                }
+            }
+            return builder.build();
         }
     }
 

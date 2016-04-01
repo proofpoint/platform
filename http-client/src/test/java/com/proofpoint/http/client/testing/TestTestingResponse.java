@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.MediaType;
+import com.proofpoint.http.client.HeaderName;
 import com.proofpoint.http.client.HttpStatus;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.testing.TestingResponse.Builder;
@@ -15,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.io.UnsupportedEncodingException;
@@ -224,7 +226,11 @@ public class TestTestingResponse
     private static void assertResponse(Response response, HttpStatus status, ImmutableListMultimap<String, String> headers, byte[] body)
     {
         assertEquals(response.getStatusCode(), status.code());
-        assertEquals(response.getHeaders(), headers);
+        ImmutableListMultimap.Builder<HeaderName, String> builder = ImmutableListMultimap.builder();
+        for (Map.Entry<String, String> entry : headers.entries()) {
+            builder.put(HeaderName.of(entry.getKey()), entry.getValue());
+        }
+        assertEquals(response.getHeaders(), builder.build());
         try {
             assertEquals(toByteArray(response.getInputStream()), body);
         }

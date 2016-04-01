@@ -28,7 +28,7 @@ public class UnexpectedResponseException extends RuntimeException
     private final Request request;
     private final int statusCode;
     private final String statusMessage;
-    private final ListMultimap<String, String> headers;
+    private final ListMultimap<HeaderName, String> headers;
 
     public UnexpectedResponseException(Request request, Response response)
     {
@@ -48,7 +48,7 @@ public class UnexpectedResponseException extends RuntimeException
                 ImmutableListMultimap.copyOf(response.getHeaders()));
     }
 
-    public UnexpectedResponseException(String message, Request request, int statusCode, String statusMessage, ListMultimap<String, String> headers)
+    public UnexpectedResponseException(String message, Request request, int statusCode, String statusMessage, ListMultimap<HeaderName, String> headers)
     {
         super(message);
         this.request = request;
@@ -69,14 +69,19 @@ public class UnexpectedResponseException extends RuntimeException
 
     public String getHeader(String name)
     {
-        List<String> values = getHeaders().get(name);
+        List<String> values = getHeaders().get(HeaderName.of(name));
         if (values.isEmpty()) {
             return null;
         }
         return values.get(0);
     }
 
-    public ListMultimap<String, String> getHeaders()
+    public List<String> getHeaders(String name)
+    {
+        return headers.get(HeaderName.of(name));
+    }
+
+    public ListMultimap<HeaderName, String> getHeaders()
     {
         return headers;
     }
