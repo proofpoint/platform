@@ -8,6 +8,8 @@ interface HealthBeanAttribute
 {
     String getDescription();
 
+    boolean isRemoveFromRotation();
+
     String getValue()
             throws AttributeNotFoundException, MBeanException, ReflectionException;
 }

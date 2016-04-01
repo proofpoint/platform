@@ -8,19 +8,14 @@ import javax.management.ReflectionException;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 @AutoValue
 abstract class FieldHealthBeanAttribute
         implements HealthBeanAttribute
 {
-    static FieldHealthBeanAttribute fieldHealthBeanAttribute(String description, Object target, Field field)
+    static FieldHealthBeanAttribute fieldHealthBeanAttribute(String description, boolean isRemoveFromRotation, Object target, Field field)
     {
-        return new AutoValue_FieldHealthBeanAttribute(description, target, field);
+        return new AutoValue_FieldHealthBeanAttribute(description, isRemoveFromRotation, target, field);
     }
-
-    @Override
-    public abstract String getDescription();
 
     abstract Object getTarget();
 

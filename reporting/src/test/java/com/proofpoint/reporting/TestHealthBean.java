@@ -8,6 +8,7 @@ import javax.management.ReflectionException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.testng.Assert.fail;
 
@@ -19,6 +20,7 @@ public class TestHealthBean extends AbstractHealthBeanTest<Object>
     {
         objects = new ArrayList<>();
         objects.add(new SimpleHealthObject());
+        objects.add(new SimpleHealthRemoveFromRotationObject());
         objects.add(new FlattenHealthObject());
         objects.add(new NestedHealthObject());
 
@@ -76,6 +78,31 @@ public class TestHealthBean extends AbstractHealthBeanTest<Object>
         HealthBean.forTarget(new Object() {
             @HealthCheck("Field")
             private Object field;
+        });
+    }
+
+    @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = ".*getString\\(\\) cannot have both @HealthCheck and @HealthCheckRemoveFromRotation annotations")
+    public void testMethodBothAnnotations()
+    {
+        HealthBean.forTarget(new Object() {
+            @HealthCheck("Name 1")
+            @HealthCheckRemoveFromRotation("Name 2")
+            public String getString()
+            {
+                return null;
+            }
+        });
+    }
+
+    @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = ".*field cannot have both @HealthCheck and @HealthCheckRemoveFromRotation annotations")
+    public void testFieldBothAnnotatins()
+    {
+        HealthBean.forTarget(new Object() {
+            @HealthCheck("Field 1")
+            @HealthCheckRemoveFromRotation("Field 2")
+            private AtomicReference<String> field;
         });
     }
 }

@@ -36,13 +36,13 @@ class HealthBeanAttributeBuilder
     private Method annotatedGetter;
     private Field field;
 
-    public HealthBeanAttributeBuilder onInstance(Object target)
+    HealthBeanAttributeBuilder onInstance(Object target)
     {
         this.target = requireNonNull(target, "target is null");
         return this;
     }
 
-    public HealthBeanAttributeBuilder withConcreteGetter(Method concreteGetter)
+    HealthBeanAttributeBuilder withConcreteGetter(Method concreteGetter)
     {
         requireNonNull(concreteGetter, "concreteGetter is null");
         checkArgument(isValidGetter(concreteGetter), "Method is not a valid getter: " + concreteGetter);
@@ -50,7 +50,7 @@ class HealthBeanAttributeBuilder
         return this;
     }
 
-    public HealthBeanAttributeBuilder withAnnotatedGetter(Method annotatedGetter)
+    HealthBeanAttributeBuilder withAnnotatedGetter(Method annotatedGetter)
     {
         requireNonNull(annotatedGetter, "annotatedGetter is null");
         checkArgument(isValidGetter(annotatedGetter), "Method is not a valid getter: " + annotatedGetter);
@@ -58,7 +58,7 @@ class HealthBeanAttributeBuilder
         return this;
     }
 
-    public HealthBeanAttributeBuilder withField(Field field)
+    HealthBeanAttributeBuilder withField(Field field)
     {
         requireNonNull(field, "field is null");
         checkArgument(AtomicReference.class.isAssignableFrom(field.getType()), "Field is not an AtomicReference: " + field);
@@ -66,17 +66,30 @@ class HealthBeanAttributeBuilder
         return this;
     }
 
-    public Collection<? extends HealthBeanAttribute> build()
+    Collection<? extends HealthBeanAttribute> build()
     {
-        checkArgument(target != null, "JmxAttribute must have a target object");
+        checkArgument(target != null, "HealthBeanAttribute must have a target object");
 
         if (field != null) {
-            String description = field.getAnnotation(HealthCheck.class).value();
+            String description;
+            boolean isRemoveFromRotation;
+            HealthCheckRemoveFromRotation removeFromRotation = field.getAnnotation(HealthCheckRemoveFromRotation.class);
+            if (removeFromRotation != null) {
+                if (field.getAnnotation(HealthCheck.class) != null) {
+                    throw new RuntimeException("field " + field + " cannot have both @HealthCheck and @HealthCheckRemoveFromRotation annotations");
+                }
+                description = removeFromRotation.value();
+                isRemoveFromRotation = true;
+            }
+            else {
+                description = field.getAnnotation(HealthCheck.class).value();
+                isRemoveFromRotation = false;
+            }
 
-            return ImmutableList.of(fieldHealthBeanAttribute(description, target, field));
+            return ImmutableList.of(fieldHealthBeanAttribute(description, isRemoveFromRotation, target, field));
         }
         else if (AnnotationUtils.isFlatten(annotatedGetter) || AnnotationUtils.isNested(annotatedGetter)) {
-            checkArgument(concreteGetter != null, "Nested/Flattened JmxAttribute must have a concrete getter");
+            checkArgument(concreteGetter != null, "Nested/Flattened HealthBeanAttribute must have a concrete getter");
 
             Object value = null;
             try {
@@ -92,11 +105,24 @@ class HealthBeanAttributeBuilder
             return HealthBean.forTarget(value).getAttributes();
         }
         else {
-            checkArgument (concreteGetter != null, "JmxAttribute must have a concrete getter");
+            checkArgument (concreteGetter != null, "HealthBeanAttribute must have a concrete getter");
 
-            String description = annotatedGetter.getAnnotation(HealthCheck.class).value();
+            String description;
+            boolean isRemoveFromRotation;
+            HealthCheckRemoveFromRotation removeFromRotation = annotatedGetter.getAnnotation(HealthCheckRemoveFromRotation.class);
+            if (removeFromRotation != null) {
+                if (annotatedGetter.getAnnotation(HealthCheck.class) != null) {
+                    throw new RuntimeException("Method " + annotatedGetter + " cannot have both @HealthCheck and @HealthCheckRemoveFromRotation annotations");
+                }
+                description = removeFromRotation.value();
+                isRemoveFromRotation = true;
+            }
+            else {
+                description = annotatedGetter.getAnnotation(HealthCheck.class).value();
+                isRemoveFromRotation = false;
+            }
 
-            return ImmutableList.of(methodHealthBeanAttribute(description, target, concreteGetter));
+            return ImmutableList.of(methodHealthBeanAttribute(description, isRemoveFromRotation, target, concreteGetter));
         }
     }
 }

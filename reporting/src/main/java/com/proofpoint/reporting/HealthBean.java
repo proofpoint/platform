@@ -38,7 +38,7 @@ abstract class HealthBean
 
         ImmutableList.Builder<HealthBeanAttribute> attributes = ImmutableList.builder();
 
-        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), HealthCheck.class).entrySet()) {
+        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), HealthCheck.class, HealthCheckRemoveFromRotation.class).entrySet()) {
             Method concreteMethod = entry.getKey();
             Method annotatedMethod = entry.getValue();
 
@@ -53,8 +53,7 @@ abstract class HealthBean
                     .build());
         }
 
-        for (Field field : AnnotationUtils.findAnnotatedFields(target.getClass(), HealthCheck.class)) {
-
+        for (Field field : AnnotationUtils.findAnnotatedFields(target.getClass(), HealthCheck.class, HealthCheckRemoveFromRotation.class)) {
             if (!AtomicReference.class.isAssignableFrom(field.getType())) {
                 throw new RuntimeException("healthcheck annotation on non-AtomicReference field " + field.toGenericString());
             }
