@@ -95,7 +95,7 @@ public class TestJettyHttpsClient
                 .setUri(uri)
                 .build();
 
-        executeRequest(request, new ResponseToStringHandler());
+        executeRequest(request, new ExceptionResponseHandler());
     }
 
     @Override
