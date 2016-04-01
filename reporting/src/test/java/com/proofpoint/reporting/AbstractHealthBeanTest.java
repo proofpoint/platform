@@ -45,6 +45,7 @@ public abstract class AbstractHealthBeanTest<T>
                 new Object[] { "setObjectValue", "Object value", new Object[] { "random object", 1, true }, Object.class },
                 new Object[] { "setNotBeanValue", "Not Bean value", new Object[] { null, "hello there" }, String.class },
                 new Object[] { "setPrivateValue", "Private value", new Object[] { null, "hello there" }, String.class },
+                new Object[] { "setFieldValue", "Field value", new Object[] { null, "hello there" }, String.class },
         };
     }
 

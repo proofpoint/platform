@@ -17,11 +17,14 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableList;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.proofpoint.reporting.FieldHealthBeanAttribute.fieldHealthBeanAttribute;
 import static com.proofpoint.reporting.MethodHealthBeanAttribute.methodHealthBeanAttribute;
 import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
 import static java.util.Objects.requireNonNull;
@@ -31,6 +34,7 @@ class HealthBeanAttributeBuilder
     private Object target;
     private Method concreteGetter;
     private Method annotatedGetter;
+    private Field field;
 
     public HealthBeanAttributeBuilder onInstance(Object target)
     {
@@ -54,11 +58,24 @@ class HealthBeanAttributeBuilder
         return this;
     }
 
+    public HealthBeanAttributeBuilder withField(Field field)
+    {
+        requireNonNull(field, "field is null");
+        checkArgument(AtomicReference.class.isAssignableFrom(field.getType()), "Field is not an AtomicReference: " + field);
+        this.field = field;
+        return this;
+    }
+
     public Collection<? extends HealthBeanAttribute> build()
     {
         checkArgument(target != null, "JmxAttribute must have a target object");
 
-        if (AnnotationUtils.isFlatten(annotatedGetter) || AnnotationUtils.isNested(annotatedGetter)) {
+        if (field != null) {
+            String description = field.getAnnotation(HealthCheck.class).value();
+
+            return ImmutableList.of(fieldHealthBeanAttribute(description, target, field));
+        }
+        else if (AnnotationUtils.isFlatten(annotatedGetter) || AnnotationUtils.isNested(annotatedGetter)) {
             checkArgument(concreteGetter != null, "Nested/Flattened JmxAttribute must have a concrete getter");
 
             Object value = null;
