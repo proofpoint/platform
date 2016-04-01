@@ -43,19 +43,19 @@ import static java.util.Arrays.asList;
 final class AnnotationUtils
 {
     private static final Set<Class<? extends Annotation>> FLATTEN_OR_NESTED_ANNOTATION_SET = ImmutableSet.of(Nested.class, Flatten.class);
-    private static final Set<Class<? extends Annotation>> FLATTEN_ANNOTATION_SET = ImmutableSet.<Class<? extends Annotation>>of(Flatten.class);
-    private static final Set<Class<? extends Annotation>> NESTED_ANNOTATION_SET = ImmutableSet.<Class<? extends Annotation>>of(Nested.class);
+    private static final Set<Class<? extends Annotation>> FLATTEN_ANNOTATION_SET = ImmutableSet.of(Flatten.class);
+    private static final Set<Class<? extends Annotation>> NESTED_ANNOTATION_SET = ImmutableSet.of(Nested.class);
 
     private AnnotationUtils()
     {
     }
 
-    public static Descriptor buildDescriptor(Method annotatedMethod)
+    static Descriptor buildDescriptor(Method annotatedMethod)
     {
         return buildDescriptor(annotatedMethod.getAnnotations());
     }
 
-    public static Descriptor buildDescriptor(Annotation... annotations)
+    private static Descriptor buildDescriptor(Annotation... annotations)
     {
         Map<String, Object> fields = new TreeMap<>();
 
@@ -67,7 +67,7 @@ final class AnnotationUtils
         return new ImmutableDescriptor(fields);
     }
 
-    public static List<Annotation> computeWalkSequence(Annotation... annotations)
+    private static List<Annotation> computeWalkSequence(Annotation... annotations)
     {
         Set<Annotation> seen = new HashSet<>();
         List<Annotation> result = new ArrayList<>();
@@ -171,15 +171,16 @@ final class AnnotationUtils
      * Find methods that are tagged with a particular annotation somewhere in the hierarchy
      *
      * @param clazz the class to analyze
-     * @param annotationClass the annotation to look for
+     * @param annotationClass the annotations to look for
      * @return a map that associates a concrete method to the actual method tagged as reported
      *         (which may belong to a different class in clazz's hierarchy)
      */
-    public static Map<Method, Method> findAnnotatedMethods(Class<?> clazz, Class<? extends Annotation> annotationClass)
+    @SafeVarargs
+    static Map<Method, Method> findAnnotatedMethods(Class<?> clazz, Class<? extends Annotation>... annotationClass)
     {
         Map<Method, Method> result = new HashMap<>();
         Set<Signature> foundMethods = new HashSet<>();
-        findAnnotatedMethods(clazz, result, foundMethods, ImmutableSet.<Class<? extends Annotation>>of(annotationClass));
+        findAnnotatedMethods(clazz, result, foundMethods, ImmutableSet.copyOf(annotationClass));
 
         return result;
     }
@@ -251,13 +252,14 @@ final class AnnotationUtils
      * Find fields that are tagged with a particular annotation somewhere in the hierarchy
      *
      * @param clazz the class to analyze
-     * @param annotationClass the annotation to look for
+     * @param annotationClass the annotations to look for
      * @return a collection of fields
      */
-    public static Collection<Field> findAnnotatedFields(Class<?> clazz, Class<? extends Annotation> annotationClass)
+    @SafeVarargs
+    static Collection<Field> findAnnotatedFields(Class<?> clazz, Class<? extends Annotation>... annotationClass)
     {
         Set<Field> result = new HashSet<>();
-        findAnnotatedFields(clazz, result, ImmutableSet.<Class<? extends Annotation>>of(annotationClass));
+        findAnnotatedFields(clazz, result, ImmutableSet.copyOf(annotationClass));
 
         return result;
     }
@@ -272,7 +274,7 @@ final class AnnotationUtils
                 continue;
             }
 
-            if (isAnnotationPresent(annotationSet, new HashSet<Class<? extends Annotation>>(), field.getDeclaredAnnotations())) {
+            if (isAnnotationPresent(annotationSet, new HashSet<>(), field.getDeclaredAnnotations())) {
                 field.setAccessible(true);
                 result.add(field);
             }
@@ -290,17 +292,17 @@ final class AnnotationUtils
 
     private static boolean isAnnotatedMethod(Method method, Set<Class<? extends Annotation>> annotationSet)
     {
-        return isAnnotationPresent(Sets.union(annotationSet, FLATTEN_OR_NESTED_ANNOTATION_SET), new HashSet<Class<? extends Annotation>>(), method.getAnnotations());
+        return isAnnotationPresent(Sets.union(annotationSet, FLATTEN_OR_NESTED_ANNOTATION_SET), new HashSet<>(), method.getAnnotations());
     }
 
-    public static boolean isFlatten(Method method)
+    static boolean isFlatten(Method method)
     {
-        return method != null && isAnnotationPresent(FLATTEN_ANNOTATION_SET, new HashSet<Class<? extends Annotation>>(), method.getAnnotations());
+        return method != null && isAnnotationPresent(FLATTEN_ANNOTATION_SET, new HashSet<>(), method.getAnnotations());
     }
 
-    public static boolean isNested(Method method)
+    static boolean isNested(Method method)
     {
-        return method != null && isAnnotationPresent(NESTED_ANNOTATION_SET, new HashSet<Class<? extends Annotation>>(), method.getAnnotations());
+        return method != null && isAnnotationPresent(NESTED_ANNOTATION_SET, new HashSet<>(), method.getAnnotations());
     }
 
     private static boolean isAnnotationPresent(Set<Class<? extends Annotation>> annotationClasses, Set<Class<? extends Annotation>> processedTypes, Annotation... annotations)
