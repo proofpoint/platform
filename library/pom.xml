@@ -968,6 +968,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.eclipse.jetty.http2</groupId>
+                <artifactId>http2-client</artifactId>
+                <version>${dep.jetty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jetty.http2</groupId>
+                <artifactId>http2-http-client-transport</artifactId>
+                <version>${dep.jetty.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>annotations</artifactId>
                 <version>2.0.3</version>
