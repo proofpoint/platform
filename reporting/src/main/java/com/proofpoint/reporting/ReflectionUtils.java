@@ -79,16 +79,16 @@ final class ReflectionUtils
             }
         }
         catch (RuntimeException e) {
-            throw new RuntimeOperationsException(e, "RuntimeException occured while invoking " + toSimpleName(method));
+            throw new RuntimeOperationsException(e, "RuntimeException occurred while invoking " + toSimpleName(method));
         }
         catch (IllegalAccessException e) {
-            throw new ReflectionException(e, "IllegalAccessException occured while invoking " + toSimpleName(method));
+            throw new ReflectionException(e, "IllegalAccessException occurred while invoking " + toSimpleName(method));
         }
         catch (Error err) {
-            throw new RuntimeErrorException(err, "Error occured while invoking " + toSimpleName(method));
+            throw new RuntimeErrorException(err, "Error occurred while invoking " + toSimpleName(method));
         }
         catch (Exception e) {
-            throw new ReflectionException(e, "Exception occured while invoking " + toSimpleName(method));
+            throw new ReflectionException(e, "Exception occurred while invoking " + toSimpleName(method));
         }
     }
 

@@ -15,7 +15,7 @@
  */
 package com.proofpoint.reporting;
 
-// Overriden method, inherit annotation from public parent => A
+// Overridden method, inherit annotation from public parent => A
 public class TestInheritance1
     extends TestInheritanceBase
 {
