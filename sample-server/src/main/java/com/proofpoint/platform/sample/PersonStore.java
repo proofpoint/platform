@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.inject.Inject;
 import com.proofpoint.event.client.EventClient;
 import com.proofpoint.reporting.Gauge;
+import com.proofpoint.reporting.HealthCheck;
 import org.weakref.jmx.Flatten;
 
 import java.util.Collection;
@@ -61,6 +62,16 @@ public class PersonStore
     private int getSize()
     {
         return persons.size();
+    }
+
+    @HealthCheck("Person store size")
+    private String checkSize()
+    {
+        int size = persons.size();
+        if (size < 2) {
+            return "Not enough persons in store: " + size;
+        }
+        return null;
     }
 
     public Person get(String id)
