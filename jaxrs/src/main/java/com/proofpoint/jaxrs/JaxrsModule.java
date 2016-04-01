@@ -29,6 +29,7 @@ import com.google.inject.TypeLiteral;
 import com.proofpoint.http.server.TheAdminServlet;
 import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.log.Logger;
+import com.proofpoint.reporting.InRotationResource;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -90,6 +91,7 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(OverrideMethodFilter.class);
         jaxrsBinder(binder).bind(TimingResourceDynamicFeature.class);
         jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
+        jaxrsBinder(binder).bind(InRotationResource.class);
         jaxrsBinder(binder).bindAdmin(ParsingExceptionMapper.class);
         jaxrsBinder(binder).bindAdmin(QueryParamExceptionMapper.class);
         jaxrsBinder(binder).bindAdmin(OverrideMethodFilter.class);

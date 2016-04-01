@@ -5,6 +5,15 @@ Platform 1.34
   the testing module will need to add their own dependency on testing in their
   pom.xml
 
+* Health checks
+
+  We added a @HealthCheckRemoveFromRotation annotation, which may be placed
+  on either a method with no arguments or a field of type AtomicReference.
+  When the object is bound with HealthBinder, the method will be called or
+  the field will be examined by the "/inrotation.txt" resource. A value of
+  null indicates healthy; any other value indicates a critical problem, with
+  the toString() used as the message.
+
 * Reporting
 
   We added support for report collection methods which take no arguments.
