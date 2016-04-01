@@ -254,12 +254,19 @@ public class TestHttpServerProvider
         createServer();
         lifeCycleManager.start();
 
-        try (JettyHttpClient httpClient = new JettyHttpClient()) {
+        try (JettyHttpClient httpClient = new JettyHttpClient(new HttpClientConfig().setHttp2Enabled(false))) {
+            StatusResponse response = httpClient.execute(prepareGet().setUri(httpServerInfo.getHttpUri()).build(), createStatusResponseHandler());
+
+            assertEquals(response.getHeader("X-Protocol"), "HTTP/1.1");
+        }
+        verify(requestLog).log(any(), any());
+
+        try (JettyHttpClient httpClient = new JettyHttpClient(new HttpClientConfig().setHttp2Enabled(true))) {
             StatusResponse response = httpClient.execute(prepareGet().setUri(httpServerInfo.getHttpUri()).build(), createStatusResponseHandler());
 
             assertEquals(response.getStatusCode(), HttpServletResponse.SC_OK);
+            assertEquals(response.getHeader("X-Protocol"), "HTTP/2.0");
         }
-        verify(requestLog).log(any(), any());
     }
 
     @Test

@@ -42,6 +42,7 @@ class DummyServlet
         if (token != null) {
             resp.addHeader("X-Trace-Token-Was", token.toString());
         }
+        resp.setHeader("X-Protocol", req.getProtocol());
     }
 
     @Override

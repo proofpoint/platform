@@ -35,6 +35,7 @@ public class TestJettyHttpClientSocksProxy
 //    protected HttpClientConfig createClientConfig()
 //    {
 //        return new HttpClientConfig()
+//                .setHttp2Enabled(false)
 //                .setSocksProxy(testingSocksProxy.getHostAndPort());
 //    }
 //

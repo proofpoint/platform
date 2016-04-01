@@ -5,12 +5,15 @@ import com.google.common.collect.ImmutableList;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
 import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
+import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.log.Logging;
 import com.proofpoint.testing.Assertions;
 import com.proofpoint.testing.Closeables;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.units.Duration;
+import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -19,6 +22,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -50,7 +54,6 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,11 +66,13 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.Deflater;
 
 import static com.google.common.base.Throwables.getStackTraceAsString;
 import static com.google.common.base.Throwables.propagateIfPossible;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.net.HttpHeaders.ACCEPT_ENCODING;
+import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 import static com.proofpoint.concurrent.Threads.threadsNamed;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
 import static com.proofpoint.http.client.Request.Builder.prepareDelete;
@@ -77,6 +82,7 @@ import static com.proofpoint.http.client.Request.Builder.preparePut;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.testing.Assertions.assertGreaterThan;
+import static com.proofpoint.testing.Assertions.assertGreaterThanOrEqual;
 import static com.proofpoint.testing.Assertions.assertLessThan;
 import static com.proofpoint.testing.Closeables.closeQuietly;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
@@ -90,6 +96,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -193,6 +200,7 @@ public abstract class AbstractHttpClientTest
 
         ServletHolder servletHolder = new ServletHolder(servlet);
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+        context.setGzipHandler(new HackGzipHandler());
         context.addServlet(servletHolder, "/*");
         HandlerCollection handlers = new HandlerCollection();
         handlers.addHandler(context);
@@ -364,8 +372,9 @@ public abstract class AbstractHttpClientTest
                 .setUri(baseURI)
                 .build();
 
-        String body = executeRequest(request, createStringResponseHandler()).getBody();
-        assertEquals(body, "body text");
+        StringResponse response = executeRequest(request, createStringResponseHandler());
+        assertEquals(response.getStatusCode(), 500);
+        assertEquals(response.getBody(), "body text");
     }
 
     @Test
@@ -1025,7 +1034,7 @@ public abstract class AbstractHttpClientTest
         }
     }
 
-    @Test(expectedExceptions = {SocketTimeoutException.class, TimeoutException.class, ClosedChannelException.class})
+    @Test(expectedExceptions = {SocketTimeoutException.class, TimeoutException.class})
     public void testReadTimeout()
             throws Exception
     {
@@ -1050,8 +1059,9 @@ public abstract class AbstractHttpClientTest
                 .setUri(baseURI)
                 .build();
 
-        String body = executeRequest(request, createStringResponseHandler()).getBody();
-        assertEquals(body, "body text");
+        StringResponse response = executeRequest(request, createStringResponseHandler());
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getBody(), "body text");
     }
 
     @Test
@@ -1109,7 +1119,13 @@ public abstract class AbstractHttpClientTest
 
         String statusMessage = executeRequest(request, createStatusResponseHandler()).getStatusMessage();
 
-        assertEquals(statusMessage, "message");
+        if (createClientConfig().isHttp2Enabled()) {
+            // reason phrases are not supported in HTTP/2
+            assertNull(statusMessage);
+        }
+        else {
+            assertEquals(statusMessage, "message");
+        }
     }
 
     @Test(expectedExceptions = UnexpectedResponseException.class)
@@ -1135,6 +1151,16 @@ public abstract class AbstractHttpClientTest
         String body = executeRequest(request, createStringResponseHandler()).getBody();
         assertEquals(body, "");
         Assert.assertFalse(servlet.getRequestHeaders().containsKey(HeaderName.of(ACCEPT_ENCODING)));
+
+        String json = "{\"foo\":\"bar\",\"hello\":\"world\"}";
+        assertGreaterThanOrEqual(json.length(), GzipHandler.DEFAULT_MIN_GZIP_SIZE);
+
+        servlet.setResponseBody(json);
+        servlet.addResponseHeader(CONTENT_TYPE, "application/json");
+
+        StringResponse response = executeRequest(request, createStringResponseHandler());
+        assertEquals(response.getHeader(CONTENT_TYPE), "application/json");
+        assertEquals(response.getBody(), json);
     }
 
     private ExecutorService executor;
@@ -1751,5 +1777,21 @@ public abstract class AbstractHttpClientTest
     private static <E extends Exception> E castThrowable(Throwable t)
     {
         return (E) t;
+    }
+
+    // TODO: remove this when fixed in Jetty
+    private static class HackGzipHandler
+            extends GzipHandler
+    {
+        @Override
+        public Deflater getDeflater(org.eclipse.jetty.server.Request request, long content_length)
+        {
+            // GzipHandler incorrectly skips this check for HTTP/2
+            HttpField accept = request.getHttpFields().getField(HttpHeader.ACCEPT_ENCODING);
+            if ((accept == null) || !accept.contains("gzip")) {
+                return null;
+            }
+            return super.getDeflater(request, content_length);
+        }
     }
 }
