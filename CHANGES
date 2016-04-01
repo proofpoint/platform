@@ -2,10 +2,16 @@ Platform 1.41
 
 * HTTP/2 support
 
-  The HTTP server now has experimental support for the HTTP/2
+  The HTTP server and client now have experimental support for the HTTP/2
   protocol for HTTP only (not HTTPS). The server supports the HTTP/2
   cleartext upgrade mechanism (h2c) which allows running both versions
   of the protocol on the same port. Both versions are always enabled.
+
+  The HTTP client also supports HTTP/2 cleartext. However, there is
+  no upgrade mechanism, so if HTTP/2 is enabled, the client will always
+  use the HTTP/2 protocol and thus can only communicate with HTTP/2
+  servers. Attempting to connect to an older server will result in
+  "refused_stream_error". Thus, HTTP/2 is disabled by default.
 
 * HTTP Client API changes for Case-Insensitive Headers
 

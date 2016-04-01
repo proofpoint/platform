@@ -17,6 +17,7 @@ package com.proofpoint.http.client;
 
 import com.google.common.net.HostAndPort;
 import com.proofpoint.configuration.Config;
+import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.configuration.DefunctConfig;
 import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
@@ -34,6 +35,7 @@ public class HttpClientConfig
     public static final String JAVAX_NET_SSL_KEY_STORE = "javax.net.ssl.keyStore";
     public static final String JAVAX_NET_SSL_KEY_STORE_PASSWORD = "javax.net.ssl.keyStorePassword";
 
+    private boolean http2Enabled;
     private Duration connectTimeout = new Duration(1, TimeUnit.SECONDS);
     private Duration requestTimeout = null;
     private Duration idleTimeout = new Duration(1, TimeUnit.MINUTES);
@@ -44,6 +46,19 @@ public class HttpClientConfig
     private HostAndPort socksProxy;
     private String keyStorePath = System.getProperty(JAVAX_NET_SSL_KEY_STORE);
     private String keyStorePassword = System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD);
+
+    public boolean isHttp2Enabled()
+    {
+        return http2Enabled;
+    }
+
+    @Config("http-client.http2.enabled")
+    @ConfigDescription("Enable the HTTP/2 transport")
+    public HttpClientConfig setHttp2Enabled(boolean http2Enabled)
+    {
+        this.http2Enabled = http2Enabled;
+        return this;
+    }
 
     @NotNull
     @MinDuration("0ms")
