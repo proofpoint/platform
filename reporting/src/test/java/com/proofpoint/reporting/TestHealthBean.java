@@ -68,4 +68,14 @@ public class TestHealthBean extends AbstractHealthBeanTest<Object>
             }
         });
     }
+
+    @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = "healthcheck annotation on non-AtomicReference field .*field")
+    public void testFieldNotAtomicReference()
+    {
+        HealthBean.forTarget(new Object() {
+            @HealthCheck("Field")
+            private Object field;
+        });
+    }
 }
