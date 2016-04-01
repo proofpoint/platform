@@ -27,48 +27,40 @@ import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeConverterBinding;
-import com.proofpoint.reporting.TestExporter.NamedObject;
 import org.testng.annotations.BeforeMethod;
-import org.weakref.jmx.MBeanExporter;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
-import javax.management.MBeanInfo;
 import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.proofpoint.reporting.Util.getUniqueObjectName;
-import static org.mockito.Matchers.notNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
-public class TestExporter extends AbstractReportedBeanTest<NamedObject>
+public class TestHealthExporter extends AbstractHealthBeanTest<TestHealthExporter.NamedObject>
 {
-    private ReportedBeanRegistry registry;
-    private MBeanExporter mBeanExporter;
+    private static final AtomicInteger id = new AtomicInteger(0);
+    private HealthBeanRegistry registry;
 
     static class NamedObject
     {
-        final ObjectName objectName;
+        final String objectName;
         final Object object;
 
-        NamedObject(ObjectName objectName, Object object)
+        NamedObject(Object object)
         {
-            this.objectName = objectName;
+            this.objectName = String.valueOf(id.getAndIncrement());
             this.object = object;
         }
 
-        static NamedObject of(ObjectName objectName, Object object)
+        static NamedObject of(Object object)
         {
-            return new NamedObject(objectName, object);
+            return new NamedObject(object);
         }
     }
 
@@ -79,46 +71,34 @@ public class TestExporter extends AbstractReportedBeanTest<NamedObject>
     }
 
     @Override
-    protected MBeanInfo getMBeanInfo(NamedObject namedObject)
-            throws Exception
-    {
-        verify(mBeanExporter).export(namedObject.objectName, namedObject.object);
-        return registry.getReportedBeans().get(namedObject.objectName).getMBeanInfo();
-    }
-
-    @Override
-    protected Object getAttribute(NamedObject namedObject, String attributeName)
+    protected String getAttribute(NamedObject namedObject, String description)
             throws MBeanException, AttributeNotFoundException, InstanceNotFoundException, ReflectionException
     {
-        return registry.getReportedBeans().get(namedObject.objectName).getAttribute(attributeName);
+        return registry.getHealthAttributes().get(description + " (" + namedObject.objectName + ")").getValue();
     }
 
     @BeforeMethod
     void setup()
             throws MalformedObjectNameException, InstanceAlreadyExistsException
     {
-        registry = new ReportedBeanRegistry();
-        mBeanExporter = mock(MBeanExporter.class);
+        registry = new HealthBeanRegistry();
 
         objects = new ArrayList<>(2);
-        objects.add(NamedObject.of(getUniqueObjectName(), new SimpleObject()));
-        objects.add(NamedObject.of(getUniqueObjectName(), new CustomAnnotationObject()));
-        objects.add(NamedObject.of(getUniqueObjectName(), new FlattenObject()));
-        objects.add(NamedObject.of(getUniqueObjectName(), new CustomFlattenAnnotationObject()));
-        objects.add(NamedObject.of(getUniqueObjectName(), new NestedObject()));
-        objects.add(NamedObject.of(getUniqueObjectName(), new CustomNestedAnnotationObject()));
+        objects.add(NamedObject.of(new SimpleHealthObject()));
+        objects.add(NamedObject.of(new FlattenHealthObject()));
+        objects.add(NamedObject.of(new NestedHealthObject()));
 
-        ImmutableSet.Builder<Mapping> mappingBuilder = ImmutableSet.builder();
+        ImmutableSet.Builder<HealthMapping> mappingBuilder = ImmutableSet.builder();
         ImmutableMap.Builder<Key<?>, Object> instanceBuilder = ImmutableMap.builder();
         for (NamedObject namedObject : objects) {
             Key<?> key = Key.get(namedObject.object.getClass());
-            mappingBuilder.add(new Mapping(namedObject.objectName.getCanonicalName(), key));
+            mappingBuilder.add(new HealthMapping(namedObject.objectName, key));
             instanceBuilder.put(key, namedObject.object);
         }
 
-        new GuiceReportExporter(
+        new GuiceHealthExporter(
                 mappingBuilder.build(),
-                new ReportExporter(registry, bucketIdProvider, mBeanExporter),
+                new HealthExporter(registry),
                 new TestingInjector(instanceBuilder.build()));
     }
 
@@ -126,7 +106,7 @@ public class TestExporter extends AbstractReportedBeanTest<NamedObject>
     {
         private final Map<Key<?>,Object> instanceMap;
 
-        public TestingInjector(Map<Key<?>, Object> instanceMap)
+        TestingInjector(Map<Key<?>, Object> instanceMap)
         {
             this.instanceMap = instanceMap;
         }
@@ -241,5 +221,3 @@ public class TestExporter extends AbstractReportedBeanTest<NamedObject>
         }
     }
 }
-
-

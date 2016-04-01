@@ -34,5 +34,10 @@ public class ReportingModule
         binder.bind(MinuteBucketIdProvider.class).in(Scopes.SINGLETON);
         binder.bind(BucketIdProvider.class).to(MinuteBucketIdProvider.class).in(Scopes.SINGLETON);
         binder.bind(ReportCollectionFactory.class).in(Scopes.SINGLETON);
+
+        newSetBinder(binder, HealthMapping.class);
+        binder.bind(HealthExporter.class).asEagerSingleton();
+        binder.bind(GuiceHealthExporter.class).asEagerSingleton();
+        binder.bind(HealthBeanRegistry.class).in(Scopes.SINGLETON);
     }
 }

@@ -24,6 +24,7 @@ import com.google.inject.Scopes;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
+import static com.proofpoint.reporting.HealthBinder.healthBinder;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 
 public class MainModule
@@ -36,6 +37,7 @@ public class MainModule
 
         binder.bind(PersonStore.class).in(Scopes.SINGLETON);
         reportBinder(binder).export(PersonStore.class).withGeneratedName();
+        healthBinder(binder).export(PersonStore.class);
 
         jaxrsBinder(binder).bind(PersonsResource.class);
         jaxrsBinder(binder).bind(PersonResource.class);
