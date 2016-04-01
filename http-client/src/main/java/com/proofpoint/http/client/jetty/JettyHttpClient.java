@@ -31,6 +31,8 @@ import com.proofpoint.units.DataSize;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.client.DuplexConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpClientTransport;
+import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.client.HttpRequest;
 import org.eclipse.jetty.client.PoolingHttpDestination;
@@ -47,6 +49,8 @@ import org.eclipse.jetty.client.util.InputStreamContentProvider;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http2.client.HTTP2Client;
+import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.util.ArrayQueue;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -119,6 +123,7 @@ public class JettyHttpClient
     private static final AtomicLong nameCounter = new AtomicLong();
     private static final String PLATFORM_STATS_KEY = "platform_stats";
     private static final long SWEEP_PERIOD_MILLIS = 5000;
+    private static final int CLIENT_TRANSPORT_SELECTORS = 2;
 
     private final JettyIoPool anonymousPool;
     private final HttpClient httpClient;
@@ -195,7 +200,18 @@ public class JettyHttpClient
             sslContextFactory.setTrustStorePassword(config.getTrustStorePassword());
         }
 
-        httpClient = new HttpClient(new HttpClientTransportOverHTTP(2), sslContextFactory);
+        HttpClientTransport transport;
+        if (config.isHttp2Enabled()) {
+            HTTP2Client client = new HTTP2Client();
+            client.setSelectors(CLIENT_TRANSPORT_SELECTORS);
+            transport = new HttpClientTransportOverHTTP2(client);
+        }
+        else {
+            transport = new HttpClientTransportOverHTTP(CLIENT_TRANSPORT_SELECTORS);
+        }
+
+        httpClient = new HttpClient(transport, sslContextFactory);
+
         httpClient.setMaxRequestsQueuedPerDestination(config.getMaxRequestsQueuedPerDestination());
         httpClient.setMaxConnectionsPerDestination(config.getMaxConnectionsPerServer());
 
@@ -371,6 +387,9 @@ public class JettyHttpClient
             }
             if (cause instanceof Exception) {
                 return responseHandler.handleException(request, (Exception) cause);
+            }
+            else if ((cause instanceof NoClassDefFoundError) && cause.getMessage().endsWith("ALPNClientConnection")) {
+                return responseHandler.handleException(request, new RuntimeException("HTTPS cannot be used when HTTP/2 is enabled", cause));
             }
             else {
                 return responseHandler.handleException(request, new RuntimeException(cause));

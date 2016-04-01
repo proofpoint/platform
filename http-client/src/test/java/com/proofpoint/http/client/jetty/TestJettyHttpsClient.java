@@ -52,6 +52,7 @@ public class TestJettyHttpsClient
     protected HttpClientConfig createClientConfig()
     {
         return new HttpClientConfig()
+                .setHttp2Enabled(false)
                 .setKeyStorePath(getResource("localhost.keystore").getPath())
                 .setKeyStorePassword("changeit")
                 .setTrustStorePath(getResource("localhost.truststore").getPath())
