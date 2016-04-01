@@ -344,19 +344,19 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "DELETE");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
+        assertEquals(servlet.getRequestMethod(), "DELETE");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("foo"), ImmutableList.of("bar"));
+        assertEquals(servlet.getRequestHeaders().get("dupe"), ImmutableList.of("first", "second"));
+        assertEquals(servlet.getRequestHeaders().get("x-custom-filter"), ImmutableList.of("custom value"));
     }
 
     @Test
     public void testErrorResponseBody()
             throws Exception
     {
-        servlet.responseStatusCode = 500;
-        servlet.responseBody = "body text";
+        servlet.setResponseStatusCode(500);
+        servlet.setResponseBody("body text");
 
         Request request = prepareGet()
                 .setUri(baseURI)
@@ -380,17 +380,17 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "GET");
-        if (servlet.requestUri.toString().endsWith("=")) {
+        assertEquals(servlet.getRequestMethod(), "GET");
+        if (servlet.getRequestUri().toString().endsWith("=")) {
             // todo jetty client rewrites the uri string for some reason
-            assertEquals(servlet.requestUri, new URI(uri + "="));
+            assertEquals(servlet.getRequestUri(), new URI(uri + "="));
         }
         else {
-            assertEquals(servlet.requestUri, uri);
+            assertEquals(servlet.getRequestUri(), uri);
         }
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
+        assertEquals(servlet.getRequestHeaders().get("foo"), ImmutableList.of("bar"));
+        assertEquals(servlet.getRequestHeaders().get("dupe"), ImmutableList.of("first", "second"));
+        assertEquals(servlet.getRequestHeaders().get("x-custom-filter"), ImmutableList.of("custom value"));
     }
 
     @Test
@@ -435,18 +435,18 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "POST");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
+        assertEquals(servlet.getRequestMethod(), "POST");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("foo"), ImmutableList.of("bar"));
+        assertEquals(servlet.getRequestHeaders().get("dupe"), ImmutableList.of("first", "second"));
+        assertEquals(servlet.getRequestHeaders().get("x-custom-filter"), ImmutableList.of("custom value"));
     }
 
     @Test
     public void testPutMethod()
             throws Exception
     {
-        servlet.responseBody = "response";
+        servlet.setResponseBody("response");
         URI uri = baseURI.resolve("/road/to/nowhere");
         Request request = preparePut()
                 .setUri(uri)
@@ -457,11 +457,11 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, StringResponseHandler.createStringResponseHandler()).getStatusCode();
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
+        assertEquals(servlet.getRequestMethod(), "PUT");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("foo"), ImmutableList.of("bar"));
+        assertEquals(servlet.getRequestHeaders().get("dupe"), ImmutableList.of("first", "second"));
+        assertEquals(servlet.getRequestHeaders().get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 0.0);
     }
 
@@ -481,12 +481,12 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
-        assertEquals(servlet.requestBytes, body);
+        assertEquals(servlet.getRequestMethod(), "PUT");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("foo"), ImmutableList.of("bar"));
+        assertEquals(servlet.getRequestHeaders().get("dupe"), ImmutableList.of("first", "second"));
+        assertEquals(servlet.getRequestHeaders().get("x-custom-filter"), ImmutableList.of("custom value"));
+        assertEquals(servlet.getRequestBytes(), body);
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
 
@@ -539,12 +539,12 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
-        assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
+        assertEquals(servlet.getRequestMethod(), "PUT");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("foo"), ImmutableList.of("bar"));
+        assertEquals(servlet.getRequestHeaders().get("dupe"), ImmutableList.of("first", "second"));
+        assertEquals(servlet.getRequestHeaders().get("x-custom-filter"), ImmutableList.of("custom value"));
+        assertEquals(servlet.getRequestBytes(), new byte[]{1, 2, 5});
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
 
@@ -600,10 +600,10 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("Content-Length"), ImmutableList.of("3"));
-        assertEquals(servlet.requestBytes, new byte[]{1, 2, 3});
+        assertEquals(servlet.getRequestMethod(), "PUT");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("Content-Length"), ImmutableList.of("3"));
+        assertEquals(servlet.getRequestBytes(), new byte[]{1, 2, 3});
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
 
@@ -646,12 +646,12 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
-        assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
+        assertEquals(servlet.getRequestMethod(), "PUT");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("foo"), ImmutableList.of("bar"));
+        assertEquals(servlet.getRequestHeaders().get("dupe"), ImmutableList.of("first", "second"));
+        assertEquals(servlet.getRequestHeaders().get("x-custom-filter"), ImmutableList.of("custom value"));
+        assertEquals(servlet.getRequestBytes(), new byte[]{1, 2, 5});
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
 
@@ -674,12 +674,12 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
-        assertEquals(servlet.requestBytes, createByteArray(1, 15008));
+        assertEquals(servlet.getRequestMethod(), "PUT");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("foo"), ImmutableList.of("bar"));
+        assertEquals(servlet.getRequestHeaders().get("dupe"), ImmutableList.of("first", "second"));
+        assertEquals(servlet.getRequestHeaders().get("x-custom-filter"), ImmutableList.of("custom value"));
+        assertEquals(servlet.getRequestBytes(), createByteArray(1, 15008));
         assertTrue(closed.get(), "Writer was closed");
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 15008.0);
     }
@@ -796,10 +796,10 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("Content-Length"), ImmutableList.of("3"));
-        assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
+        assertEquals(servlet.getRequestMethod(), "PUT");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("Content-Length"), ImmutableList.of("3"));
+        assertEquals(servlet.getRequestBytes(), new byte[]{1, 2, 5});
         assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
 
@@ -825,12 +825,12 @@ public abstract class AbstractHttpClientTest
 
         int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
         assertEquals(statusCode, 200);
-        assertEquals(servlet.requestMethod, "PUT");
-        assertEquals(servlet.requestUri, uri);
-        assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
-        assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
-        assertEquals(servlet.requestBytes, new byte[] {});
+        assertEquals(servlet.getRequestMethod(), "PUT");
+        assertEquals(servlet.getRequestUri(), uri);
+        assertEquals(servlet.getRequestHeaders().get("foo"), ImmutableList.of("bar"));
+        assertEquals(servlet.getRequestHeaders().get("dupe"), ImmutableList.of("first", "second"));
+        assertEquals(servlet.getRequestHeaders().get("x-custom-filter"), ImmutableList.of("custom value"));
+        assertEquals(servlet.getRequestBytes(), new byte[] {});
         assertEquals(writeToken.get(), token);
         assertTrue(closeLatch.await(1, SECONDS));
         assertEquals(closeToken.get(), token);
@@ -935,9 +935,9 @@ public abstract class AbstractHttpClientTest
     public void testNoFollowRedirect()
             throws Exception
     {
-        servlet.responseStatusCode = 302;
-        servlet.responseBody = "body text";
-        servlet.responseHeaders.put("Location", "http://127.0.0.1:1");
+        servlet.setResponseStatusCode(302);
+        servlet.setResponseBody("body text");
+        servlet.addResponseHeader("Location", "http://127.0.0.1:1");
 
         Request request = prepareGet()
                 .setUri(baseURI)
@@ -983,9 +983,9 @@ public abstract class AbstractHttpClientTest
         try {
             server.start();
 
-            servlet.responseStatusCode = 302;
-            servlet.responseBody = "body text";
-            servlet.responseHeaders.put("Location", format("http://127.0.0.1:%d/redirect", port));
+            servlet.setResponseStatusCode(302);
+            servlet.setResponseBody("body text");
+            servlet.addResponseHeader("Location", format("http://127.0.0.1:%d/redirect", port));
 
             Request request = prepareGet()
                     .setUri(baseURI)
@@ -1019,7 +1019,7 @@ public abstract class AbstractHttpClientTest
     public void testResponseBody()
             throws Exception
     {
-        servlet.responseBody = "body text";
+        servlet.setResponseBody("body text");
 
         Request request = prepareGet()
                 .setUri(baseURI)
@@ -1045,12 +1045,9 @@ public abstract class AbstractHttpClientTest
     public void testResponseHeader()
             throws Exception
     {
-        servlet.responseHeaders.put("foo", "bar");
-        servlet.responseHeaders.put("dupe", "first");
-        servlet.responseHeaders.put("dupe", "second");
-
-        assertEquals(servlet.responseHeaders.get("foo"), ImmutableList.of("bar"));
-        assertEquals(servlet.responseHeaders.get("dupe"), ImmutableList.of("first", "second"));
+        servlet.addResponseHeader("foo", "bar");
+        servlet.addResponseHeader("dupe", "first");
+        servlet.addResponseHeader("dupe", "second");
 
         Request request = prepareGet()
                 .setUri(baseURI)
@@ -1066,7 +1063,7 @@ public abstract class AbstractHttpClientTest
     public void testResponseStatusCode()
             throws Exception
     {
-        servlet.responseStatusCode = 543;
+        servlet.setResponseStatusCode(543);
         Request request = prepareGet()
                 .setUri(baseURI)
                 .build();
@@ -1079,7 +1076,7 @@ public abstract class AbstractHttpClientTest
     public void testResponseStatusMessage()
             throws Exception
     {
-        servlet.responseStatusMessage = "message";
+        servlet.setResponseStatusMessage("message");
 
         Request request = prepareGet()
                 .setUri(baseURI)
@@ -1109,7 +1106,7 @@ public abstract class AbstractHttpClientTest
     public void testThrowsUnexpectedResponseException()
             throws Exception
     {
-        servlet.responseStatusCode = 543;
+        servlet.setResponseStatusCode(543);
         Request request = prepareGet()
                 .setUri(baseURI)
                 .build();
@@ -1127,7 +1124,7 @@ public abstract class AbstractHttpClientTest
 
         String body = executeRequest(request, new ResponseToStringHandler());
         assertEquals(body, "");
-        Assert.assertFalse(servlet.requestHeaders.containsKey("Accept-Encoding"));
+        Assert.assertFalse(servlet.getRequestHeaders().containsKey("Accept-Encoding"));
     }
 
     private ExecutorService executor;
@@ -1319,7 +1316,6 @@ public abstract class AbstractHttpClientTest
         }
     }
 
-
     @Test
     public void testAllConnectionsUsed()
             throws Exception
@@ -1350,7 +1346,7 @@ public abstract class AbstractHttpClientTest
         catch (RejectedExecutionException ignored) {
         }
 
-        servlet.countDownLatch.countDown();
+        servlet.countDown();
         countDownLatch.await();
         Thread.sleep(100);
         clientTester.executeRequest(request, createStatusResponseHandler());
