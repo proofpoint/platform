@@ -2,6 +2,9 @@ The reporting module is an annotation-based API for
 reporting metrics into a [KairosDB](https://code.google.com/p/kairosdb)
 time-series database.
 
+It also provides an annotation-based API for reporting health status
+so that load balancers can remove the instance from rotation.
+
 Collecting data
 ===============
 
@@ -235,11 +238,27 @@ class TestStoreStatsRecorder {
 }
 ```
 
+Health checks
+=============
+
+The `@HealthCheckRemoveFromRotation` annotation may be placed on either a
+method with no arguments or a field of type `AtomicReference`. When the object
+is bound with `HealthBinder`, the method will be called or the field will be
+examined by the `/inrotation.txt` resource. A value of `null` indicates
+healthy; any other value indicates a critical problem, with the `toString()`
+used as the message.
+
+The `value` field of the `@HealthCheckRemoveFromRotation` annotation is the
+base name of the check. This is prepended with the application name. If the
+object was bound with a name or annotation, that is appended in parentheses
+to the name of the check. This and the `@HealthCheck` annotation are for a
+future integration with monitoring.
+
 Reporting client
 ================
 
 `ReportingClientModule` enables reporting of collected data to the time-series
-database.
+database and the `/inrotation.txt` resource.
 
 Metric naming
 -------------
