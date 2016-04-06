@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
+import static com.proofpoint.reporting.HealthBinder.healthBinder;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 public class ReportingClientModule
@@ -43,6 +44,9 @@ public class ReportingClientModule
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);
         bindConfig(binder).to(ReportClientConfig.class);
+
+        binder.bind(ShutdownMonitor.class).in(Scopes.SINGLETON);
+        healthBinder(binder).export(ShutdownMonitor.class);
     }
 
     @Provides
@@ -56,7 +60,7 @@ public class ReportingClientModule
     @ForReportClient
     private static ExecutorService createClientExecutorService()
     {
-        return new ThreadPoolExecutor(1, 1, 0, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>(5),
+        return new ThreadPoolExecutor(1, 1, 0, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<>(5),
                         daemonThreadsNamed("reporting-client-%s"),
                         new DiscardOldestPolicy());
     }
