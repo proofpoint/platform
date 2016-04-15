@@ -15,6 +15,7 @@
  */
 package com.proofpoint.discovery.client.balancing;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.proofpoint.discovery.client.DiscoveryLookupClient;
 import com.proofpoint.discovery.client.ForDiscoveryClient;
@@ -26,8 +27,8 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
-import org.weakref.jmx.ObjectNameBuilder;
 
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.common.base.Objects.firstNonNull;
@@ -60,13 +61,10 @@ public final class HttpServiceBalancerFactory
         requireNonNull(selectorConfig, "selectorConfig is null");
 
         String pool = firstNonNull(selectorConfig.getPool(), nodeInfo.getPool());
-        String name = new ObjectNameBuilder(HttpServiceBalancerStats.class.getPackage().getName())
-                .withProperty("type", "ServiceClient")
-                .withProperty("serviceType", type)
-                .build();
-        HttpServiceBalancerStats httpServiceBalancerStats = reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, name);
+        Map<String, String> tags = ImmutableMap.of("serviceType", type);
+        HttpServiceBalancerStats httpServiceBalancerStats = reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags);
         HttpServiceBalancerImpl balancer = new HttpServiceBalancerImpl(format("type=[%s], pool=[%s]", type, pool), httpServiceBalancerStats);
-        reportExporter.export(name, balancer);
+        reportExporter.export(balancer, false, "ServiceClient", tags);
         ServiceDescriptorsUpdater updater = new ServiceDescriptorsUpdater(new HttpServiceBalancerListenerAdapter(balancer), type, selectorConfig, nodeInfo, lookupClient, executor);
         updater.start();
 

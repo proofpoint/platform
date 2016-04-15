@@ -37,7 +37,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -55,7 +54,7 @@ public class TestReportClient
 {
     private static final int TEST_TIME = 1234567890;
     private NodeInfo nodeInfo;
-    private Table<ObjectName, String, Object> collectedData;
+    private Table<String, Map<String, String>, Object> collectedData;
     private HttpClient httpClient;
     private List<Map<String, Object>> sentJson;
     private final ObjectMapper objectMapper = new ObjectMapperProvider().get();
@@ -71,8 +70,8 @@ public class TestReportClient
         );
 
         collectedData = HashBasedTable.create();
-        collectedData.put(ObjectName.getInstance("com.example:name=Foo"), "Size", 1.1);
-        collectedData.put(ObjectName.getInstance("com.example:type=Foo,name=\"ba:r\",tag1=\"B\\\\a\\\"z\""), "Size", 1.2);
+        collectedData.put("Foo.Size", ImmutableMap.of(), 1.1);
+        collectedData.put("Foo.Ba:r.Size", ImmutableMap.of("tag1", "B\\a\"z"), 1.2);
 
         httpClient = new TestingHttpClient(new TestingResponseFunction());
         sentJson = null;
@@ -120,7 +119,7 @@ public class TestReportClient
 
         ReportClient client = new ReportClient(nodeInfo, httpClient, new ReportClientConfig(), objectMapper);
         collectedData = HashBasedTable.create();
-        collectedData.put(ObjectName.getInstance("com.example:name=Foo"), "String", "test value");
+        collectedData.put("Foo.String", ImmutableMap.of(), "test value");
         client.report(TEST_TIME, collectedData);
         assertEquals(sentJson, ImmutableList.of(
                 ImmutableMap.of(

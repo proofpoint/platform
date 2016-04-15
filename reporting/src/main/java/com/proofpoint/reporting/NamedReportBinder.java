@@ -15,47 +15,41 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.inject.Key;
-import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Named;
+import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
-import static org.weakref.jmx.ObjectNames.generatedNameOf;
 
 public class NamedReportBinder
+    extends PrefixedReportBinder
 {
-    protected final Multibinder<Mapping> binder;
-    protected final Key<?> key;
-
-    NamedReportBinder(Multibinder<Mapping> binder, Key<?> key)
+    NamedReportBinder(Mapping mapping)
     {
-        this.binder = binder;
-        this.key = key;
+        super(mapping);
     }
 
     /**
-     * Names the metric according to {@link org.weakref.jmx.ObjectNames} name generator methods.
+     * See the EDSL description at {@link ReportBinder}.
      */
-    public void withGeneratedName()
+    public PrefixedReportBinder withApplicationPrefix()
     {
-        if (key.getAnnotation() != null) {
-            if (key.getAnnotation() instanceof Named) {
-                as(generatedNameOf(key.getTypeLiteral().getRawType(), (Named) key.getAnnotation()));
-            }
-            else {
-                as(generatedNameOf(key.getTypeLiteral().getRawType(), key.getAnnotation()));
-            }
-        }
-        else if (key.getAnnotationType() != null) {
-            as(generatedNameOf(key.getTypeLiteral().getRawType(), key.getAnnotationType()));
-        }
-        else {
-            as(generatedNameOf(key.getTypeLiteral().getRawType()));
-        }
+        mapping.setApplicationPrefix(true);
+        return new PrefixedReportBinder(mapping);
     }
 
+    /**
+     * @deprecated No longer necessary.
+     */
+    @Deprecated
+    public void withGeneratedName()
+    {
+    }
+
+    /**
+     * @deprecated Use {@link #withNamePrefix} and/or {@link #withTags}.
+     */
+    @Deprecated
     public void as(String name)
     {
-        binder.addBinding().toInstance(new Mapping(requireNonNull(name, "name is null"), key));
+        mapping.setLegacyName(requireNonNull(name, "name is null"));
     }
 }

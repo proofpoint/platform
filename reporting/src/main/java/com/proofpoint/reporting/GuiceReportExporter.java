@@ -40,7 +40,14 @@ class GuiceReportExporter
     {
         for (Mapping mapping : mappings) {
             Object object = injector.getInstance(mapping.getKey());
-            reportExporter.export(new ObjectName(mapping.getName()), object);
+
+            String legacyName = mapping.getLegacyName();
+            if (legacyName != null) {
+                reportExporter.export(new ObjectName(legacyName), object);
+            }
+            else {
+                reportExporter.export(object, mapping.isApplicationPrefix(), mapping.getNamePrefix(), mapping.getTags());
+            }
         }
     }
 }

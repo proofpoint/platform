@@ -15,37 +15,31 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
+import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 class ReportCollectionProvider<T> implements Provider<T>
 {
     private final Class<T> iface;
-    private final String name;
+    private final AtomicBoolean provided = new AtomicBoolean();
+    private boolean applicationPrefix = false;
+    private String namePrefix;
+    private Map<String, String> tags = ImmutableMap.of();
+    private String legacyName = null;
     private ReportCollectionFactory reportCollectionFactory;
 
-    public ReportCollectionProvider(Class<T> iface)
+    ReportCollectionProvider(Class<T> iface)
     {
-        this.iface = iface;
-        name = null;
-    }
-
-    public ReportCollectionProvider(Class<T> iface, String name)
-    {
-        this.iface = checkNotNull(iface, "iface is null");
-        this.name = checkNotNull(name, "name is null");
-        try {
-            ObjectName.getInstance(name);
-        }
-        catch (MalformedObjectNameException e) {
-            throw propagate(e);
-        }
+        this.iface = requireNonNull(iface, "iface is null");
+        namePrefix = iface.getSimpleName();
     }
 
     @Inject
@@ -57,9 +51,31 @@ class ReportCollectionProvider<T> implements Provider<T>
     @Override
     public T get()
     {
-        if (name == null) {
-            return reportCollectionFactory.createReportCollection(iface);
+        provided.set(true);
+        if (legacyName == null) {
+            return reportCollectionFactory.createReportCollection(iface, applicationPrefix, namePrefix, tags);
         }
-        return reportCollectionFactory.createReportCollection(iface, name);
+        return reportCollectionFactory.createReportCollection(iface, legacyName);
+    }
+
+    public void setApplicationPrefix(boolean applicationPrefix)
+    {
+        this.applicationPrefix = applicationPrefix;
+    }
+
+    void setNamePrefix(@Nullable String namePrefix)
+    {
+        this.namePrefix = namePrefix;
+    }
+
+    void setTags(Map<String, String> tags)
+    {
+        this.tags = ImmutableMap.copyOf(tags);
+    }
+
+    void setLegacyName(String legacyName)
+    {
+        checkState(!provided.get(), "report collection already provided");
+        this.legacyName = requireNonNull(legacyName, "legacyName is null");
     }
 }

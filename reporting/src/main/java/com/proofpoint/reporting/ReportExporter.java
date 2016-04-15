@@ -18,7 +18,6 @@ package com.proofpoint.reporting;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.proofpoint.reporting.ReportException.Reason;
-import org.weakref.jmx.MBeanExporter;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -26,6 +25,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -34,20 +34,63 @@ import static com.proofpoint.reporting.AnnotationUtils.findReportedMethods;
 import static com.proofpoint.reporting.AnnotationUtils.isFlatten;
 import static com.proofpoint.reporting.AnnotationUtils.isNested;
 
+/**
+ * Dynamically exports and unexports reporting-annotated objects to the reporting
+ * subsystem.
+ */
 public class ReportExporter
 {
     private final ReportedBeanRegistry registry;
     private final BucketIdProvider bucketIdProvider;
-    private final MBeanExporter mBeanExporter;
 
     @Inject
-    ReportExporter(ReportedBeanRegistry registry, BucketIdProvider bucketIdProvider, MBeanExporter mBeanExporter)
+    ReportExporter(ReportedBeanRegistry registry, BucketIdProvider bucketIdProvider)
     {
         this.registry = checkNotNull(registry, "registry is null");
         this.bucketIdProvider = checkNotNull(bucketIdProvider, "bucketIdProvider is null");
-        this.mBeanExporter = checkNotNull(mBeanExporter, "mBeanExporter is null");
     }
 
+    /**
+     * Export an object to the metrics reporting system.
+     *
+     * @param object The object to export
+     * @param applicationPrefix Whether to prefix the metric name with the application name
+     * @param namePrefix Name prefix for all metrics reported out of the object
+     * @param tags Tags for all metrics reported out of the object
+     */
+    public void export(Object object, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
+    {
+        ReportedBean reportedBean = ReportedBean.forTarget(object);
+        notifyBucketIdProvider(object, bucketIdProvider, null);
+        if (!reportedBean.getAttributes().isEmpty()) {
+            try {
+                registry.register(object, reportedBean, applicationPrefix, namePrefix, tags);
+            }
+            catch (InstanceAlreadyExistsException e) {
+                throw new ReportException(Reason.INSTANCE_ALREADY_EXISTS, e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Undo the export of an object to the metrics reporting system.
+     *
+     * @param object The object to unexport
+     */
+    public void unexportObject(Object object)
+    {
+        try {
+            registry.unregister(object);
+        }
+        catch (InstanceNotFoundException e) {
+            throw new ReportException(Reason.INSTANCE_NOT_FOUND, e.getMessage());
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #export(Object, boolean, String, Map)}
+     */
+    @Deprecated
     public void export(String name, Object object)
     {
         ObjectName objectName;
@@ -61,6 +104,10 @@ public class ReportExporter
         export(objectName, object);
     }
 
+    /**
+     * @deprecated Use {@link #export(Object, boolean, String, Map)}
+     */
+    @Deprecated
     public void export(ObjectName objectName, Object object)
     {
         ReportedBean reportedBean = ReportedBean.forTarget(object);
@@ -73,9 +120,12 @@ public class ReportExporter
                 throw new ReportException(Reason.INSTANCE_ALREADY_EXISTS, e.getMessage());
             }
         }
-        mBeanExporter.export(objectName, object);
     }
 
+    /**
+     * @deprecated Use {@link #unexportObject(Object)} after exporting with {@link #export(Object, boolean, String, Map)}
+     */
+    @Deprecated
     public void unexport(String name)
     {
         ObjectName objectName;
@@ -90,15 +140,18 @@ public class ReportExporter
         unexport(objectName);
     }
 
+    /**
+     * @deprecated Use {@link #unexportObject(Object)} after exporting with {@link #export(Object, boolean, String, Map)}
+     */
+    @Deprecated
     public void unexport(ObjectName objectName)
     {
         try {
-            registry.unregister(objectName);
+            registry.unregisterLegacy(objectName);
         }
         catch (InstanceNotFoundException e) {
             throw new ReportException(Reason.INSTANCE_NOT_FOUND, e.getMessage());
         }
-        mBeanExporter.unexport(objectName);
     }
 
     @VisibleForTesting

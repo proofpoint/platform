@@ -16,38 +16,41 @@
 package com.proofpoint.reporting;
 
 import com.google.inject.Binder;
-import com.google.inject.Scopes;
+import com.google.inject.binder.AnnotatedBindingBuilder;
 
 import java.lang.annotation.Annotation;
 
+import static com.google.inject.Scopes.SINGLETON;
+
 public class ReportCollectionBinder<T>
+    extends NamedReportCollectionBinder<T>
 {
-    private final Binder binder;
-    private final Class<T> iface;
+    private final AnnotatedBindingBuilder<T> bindingBuilder;
 
     ReportCollectionBinder(Binder binder, Class<T> iface)
     {
-        this.binder = binder;
-        this.iface = iface;
+        super(new ReportCollectionProvider<>(iface));
+        bindingBuilder = binder.bind(iface);
+        bindingBuilder.toProvider(provider).in(SINGLETON);
     }
 
+    /**
+     * @deprecated No longer necessary.
+     */
+    @Deprecated
     public void withGeneratedName()
     {
-        binder.bind(iface).toProvider(new ReportCollectionProvider<>(iface)).in(Scopes.SINGLETON);
-    }
-
-    public void as(String name)
-    {
-        binder.bind(iface).toProvider(new ReportCollectionProvider<>(iface, name)).in(Scopes.SINGLETON);
     }
 
     public NamedReportCollectionBinder<T> annotatedWith(Annotation annotation)
     {
-        return new NamedReportCollectionBinder<>(binder, iface, com.google.inject.Key.get(iface, annotation));
+        bindingBuilder.annotatedWith(annotation);
+        return new NamedReportCollectionBinder<>(provider);
     }
 
     public NamedReportCollectionBinder<T> annotatedWith(Class<? extends Annotation> annotationClass)
     {
-        return new NamedReportCollectionBinder<>(binder, iface, com.google.inject.Key.get(iface, annotationClass));
+        bindingBuilder.annotatedWith(annotationClass);
+        return new NamedReportCollectionBinder<>(provider);
     }
 }

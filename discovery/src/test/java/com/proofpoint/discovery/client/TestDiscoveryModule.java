@@ -51,7 +51,6 @@ public class TestDiscoveryModule
                 new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of("testing.discovery.uri", "fake://server"))),
                 new JsonModule(),
                 new TestingNodeModule(),
-                new TestingMBeanModule(),
                 new ReportingModule(),
                 new DiscoveryModule()
         );

@@ -15,18 +15,21 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.proofpoint.reporting.ReportException.Reason;
+import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.weakref.jmx.MBeanExporter;
 import org.weakref.jmx.Nested;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import java.util.Map;
+
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -41,6 +44,12 @@ public class TestReportExporter
         public int getMetric()
         {
             return 1;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "Testing Object";
         }
     };
 
@@ -59,8 +68,6 @@ public class TestReportExporter
     private ReportedBeanRegistry registry;
     @Mock
     private BucketIdProvider bucketIdProvider;
-    @Mock
-    private MBeanExporter mBeanExporter;
     private ReportExporter reportExporter;
 
     @BeforeMethod
@@ -68,27 +75,97 @@ public class TestReportExporter
     {
         initMocks(this);
         registry = new ReportedBeanRegistry();
-        reportExporter = new ReportExporter(registry, bucketIdProvider, mBeanExporter);
+        reportExporter = new ReportExporter(registry, bucketIdProvider);
     }
 
     @Test
-    public void testExportString()
+    public void testExport()
+    {
+        reportExporter.export(TESTING_OBJECT, false, "TestingObject", ImmutableMap.of());
+        assertExported(false, ImmutableMap.of());
+    }
+
+    @Test
+    public void testExportPrefix()
+    {
+        reportExporter.export(TESTING_OBJECT, true, "TestingObject", ImmutableMap.of("foo", "bar"));
+        assertExported(true, ImmutableMap.of("foo", "bar"));
+    }
+
+    @Test
+    public void testExportNoAttributes()
+            throws Exception
+    {
+        reportExporter.export(new Object(), false, "TestingObject", ImmutableMap.of());
+        assertEquals(registry.getReportedBeans(), ImmutableList.of());
+    }
+
+    @Test
+    public void testExportDuplicate()
+            throws Exception
+    {
+        try {
+            reportExporter.export(TESTING_OBJECT, false, "TestingObject", ImmutableMap.of());
+            reportExporter.export(TESTING_OBJECT, false, "TestingObject", ImmutableMap.of());
+            fail("expected ReportException");
+        }
+        catch (ReportException e) {
+            assertEquals(e.getReason(), Reason.INSTANCE_ALREADY_EXISTS);
+            assertEquals(e.getMessage(), "Testing Object is already registered");
+        }
+    }
+
+    @Test
+    public void testUnexportObject()
+            throws Exception
+    {
+        reportExporter.export(TESTING_OBJECT, false, "TestingObject", ImmutableMap.of());
+        reportExporter.unexportObject(TESTING_OBJECT);
+        assertEquals(registry.getReportedBeans(), ImmutableList.of());
+    }
+
+    @Test
+    public void testUnexportObjectNotRegistered()
+            throws Exception
+    {
+        try {
+            reportExporter.unexportObject(TESTING_OBJECT);
+            fail("expected ReportException");
+        }
+        catch (ReportException e) {
+            assertEquals(e.getReason(), Reason.INSTANCE_NOT_FOUND);
+            assertEquals(e.getMessage(), "Testing Object not found");
+        }
+    }
+
+    @Test
+    public void testNotifyBucketIdProvider()
+    {
+        TestingBucketed bucketed = spy(new TestingBucketed());
+        reportExporter.export(bucketed, false, "TestingBucketed", ImmutableMap.of());
+
+        verify(bucketed).setBucketIdProvider(bucketIdProvider);
+        verify(bucketed.getInnerBucketed()).setBucketIdProvider(bucketIdProvider);
+    }
+
+    @Test
+    public void testLegacyExportString()
             throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME.getCanonicalName(), TESTING_OBJECT);
-        assertExported();
+        assertExported(false, ImmutableMap.of());
     }
 
     @Test
-    public void testExportStringNoAttributes()
+    public void testLegacyExportStringNoAttributes()
             throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME.getCanonicalName(), new Object());
-        assertEquals(registry.getReportedBeans(), ImmutableMap.of());
+        assertEquals(registry.getReportedBeans(), ImmutableList.of());
     }
 
     @Test
-    public void testExportStringMalformedName()
+    public void testLegacyExportStringMalformedName()
             throws Exception
     {
         try {
@@ -102,7 +179,7 @@ public class TestReportExporter
     }
 
     @Test
-    public void testExportStringDuplicate()
+    public void testLegacyExportStringDuplicate()
             throws Exception
     {
         try {
@@ -117,23 +194,23 @@ public class TestReportExporter
     }
 
     @Test
-    public void testExportObjectName()
+    public void testLegacyExportObjectName()
             throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME, TESTING_OBJECT);
-        assertExported();
+        assertExported(false, ImmutableMap.of());
     }
 
     @Test
-    public void testExportObjectNameNoAttributes()
+    public void testLegacyExportObjectNameNoAttributes()
             throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME, new Object());
-        assertEquals(registry.getReportedBeans(), ImmutableMap.of());
+        assertEquals(registry.getReportedBeans(), ImmutableList.of());
     }
 
     @Test
-    public void testExportObjectNameDuplicate()
+    public void testLegacyExportObjectNameDuplicate()
             throws Exception
     {
         try {
@@ -148,16 +225,16 @@ public class TestReportExporter
     }
 
     @Test
-    public void testUnexportString()
+    public void testLegacyUnexportString()
             throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME, TESTING_OBJECT);
         reportExporter.unexport(TESTING_OBJECT_NAME.getCanonicalName());
-        assertEquals(registry.getReportedBeans(), ImmutableMap.of());
+        assertEquals(registry.getReportedBeans(), ImmutableList.of());
     }
 
     @Test
-    public void testUnexportStringMalformedName()
+    public void testLegacyUnexportStringMalformedName()
             throws Exception
     {
         try {
@@ -171,7 +248,7 @@ public class TestReportExporter
     }
 
     @Test
-    public void testUnexportStringNotRegistered()
+    public void testLegacyUnexportStringNotRegistered()
             throws Exception
     {
         try {
@@ -185,16 +262,16 @@ public class TestReportExporter
     }
 
     @Test
-    public void testUnexportObjectName()
+    public void testLegacyUnexportObjectName()
             throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME, TESTING_OBJECT);
         reportExporter.unexport(TESTING_OBJECT_NAME);
-        assertEquals(registry.getReportedBeans(), ImmutableMap.of());
+        assertEquals(registry.getReportedBeans(), ImmutableList.of());
     }
 
     @Test
-    public void testUnexportObjectNameNotRegistered()
+    public void testLegacyUnexportObjectNameNotRegistered()
             throws Exception
     {
         try {
@@ -208,7 +285,7 @@ public class TestReportExporter
     }
 
     @Test
-    public void testNotifyBucketIdProvider()
+    public void testLegacyNotifyBucketIdProvider()
     {
         TestingBucketed bucketed = spy(new TestingBucketed());
         reportExporter.export(TESTING_OBJECT_NAME, bucketed);
@@ -217,12 +294,13 @@ public class TestReportExporter
         verify(bucketed.getInnerBucketed()).setBucketIdProvider(bucketIdProvider);
     }
 
-    private void assertExported()
+    private void assertExported(boolean applicationPrefix, Map<Object, Object> expectedTags)
     {
-        assertEquals(registry.getReportedBeans().keySet(), ImmutableSet.of(TESTING_OBJECT_NAME));
-        assertEquals(registry.getReportedBeans().get(TESTING_OBJECT_NAME).getMBeanInfo(), ReportedBean.forTarget(TESTING_OBJECT).getMBeanInfo());
-
-        verify(mBeanExporter).export(TESTING_OBJECT_NAME, TESTING_OBJECT);
+        RegistrationInfo registrationInfo = getOnlyElement(registry.getReportedBeans());
+        assertEquals(registrationInfo.isApplicationPrefix(), applicationPrefix);
+        assertEquals(registrationInfo.getNamePrefix(), "TestingObject");
+        assertEquals(registrationInfo.getTags(), expectedTags);
+        assertEquals(registrationInfo.getReportedBean().getMBeanInfo(), ReportedBean.forTarget(TESTING_OBJECT).getMBeanInfo());
     }
 
     private static class TestingBucketed

@@ -32,18 +32,14 @@ import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 
-import javax.management.ObjectName;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
-import static com.google.common.base.CaseFormat.LOWER_CAMEL;
-import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.http.client.Request.Builder.preparePost;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
@@ -77,7 +73,7 @@ class ReportClient
         enabled = reportClientConfig.isEnabled();
     }
 
-    public void report(long systemTimeMillis, Table<ObjectName, String, Object> collectedData)
+    public void report(long systemTimeMillis, Table<String, Map<String, String>, Object> collectedData)
     {
         if (!enabled) {
             return;
@@ -101,8 +97,6 @@ class ReportClient
 
     private static class DataPoint
     {
-        private static final Pattern QUOTED_PATTERN = Pattern.compile("\"(.*)\"");
-        private static final Pattern BACKQUOTE_PATTERN = Pattern.compile("\\\\(.)");
         private static final Pattern NOT_ACCEPTED_CHARACTER_PATTERN = Pattern.compile("[^-A-Za-z0-9./_]");
         @JsonProperty
         private final String name;
@@ -115,21 +109,9 @@ class ReportClient
         @JsonProperty
         private final Map<String, String> tags;
 
-        DataPoint(long systemTimeMillis, Cell<ObjectName, String, Object> cell, Map<String, String> instanceTags)
+        DataPoint(long systemTimeMillis, Cell<String, Map<String, String>, Object> cell, Map<String, String> instanceTags)
         {
-            Map<String,String> propertyList = cell.getRowKey().getKeyPropertyList();
-
-            StringBuilder nameBuilder = new StringBuilder();
-            if (propertyList.containsKey("type")) {
-                nameBuilder.append(LOWER_CAMEL.to(UPPER_CAMEL, dequote(propertyList.get("type"))))
-                        .append(".");
-            }
-            if (propertyList.containsKey("name")) {
-                nameBuilder.append(LOWER_CAMEL.to(UPPER_CAMEL, dequote(propertyList.get("name"))))
-                        .append(".");
-            }
-            nameBuilder.append(cell.getColumnKey());
-            name = NOT_ACCEPTED_CHARACTER_PATTERN.matcher(nameBuilder.toString()).replaceAll("_");
+            name = NOT_ACCEPTED_CHARACTER_PATTERN.matcher(cell.getRowKey()).replaceAll("_");
 
             timestamp = systemTimeMillis;
             value = cell.getValue();
@@ -140,35 +122,19 @@ class ReportClient
             }
             Builder<String, String> builder = ImmutableMap.<String, String>builder()
                     .putAll(instanceTags);
-            for (Entry<String, String> entry : propertyList.entrySet()) {
-                if (!entry.getKey().equals("type") && !entry.getKey().equals("name")) {
-                    String dequoted = dequote(entry.getValue());
-                    builder.put(entry.getKey(), NOT_ACCEPTED_CHARACTER_PATTERN.matcher(dequoted).replaceAll("_"));
-                }
+            for (Entry<String, String> entry : cell.getColumnKey().entrySet()) {
+                builder.put(entry.getKey(), NOT_ACCEPTED_CHARACTER_PATTERN.matcher(entry.getValue()).replaceAll("_"));
             }
             tags = builder.build();
-        }
-
-        private static String dequote(String value)
-        {
-            Matcher matcher = QUOTED_PATTERN.matcher(value);
-            String dequoted;
-            if (matcher.matches()) {
-                dequoted = BACKQUOTE_PATTERN.matcher(matcher.group(1)).replaceAll("$1");
-            }
-            else {
-                dequoted = value;
-            }
-            return dequoted;
         }
     }
 
     private class CompressBodySource implements DynamicBodySource
     {
         private final long systemTimeMillis;
-        private final Table<ObjectName,String,Object> collectedData;
+        private final Table<String, Map<String, String>, Object> collectedData;
 
-        CompressBodySource(long systemTimeMillis, Table<ObjectName, String, Object> collectedData)
+        CompressBodySource(long systemTimeMillis, Table<String, Map<String, String>, Object> collectedData)
         {
             this.systemTimeMillis = systemTimeMillis;
             this.collectedData = collectedData;
@@ -181,25 +147,19 @@ class ReportClient
             final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(out);
             final JsonGenerator generator = JSON_FACTORY.createGenerator(gzipOutputStream, JsonEncoding.UTF8)
                 .setCodec(objectMapper);
-            final Iterator<Cell<ObjectName, String, Object>> iterator = collectedData.cellSet().iterator();
+            final Iterator<Cell<String, Map<String, String>, Object>> iterator = collectedData.cellSet().iterator();
 
             generator.writeStartArray();
 
-            return new Writer()
-            {
-                @Override
-                public void write()
-                        throws Exception
-                {
-                    if (iterator.hasNext()) {
-                        generator.writeObject(new DataPoint(systemTimeMillis, iterator.next(), instanceTags));
-                    }
-                    else {
-                        generator.writeEndArray();
-                        generator.flush();
-                        gzipOutputStream.finish();
-                        out.close();
-                    }
+            return () -> {
+                if (iterator.hasNext()) {
+                    generator.writeObject(new DataPoint(systemTimeMillis, iterator.next(), instanceTags));
+                }
+                else {
+                    generator.writeEndArray();
+                    generator.flush();
+                    gzipOutputStream.finish();
+                    out.close();
                 }
             };
         }

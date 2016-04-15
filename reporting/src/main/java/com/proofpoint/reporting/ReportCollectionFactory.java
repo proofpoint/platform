@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -26,7 +25,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.inject.Inject;
-import org.weakref.jmx.ObjectNameBuilder;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -38,23 +36,22 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
 import static java.lang.reflect.Proxy.newProxyInstance;
+import static java.util.Objects.requireNonNull;
 
 public class ReportCollectionFactory
 {
@@ -74,38 +71,126 @@ public class ReportCollectionFactory
         this.ticker = ticker;
     }
 
+    /**
+     * Creates a report collection with a name prefix of the interface class.
+     *
+     * @param aClass The interface class of the created report collection
+     */
     @SuppressWarnings("unchecked")
     public <T> T createReportCollection(Class<T> aClass)
     {
-        checkNotNull(aClass, "class is null");
+        requireNonNull(aClass, "class is null");
         return (T) newProxyInstance(aClass.getClassLoader(),
                 new Class[]{aClass},
-                new StatInvocationHandler(aClass, null));
+                new StatInvocationHandler(aClass, false, Optional.of(aClass.getSimpleName()), ImmutableMap.of()));
     }
 
+    /**
+     * Creates a report collection with a name prefix of the interface class.
+     *
+     * @param aClass The interface class of the created report collection
+     * @param applicationPrefix Whether to prefix the metric names with the application name
+     * @param namePrefix Name prefix for all metrics reported out of the report collection
+     * @param tags Tags for all metrics reported out of the report collection
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T createReportCollection(Class<T> aClass, boolean applicationPrefix, @Nullable String namePrefix, Map<String, String> tags)
+    {
+        requireNonNull(aClass, "class is null");
+        requireNonNull(tags, "tags is null");
+
+        if ("".equals(namePrefix)) {
+            namePrefix = null;
+        }
+        return (T) newProxyInstance(aClass.getClassLoader(),
+                new Class[] {aClass},
+                new StatInvocationHandler(aClass, applicationPrefix, Optional.ofNullable(namePrefix), ImmutableMap.copyOf(tags)));
+    }
+
+    /**
+     * @deprecated Use {@link #createReportCollection(Class, boolean, String, Map)}.
+     */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public <T> T createReportCollection(Class<T> aClass, String name)
     {
-        checkNotNull(aClass, "class is null");
-        checkNotNull(name, "name is null");
+        requireNonNull(aClass, "class is null");
+        requireNonNull(name, "name is null");
+
+        Optional<String> namePrefix = Optional.empty();
+        Builder<String, String> tagsBuilder = ImmutableMap.builder();
+        ObjectName objectName;
+        try {
+            objectName = ObjectName.getInstance(name);
+        }
+        catch (MalformedObjectNameException e) {
+            throw propagate(e);
+        }
+        int index = objectName.getDomain().length();
+        if (name.charAt(index++) != ':') {
+            throw new RuntimeException("Unable to parse ObjectName " + name);
+        }
+        while (index < name.length()) {
+            int separatorIndex = name.indexOf('=', index);
+            String key = name.substring(index, separatorIndex);
+            String value;
+            if (name.charAt(++separatorIndex) == '\"') {
+                StringBuilder sb = new StringBuilder();
+                char c;
+                while ((c = name.charAt(++separatorIndex)) != '\"') {
+                    if (c == '\\') {
+                        c = name.charAt(++separatorIndex);
+                    }
+                    sb.append(c);
+                }
+                if (name.charAt(++separatorIndex) != ',') {
+                    throw new RuntimeException("Unable to parse ObjectName " + name);
+                }
+                value = sb.toString();
+                index = separatorIndex + 1;
+            }
+            else {
+                index = name.indexOf(',', separatorIndex);
+                if (index == -1) {
+                    index = name.length();
+                }
+                value = name.substring(separatorIndex, index);
+                ++index;
+            }
+
+            if ("type".equals(key)) {
+                checkArgument(!namePrefix.isPresent(), "ObjectName " + name + " has two type parameters");
+                namePrefix = Optional.of(value);
+            }
+            else {
+                checkArgument(!"name".equals(key), "ObjectName" + name + " not permitted to have a name parameter");
+                tagsBuilder.put(key, value);
+            }
+        }
+
         return (T) newProxyInstance(aClass.getClassLoader(),
                 new Class[]{aClass},
-                new StatInvocationHandler(aClass, name));
+                new StatInvocationHandler(aClass, false, namePrefix, tagsBuilder.build()));
     }
 
     private class StatInvocationHandler implements InvocationHandler
     {
         private final Map<Method, MethodImplementation> implementationMap;
 
-        public <T> StatInvocationHandler(Class<T> aClass, @Nullable String name)
+        <T> StatInvocationHandler(Class<T> aClass, boolean applicationPrefix, Optional<String> namePrefix, Map<String, String> tags)
         {
             Builder<Method, MethodImplementation> cacheBuilder = ImmutableMap.builder();
             for (Method method : aClass.getMethods()) {
+                StringBuilder builder = new StringBuilder();
+                if (namePrefix.isPresent()) {
+                    builder.append(namePrefix.get()).append('.');
+                }
+                builder.append(LOWER_CAMEL.to(UPPER_CAMEL, method.getName()));
                 if (method.getParameterTypes().length == 0) {
-                    cacheBuilder.put(method, new SingletonImplementation(aClass, method, name));
+                    cacheBuilder.put(method, new SingletonImplementation(method, applicationPrefix, builder.toString(), tags));
                 }
                 else {
-                    cacheBuilder.put(method, new CacheImplementation(aClass, method, name));
+                    cacheBuilder.put(method, new CacheImplementation(method, applicationPrefix, builder.toString(), tags));
                 }
             }
             implementationMap = cacheBuilder.build();
@@ -118,7 +203,7 @@ public class ReportCollectionFactory
             ImmutableList.Builder<Optional<String>> argBuilder = ImmutableList.builder();
             for (Object arg : firstNonNull(args, EMPTY_OBJECT_ARRAY)) {
                 if (arg == null) {
-                    argBuilder.add(Optional.<String>empty());
+                    argBuilder.add(Optional.empty());
                 }
                 else if (arg instanceof Optional) {
                     argBuilder.add(((Optional<?>)arg).map(Object::toString));
@@ -142,24 +227,12 @@ public class ReportCollectionFactory
     {
         private final Object returnValue;
 
-        SingletonImplementation(Class<?> aClass, Method method, String name)
+        SingletonImplementation(Method method, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
         {
             checkArgument(method.getParameterTypes().length == 0, "method has parameters");
             returnValue = getReturnValueSupplier(method).get();
 
-            MethodInfo methodInfo = MethodInfo.methodInfo(aClass, method, name);
-            String packageName = methodInfo.getPackageName();
-            Map<String, String> properties = methodInfo.getProperties();
-            String upperMethodName = methodInfo.getUpperMethodName();
-
-            ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(packageName);
-            for (Entry<String, String> entry : properties.entrySet()) {
-                objectNameBuilder = objectNameBuilder.withProperty(entry.getKey(), entry.getValue());
-            }
-            objectNameBuilder = objectNameBuilder.withProperty("name", upperMethodName);
-            String objectName = objectNameBuilder.build();
-
-            reportExporter.export(objectName, returnValue);
+            reportExporter.export(returnValue, applicationPrefix, namePrefix, tags);
         }
 
         @Override
@@ -177,10 +250,8 @@ public class ReportCollectionFactory
         private final Map<List<Optional<String>>, Object> registeredMap = new HashMap<>();
         @GuardedBy("registeredMap")
         private final Set<Object> reinsertedSet = new HashSet<>();
-        @GuardedBy("registeredMap")
-        private final Map<Object, String> objectNameMap = new HashMap<>();
 
-        CacheImplementation(Class<?> aClass, Method method, String name)
+        CacheImplementation(Method method, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
         {
             checkState(method.getParameterTypes().length != 0);
 
@@ -193,7 +264,9 @@ public class ReportCollectionFactory
                 boolean found = false;
                 for (Annotation annotation : annotations) {
                     if (Key.class.isAssignableFrom(annotation.annotationType())) {
-                        keyNameBuilder.add(((Key)annotation).value());
+                        String keyName = ((Key) annotation).value();
+                        checkArgument(!tags.containsKey(keyName), methodName(method) + " @Key(\"" + keyName + "\") duplicates tag on entire report collection");
+                        keyNameBuilder.add(keyName);
                         found = true;
                         break;
                     }
@@ -203,11 +276,7 @@ public class ReportCollectionFactory
                             + " has no @com.proofpoint.reporting.Key annotation");
                 }
             }
-            MethodInfo methodInfo = MethodInfo.methodInfo(aClass, method, name);
-            String packageName = methodInfo.getPackageName();
-            Map<String, String> properties = methodInfo.getProperties();
-            String upperMethodName = methodInfo.getUpperMethodName();
-            final List<String> keyNames = keyNameBuilder.build();
+            List<String> keyNames = keyNameBuilder.build();
             loadingCache = CacheBuilder.newBuilder()
                     .ticker(ticker)
                     .expireAfterAccess(15, TimeUnit.MINUTES)
@@ -220,18 +289,6 @@ public class ReportCollectionFactory
                         {
                             Object returnValue = returnValueSupplier.get();
 
-                            ObjectNameBuilder objectNameBuilder = new ObjectNameBuilder(packageName);
-                            for (Entry<String, String> entry : properties.entrySet()) {
-                                objectNameBuilder = objectNameBuilder.withProperty(entry.getKey(), entry.getValue());
-                            }
-                            objectNameBuilder = objectNameBuilder.withProperty("name", upperMethodName);
-                            for (int i = 0; i < keyNames.size(); ++i) {
-                                if (key.get(i).isPresent()) {
-                                    objectNameBuilder = objectNameBuilder.withProperty(keyNames.get(i), key.get(i).get());
-                                }
-                            }
-                            String objectName = objectNameBuilder.build();
-
                             synchronized (registeredMap) {
                                 Object existingStat = registeredMap.get(key);
                                 if (existingStat != null) {
@@ -239,8 +296,15 @@ public class ReportCollectionFactory
                                     return existingStat;
                                 }
                                 registeredMap.put(key, returnValue);
-                                reportExporter.export(objectName, returnValue);
-                                objectNameMap.put(returnValue, objectName);
+                                Builder<String, String> tagBuilder = ImmutableMap.builder();
+                                tagBuilder.putAll(tags);
+                                for (int i = 0; i < keyNames.size(); ++i) {
+                                    Optional<String> keyValue = key.get(i);
+                                    if (keyValue.isPresent()) {
+                                        tagBuilder.put(keyNames.get(i), keyValue.get());
+                                    }
+                                }
+                                reportExporter.export(returnValue, applicationPrefix, namePrefix, tagBuilder.build());
                             }
                             return returnValue;
                         }
@@ -263,8 +327,7 @@ public class ReportCollectionFactory
                     if (reinsertedSet.remove(notification.getValue())) {
                         return;
                     }
-                    String objectName = objectNameMap.remove(notification.getValue());
-                    reportExporter.unexport(objectName);
+                    reportExporter.unexportObject(notification.getValue());
                     registeredMap.remove(notification.getKey());
                 }
             }
@@ -305,89 +368,5 @@ public class ReportCollectionFactory
         }
         builder.append(')');
         return builder.toString();
-    }
-
-    private static class MethodInfo
-    {
-        private final String packageName;
-        private final Map<String, String> properties;
-        private final String upperMethodName;
-
-        private MethodInfo(String packageName, Map<String, String> properties, String upperMethodName)
-        {
-            this.packageName = packageName;
-            this.properties = properties;
-            this.upperMethodName = upperMethodName;
-        }
-
-        public String getPackageName()
-        {
-            return packageName;
-        }
-
-        public Map<String, String> getProperties()
-        {
-            return properties;
-        }
-
-        public String getUpperMethodName()
-        {
-            return upperMethodName;
-        }
-
-        public static MethodInfo methodInfo(Class<?> aClass, Method method, String name)
-        {
-            String packageName;
-            Map<String, String> properties = new LinkedHashMap<>();
-            if (name == null) {
-                packageName = aClass.getPackage().getName();
-                properties.put("type", aClass.getSimpleName());
-            }
-            else {
-                ObjectName objectName;
-                try {
-                    objectName = ObjectName.getInstance(name);
-                }
-                catch (MalformedObjectNameException e) {
-                    throw propagate(e);
-                }
-                packageName = objectName.getDomain();
-                int index = packageName.length();
-                if (name.charAt(index++) != ':') {
-                    throw new RuntimeException("Unable to parse ObjectName " + name);
-                }
-                while (index < name.length()) {
-                    int separatorIndex = name.indexOf('=', index);
-                    String key = name.substring(index, separatorIndex);
-                    String value;
-                    if (name.charAt(++separatorIndex) == '\"') {
-                        StringBuilder sb = new StringBuilder();
-                        char c;
-                        while ((c = name.charAt(++separatorIndex)) != '\"') {
-                            if (c == '\\') {
-                                c = name.charAt(++separatorIndex);
-                            }
-                            sb.append(c);
-                        }
-                        if (name.charAt(++separatorIndex) != ',') {
-                            throw new RuntimeException("Unable to parse ObjectName " + name);
-                        }
-                        value = sb.toString();
-                        index = separatorIndex + 1;
-                    }
-                    else {
-                        index = name.indexOf(',', separatorIndex);
-                        if (index == -1) {
-                            index = name.length();
-                        }
-                        value = name.substring(separatorIndex, index);
-                        ++index;
-                    }
-                    properties.put(key, value);
-                }
-            }
-            String upperMethodName = LOWER_CAMEL.to(UPPER_CAMEL, method.getName());
-            return new MethodInfo(packageName, properties, upperMethodName);
-        }
     }
 }

@@ -16,11 +16,9 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.Iterables;
-import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
@@ -122,14 +120,9 @@ public class TestHttpAnnouncementBinder
                 new TestingDiscoveryModule(),
                 new TestingMBeanModule(),
                 new ReportingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(AnnouncementHttpServerInfo.class).toInstance(httpServerInfo);
-                        DiscoveryBinder.discoveryBinder(binder).bindHttpAnnouncement("apple").addProperty("a", "apple");
-                    }
+                binder -> {
+                    binder.bind(AnnouncementHttpServerInfo.class).toInstance(httpServerInfo);
+                    DiscoveryBinder.discoveryBinder(binder).bindHttpAnnouncement("apple").addProperty("a", "apple");
                 }
         );
 
@@ -152,16 +145,10 @@ public class TestHttpAnnouncementBinder
         return Guice.createInjector(
                 new ApplicationNameModule("test-application"),
                 new TestingDiscoveryModule(),
-                new TestingMBeanModule(),
                 new ReportingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(AnnouncementHttpServerInfo.class).toInstance(httpServerInfo);
-                        DiscoveryBinder.discoveryBinder(binder).bindHttpAnnouncement("apple");
-                    }
+                binder -> {
+                    binder.bind(AnnouncementHttpServerInfo.class).toInstance(httpServerInfo);
+                    DiscoveryBinder.discoveryBinder(binder).bindHttpAnnouncement("apple");
                 }
         );
     }

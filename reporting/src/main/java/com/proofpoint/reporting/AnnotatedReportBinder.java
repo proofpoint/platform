@@ -16,25 +16,36 @@
 package com.proofpoint.reporting;
 
 import com.google.inject.Key;
-import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Named;
 
 import java.lang.annotation.Annotation;
 
 public class AnnotatedReportBinder
     extends NamedReportBinder
 {
-    AnnotatedReportBinder(Multibinder<Mapping> binder, Key<?> key)
+    AnnotatedReportBinder(Mapping mapping)
     {
-        super(binder, key);
+        super(mapping);
     }
 
     public NamedReportBinder annotatedWith(Annotation annotation)
     {
-        return new NamedReportBinder(binder, Key.get(key.getTypeLiteral(), annotation));
+        StringBuilder builder = new StringBuilder().append(mapping.getKey().getTypeLiteral().getRawType().getSimpleName()).append(".");
+        if (annotation instanceof Named) {
+            builder.append(((Named) annotation).value());
+        }
+        else {
+            builder.append(annotation.annotationType().getSimpleName());
+        }
+        mapping.setNamePrefix(builder.toString());
+        mapping.setKey(Key.get(mapping.getKey().getTypeLiteral(), annotation));
+        return new NamedReportBinder(mapping);
     }
 
     public NamedReportBinder annotatedWith(Class<? extends Annotation> annotationClass)
     {
-        return new NamedReportBinder(binder, Key.get(key.getTypeLiteral(), annotationClass));
+        mapping.setNamePrefix(mapping.getKey().getTypeLiteral().getRawType().getSimpleName() + "." + annotationClass.getSimpleName());
+        mapping.setKey(Key.get(mapping.getKey().getTypeLiteral(), annotationClass));
+        return new NamedReportBinder(mapping);
     }
 }

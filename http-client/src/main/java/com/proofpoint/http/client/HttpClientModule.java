@@ -43,6 +43,7 @@ import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.http.client.CompositeQualifierImpl.compositeQualifier;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
+import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 @Beta
 public class HttpClientModule
@@ -97,7 +98,8 @@ public class HttpClientModule
 
         // export stats
         if (rootBinder == binder) {
-            reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
+            reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
+            newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
         }
     }
 
@@ -193,9 +195,7 @@ public class HttpClientModule
         {
             // clients must be destroyed before the pools or 
             // you will create a several second busy wait loop
-            for (JettyHttpClient client : clients) {
-                client.close();
-            }
+            clients.forEach(JettyHttpClient::close);
             if (pool != null) {
                 pool.close();
                 pool = null;

@@ -15,26 +15,76 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Key;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+
+import static java.util.Objects.requireNonNull;
 
 class Mapping
 {
-    private final String name;
-    private final Key<?> key;
+    private Key<?> key;
+    private boolean applicationPrefix = false;
+    private String namePrefix;
+    private Map<String, String> tags = ImmutableMap.of();
+    private String legacyName = null;
 
-    Mapping(String name, Key<?> key)
+    Mapping(Key<?> key, String namePrefix)
     {
-        this.name = name;
         this.key = key;
+        this.namePrefix = namePrefix;
     }
 
-    public String getName()
-    {
-        return name;
-    }
-
-    public Key<?> getKey()
+    Key<?> getKey()
     {
         return key;
+    }
+
+    void setKey(Key<?> key)
+    {
+        this.key = requireNonNull(key, "key is null");
+    }
+
+    public boolean isApplicationPrefix()
+    {
+        return applicationPrefix;
+    }
+
+    public void setApplicationPrefix(boolean applicationPrefix)
+    {
+        this.applicationPrefix = applicationPrefix;
+    }
+
+    String getNamePrefix()
+    {
+        return namePrefix;
+    }
+
+    void setNamePrefix(String namePrefix)
+    {
+        this.namePrefix = requireNonNull(namePrefix, "namePrefix is null");
+    }
+
+    public Map<String, String> getTags()
+    {
+        return tags;
+    }
+
+    public void setTags(Map<String, String> tags)
+    {
+        this.tags = ImmutableMap.copyOf(tags);
+    }
+
+    @Nullable
+    String getLegacyName()
+    {
+        return legacyName;
+    }
+
+    void setLegacyName(String legacyName)
+    {
+        this.legacyName = requireNonNull(legacyName, "legacyName is null");
     }
 }

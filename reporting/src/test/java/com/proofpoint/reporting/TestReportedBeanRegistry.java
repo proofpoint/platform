@@ -15,6 +15,7 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -24,6 +25,7 @@ import javax.management.InstanceNotFoundException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import static com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo.registrationInfo;
 import static org.testng.Assert.assertEquals;
 
 public class TestReportedBeanRegistry
@@ -38,6 +40,7 @@ public class TestReportedBeanRegistry
     });
 
     private static final ObjectName TESTING_OBJECT_NAME;
+    private static final ImmutableMap<String, String> TESTING_TAGS = ImmutableMap.of("tag", "value");
 
     static {
         ObjectName objectName = null;
@@ -61,21 +64,47 @@ public class TestReportedBeanRegistry
     public void testRegister()
             throws Exception
     {
-        registry.register(TESTING_REPORTED_BEAN, TESTING_OBJECT_NAME);
-        assertEquals(registry.getReportedBeans(), ImmutableMap.of(TESTING_OBJECT_NAME, TESTING_REPORTED_BEAN));
+        registry.register(new Object(), TESTING_REPORTED_BEAN, false, "TestingObject", TESTING_TAGS);
+        assertEquals(registry.getReportedBeans(), ImmutableList.of(registrationInfo(TESTING_REPORTED_BEAN, false, "TestingObject", TESTING_TAGS)));
+    }
+
+    @Test
+    public void testRegisterApplicationPrefix()
+            throws Exception
+    {
+        registry.register(new Object(), TESTING_REPORTED_BEAN, true, "TestingObject", TESTING_TAGS);
+        assertEquals(registry.getReportedBeans(), ImmutableList.of(registrationInfo(TESTING_REPORTED_BEAN, true, "TestingObject", TESTING_TAGS)));
     }
 
     @Test
     public void testUnRegister()
             throws Exception
     {
+        Object object = new Object();
+        registry.register(object, TESTING_REPORTED_BEAN, false, "TestingObject", TESTING_TAGS);
+        registry.unregister(object);
+        assertEquals(registry.getReportedBeans(), ImmutableList.of());
+    }
+
+    @Test
+    public void testRegisterLegacy()
+            throws Exception
+    {
         registry.register(TESTING_REPORTED_BEAN, TESTING_OBJECT_NAME);
-        registry.unregister(TESTING_OBJECT_NAME);
-        assertEquals(registry.getReportedBeans(), ImmutableMap.of());
+        assertEquals(registry.getReportedBeans(), ImmutableList.of(registrationInfo(TESTING_REPORTED_BEAN, false, "TestingObject", ImmutableMap.of())));
+    }
+
+    @Test
+    public void testUnRegisterLegacy()
+            throws Exception
+    {
+        registry.register(TESTING_REPORTED_BEAN, TESTING_OBJECT_NAME);
+        registry.unregisterLegacy(ObjectName.getInstance("com.proofpoint.reporting", "name", "TestingObject"));
+        assertEquals(registry.getReportedBeans(), ImmutableList.of());
     }
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
-    public void testRegisterNullName()
+    public void testRegisterLegacyNullName()
             throws Exception
     {
         registry.register(TESTING_REPORTED_BEAN, null);
@@ -83,7 +112,7 @@ public class TestReportedBeanRegistry
 
     @Test(expectedExceptions = InstanceAlreadyExistsException.class,
             expectedExceptionsMessageRegExp = "com\\.proofpoint\\.reporting:name=TestingObject is already registered")
-    public void testRegisterTwice()
+    public void testRegisterLegacyTwice()
             throws Exception
     {
         registry.register(TESTING_REPORTED_BEAN, TESTING_OBJECT_NAME);
@@ -92,9 +121,9 @@ public class TestReportedBeanRegistry
 
     @Test(expectedExceptions = InstanceNotFoundException.class,
             expectedExceptionsMessageRegExp = "com\\.proofpoint\\.reporting:name=TestingObject not found")
-    public void testUnRegisterNotFound()
+    public void testUnRegisterLegacyNotFound()
             throws Exception
     {
-        registry.unregister(TESTING_OBJECT_NAME);
+        registry.unregisterLegacy(TESTING_OBJECT_NAME);
     }
 }

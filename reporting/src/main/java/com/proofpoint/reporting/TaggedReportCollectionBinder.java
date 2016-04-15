@@ -15,29 +15,24 @@
  */
 package com.proofpoint.reporting;
 
-public class NamedReportCollectionBinder<T>
-    extends PrefixedReportCollectionBinder<T>
+import com.google.common.collect.ImmutableMap;
+
+import java.util.Map;
+
+public class TaggedReportCollectionBinder<T>
 {
-    NamedReportCollectionBinder(ReportCollectionProvider<T> provider)
+    protected final ReportCollectionProvider<T> provider;
+
+    TaggedReportCollectionBinder(ReportCollectionProvider<T> provider)
     {
-        super(provider);
+        this.provider = provider;
     }
 
     /**
      * See the EDSL description at {@link ReportBinder}.
      */
-    public PrefixedReportCollectionBinder<T> withApplicationPrefix()
+    public void withTags(Map<String, String> tags)
     {
-        provider.setApplicationPrefix(true);
-        return new PrefixedReportCollectionBinder<>(provider);
-    }
-
-    /**
-     * @deprecated Use {@link #withNamePrefix} and/or {@link #withTags}.
-     */
-    @Deprecated
-    public void as(String name)
-    {
-        provider.setLegacyName(name);
+        provider.setTags(ImmutableMap.copyOf(tags));
     }
 }

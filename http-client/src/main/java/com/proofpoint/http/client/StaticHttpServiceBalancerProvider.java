@@ -15,6 +15,7 @@
  */
 package com.proofpoint.http.client;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -23,9 +24,9 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
-import org.weakref.jmx.ObjectNameBuilder;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.Set;
 
 import static java.lang.String.format;
@@ -64,13 +65,10 @@ class StaticHttpServiceBalancerProvider implements Provider<HttpServiceBalancer>
         requireNonNull(type, "type is null");
         requireNonNull(baseUris, "baseUris is null");
 
-        String name = new ObjectNameBuilder(HttpServiceBalancerStats.class.getPackage().getName())
-                .withProperty("type", "ServiceClient")
-                .withProperty("serviceType", type)
-                .build();
-        HttpServiceBalancerStats httpServiceBalancerStats = reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, name);
+        Map<String, String> tags = ImmutableMap.of("serviceType", type);
+        HttpServiceBalancerStats httpServiceBalancerStats = reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags);
         HttpServiceBalancerImpl balancer = new HttpServiceBalancerImpl(format("type=[%s], static", type), httpServiceBalancerStats);
-        reportExporter.export(name, balancer);
+        reportExporter.export(balancer, false, "ServiceClient", tags);
         balancer.updateHttpUris(baseUris);
         return balancer;
     }
