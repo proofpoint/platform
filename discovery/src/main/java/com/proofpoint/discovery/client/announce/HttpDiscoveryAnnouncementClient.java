@@ -107,7 +107,7 @@ public class HttpDiscoveryAnnouncementClient implements DiscoveryAnnouncementCli
         });
     }
 
-    private boolean isSuccess(int statusCode)
+    private static boolean isSuccess(int statusCode)
     {
         return statusCode / 100 == 2;
     }
@@ -129,10 +129,10 @@ public class HttpDiscoveryAnnouncementClient implements DiscoveryAnnouncementCli
                 .setUri(URI.create("v1/announcement/" + nodeInfo.getNodeId()))
                 .setHeader("User-Agent", nodeInfo.getNodeId())
                 .build();
-        return httpClient.executeAsync(request, new DiscoveryResponseHandler<Void>("Unannouncement"));
+        return httpClient.executeAsync(request, new DiscoveryResponseHandler<>("Unannouncement"));
     }
 
-    private Duration extractMaxAge(Response response)
+    private static Duration extractMaxAge(Response response)
     {
         String header = response.getHeader(HttpHeaders.CACHE_CONTROL);
         if (header != null) {
