@@ -37,7 +37,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -88,7 +87,7 @@ public class Announcer
     {
         executor.shutdownNow();
         try {
-            executor.awaitTermination(30, TimeUnit.SECONDS);
+            executor.awaitTermination(30, SECONDS);
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -166,14 +165,7 @@ public class Announcer
         if (executor.isShutdown()) {
             return;
         }
-        executor.schedule(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                announce();
-            }
-        }, delay.toMillis(), MILLISECONDS);
+        executor.schedule((Runnable) this::announce, delay.toMillis(), MILLISECONDS);
     }
 
     // TODO: move this to a utility package
