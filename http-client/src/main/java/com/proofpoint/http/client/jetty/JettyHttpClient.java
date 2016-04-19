@@ -139,17 +139,17 @@ public class JettyHttpClient
 
     public JettyHttpClient()
     {
-        this(new HttpClientConfig(), ImmutableList.<HttpRequestFilter>of());
+        this(new HttpClientConfig(), ImmutableList.of());
     }
 
     public JettyHttpClient(HttpClientConfig config)
     {
-        this(config, ImmutableList.<HttpRequestFilter>of());
+        this(config, ImmutableList.of());
     }
 
     public JettyHttpClient(HttpClientConfig config, Iterable<? extends HttpRequestFilter> requestFilters)
     {
-        this(config, Optional.<JettyIoPool>absent(), requestFilters);
+        this(config, Optional.absent(), requestFilters);
     }
 
     public JettyHttpClient(HttpClientConfig config, JettyIoPool jettyIoPool, Iterable<? extends HttpRequestFilter> requestFilters)
@@ -179,6 +179,13 @@ public class JettyHttpClient
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
         sslContextFactory.addExcludeProtocols("SSLv3", "SSLv2Hello");
         sslContextFactory.addExcludeCipherSuites(DISABLED_CIPHERS);
+        String[] excludeCipherSuites = sslContextFactory.getExcludeCipherSuites();
+        for (int i = 0; i < excludeCipherSuites.length; i++) {
+            if ("^.*_RSA_.*_(MD5|SHA|SHA1)$".equals(excludeCipherSuites[i])) {
+                excludeCipherSuites[i] = "^.*_RSA_.*_MD5$";
+            }
+        }
+        sslContextFactory.setExcludeCipherSuites(excludeCipherSuites);
         if (config.getKeyStorePath() != null) {
             sslContextFactory.setKeyStorePath(config.getKeyStorePath());
             sslContextFactory.setKeyStorePassword(config.getKeyStorePassword());
