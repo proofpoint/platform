@@ -6,9 +6,9 @@
 
     <parent>
         <groupId>com.proofpoint.platform</groupId>
-        <artifactId>rest-server-base</artifactId>
+        <artifactId>library</artifactId>
         <version>1.34-SNAPSHOT</version>
-        <relativePath>../rest-server-base/pom.xml</relativePath>
+        <relativePath>../library/pom.xml</relativePath>
     </parent>
 
     <properties>
