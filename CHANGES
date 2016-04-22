@@ -21,6 +21,15 @@ Platform 1.34
   when the report collection implementation is created. Such methods should
   normally be declared to return the non-sparse stats objects.
 
+* Packaging
+
+  Client projects that want to create a distribution tar file may do so by
+  creating a ".build-distribution" file and inheriting directly or indirectly
+  from the library pom, instead of inheriting directly from the
+  rest-server-base pom. Client projects that want to create an rpm may now
+  do so by inheriting directly or indirectly from the library pom (and
+  creating a ".build-rpm" file).
+
 * We re-enabled the RSA-SHA1 ciphers that Jetty disabled in the http client
   in Platform 1.32.
 

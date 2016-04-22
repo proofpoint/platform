@@ -33,6 +33,7 @@
                                         <include name="src/**" />
                                         <include name="etc/**" />
                                         <include name="pom.xml" />
+                                        <include name=".build-distribution" />
                                         <include name=".build-rpm" />
                                     </fileset>
                                 </copy>
@@ -98,7 +99,7 @@
 
                                 <replace file="${project.build.directory}/archetype/src/main/resources/archetype-resources/pom.xml">
                                     <replacefilter>
-                                        <replacetoken><![CDATA[<relativePath>../rest-server-base/pom.xml</relativePath>]]></replacetoken>
+                                        <replacetoken><![CDATA[<relativePath>../library/pom.xml</relativePath>]]></replacetoken>
                                         <replacevalue />
                                     </replacefilter>
                                     <replacefilter>
