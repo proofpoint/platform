@@ -14,31 +14,9 @@
         <relativePath>../library/pom.xml</relativePath>
     </parent>
 
-    <inceptionYear>2010</inceptionYear>
-    <organization>
-        <name>Proofpoint, Inc.</name>
-        <url>http://www.proofpoint.com</url>
-    </organization>
-    <licenses>
-        <license>
-            <name>Apache License 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <developers />
-
     <properties>
         <project.rpm.username>${project.artifactId}</project.rpm.username>
     </properties>
-
-    <scm>
-        <connection>scm:git:git://github.com/proofpoint/platform.git</connection>
-        <developerConnection>scm:git:git@github.com:proofpoint/platform.git</developerConnection>
-        <url>http://github.com/proofpoint/platform/tree/master</url>
-      <tag>HEAD</tag>
-  </scm>
 
     <profiles>
         <profile>
@@ -371,33 +349,6 @@
                                 <script>if [ -f /bin/systemctl ] ; then /bin/systemctl daemon-reload ; fi</script>
                             </postinstallScriptlet>
                         </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>sonatype-oss-release</id>
-            <properties>
-                <skipTests>true</skipTests> <!-- tests run in the preparation step of the release -->
-                <platform.check.skip-extended>true</platform.check.skip-extended>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>

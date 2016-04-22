@@ -22,13 +22,7 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <id>jgmyers</id>
-            <name>John Gardiner Myers</name>
-            <email>jgmyers@proofpoint.com</email>
-        </developer>
-    </developers>
+    <developers />
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
