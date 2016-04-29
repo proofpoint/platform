@@ -23,7 +23,11 @@
     </licenses>
 
     <developers>
-        <!-- see git log -->
+        <developer>
+            <id>jgmyers</id>
+            <name>John Gardiner Myers</name>
+            <email>jgmyers@proofpoint.com</email>
+        </developer>
     </developers>
 
     <properties>
