@@ -22,7 +22,9 @@
         </license>
     </licenses>
 
-    <developers />
+    <developers>
+        <!-- see git log -->
+    </developers>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
