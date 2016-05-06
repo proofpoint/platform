@@ -19,7 +19,6 @@ import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.inject.Binder;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -98,17 +97,11 @@ public class Bootstrap
             logging = null;
         }
 
-        Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
-        {
-            @Override
-            public void uncaughtException(Thread t, Throwable e)
-            {
-                log.error(e, "Uncaught exception in thread %s", t.getName());
-            }
-        });
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> log.error(e, "Uncaught exception in thread %s", t.getName()));
 
         this.modules = ImmutableList.<Module>builder()
                 .add(checkNotNull(applicationNameModule, "applicationNameModule is null"))
+                .add(new LifeCycleModule())
                 .addAll(modules)
                 .build();
     }
@@ -228,7 +221,6 @@ public class Bootstrap
 
         // system modules
         Builder<Module> moduleList = ImmutableList.builder();
-        moduleList.add(new LifeCycleModule());
         moduleList.add(new ConfigurationModule(configurationFactory));
         if (!moduleDefaultErrors.isEmpty()) {
             moduleList.add(new ValidationErrorModule(moduleDefaultErrors));
