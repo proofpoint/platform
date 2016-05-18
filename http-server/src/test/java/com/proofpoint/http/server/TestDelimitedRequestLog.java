@@ -36,7 +36,6 @@ import java.util.Collections;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.testng.Assert.assertEquals;
@@ -65,7 +64,7 @@ public class TestDelimitedRequestLog
     private long responseSize;
     private int responseCode;
     private String responseContentType;
-    private HttpURI uri;
+    private String pathQuery;
     private MockCurrentTimeMillisProvider currentTimeMillisProvider;
     private DelimitedRequestLog logger;
     private long currentTime;
@@ -90,7 +89,7 @@ public class TestDelimitedRequestLog
         responseSize = 32311;
         responseCode = 200;
         responseContentType = "response/type";
-        uri = new HttpURI("http://www.example.com/aaa+bbb/ccc?param=hello%20there&other=true");
+        pathQuery = "/aaa+bbb/ccc?param=hello%20there&other=true";
 
         file = File.createTempFile(getClass().getName(), ".log");
 
@@ -110,7 +109,7 @@ public class TestDelimitedRequestLog
         when(request.getProtocol()).thenReturn("unknown");
         when(request.getHeader("X-FORWARDED-PROTO")).thenReturn(protocol);
         when(request.getAttribute(TimingFilter.FIRST_BYTE_TIME)).thenReturn(timestamp + timeToFirstByte);
-        when(request.getRequestURI()).thenReturn(uri.toString());
+        when(request.getHttpURI()).thenReturn(new HttpURI("http://www.example.com/aaa+bbb/ccc?param=hello%20there&other=true"));
         when(request.getUserPrincipal()).thenReturn(principal);
         when(request.getMethod()).thenReturn(method);
         when(request.getContentRead()).thenReturn(requestSize);
@@ -144,7 +143,7 @@ public class TestDelimitedRequestLog
                 isoFormatter.print(timestamp),
                 "9.9.9.9",
                 method,
-                uri,
+                pathQuery,
                 user,
                 agent,
                 responseCode,
@@ -169,7 +168,7 @@ public class TestDelimitedRequestLog
                 isoFormatter.print(timestamp),
                 "9.9.9.9",
                 method,
-                uri,
+                pathQuery,
                 user,
                 agent,
                 responseCode,
@@ -195,7 +194,7 @@ public class TestDelimitedRequestLog
                 isoFormatter.print(timestamp),
                 "4.4.4.4",
                 method,
-                uri,
+                pathQuery,
                 user,
                 agent,
                 responseCode,
@@ -221,7 +220,7 @@ public class TestDelimitedRequestLog
                 isoFormatter.print(timestamp),
                 "3.3.3.3",
                 method,
-                uri,
+                pathQuery,
                 user,
                 agent,
                 responseCode,
@@ -247,7 +246,7 @@ public class TestDelimitedRequestLog
                 isoFormatter.print(timestamp),
                 "2.2.2.2",
                 method,
-                uri,
+                pathQuery,
                 user,
                 agent,
                 responseCode,
@@ -273,7 +272,7 @@ public class TestDelimitedRequestLog
                 isoFormatter.print(timestamp),
                 "10.11.12.13",
                 method,
-                uri,
+                pathQuery,
                 user,
                 agent,
                 responseCode,
@@ -299,7 +298,7 @@ public class TestDelimitedRequestLog
                 isoFormatter.print(timestamp),
                 "10.14.15.16",
                 method,
-                uri,
+                pathQuery,
                 user,
                 agent,
                 responseCode,
@@ -325,7 +324,7 @@ public class TestDelimitedRequestLog
                 isoFormatter.print(timestamp),
                 "10.14.15.16",
                 method,
-                uri,
+                pathQuery,
                 user,
                 agent,
                 responseCode,
