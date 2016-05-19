@@ -27,8 +27,9 @@ Platform 1.35
   - maven-antrun-plugin 1.8 (from 1.7)
 
 * [Bug] Allow lifecycle.stop-traffic.delay config option to be specified
+  in config.properties.
 
-* [Bug] The request.log omitted the URI query string
+* [Bug] The request.log omitted the URI query string.
 
 Platform 1.34
 
