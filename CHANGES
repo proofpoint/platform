@@ -1,3 +1,12 @@
+Platform 1.36
+
+* Maven release plugin
+
+  We have reconfigured the maven-release-plugin to run tests during the
+  release:prepare phase. Projects that configure the maven-release-plugin
+  might need to adjust that configuration to account for these changes to
+  the library POM.
+
 Platform 1.35
 
 * Maven plugin upgrades

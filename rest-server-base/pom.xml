@@ -124,28 +124,8 @@
                             </execution>
                         </executions>
                     </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                        <configuration>
-                            <mavenExecutorId>forked-path</mavenExecutorId>
-                            <arguments>-Pchild-project-release</arguments>
-                            <preparationGoals>clean install</preparationGoals>
-                            <useReleaseProfile>false</useReleaseProfile>
-                            <pushChanges>false</pushChanges>
-                            <localCheckout>true</localCheckout>
-                            <tagNameFormat>@{project.version}</tagNameFormat>
-                        </configuration>
-                    </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>child-project-release</id>
-            <properties>
-                <skipTests>true</skipTests> <!-- tests run in the preparation step of the release -->
-            </properties>
         </profile>
 
         <profile>
@@ -169,20 +149,13 @@
                 </repository>
             </distributionManagement>
 
-
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-release-plugin</artifactId>
                         <configuration>
-                            <mavenExecutorId>forked-path</mavenExecutorId>
                             <arguments>-Psonatype-oss-release</arguments>
-                            <useReleaseProfile>false</useReleaseProfile>
-                            <pushChanges>false</pushChanges>
-                            <localCheckout>true</localCheckout>
-                            <preparationGoals>clean install</preparationGoals>
-                            <tagNameFormat>@{project.version}</tagNameFormat>
                         </configuration>
                     </plugin>
                 </plugins>
