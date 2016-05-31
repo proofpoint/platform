@@ -180,6 +180,10 @@ public class JettyHttpClient
             sslContextFactory.setKeyStorePath(config.getKeyStorePath());
             sslContextFactory.setKeyStorePassword(config.getKeyStorePassword());
         }
+        if (config.getTrustStorePath() != null) {
+            sslContextFactory.setTrustStorePath(config.getTrustStorePath());
+            sslContextFactory.setTrustStorePassword(config.getTrustStorePassword());
+        }
 
         if (config.getMaxRequestsQueuedPerDestination() == 0) {
             httpClient = new HttpClient(
