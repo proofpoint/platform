@@ -53,7 +53,9 @@ public class TestJettyHttpsClient
     {
         return new HttpClientConfig()
                 .setKeyStorePath(getResource("localhost.keystore").getPath())
-                .setKeyStorePassword("changeit");
+                .setKeyStorePassword("changeit")
+                .setTrustStorePath(getResource("localhost.truststore").getPath())
+                .setTrustStorePassword("changeit");
     }
 
     @Override
@@ -66,7 +68,9 @@ public class TestJettyHttpsClient
     public ClientTester clientTester(final HttpClientConfig config)
     {
         config.setKeyStorePath(getResource("localhost.keystore").getPath())
-                .setKeyStorePassword("changeit");
+                .setKeyStorePassword("changeit")
+                .setTrustStorePath(getResource("localhost.truststore").getPath())
+                .setTrustStorePassword("changeit");
 
         return new ClientTester()
         {

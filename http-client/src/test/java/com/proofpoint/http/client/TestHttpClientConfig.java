@@ -33,6 +33,8 @@ import static com.proofpoint.configuration.testing.ConfigAssertions.assertRecord
 import static com.proofpoint.configuration.testing.ConfigAssertions.recordDefaults;
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE;
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE_PASSWORD;
+import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_TRUST_STORE;
+import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_TRUST_STORE_PASSWORD;
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
 
 public class TestHttpClientConfig
@@ -50,7 +52,9 @@ public class TestHttpClientConfig
                 .setMaxContentLength(new DataSize(16, Unit.MEGABYTE))
                 .setSocksProxy(null)
                 .setKeyStorePath(System.getProperty(JAVAX_NET_SSL_KEY_STORE))
-                .setKeyStorePassword(System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD)));
+                .setKeyStorePassword(System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD))
+                .setTrustStorePath(System.getProperty(JAVAX_NET_SSL_TRUST_STORE))
+                .setTrustStorePassword(System.getProperty(JAVAX_NET_SSL_TRUST_STORE_PASSWORD)));
     }
 
     @Test
@@ -67,6 +71,8 @@ public class TestHttpClientConfig
                 .put("http-client.socks-proxy", "localhost:1080")
                 .put("http-client.key-store-path", "key-store")
                 .put("http-client.key-store-password", "key-store-password")
+                .put("http-client.trust-store-path", "trust-store")
+                .put("http-client.trust-store-password", "trust-store-password")
                 .build();
 
         HttpClientConfig expected = new HttpClientConfig()
@@ -79,7 +85,9 @@ public class TestHttpClientConfig
                 .setMaxContentLength(new DataSize(1, Unit.MEGABYTE))
                 .setSocksProxy(HostAndPort.fromParts("localhost", 1080))
                 .setKeyStorePath("key-store")
-                .setKeyStorePassword("key-store-password");
+                .setKeyStorePassword("key-store-password")
+                .setTrustStorePath("trust-store")
+                .setTrustStorePassword("trust-store-password");
 
         assertFullMapping(properties, expected);
     }

@@ -19,6 +19,10 @@ Platform 1.44
   these objects now have a getHeaders() method that takes a field name
   and returns a list of field values.
 
+* HttpClient
+
+  We added configuration options for specifying the certificate trust store.
+
 * Configuration
 
   We added a AbstractConfigurationAwareModule.build(Class<T>, String) method
