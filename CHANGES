@@ -7,6 +7,8 @@ Platform 1.36
   might need to adjust that configuration to account for these changes to
   the library POM.
 
+* [Bug] LoggingOutputStream incorrectly treated log lines as format strings.
+
 Platform 1.35
 
 * Maven plugin upgrades

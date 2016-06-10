@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.google.common.io.Files.createTempDir;
 import static org.testng.Assert.assertEquals;
@@ -142,7 +143,7 @@ public class TestLogging
     public void testAddLogTester()
     {
         Logging.initialize();
-        ArrayList<String> logRecords = new ArrayList<>();
+        List<String> logRecords = new ArrayList<>();
         Logging.addLogTester(TestAddLogTester.class, (level, message, thrown) -> {
             assertEquals(level, Level.INFO);
             assertFalse(thrown.isPresent());
@@ -161,7 +162,7 @@ public class TestLogging
     public void testAddLogTesterThrown()
     {
         Logging.initialize();
-        ArrayList<String> logRecords = new ArrayList<>();
+        List<String> logRecords = new ArrayList<>();
         Exception testingException = new Exception();
         Logging.addLogTester(TestAddLogTesterThrown.class, (level, message, thrown) -> {
             assertEquals(level, Level.WARN);
@@ -175,6 +176,21 @@ public class TestLogging
 
     private static class TestAddLogTesterThrown
     {
+    }
+
+    @Test
+    public void testLoggingOutputStream()
+    {
+        Logging.initialize();
+        List<String> logRecords = new ArrayList<>();
+        Logging.addLogTester("stdout", (level, message, thrown) -> {
+            assertEquals(level, Level.INFO);
+            assertFalse(thrown.isPresent());
+            logRecords.add(message);
+        });
+        System.out.println("test log line %");
+        assertEquals(logRecords.size(), 1);
+        assertEquals(logRecords.get(0), "test log line %");
     }
 
     @Test
