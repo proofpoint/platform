@@ -9,6 +9,9 @@ Platform 1.36
   might need to adjust that configuration to account for these changes to
   the library POM.
 
+* Fixed use of deprecated ignoredResources duplicate-finder-maven-plugin
+  configuration option.
+
 * [Bug] LoggingOutputStream incorrectly treated log lines as format strings.
 
 Platform 1.35
@@ -17,7 +20,7 @@ Platform 1.35
 
   We have upgraded from the com.ning.maven.plugins
   maven-duplicate-finder-plugin 1.0.6 to the org.basepom.maven
-  duplicate-finder-maven plugin 1.2.1. Any client pom files that adjust the
+  duplicate-finder-maven-plugin 1.2.1. Any client pom files that adjust the
   duplicate-finder configuration will need to do so using the new groupId and
   artifactId.
 
