@@ -337,7 +337,7 @@
                             </exception>
                         </exceptions>
 
-                        <ignoredResources>
+                        <ignoredResourcePatterns>
                             <!-- For all the jetty packages -->
                             <ignoredResource>about\.html</ignoredResource>
                             <ignoredResource>META-INF/.*</ignoredResource>
@@ -346,7 +346,7 @@
                             <ignoredResource>.*\.java</ignoredResource>
                             <ignoredResource>THIRD-PARTY</ignoredResource>
                             <ignoredResource>javac.sh</ignoredResource>
-                        </ignoredResources>
+                        </ignoredResourcePatterns>
 
                         <ignoredDependencies>
                             <!-- jRuby complete isn't very safe, but we only use it in the rack project -->
