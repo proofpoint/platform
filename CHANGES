@@ -1,5 +1,7 @@
 Platform 1.36
 
+* We made AdminServerCredentialVerifier public.
+
 * Maven release plugin
 
   We have reconfigured the maven-release-plugin to run tests during the

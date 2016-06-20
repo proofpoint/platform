@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
-class AdminServerCredentialVerifier
+public class AdminServerCredentialVerifier
 {
     private static final Base64.Decoder decoder = Base64.getDecoder();
 
@@ -34,7 +34,7 @@ class AdminServerCredentialVerifier
     private final String password;
 
     @Inject
-    AdminServerCredentialVerifier(AdminServerConfig config)
+    public AdminServerCredentialVerifier(AdminServerConfig config)
     {
         this.username = requireNonNull(config, "config is null").getUsername();
         this.password = config.getPassword();
