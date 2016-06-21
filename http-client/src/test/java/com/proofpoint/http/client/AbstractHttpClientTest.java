@@ -1346,7 +1346,7 @@ public abstract class AbstractHttpClientTest
 
         public void assertCompleted() {
             try {
-                assertTrue(completed.await(4, SECONDS));
+                assertTrue(completed.await(10, SECONDS), "LargeResponseServer completed");
             }
             catch (InterruptedException e) {
                 throw propagate(e);
