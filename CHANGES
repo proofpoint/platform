@@ -31,6 +31,7 @@ Platform 1.44
 * Library Upgrades
 
   - Jetty to 9.3.12 (from 9.3.11)
+  - bval-jsr 1.1.1 (from bval-jsr303 0.5)
 
 Platform 1.43
 
