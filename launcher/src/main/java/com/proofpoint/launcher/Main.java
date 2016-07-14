@@ -248,6 +248,11 @@ public class Main
         @SuppressFBWarnings(value = "OS_OPEN_STREAM", justification = "false positive")
         protected void start(List<String> args, boolean daemon)
         {
+            if ("root".equals(System.getProperty("user.name"))) {
+                System.err.println("Cannot run as root");
+                System.exit(STATUS_GENERIC_ERROR);
+            }
+
             PidFile pidFile = new PidFile(pidFilePath);
 
             PidStatus pidStatus = pidFile.getStatus();

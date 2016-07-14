@@ -1,3 +1,7 @@
+Platform 1.37
+
+* We modified the launcher to refuse to start as root.
+
 Platform 1.36
 
 * We made AdminServerCredentialVerifier public.
