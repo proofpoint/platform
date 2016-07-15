@@ -49,7 +49,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -288,13 +290,17 @@ public class Bootstrap
         columnPrinter.addColumn(CURRENT_VALUE_COLUMN);
         columnPrinter.addColumn(DESCRIPTION_COLUMN);
 
+        Set<ConfigAttribute> attributes = new TreeSet<>((o1, o2) -> o1.getPropertyName().compareTo(o2.getPropertyName()));
+
         for (ConfigRecord<?> record : configurationInspector.inspect(configurationFactory)) {
-            for (ConfigAttribute attribute : record.getAttributes()) {
-                columnPrinter.addValue(PROPERTY_NAME_COLUMN, attribute.getPropertyName());
-                columnPrinter.addValue(DEFAULT_VALUE_COLUMN, attribute.getDefaultValue());
-                columnPrinter.addValue(CURRENT_VALUE_COLUMN, attribute.getCurrentValue());
-                columnPrinter.addValue(DESCRIPTION_COLUMN, attribute.getDescription());
-            }
+            attributes.addAll(record.getAttributes());
+        }
+
+        for (ConfigAttribute attribute : attributes) {
+            columnPrinter.addValue(PROPERTY_NAME_COLUMN, attribute.getPropertyName());
+            columnPrinter.addValue(DEFAULT_VALUE_COLUMN, attribute.getDefaultValue());
+            columnPrinter.addValue(CURRENT_VALUE_COLUMN, attribute.getCurrentValue());
+            columnPrinter.addValue(DESCRIPTION_COLUMN, attribute.getDescription());
         }
         return columnPrinter;
     }

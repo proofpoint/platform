@@ -1,5 +1,7 @@
 Platform 1.37
 
+* We changed the logging of configuration upon startup to sort by property.
+
 * We modified the launcher to refuse to start as root.
 
 Platform 1.36
