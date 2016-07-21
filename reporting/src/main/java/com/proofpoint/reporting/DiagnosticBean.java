@@ -26,28 +26,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.reporting.ReflectionUtils.getAttributeName;
-import static com.proofpoint.reporting.ReflectionUtils.isGetter;
+import static com.proofpoint.reporting.ReflectionUtils.isNoArgsReturnsValue;
+import static java.util.Objects.requireNonNull;
 
-class ReportedBean
+class DiagnosticBean
 {
-    static Method GET_PREVIOUS_BUCKET;
-
     private final Map<String, ReportedBeanAttribute> attributes;
 
-    static {
-        try {
-            Method getPreviousBucket = Bucketed.class.getDeclaredMethod("getPreviousBucket");
-            getPreviousBucket.setAccessible(true);
-            GET_PREVIOUS_BUCKET = getPreviousBucket;
-        }
-        catch (NoSuchMethodException ignored) {
-            GET_PREVIOUS_BUCKET = null;
-        }
-    }
-
-    public ReportedBean(Collection<ReportedBeanAttribute> attributes)
+    private DiagnosticBean(Collection<ReportedBeanAttribute> attributes)
     {
         Map<String, ReportedBeanAttribute> attributesBuilder = new TreeMap<>();
         for (ReportedBeanAttribute attribute : attributes) {
@@ -56,15 +43,15 @@ class ReportedBean
         this.attributes = Collections.unmodifiableMap(attributesBuilder);
     }
 
-    public Collection<ReportedBeanAttribute> getAttributes()
+    Collection<ReportedBeanAttribute> getAttributes()
     {
         return attributes.values();
     }
 
-    public Object getAttribute(String name)
+    Object getAttribute(String name)
             throws AttributeNotFoundException, MBeanException, ReflectionException
     {
-        checkNotNull(name, "name is null");
+        requireNonNull(name, "name is null");
         ReportedBeanAttribute mbeanAttribute = attributes.get(name);
         if (mbeanAttribute == null) {
             throw new AttributeNotFoundException(name);
@@ -72,44 +59,27 @@ class ReportedBean
         return mbeanAttribute.getValue(null);
     }
 
-    static ReportedBean forTarget(Object target)
+    static DiagnosticBean forTarget(Object target)
     {
-        checkNotNull(target, "target is null");
+        requireNonNull(target, "target is null");
 
         List<ReportedBeanAttribute> attributes = new ArrayList<>();
 
-        if (target instanceof Bucketed) {
+        Map<String, DiagnosticBeanAttributeBuilder> attributeBuilders = new TreeMap<>();
 
-            Object value = null;
-            try {
-                value = GET_PREVIOUS_BUCKET.invoke(target);
-            }
-            catch (Exception ignored) {
-                // todo log me
-            }
-            if (value != null) {
-                ReportedBean reportedBean = ReportedBean.forTarget(value);
-                for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
-                    attributes.add(new BucketedReportedBeanAttribute(target, attribute));
-                }
-            }
-        }
-
-        Map<String, ReportedBeanAttributeBuilder> attributeBuilders = new TreeMap<>();
-
-        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), ReportedAnnotation.class).entrySet()) {
+        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), Diagnostic.class).entrySet()) {
             Method concreteMethod = entry.getKey();
             Method annotatedMethod = entry.getValue();
 
-            if (!isGetter(concreteMethod)) {
-                throw new RuntimeException("report annotation on non-getter " + annotatedMethod.toGenericString());
+            if (!isNoArgsReturnsValue(concreteMethod)) {
+                throw new RuntimeException("diagnostic annotation on non-getter " + annotatedMethod.toGenericString());
             }
 
             String attributeName = getAttributeName(concreteMethod);
 
-            ReportedBeanAttributeBuilder attributeBuilder = attributeBuilders.get(attributeName);
+            DiagnosticBeanAttributeBuilder attributeBuilder = attributeBuilders.get(attributeName);
             if (attributeBuilder == null) {
-                attributeBuilder = new ReportedBeanAttributeBuilder().named(attributeName).onInstance(target);
+                attributeBuilder = new DiagnosticBeanAttributeBuilder().named(attributeName).onInstance(target);
             }
 
             attributeBuilder = attributeBuilder
@@ -119,10 +89,10 @@ class ReportedBean
             attributeBuilders.put(attributeName, attributeBuilder);
         }
 
-        for (ReportedBeanAttributeBuilder attributeBuilder : attributeBuilders.values()) {
+        for (DiagnosticBeanAttributeBuilder attributeBuilder : attributeBuilders.values()) {
             attributes.addAll(attributeBuilder.build());
         }
 
-        return new ReportedBean(attributes);
+        return new DiagnosticBean(attributes);
     }
 }

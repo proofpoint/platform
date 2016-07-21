@@ -17,6 +17,7 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableList;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,28 +26,28 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.proofpoint.reporting.ReflectionUtils.isNoArgsReturnsValue;
 import static java.util.Objects.requireNonNull;
 
-class ReportedBeanAttributeBuilder
+class DiagnosticBeanAttributeBuilder
 {
     private Object target;
     private String name;
     private Method concreteGetter;
     private Method annotatedGetter;
 
-    public ReportedBeanAttributeBuilder onInstance(Object target)
+    DiagnosticBeanAttributeBuilder onInstance(Object target)
     {
         requireNonNull(target, "target is null");
         this.target = target;
         return this;
     }
 
-    public ReportedBeanAttributeBuilder named(String name)
+    DiagnosticBeanAttributeBuilder named(String name)
     {
         requireNonNull(name, "name is null");
         this.name = name;
         return this;
     }
 
-    public ReportedBeanAttributeBuilder withConcreteGetter(Method concreteGetter)
+    DiagnosticBeanAttributeBuilder withConcreteGetter(Method concreteGetter)
     {
         requireNonNull(concreteGetter, "concreteGetter is null");
         checkArgument(isNoArgsReturnsValue(concreteGetter), "Method is not a valid getter: " + concreteGetter);
@@ -54,7 +55,7 @@ class ReportedBeanAttributeBuilder
         return this;
     }
 
-    public ReportedBeanAttributeBuilder withAnnotatedGetter(Method annotatedGetter)
+    DiagnosticBeanAttributeBuilder withAnnotatedGetter(Method annotatedGetter)
     {
         requireNonNull(annotatedGetter, "annotatedGetter is null");
         checkArgument(isNoArgsReturnsValue(annotatedGetter), "Method is not a valid getter: " + annotatedGetter);
@@ -62,7 +63,7 @@ class ReportedBeanAttributeBuilder
         return this;
     }
 
-    public Collection<? extends ReportedBeanAttribute> build()
+    Collection<? extends ReportedBeanAttribute> build()
     {
         checkArgument(target != null, "JmxAttribute must have a target object");
 
@@ -80,9 +81,9 @@ class ReportedBeanAttributeBuilder
                 return Collections.emptySet();
             }
 
-            ReportedBean reportedBean = ReportedBean.forTarget(value);
+            DiagnosticBean diagnosticBean = DiagnosticBean.forTarget(value);
             ImmutableList.Builder<ReportedBeanAttribute> builder = ImmutableList.builder();
-            for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
+            for (ReportedBeanAttribute attribute : diagnosticBean.getAttributes()) {
                 builder.add(new FlattenReportedBeanAttribute(name, concreteGetter, attribute));
             }
             return builder.build();
@@ -101,9 +102,9 @@ class ReportedBeanAttributeBuilder
                 return Collections.emptySet();
             }
 
-            ReportedBean reportedBean = ReportedBean.forTarget(value);
+            DiagnosticBean diagnosticBean = DiagnosticBean.forTarget(value);
             ImmutableList.Builder<ReportedBeanAttribute> builder = ImmutableList.builder();
-            for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
+            for (ReportedBeanAttribute attribute : diagnosticBean.getAttributes()) {
                 builder.add(new NestedReportedBeanAttribute(name, concreteGetter, attribute));
             }
             return builder.build();
