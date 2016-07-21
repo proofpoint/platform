@@ -39,5 +39,10 @@ public class ReportingModule
         binder.bind(HealthExporter.class).asEagerSingleton();
         binder.bind(GuiceHealthExporter.class).asEagerSingleton();
         binder.bind(HealthBeanRegistry.class).in(Scopes.SINGLETON);
+
+        newSetBinder(binder, DiagnosticMapping.class);
+        binder.bind(DiagnosticExporter.class).asEagerSingleton();
+        binder.bind(GuiceDiagnosticExporter.class).asEagerSingleton();
+        binder.bind(DiagnosticBeanRegistry.class).in(Scopes.SINGLETON);
     }
 }
