@@ -16,7 +16,6 @@
 package com.proofpoint.reporting;
 
 import javax.management.AttributeNotFoundException;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
@@ -28,34 +27,20 @@ import static com.proofpoint.reporting.ReportedBean.GET_PREVIOUS_BUCKET;
 class BucketedReportedBeanAttribute implements ReportedBeanAttribute
 {
     private final ReportedBeanAttribute delegate;
-    private final MBeanAttributeInfo info;
+    private final String name;
     private final Object holder;
 
     BucketedReportedBeanAttribute(Object holder, ReportedBeanAttribute delegate)
     {
         this.holder = checkNotNull(holder, "holder is null");
         this.delegate = delegate;
-
-        MBeanAttributeInfo delegateInfo = delegate.getInfo();
-        this.info = new MBeanAttributeInfo(delegateInfo.getName(),
-                delegateInfo.getType(),
-                delegateInfo.getDescription(),
-                delegateInfo.isReadable(),
-                delegateInfo.isWritable(),
-                delegateInfo.isIs(),
-                delegateInfo.getDescriptor());
-    }
-
-    @Override
-    public MBeanAttributeInfo getInfo()
-    {
-        return info;
+        name = delegate.getName();
     }
 
     @Override
     public String getName()
     {
-        return info.getName();
+        return name;
     }
 
     @Override

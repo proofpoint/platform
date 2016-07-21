@@ -36,14 +36,13 @@ import org.weakref.jmx.Nested;
 
 import javax.inject.Qualifier;
 import javax.inject.Singleton;
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanInfo;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,8 +54,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 
 public class TestReportBinder
 {
@@ -579,19 +576,17 @@ public class TestReportBinder
         assertEquals(registrationInfo.getTags(), tags, "tags");
 
         if (expectedAttributes.isPresent()) {
-            MBeanInfo mBeanInfo = registrationInfo.getReportedBean().getMBeanInfo();
-            assertAttributes(mBeanInfo, expectedAttributes.get());
+            Collection<ReportedBeanAttribute> attributes = registrationInfo.getReportedBean().getAttributes();
+            assertAttributes(attributes, expectedAttributes.get());
         }
     }
 
-    private void assertAttributes(MBeanInfo mBeanInfo, Set<String> expected)
+    private void assertAttributes(Collection<ReportedBeanAttribute> attributes, Set<String> expected)
     {
         Builder<String> builder = ImmutableSet.builder();
-        for (MBeanAttributeInfo mBeanAttributeInfo : mBeanInfo.getAttributes()) {
-            String name = mBeanAttributeInfo.getName();
+        for (ReportedBeanAttribute attribute : attributes) {
+            String name = attribute.getName();
             builder.add(name);
-            assertTrue(mBeanAttributeInfo.isReadable(), name + " is readable");
-            assertFalse(mBeanAttributeInfo.isWritable(), name + " is writable");
         }
         assertEquals(builder.build(), expected);
     }

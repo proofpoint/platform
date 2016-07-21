@@ -17,34 +17,25 @@ package com.proofpoint.reporting;
 
 import javax.annotation.Nullable;
 import javax.management.AttributeNotFoundException;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
 
 import static com.google.common.base.Objects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
+import static java.util.Objects.requireNonNull;
 
 class BooleanReportedBeanAttribute implements ReportedBeanAttribute
 {
-    private final MBeanAttributeInfo info;
     private final Object target;
     private final String name;
     private final Method getter;
 
-    BooleanReportedBeanAttribute(MBeanAttributeInfo info, Object target, Method getter)
+    BooleanReportedBeanAttribute(String name, Object target, Method getter)
     {
-        this.info = checkNotNull(info, "info is null");
-        this.target = checkNotNull(target, "target is null");
-        this.name = info.getName();
-        this.getter = checkNotNull(getter, "getter is null");
-    }
-
-    @Override
-    public MBeanAttributeInfo getInfo()
-    {
-        return info;
+        this.name = requireNonNull(name, "name is null");
+        this.target = requireNonNull(target, "target is null");
+        this.getter = requireNonNull(getter, "getter is null");
     }
 
     @Override
