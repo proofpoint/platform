@@ -17,6 +17,7 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.proofpoint.reporting.ReportException.Reason;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 import org.mockito.Mock;
@@ -26,7 +27,6 @@ import org.weakref.jmx.Nested;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-
 import java.util.Map;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
@@ -300,7 +300,12 @@ public class TestReportExporter
         assertEquals(registrationInfo.isApplicationPrefix(), applicationPrefix);
         assertEquals(registrationInfo.getNamePrefix(), "TestingObject");
         assertEquals(registrationInfo.getTags(), expectedTags);
-        assertEquals(registrationInfo.getReportedBean().getMBeanInfo(), ReportedBean.forTarget(TESTING_OBJECT).getMBeanInfo());
+        assertEquals(namesOf(registrationInfo.getReportedBean().getAttributes()), namesOf(ReportedBean.forTarget(TESTING_OBJECT).getAttributes()));
+    }
+
+    private static Iterable<String> namesOf(Iterable<ReportedBeanAttribute> attributes)
+    {
+        return Iterables.transform(attributes, ReportedBeanAttribute::getName);
     }
 
     private static class TestingBucketed

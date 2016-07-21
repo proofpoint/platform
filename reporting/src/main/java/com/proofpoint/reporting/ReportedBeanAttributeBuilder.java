@@ -16,15 +16,10 @@
 package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
-import javax.management.Descriptor;
-import javax.management.MBeanAttributeInfo;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -32,8 +27,6 @@ import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
 
 class ReportedBeanAttributeBuilder
 {
-    private final static Pattern getterOrSetterPattern = Pattern.compile("(get|set|is)(.+)");
-    private static final Set<Class<?>> PRIMITIVE_NUMBERS = ImmutableSet.<Class<?>>of(byte.class, short.class, int.class, long.class, float.class, double.class);
     private Object target;
     private String name;
     private Method concreteGetter;
@@ -118,28 +111,13 @@ class ReportedBeanAttributeBuilder
         else {
             checkArgument (concreteGetter != null, "JmxAttribute must have a concrete getter");
 
-            Class<?> attributeType;
-            attributeType = concreteGetter.getReturnType();
-
-            Descriptor descriptor = null;
-            if (annotatedGetter != null) {
-                descriptor = AnnotationUtils.buildDescriptor(annotatedGetter);
-            }
-
-            MBeanAttributeInfo mbeanAttributeInfo = new MBeanAttributeInfo(
-                    name,
-                    attributeType.getName(),
-                    null,
-                    true,
-                    false,
-                    concreteGetter.getName().startsWith("is"),
-                    descriptor);
+            Class<?> attributeType = concreteGetter.getReturnType();
 
             if (Boolean.class.isAssignableFrom(attributeType) || attributeType == boolean.class) {
-                return ImmutableList.of(new BooleanReportedBeanAttribute(mbeanAttributeInfo, target, concreteGetter));
+                return ImmutableList.of(new BooleanReportedBeanAttribute(name, target, concreteGetter));
             }
 
-            return ImmutableList.of(new ObjectReportedBeanAttribute(mbeanAttributeInfo, target, concreteGetter));
+            return ImmutableList.of(new ObjectReportedBeanAttribute(name, target, concreteGetter));
         }
     }
 }

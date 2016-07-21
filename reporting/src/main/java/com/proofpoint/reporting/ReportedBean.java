@@ -16,12 +16,8 @@
 package com.proofpoint.reporting;
 
 import javax.management.AttributeNotFoundException;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
-import javax.management.MBeanInfo;
 import javax.management.ReflectionException;
-import javax.management.modelmbean.ModelMBeanConstructorInfo;
-import javax.management.modelmbean.ModelMBeanNotificationInfo;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +34,6 @@ class ReportedBean
 {
     static Method GET_PREVIOUS_BUCKET;
 
-    private final MBeanInfo mbeanInfo;
     private final Map<String, ReportedBeanAttribute> attributes;
 
     static {
@@ -52,27 +47,13 @@ class ReportedBean
         }
     }
 
-    public ReportedBean(String className, Collection<ReportedBeanAttribute> attributes)
+    public ReportedBean(Collection<ReportedBeanAttribute> attributes)
     {
-        List<MBeanAttributeInfo> attributeInfos = new ArrayList<>();
         Map<String, ReportedBeanAttribute> attributesBuilder = new TreeMap<>();
         for (ReportedBeanAttribute attribute : attributes) {
             attributesBuilder.put(attribute.getName(), attribute);
-            attributeInfos.add(attribute.getInfo());
         }
         this.attributes = Collections.unmodifiableMap(attributesBuilder);
-
-        mbeanInfo = new MBeanInfo(className,
-                null,
-                attributeInfos.toArray(new MBeanAttributeInfo[attributeInfos.size()]),
-                new ModelMBeanConstructorInfo[0],
-                null,
-                new ModelMBeanNotificationInfo[0]);
-    }
-
-    public MBeanInfo getMBeanInfo()
-    {
-        return mbeanInfo;
     }
 
     public Collection<ReportedBeanAttribute> getAttributes()
@@ -138,12 +119,10 @@ class ReportedBean
             attributeBuilders.put(attributeName, attributeBuilder);
         }
 
-        String className = target.getClass().getName();
-
         for (ReportedBeanAttributeBuilder attributeBuilder : attributeBuilders.values()) {
             attributes.addAll(attributeBuilder.build());
         }
 
-        return new ReportedBean(className, attributes);
+        return new ReportedBean(attributes);
     }
 }

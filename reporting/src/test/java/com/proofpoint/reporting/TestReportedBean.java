@@ -5,11 +5,10 @@ import org.testng.annotations.Test;
 import org.weakref.jmx.internal.guava.collect.ImmutableList;
 
 import javax.management.AttributeNotFoundException;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
-import javax.management.MBeanInfo;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +16,8 @@ import java.util.Map;
 import static com.proofpoint.reporting.ReportExporter.notifyBucketIdProvider;
 import static com.proofpoint.reporting.Util.getMethod;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 public class TestReportedBean
@@ -44,9 +41,9 @@ public class TestReportedBean
         }
     }
 
-    private MBeanInfo getMBeanInfo(Object object)
+    private Collection<ReportedBeanAttribute> getAttributes(Object object)
     {
-        return reportedBeans.get(object).getMBeanInfo();
+        return reportedBeans.get(object).getAttributes();
     }
 
     private Object getAttribute(Object object, String attributeName)
@@ -96,20 +93,13 @@ public class TestReportedBean
     public void testGetterAttributeInfo(String attribute, boolean isIs, Object[] values, Class<?> clazz)
             throws Exception
     {
-        String methodName = "set" + attribute.replace(".", "");
         for (Object t : objects) {
             String attributeName = toFeatureName(attribute, t);
-            SimpleInterface simpleInterface = toSimpleInterface(t);
-            Method setter = getMethod(simpleInterface.getClass(), methodName, clazz);
 
-            MBeanInfo info = getMBeanInfo(t);
-            MBeanAttributeInfo attributeInfo = getAttributeInfo(info, attributeName);
+            Collection<ReportedBeanAttribute> attributes = getAttributes(t);
+            ReportedBeanAttribute attributeInfo = getAttributeInfo(attributes, attributeName);
             assertNotNull(attributeInfo, "AttributeInfo for " + attributeName);
             assertEquals(attributeInfo.getName(), attributeName, "Attribute Name for " + attributeName);
-            assertEquals(attributeInfo.getType(), setter.getParameterTypes()[0].getName(), "Attribute type for " + attributeName);
-            assertEquals(attributeInfo.isIs(), isIs, "Attribute isIs for " + attributeName);
-            assertTrue(attributeInfo.isReadable(), "Attribute Readable for " + attributeName);
-            assertFalse(attributeInfo.isWritable(), "Attribute Writable for " + attributeName);
         }
     }
 
@@ -119,18 +109,18 @@ public class TestReportedBean
     {
 
         for (Object t : objects) {
-            MBeanInfo info = getMBeanInfo(t);
+            Collection<ReportedBeanAttribute> attributes = getAttributes(t);
             String attributeName = toFeatureName("NotReported", t);
-            MBeanAttributeInfo attributeInfo = getAttributeInfo(info, attributeName);
+            ReportedBeanAttribute attributeInfo = getAttributeInfo(attributes, attributeName);
             assertNull(attributeInfo, "AttributeInfo for " + attributeName);
         }
     }
 
-    private MBeanAttributeInfo getAttributeInfo(MBeanInfo info, String attributeName)
+    private ReportedBeanAttribute getAttributeInfo(Collection<ReportedBeanAttribute> attributes, String attributeName)
     {
-        for (MBeanAttributeInfo attributeInfo : info.getAttributes()) {
-            if (attributeInfo.getName().equals(attributeName)) {
-                return attributeInfo;
+        for (ReportedBeanAttribute attribute : attributes) {
+            if (attribute.getName().equals(attributeName)) {
+                return attribute;
             }
         }
         return null;

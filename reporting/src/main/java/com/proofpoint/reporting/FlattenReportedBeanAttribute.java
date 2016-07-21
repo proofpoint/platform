@@ -16,7 +16,6 @@
 package com.proofpoint.reporting;
 
 import javax.management.AttributeNotFoundException;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
@@ -27,25 +26,19 @@ class FlattenReportedBeanAttribute implements ReportedBeanAttribute
 {
     private final Method flattenGetter;
     private final ReportedBeanAttribute delegate;
-    private final MBeanAttributeInfo info;
+    private final String name;
 
     public FlattenReportedBeanAttribute(String prefix, Method flattenGetter, ReportedBeanAttribute delegate)
     {
         this.flattenGetter = flattenGetter;
         this.delegate = delegate;
-        this.info = delegate.getInfo();
-    }
-
-    @Override
-    public MBeanAttributeInfo getInfo()
-    {
-        return info;
+        name = delegate.getName();
     }
 
     @Override
     public String getName()
     {
-        return info.getName();
+        return name;
     }
 
     @Override
