@@ -18,6 +18,7 @@ package com.proofpoint.reporting;
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,7 +73,7 @@ class ReportedBean
         return mbeanAttribute.getValue(null);
     }
 
-    public static ReportedBean forTarget(Object target)
+    static ReportedBean forTarget(Object target, Class<? extends Annotation> annotationClass)
     {
         checkNotNull(target, "target is null");
 
@@ -88,7 +89,7 @@ class ReportedBean
                 // todo log me
             }
             if (value != null) {
-                ReportedBean reportedBean = ReportedBean.forTarget(value);
+                ReportedBean reportedBean = ReportedBean.forTarget(value, annotationClass);
                 for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
                     attributes.add(new BucketedReportedBeanAttribute(target, attribute));
                 }
@@ -97,7 +98,7 @@ class ReportedBean
 
         Map<String, ReportedBeanAttributeBuilder> attributeBuilders = new TreeMap<>();
 
-        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), ReportedAnnotation.class).entrySet()) {
+        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), annotationClass).entrySet()) {
             Method concreteMethod = entry.getKey();
             Method annotatedMethod = entry.getValue();
 
@@ -109,7 +110,7 @@ class ReportedBean
 
             ReportedBeanAttributeBuilder attributeBuilder = attributeBuilders.get(attributeName);
             if (attributeBuilder == null) {
-                attributeBuilder = new ReportedBeanAttributeBuilder().named(attributeName).onInstance(target);
+                attributeBuilder = new ReportedBeanAttributeBuilder(annotationClass).named(attributeName).onInstance(target);
             }
 
             attributeBuilder = attributeBuilder
