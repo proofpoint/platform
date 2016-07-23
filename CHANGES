@@ -1,5 +1,10 @@
 Platform 1.38
 
+* HttpClient
+
+  We improved the buffering of data from DynamicBodySource, reducing the
+  overhead of chunked encoding.
+
 * Library Upgrades
 
   - Jetty to 9.3.10 (from 9.3.7)
