@@ -622,9 +622,9 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestHeaders.get("foo"), ImmutableList.of("bar"));
         assertEquals(servlet.requestHeaders.get("dupe"), ImmutableList.of("first", "second"));
         assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
-        assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
+        assertEquals(servlet.requestBytes, createByteArray(1, 15008));
         assertTrue(closed.get(), "Writer was closed");
-        assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
+        assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 15008.0);
     }
 
     private static class EdgeCaseTestWriter
@@ -649,12 +649,23 @@ public abstract class AbstractHttpClientTest
                     break;
 
                 case 1:
-                    byte[] bytes = {2, 5};
+                    byte[] bytes = {2, 3};
                     out.write(bytes);
                     bytes[0] = 9;
                     break;
 
                 case 2:
+                    out.write(createByteArray(4, 2));
+                    out.write(6);
+                    out.write(createByteArray(7, 2));
+                    out.write(createByteArray(9, 5000));
+                    byte[] lastArray = createByteArray(5009, 10_000);
+                    out.write(lastArray);
+                    lastArray[0] = 0;
+                    lastArray[1] = 0;
+                    break;
+
+                case 3:
                     out.close();
                     break;
 
@@ -668,6 +679,15 @@ public abstract class AbstractHttpClientTest
         {
             closed.set(true);
         }
+    }
+
+    private static byte[] createByteArray(int firstValue, int length)
+    {
+        byte[] bytes = new byte[length];
+        for (int i = 0; i < length; i++) {
+            bytes[i] = (byte)firstValue++;
+        }
+        return bytes;
     }
 
     @Test

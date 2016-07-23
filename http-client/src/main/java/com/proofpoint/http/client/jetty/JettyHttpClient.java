@@ -84,6 +84,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Throwables.propagate;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
@@ -998,6 +999,7 @@ public class JettyHttpClient
     private static class DynamicBodySourceContentProvider
             implements ContentProvider
     {
+        private static final ByteBuffer INITIAL = ByteBuffer.allocate(0);
         private static final ByteBuffer DONE = ByteBuffer.allocate(0);
 
         private final DynamicBodySource dynamicBodySource;
@@ -1036,6 +1038,8 @@ public class JettyHttpClient
         private static class DynamicBodySourceOutputStream
                 extends OutputStream
         {
+            private static int BUFFER_SIZE = 4096;
+            private ByteBuffer lastChunk = INITIAL;
             private final Queue<ByteBuffer> chunks;
 
             private DynamicBodySourceOutputStream(Queue<ByteBuffer> chunks)
@@ -1046,21 +1050,39 @@ public class JettyHttpClient
             @Override
             public void write(int b)
             {
-                // must copy array since it could be reused
-                chunks.add(ByteBuffer.wrap(new byte[]{(byte) b}));
+                if (!chunks.isEmpty() && lastChunk.hasRemaining()) {
+                    lastChunk.put((byte)b);
+                }
+                else {
+                    lastChunk = ByteBuffer.allocate(BUFFER_SIZE);
+                    lastChunk.put((byte)b);
+                    chunks.add(lastChunk);
+                }
             }
 
             @Override
             public void write(byte[] b, int off, int len)
             {
-                // must copy array since it could be reused
-                byte[] copy = Arrays.copyOfRange(b, off, len);
-                chunks.add(ByteBuffer.wrap(copy));
+                if (!chunks.isEmpty() && lastChunk.hasRemaining()) {
+                    int toCopy = min(len, lastChunk.remaining());
+                    lastChunk.put(b, off, toCopy);
+                    if (toCopy == len) {
+                        return;
+                    }
+                    off += toCopy;
+                    len -= toCopy;
+                }
+
+                lastChunk = ByteBuffer.allocate(max(BUFFER_SIZE, len));
+                lastChunk.put(b, off, len);
+                chunks.add(lastChunk);
+
             }
 
             @Override
             public void close()
             {
+                lastChunk = DONE;
                 chunks.add(DONE);
             }
         }
@@ -1099,7 +1121,8 @@ public class JettyHttpClient
                 if (chunk == DONE) {
                     return endOfData();
                 }
-                bytesWritten.addAndGet(chunk.array().length);
+                bytesWritten.addAndGet(chunk.position());
+                chunk.flip();
                 return chunk;
             }
 
