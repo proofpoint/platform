@@ -551,6 +551,65 @@ public abstract class AbstractHttpClientTest
     }
 
     @Test
+    public void testPutMethodWithInputStreamBodySourceContentLength()
+            throws Exception
+    {
+        URI uri = baseURI.resolve("/road/to/nowhere");
+        Request request = preparePut()
+                .setUri(uri)
+                .setBodySource(new InputStreamBodySource(new InputStream()
+                {
+                    AtomicInteger invocation = new AtomicInteger(0);
+
+                    @Override
+                    public int read()
+                            throws IOException
+                    {
+                        throw new UnsupportedOperationException();
+                    }
+
+                    @Override
+                    public int read(byte[] b)
+                            throws IOException
+                    {
+                        switch (invocation.getAndIncrement()) {
+                            case 0:
+                                assertEquals(b.length, 8123);
+                                b[0] = 1;
+                                return 1;
+
+                            case 1:
+                                b[0] = 2;
+                                b[1] = 3;
+                                return 2;
+
+                            case 2:
+                                return -1;
+
+                            default:
+                                fail("unexpected invocation of write()");
+                                return -1;
+                        }
+                    }
+                }, 8123) {
+                    @Override
+                    public long getLength()
+                    {
+                        return 3;
+                    }
+                })
+                .build();
+
+        int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
+        assertEquals(statusCode, 200);
+        assertEquals(servlet.requestMethod, "PUT");
+        assertEquals(servlet.requestUri, uri);
+        assertEquals(servlet.requestHeaders.get("Content-Length"), ImmutableList.of("3"));
+        assertEquals(servlet.requestBytes, new byte[]{1, 2, 3});
+        assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
+    }
+
+    @Test
     public void testPutMethodWithDynamicBodySource()
             throws Exception
     {
@@ -688,6 +747,62 @@ public abstract class AbstractHttpClientTest
             bytes[i] = (byte)firstValue++;
         }
         return bytes;
+    }
+
+    @Test
+    public void testPutMethodWithDynamicBodySourceContentLength()
+            throws Exception
+    {
+        URI uri = baseURI.resolve("/road/to/nowhere");
+        Request request = preparePut()
+                .setUri(uri)
+                .setBodySource(new DynamicBodySource()
+                {
+                    @Override
+                    public long getLength()
+                    {
+                        return 3;
+                    }
+
+                    @Override
+                    public Writer start(OutputStream out)
+                            throws Exception
+                    {
+                        return new Writer()
+                        {
+                            AtomicInteger invocation = new AtomicInteger(0);
+
+                            @Override
+                            public void write()
+                                    throws Exception
+                            {
+                                switch (invocation.getAndIncrement()) {
+                                    case 0:
+                                        out.write(1);
+                                        break;
+
+                                    case 1:
+                                        byte[] bytes = {2, 5};
+                                        out.write(bytes);
+                                        out.close();
+                                        break;
+
+                                    default:
+                                        fail("unexpected invocation of write()");
+                                }
+                            }
+                        };
+                    }
+                })
+                .build();
+
+        int statusCode = executeRequest(request, new ResponseStatusCodeHandler());
+        assertEquals(statusCode, 200);
+        assertEquals(servlet.requestMethod, "PUT");
+        assertEquals(servlet.requestUri, uri);
+        assertEquals(servlet.requestHeaders.get("Content-Length"), ImmutableList.of("3"));
+        assertEquals(servlet.requestBytes, new byte[]{1, 2, 5});
+        assertEquals(stats.getWrittenBytes().getAllTime().getTotal(), 3.0);
     }
 
     @Test

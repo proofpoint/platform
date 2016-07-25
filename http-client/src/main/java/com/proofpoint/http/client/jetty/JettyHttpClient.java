@@ -464,8 +464,7 @@ public class JettyHttpClient
                 bytesWritten.addAndGet(staticBodyGenerator.getBody().length);
             }
             else if (bodySource instanceof InputStreamBodySource) {
-                InputStreamBodySource inputStreamBodySource = (InputStreamBodySource) bodySource;
-                jettyRequest.content(new InputStreamContentProvider(new BodySourceInputStream(inputStreamBodySource, bytesWritten), inputStreamBodySource.getBufferSize(), false));
+                jettyRequest.content(new InputStreamBodySourceContentProvider((InputStreamBodySource) bodySource, bytesWritten));
             }
             else if (bodySource instanceof DynamicBodySource) {
                 jettyRequest.content(new DynamicBodySourceContentProvider((DynamicBodySource) bodySource, bytesWritten));
@@ -912,6 +911,23 @@ public class JettyHttpClient
                 responseProcessingTime);
     }
 
+    private static class InputStreamBodySourceContentProvider extends InputStreamContentProvider
+    {
+        private final long length;
+
+        public InputStreamBodySourceContentProvider(InputStreamBodySource inputStreamBodySource, AtomicLong bytesWritten)
+        {
+            super(new BodySourceInputStream(inputStreamBodySource, bytesWritten), inputStreamBodySource.getBufferSize(), false);
+            length = inputStreamBodySource.getLength();
+        }
+
+        @Override
+        public long getLength()
+        {
+            return length;
+        }
+    }
+
     private static class BodySourceInputStream extends InputStream
     {
         private final InputStream delegate;
@@ -1016,7 +1032,7 @@ public class JettyHttpClient
         @Override
         public long getLength()
         {
-            return -1;
+            return dynamicBodySource.getLength();
         }
 
         @Override
