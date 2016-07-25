@@ -38,6 +38,11 @@ public class StaticBodyGenerator implements BodySource
         this.body = body;
     }
 
+    @Override
+    public final long getLength() {
+        return body.length;
+    }
+
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public byte[] getBody()
     {
