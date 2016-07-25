@@ -5,6 +5,10 @@ Platform 1.38
   We improved the buffering of data from DynamicBodySource, reducing the
   overhead of chunked encoding.
 
+  We added a BodySource.getLength() method, permitting DynamicBodySource
+  and InputStreamBodySource implementations to specify the content length
+  up front.
+
 * Library Upgrades
 
   - Jetty to 9.3.10 (from 9.3.7)

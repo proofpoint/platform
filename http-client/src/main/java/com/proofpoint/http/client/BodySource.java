@@ -17,4 +17,8 @@ package com.proofpoint.http.client;
 
 public interface BodySource
 {
+    /**
+     * @return the content length, if known, or -1 if the content length is unknown
+     */
+    default long getLength() { return -1; }
 }
