@@ -6,6 +6,10 @@ Platform 1.38
   Use JaxrsModule.explicitJaxrsModule() and explicitly bind JAX-RS resources
   using JaxrsBinder.
 
+  The JaxrsBinder EDSL now supports a .withApplicationPrefix() method which
+  causes the reported metrics to have names prefixed with the application
+  name.
+
 * HttpClient
 
   We improved the buffering of data from DynamicBodySource, reducing the
