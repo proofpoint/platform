@@ -64,6 +64,10 @@ public class JaxrsModule
     private final boolean requireExplicitBindings;
     private final AtomicReference<ServiceLocator> locatorReference = new AtomicReference<>();
 
+    /**
+     * @deprecated use {@link #explicitJaxrsModule()} and explicitly bind JAX-RS resources.
+     */
+    @Deprecated
     public JaxrsModule()
     {
         this(false);

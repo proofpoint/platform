@@ -1,5 +1,11 @@
 Platform 1.38
 
+* JAX-RS
+
+  We deprecated the implicit JaxrsModule() constructor.
+  Use JaxrsModule.explicitJaxrsModule() and explicitly bind JAX-RS resources
+  using JaxrsBinder.
+
 * Library Upgrades
 
   - Jetty to 9.3.10 (from 9.3.7)
