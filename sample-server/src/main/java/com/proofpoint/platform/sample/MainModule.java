@@ -36,7 +36,7 @@ public class MainModule
         binder.disableCircularProxies();
 
         binder.bind(PersonStore.class).in(Scopes.SINGLETON);
-        reportBinder(binder).export(PersonStore.class);
+        reportBinder(binder).export(PersonStore.class).withApplicationPrefix();
         healthBinder(binder).export(PersonStore.class);
 
         jaxrsBinder(binder).bind(PersonsResource.class).withApplicationPrefix();
