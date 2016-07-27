@@ -15,6 +15,8 @@ Platform 1.38
   and InputStreamBodySource implementations to specify the content length
   up front.
 
+* [Bug] We allow '-' characters in the node.hostname config property.
+
 * Library Upgrades
 
   - Jetty to 9.3.10 (from 9.3.7)

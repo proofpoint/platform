@@ -89,6 +89,7 @@ public class TestNodeConfig
     {
         assertValidates(new NodeConfig()
                 .setEnvironment("test")
+                .setNodeInternalHostname("ip-3-2.j-p.invalid")
                 .setNodeId(UUID.randomUUID().toString()));
 
         assertFailsValidation(new NodeConfig().setNodeId("abc/123"), "nodeId", "is malformed", Pattern.class);
