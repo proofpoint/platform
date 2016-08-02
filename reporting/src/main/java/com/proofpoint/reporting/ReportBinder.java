@@ -20,8 +20,8 @@ import com.google.inject.Key;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Exports Guice-bound objects to the reporting subsystem.
@@ -159,7 +159,7 @@ public class ReportBinder
 
     private ReportBinder(Binder binder)
     {
-        this.binder = checkNotNull(binder, "binder is null");
+        this.binder = requireNonNull(binder, "binder is null").skipSources(getClass());
         this.multibinder = newSetBinder(binder, Mapping.class);
     }
 
