@@ -21,6 +21,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Exports Guice-bound objects to the health subsystem.
@@ -74,6 +75,7 @@ public class HealthBinder
 
     private HealthBinder(Binder binder)
     {
+        binder = requireNonNull(binder, "binder is null").skipSources(getClass());
         this.healthBinder = newSetBinder(binder, HealthMapping.class);
     }
 

@@ -21,6 +21,7 @@ import com.google.inject.binder.AnnotatedBindingBuilder;
 import java.lang.annotation.Annotation;
 
 import static com.google.inject.Scopes.SINGLETON;
+import static java.util.Objects.requireNonNull;
 
 public class ReportCollectionBinder<T>
     extends NamedReportCollectionBinder<T>
@@ -30,6 +31,7 @@ public class ReportCollectionBinder<T>
     ReportCollectionBinder(Binder binder, Class<T> iface)
     {
         super(new ReportCollectionProvider<>(iface));
+        binder = requireNonNull(binder, "binder is null").skipSources(getClass());
         bindingBuilder = binder.bind(iface);
         bindingBuilder.toProvider(provider).in(SINGLETON);
     }
