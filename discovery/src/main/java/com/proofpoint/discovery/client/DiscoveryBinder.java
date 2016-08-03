@@ -62,7 +62,7 @@ public class DiscoveryBinder
     protected DiscoveryBinder(Binder binder)
     {
         checkNotNull(binder, "binder is null");
-        this.binder = binder;
+        this.binder = binder.skipSources(getClass());
         this.serviceAnnouncementBinder = Multibinder.newSetBinder(binder, ServiceAnnouncement.class);
     }
 

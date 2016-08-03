@@ -57,8 +57,14 @@ public class HttpServerConfig
     private String keystorePassword = "keystore";
 
     private String logPath = "var/log/http-request.log";
+    private boolean logEnabled = true;
     private DataSize logMaxSegmentSize = new DataSize(100, Unit.MEGABYTE);
     private int logMaxHistory = 30;
+
+    private Integer httpAcceptorThreads;
+    private Integer httpSelectorThreads;
+    private Integer httpsAcceptorThreads;
+    private Integer httpsSelectorThreads;
 
     private int minThreads = 2;
     private int maxThreads = 200;
@@ -170,6 +176,70 @@ public class HttpServerConfig
     public HttpServerConfig setLogPath(String logPath)
     {
         this.logPath = logPath;
+        return this;
+    }
+
+    public boolean isLogEnabled()
+    {
+        return logEnabled;
+    }
+
+    @Config("http-server.log.enabled")
+    public HttpServerConfig setLogEnabled(boolean logEnabled)
+    {
+        this.logEnabled = logEnabled;
+        return this;
+    }
+
+    @Min(1)
+    public Integer getHttpAcceptorThreads()
+    {
+        return httpAcceptorThreads;
+    }
+
+    @Config("http-server.http.acceptor-threads")
+    public HttpServerConfig setHttpAcceptorThreads(Integer httpAcceptorThreads)
+    {
+        this.httpAcceptorThreads = httpAcceptorThreads;
+        return this;
+    }
+
+    @Min(1)
+    public Integer getHttpSelectorThreads()
+    {
+        return httpSelectorThreads;
+    }
+
+    @Config("http-server.http.selector-threads")
+    public HttpServerConfig setHttpSelectorThreads(Integer httpSelectorThreads)
+    {
+        this.httpSelectorThreads = httpSelectorThreads;
+        return this;
+    }
+
+    @Min(1)
+    public Integer getHttpsAcceptorThreads()
+    {
+        return httpsAcceptorThreads;
+    }
+
+    @Config("http-server.https.acceptor-threads")
+    public HttpServerConfig setHttpsAcceptorThreads(Integer httpsAcceptorThreads)
+    {
+        this.httpsAcceptorThreads = httpsAcceptorThreads;
+        return this;
+    }
+
+    @Min(1)
+    public Integer getHttpsSelectorThreads()
+    {
+        return httpsSelectorThreads;
+    }
+
+    @Config("http-server.https.selector-threads")
+    public HttpServerConfig setHttpsSelectorThreads(Integer httpsSelectorThreads)
+    {
+        this.httpsSelectorThreads = httpsSelectorThreads;
         return this;
     }
 

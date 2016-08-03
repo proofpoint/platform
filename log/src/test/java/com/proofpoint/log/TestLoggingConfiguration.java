@@ -27,7 +27,7 @@ public class TestLoggingConfiguration
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
                 .put("log.enable-console", "false")
-                .put("log.output-file", "var/log/foo.log")
+                .put("log.path", "var/log/foo.log")
                 .put("log.max-size", "1GB")
                 .put("log.max-history", "25")
                 .put("log.levels-file", "var/log/log-levels-test.cfg")
@@ -47,10 +47,12 @@ public class TestLoggingConfiguration
     public void testLegacyProperties()
     {
         Map<String, String> currentProperties = new ImmutableMap.Builder<String, String>()
+                .put("log.path", "var/log/foo.log")
                 .put("log.max-size", "300B")
                 .build();
 
         Map<String, String> oldProperties = new ImmutableMap.Builder<String, String>()
+                .put("log.output-file", "var/log/foo.log")
                 .put("log.max-size-in-bytes", "300")
                 .build();
 

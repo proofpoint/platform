@@ -31,7 +31,6 @@ import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -57,14 +56,11 @@ import javax.annotation.PreDestroy;
 import javax.management.MBeanServer;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
-import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 public class HttpServer
@@ -170,7 +166,9 @@ public class HttpServer
                 httpConfiguration.setSecurePort(httpServerInfo.getHttpsUri().getPort());
             }
 
-            httpConnector = new ServerConnector(server, new HttpConnectionFactory(httpConfiguration));
+            Integer acceptors = config.getHttpAcceptorThreads();
+            Integer selectors = config.getHttpSelectorThreads();
+            httpConnector = new ServerConnector(server, null, null, null, acceptors == null ? -1 : acceptors, selectors == null ? -1 : selectors, new HttpConnectionFactory(httpConfiguration));
             httpConnector.setName("http");
             httpConnector.setPort(httpServerInfo.getHttpUri().getPort());
             httpConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
@@ -198,7 +196,9 @@ public class HttpServer
             sslContextFactory.addExcludeCipherSuites(DISABLED_CIPHERS);
             SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
 
-            httpsConnector = new ServerConnector(server, sslConnectionFactory, new HttpConnectionFactory(httpsConfiguration));
+            Integer acceptors = config.getHttpsAcceptorThreads();
+            Integer selectors = config.getHttpsSelectorThreads();
+            httpsConnector = new ServerConnector(server, null, null, null, acceptors == null ? -1 : acceptors, selectors == null ? -1 : selectors, sslConnectionFactory, new HttpConnectionFactory(httpsConfiguration));
             httpsConnector.setName("https");
             httpsConnector.setPort(httpServerInfo.getHttpsUri().getPort());
             httpsConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());

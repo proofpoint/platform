@@ -5,20 +5,27 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.proofpoint.units.Duration;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import java.lang.ref.WeakReference;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Throwables.propagateIfInstanceOf;
 import static com.google.common.collect.Iterables.isEmpty;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public final class MoreFutures
 {
@@ -29,9 +36,25 @@ public final class MoreFutures
      */
     public static <V> CompletableFuture<V> unmodifiableFuture(CompletableFuture<V> future)
     {
+        return unmodifiableFuture(future, false);
+    }
+
+    /**
+     * Returns a future that can not be completed or optionally canceled.
+     */
+    public static <V> CompletableFuture<V> unmodifiableFuture(CompletableFuture<V> future, boolean propagateCancel)
+    {
         requireNonNull(future, "future is null");
 
-        UnmodifiableCompletableFuture<V> unmodifiableFuture = new UnmodifiableCompletableFuture<>();
+        Function<Boolean, Boolean> onCancelFunction;
+        if (propagateCancel) {
+            onCancelFunction = future::cancel;
+        }
+        else {
+            onCancelFunction = mayInterrupt -> false;
+        }
+
+        UnmodifiableCompletableFuture<V> unmodifiableFuture = new UnmodifiableCompletableFuture<>(onCancelFunction);
         future.whenComplete((value, exception) -> {
             if (exception != null) {
                 unmodifiableFuture.internalCompleteExceptionally(exception);
@@ -87,9 +110,24 @@ public final class MoreFutures
         }
         catch (ExecutionException e) {
             Throwable cause = e.getCause() == null ? e : e.getCause();
-            Throwables.propagateIfInstanceOf(cause, exceptionType);
+            propagateIfInstanceOf(cause, exceptionType);
             throw Throwables.propagate(cause);
         }
+    }
+
+    /**
+     * Gets the current value of the future without waiting. If the future
+     * value is null, an empty Optional is still returned, and in this case the caller
+     * must check the future directly for the null value.
+     */
+    public static <T> Optional<T> tryGetFutureValue(Future<T> future)
+    {
+        requireNonNull(future, "future is null");
+        if (!future.isDone()) {
+            return Optional.empty();
+        }
+
+        return tryGetFutureValue(future, 0, MILLISECONDS);
     }
 
     /**
@@ -131,7 +169,7 @@ public final class MoreFutures
         }
         catch (ExecutionException e) {
             Throwable cause = e.getCause() == null ? e : e.getCause();
-            Throwables.propagateIfInstanceOf(cause, exceptionType);
+            propagateIfInstanceOf(cause, exceptionType);
             throw Throwables.propagate(cause);
         }
         catch (TimeoutException expected) {
@@ -147,6 +185,16 @@ public final class MoreFutures
      */
     public static <V> CompletableFuture<V> firstCompletedFuture(Iterable<? extends CompletionStage<? extends V>> futures)
     {
+        return firstCompletedFuture(futures, false);
+    }
+
+    /**
+     * Creates a future that completes when the first future completes either normally
+     * or exceptionally. Cancellation of the future will optionally propagate to the
+     * supplied futures.
+     */
+    public static <V> CompletableFuture<V> firstCompletedFuture(Iterable<? extends CompletionStage<? extends V>> futures, boolean propagateCancel)
+    {
         requireNonNull(futures, "futures is null");
         checkArgument(!isEmpty(futures), "futures is empty");
 
@@ -161,7 +209,49 @@ public final class MoreFutures
                 }
             });
         }
+        if (propagateCancel) {
+            future.exceptionally(throwable -> {
+                if (throwable instanceof CancellationException) {
+                    for (CompletionStage<? extends V> sourceFuture : futures) {
+                        if (sourceFuture instanceof Future) {
+                            ((Future<?>) sourceFuture).cancel(true);
+                        }
+                    }
+                }
+                return null;
+            });
+        }
         return future;
+    }
+
+    /**
+     * Returns a new future that is completed when the supplied future completes or
+     * when the timeout expires.  If the timeout occurs or the returned CompletableFuture
+     * is canceled, the supplied future will be canceled.
+     */
+    public static <T> CompletableFuture<T> addTimeout(CompletableFuture<T> future, ValueSupplier<T> onTimeout, Duration timeout, ScheduledExecutorService executorService)
+    {
+        requireNonNull(future, "future is null");
+        requireNonNull(onTimeout, "timeoutValue is null");
+        requireNonNull(timeout, "timeout is null");
+        requireNonNull(executorService, "executorService is null");
+
+        // if the future is already complete, just return it
+        if (future.isDone()) {
+            return future;
+        }
+
+        // create an unmodifiable future that propagates cancel
+        // down cast is safe because this is our code
+        UnmodifiableCompletableFuture<T> futureWithTimeout = (UnmodifiableCompletableFuture<T>) unmodifiableFuture(future, true);
+
+        // schedule a task to complete the future when the time expires
+        ScheduledFuture<?> timeoutTaskFuture = executorService.schedule(new TimeoutFutureTask<>(futureWithTimeout, onTimeout, future), timeout.toMillis(), MILLISECONDS);
+
+        // when future completes, cancel the timeout task
+        future.whenCompleteAsync((value, exception) -> timeoutTaskFuture.cancel(false), executorService);
+
+        return futureWithTimeout;
     }
 
     /**
@@ -233,9 +323,22 @@ public final class MoreFutures
         return future;
     }
 
+    public interface ValueSupplier<T>
+    {
+        T get()
+                throws Exception;
+    }
+
     private static class UnmodifiableCompletableFuture<V>
             extends CompletableFuture<V>
     {
+        private final Function<Boolean, Boolean> onCancel;
+
+        public UnmodifiableCompletableFuture(Function<Boolean, Boolean> onCancel)
+        {
+            this.onCancel = requireNonNull(onCancel, "onCancel is null");
+        }
+
         void internalComplete(V value)
         {
             super.complete(value);
@@ -249,8 +352,7 @@ public final class MoreFutures
         @Override
         public boolean cancel(boolean mayInterruptIfRunning)
         {
-            // ignore cancellation
-            return false;
+            return onCancel.apply(mayInterruptIfRunning);
         }
 
         @Override
@@ -262,6 +364,9 @@ public final class MoreFutures
         @Override
         public boolean completeExceptionally(Throwable ex)
         {
+            if (ex instanceof CancellationException) {
+                return cancel(false);
+            }
             throw new UnsupportedOperationException();
         }
 
@@ -275,6 +380,49 @@ public final class MoreFutures
         public void obtrudeException(Throwable ex)
         {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class TimeoutFutureTask<T>
+            implements Runnable
+    {
+        private final UnmodifiableCompletableFuture<T> settableFuture;
+        private final ValueSupplier<T> timeoutValue;
+        private final WeakReference<CompletableFuture<T>> futureReference;
+
+        public TimeoutFutureTask(UnmodifiableCompletableFuture<T> settableFuture, ValueSupplier<T> timeoutValue, CompletableFuture<T> future)
+        {
+            this.settableFuture = settableFuture;
+            this.timeoutValue = timeoutValue;
+
+            // the scheduled executor can hold on to the timeout task for a long time, and
+            // the future can reference large expensive objects.  Since we are only interested
+            // in canceling this future on a timeout, only hold a weak reference to the future
+            this.futureReference = new WeakReference<>(future);
+        }
+
+        @Override
+        public void run()
+        {
+            if (settableFuture.isDone()) {
+                return;
+            }
+
+            // run the timeout task and set the result into the future
+            try {
+                T result = timeoutValue.get();
+                settableFuture.internalComplete(result);
+            }
+            catch (Throwable t) {
+                settableFuture.internalCompleteExceptionally(t);
+                propagateIfInstanceOf(t, RuntimeException.class);
+            }
+
+            // cancel the original future, if it still exists
+            Future<T> future = futureReference.get();
+            if (future != null) {
+                future.cancel(true);
+            }
         }
     }
 }

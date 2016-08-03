@@ -71,7 +71,7 @@ public class JaxrsBinder
 
     private JaxrsBinder(Binder binder)
     {
-        this.binder = requireNonNull(binder, "binder cannot be null");
+        this.binder = requireNonNull(binder, "binder cannot be null").skipSources(getClass());
         this.resourceBinder = newSetBinder(binder, Object.class, JaxrsResource.class).permitDuplicates();
         this.adminResourceBinder = newSetBinder(binder, Object.class, AdminJaxrsResource.class).permitDuplicates();
         this.keyBinder = newSetBinder(binder, JaxrsBinding.class, JaxrsResource.class).permitDuplicates();

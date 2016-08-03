@@ -45,7 +45,8 @@ public class LoggingConfiguration
         return logPath;
     }
 
-    @Config("log.output-file")
+    @LegacyConfig("log.output-file")
+    @Config("log.path")
     public LoggingConfiguration setLogPath(String logPath)
     {
         this.logPath = logPath;

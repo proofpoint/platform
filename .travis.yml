@@ -9,6 +9,15 @@ addons:
   apt:
     packages:
       - rpm
+      - oracle-java8-installer
+
+cache:
+  directories:
+    - $HOME/.m2/repository/com
+    - $HOME/.m2/repository/io
+    - $HOME/.m2/repository/it
+    - $HOME/.m2/repository/org
+    - $HOME/.m2/repository/mysql
 
 script:
   - mvn test -P ci -B javadoc:javadoc

@@ -215,7 +215,7 @@ public class Logging
         instance.testingHandlers.clear();
     }
 
-    public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, long maxSizeInBytes, Encoder<T> encoder, Context context)
+    public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, long maxFileSizeInBytes, Encoder<T> encoder, Context context)
     {
         recoverTempFiles(logPath);
 
@@ -232,7 +232,7 @@ public class Logging
 
         triggeringPolicy.setContext(context);
         triggeringPolicy.setTimeBasedRollingPolicy(rollingPolicy);
-        triggeringPolicy.setMaxFileSize(Long.toString(maxSizeInBytes));
+        triggeringPolicy.setMaxFileSize(Long.toString(maxFileSizeInBytes));
         triggeringPolicy.start();
 
         fileAppender.setContext(context);

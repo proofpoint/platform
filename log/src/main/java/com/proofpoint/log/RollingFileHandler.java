@@ -19,11 +19,11 @@ final class RollingFileHandler
 {
     private final Appender<String> fileAppender;
 
-    RollingFileHandler(String filename, int retainDays, long maxSizeInBytes)
+    RollingFileHandler(String filename, int maxHistory, long maxSizeInBytes)
     {
         setFormatter(new StaticFormatter());
 
-        fileAppender = createFileAppender(filename, retainDays, maxSizeInBytes, new StringEncoder(), new ContextBase());
+        fileAppender = createFileAppender(filename, maxHistory, maxSizeInBytes, new StringEncoder(), new ContextBase());
     }
 
     @Override
