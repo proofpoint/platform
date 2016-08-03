@@ -34,10 +34,18 @@ public class JmxModule
         binder.disableCircularProxies();
 
         binder.bind(MBeanServer.class).toInstance(ManagementFactory.getPlatformMBeanServer());
-        binder.bind(JmxAgent.class).in(Scopes.SINGLETON);
         ConfigurationModule.bindConfig(binder).to(JmxConfig.class);
 
         newExporter(binder).export(StackTraceMBean.class).withGeneratedName();
         binder.bind(StackTraceMBean.class).in(Scopes.SINGLETON);
+
+        if (JavaVersion.current().getMajor() < 9) {
+            binder.bind(JmxAgent8.class).in(Scopes.SINGLETON);
+            binder.bind(JmxAgent.class).to(JmxAgent8.class);
+        }
+        else {
+            binder.bind(JmxAgent9.class).in(Scopes.SINGLETON);
+            binder.bind(JmxAgent.class).to(JmxAgent9.class);
+        }
     }
 }
