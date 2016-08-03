@@ -1,3 +1,13 @@
+Platform 1.40
+
+* Logging configuration
+
+  We added the "http-server.log.enabled" configuration option for disabling
+  the HttpServer request log.
+
+  We renamed the "log.output-file" configuration option to "log.path" to make
+  it consistent with "http-server.log.path".
+
 Platform 1.39
 
 * Library Upgrades

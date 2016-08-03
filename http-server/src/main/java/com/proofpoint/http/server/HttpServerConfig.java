@@ -57,6 +57,7 @@ public class HttpServerConfig
     private String keystorePassword = "keystore";
 
     private String logPath = "var/log/http-request.log";
+    private boolean logEnabled = true;
     private DataSize logMaxSegmentSize = new DataSize(100, Unit.MEGABYTE);
     private int logMaxHistory = 30;
 
@@ -170,6 +171,18 @@ public class HttpServerConfig
     public HttpServerConfig setLogPath(String logPath)
     {
         this.logPath = logPath;
+        return this;
+    }
+
+    public boolean isLogEnabled()
+    {
+        return logEnabled;
+    }
+
+    @Config("http-server.log.enabled")
+    public HttpServerConfig setLogEnabled(boolean logEnabled)
+    {
+        this.logEnabled = logEnabled;
         return this;
     }
 

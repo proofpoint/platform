@@ -31,7 +31,6 @@ import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -57,14 +56,11 @@ import javax.annotation.PreDestroy;
 import javax.management.MBeanServer;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
-import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 public class HttpServer
