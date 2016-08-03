@@ -40,20 +40,21 @@ class DelimitedRequestLog
     private final CurrentTimeMillisProvider currentTimeMillisProvider;
     private final Appender<HttpRequestEvent> appender;
 
-    DelimitedRequestLog(String filename, int maxHistory, long maxSizeInBytes)
+    DelimitedRequestLog(String filename, int maxHistory, long maxFileSizeInBytes)
             throws IOException
     {
-        this(filename, maxHistory, maxSizeInBytes, new SystemCurrentTimeMillisProvider());
+        this(filename, maxHistory, maxFileSizeInBytes, new SystemCurrentTimeMillisProvider());
     }
 
     DelimitedRequestLog(String filename,
-            int maxHistory, long maxSizeInBytes,
+            int maxHistory,
+            long maxFileSizeInBytes,
             CurrentTimeMillisProvider currentTimeMillisProvider)
             throws IOException
     {
         this.currentTimeMillisProvider = currentTimeMillisProvider;
 
-        appender = Logging.createFileAppender(filename, maxHistory, maxSizeInBytes, new EventEncoder(), new ContextBase());
+        appender = Logging.createFileAppender(filename, maxHistory, maxFileSizeInBytes, new EventEncoder(), new ContextBase());
     }
 
     @Override

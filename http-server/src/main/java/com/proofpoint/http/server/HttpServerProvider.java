@@ -131,8 +131,11 @@ public class HttpServerProvider
     public HttpServer get()
     {
         try {
-            RequestLogHandler logHandler = new RequestLogHandler();
-            logHandler.setRequestLog(createRequestLog(config));
+            RequestLogHandler logHandler = null;
+            if (config.isLogEnabled()) {
+                logHandler = new RequestLogHandler();
+                logHandler.setRequestLog(createRequestLog(config));
+            }
 
             HttpServer httpServer = new HttpServer(httpServerInfo,
                     nodeInfo,

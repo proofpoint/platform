@@ -59,6 +59,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -155,6 +156,25 @@ public class TestHttpServerProvider
         StatusResponse response = client.execute(prepareGet().setUri(httpServerInfo.getHttpsUri()).build(), createStatusResponseHandler());
 
         assertEquals(response.getStatusCode(), HttpServletResponse.SC_OK);
+    }
+
+    @Test
+    public void testNoRequestLog()
+            throws Exception
+    {
+        config.setLogEnabled(false);
+        httpServerInfo = new HttpServerInfo(config, nodeInfo);
+        requestLog = null;
+
+        createServer();
+        lifeCycleManager.start();
+
+        try (JettyHttpClient httpClient = new JettyHttpClient()) {
+            StatusResponse response = httpClient.execute(prepareGet().setUri(httpServerInfo.getHttpUri()).build(), createStatusResponseHandler());
+
+            assertEquals(response.getStatusCode(), HttpServletResponse.SC_OK);
+        }
+        assertNull(requestLog, "request log");
     }
 
     @Test
