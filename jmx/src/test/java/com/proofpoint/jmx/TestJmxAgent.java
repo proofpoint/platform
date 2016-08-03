@@ -17,15 +17,15 @@ import static org.testng.Assert.assertTrue;
 public class TestJmxAgent
 {
     @Test
-    public void testSanity()
+    public void testJava8Agent()
             throws Exception
     {
-        HostAndPort address = JmxAgent.getRunningAgentAddress(null, null);
+        HostAndPort address = JmxAgent8.getRunningAgentAddress(null, null);
 
-        JmxAgent agent = new JmxAgent(new JmxConfig().setEnabled(true));
+        JmxAgent agent = new JmxAgent8(new JmxConfig().setEnabled(true));
         if (address == null) {
             // if agent wasn't running, it must have been started by the instantiation of JmxAgent
-            address = JmxAgent.getRunningAgentAddress(null, null);
+            address = JmxAgent8.getRunningAgentAddress(null, null);
             assertNotNull(address);
         }
 
@@ -35,24 +35,5 @@ public class TestJmxAgent
 
         JMXConnector connector = JMXConnectorFactory.connect(url);
         connector.connect();
-
-        MBeanServerConnection connection = connector.getMBeanServerConnection();
-        assertTrue(connection.getMBeanCount() > 0);
-    }
-
-    @Test
-    public void testDisabled()
-            throws Exception
-    {
-        HostAndPort address = JmxAgent.getRunningAgentAddress(null, null);
-
-        JmxAgent agent = new JmxAgent(new JmxConfig().setEnabled(false));
-        if (address == null) {
-            // if agent wasn't running, it must not have been started by the instantiation of JmxAgent
-            address = JmxAgent.getRunningAgentAddress(null, null);
-            assertNull(address);
-        }
-
-        assertNull(agent.getUrl(), "agent url");
     }
 }
