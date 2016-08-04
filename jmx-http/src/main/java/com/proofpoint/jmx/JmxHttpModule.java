@@ -75,9 +75,6 @@ public class JmxHttpModule implements Module
         jsonBinder(binder).addSerializerBinding(TabularData.class).to(TabularDataSerializer.class);
         jsonBinder(binder).addDeserializerBinding(ObjectName.class).to(ObjectNameDeserializer.class);
 
-        // jackson has a bug in the serializer selection code so it does not know that subclasses of LazyCompositeData are also CompositeData
-        jsonBinder(binder).addSerializerBinding(LazyCompositeData.class).to(CompositeDataSerializer.class);
-
         jaxrsBinder(binder).bindAdmin(ConfigurationResource.class);
         jaxrsBinder(binder).bindAdmin(VersionResource.class);
         jaxrsBinder(binder).bindAdmin(StopAnnouncingResource.class);
