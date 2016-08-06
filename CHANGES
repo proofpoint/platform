@@ -15,6 +15,7 @@ Platform 1.41
 
   - jmxutils to 1.19 (from 1.18) fixes the server not starting when LogJmxModule
     is used due to a Java 8 compatibility issue with jmxutils.
+  - Jersey to 2.23.1 (from 2.22)
 
 Platform 1.40
 
