@@ -15,7 +15,6 @@
  */
 package com.proofpoint.bootstrap;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import com.google.inject.Binder;
@@ -89,14 +88,9 @@ public class TestBootstrap
     {
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(InstanceA.class);
-                        binder.bind(InstanceB.class);
-                    }
+                .withModules((Module) binder -> {
+                    binder.bind(InstanceA.class);
+                    binder.bind(InstanceB.class);
                 })
                 .quiet();
 
@@ -116,14 +110,7 @@ public class TestBootstrap
         System.setProperty("config", Resources.getResource("simple-config.properties").getFile());
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                });
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class));
 
         SimpleConfig simpleConfig = bootstrap.initialize().getInstance(SimpleConfig.class);
         assertEquals(simpleConfig.getProperty(), "value");
@@ -137,14 +124,7 @@ public class TestBootstrap
         System.setProperty("property", "value");
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                });
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class));
 
         SimpleConfig simpleConfig = bootstrap.initialize().getInstance(SimpleConfig.class);
         assertEquals(simpleConfig.getProperty(), "value");
@@ -158,14 +138,7 @@ public class TestBootstrap
         System.setProperty("property", "system property value");
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                });
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class));
 
         SimpleConfig simpleConfig = bootstrap.initialize().getInstance(SimpleConfig.class);
         assertEquals(simpleConfig.getProperty(), "system property value");
@@ -177,14 +150,7 @@ public class TestBootstrap
     {
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                })
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
                 .setRequiredConfigurationProperty("property", "required value");
 
         SimpleConfig simpleConfig = bootstrap.initialize().getInstance(SimpleConfig.class);
@@ -197,14 +163,7 @@ public class TestBootstrap
     {
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                })
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
                 .setRequiredConfigurationProperty("unknown", "required value");
 
         try {
@@ -224,14 +183,7 @@ public class TestBootstrap
         System.setProperty("property", "system property value");
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                })
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
                 .setRequiredConfigurationProperty("other-property", "value");
 
         SimpleConfig simpleConfig = bootstrap.initialize().getInstance(SimpleConfig.class);
@@ -245,14 +197,7 @@ public class TestBootstrap
         System.setProperty("config", Resources.getResource("simple-config.properties").getFile());
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                })
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
                 .withApplicationDefaults(ImmutableMap.of(
                         "property", "default value",
                         "other-property", "other default value"
@@ -270,14 +215,7 @@ public class TestBootstrap
         System.setProperty("config", Resources.getResource("simple-config.properties").getFile());
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                }, new ConfigurationDefaultingModule()
+                .withModules(binder -> bindConfig(binder).to(SimpleConfig.class), new ConfigurationDefaultingModule()
                 {
                     @Override
                     public Map<String, String> getConfigurationDefaults()
@@ -305,14 +243,7 @@ public class TestBootstrap
     {
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                }, new ConfigurationDefaultingModule()
+                .withModules(binder -> bindConfig(binder).to(SimpleConfig.class), new ConfigurationDefaultingModule()
                 {
                     @Override
                     public Map<String, String> getConfigurationDefaults()
@@ -367,14 +298,7 @@ public class TestBootstrap
         System.setProperty("config", Resources.getResource("empty-config.properties").getFile());
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                }, new ConfigurationDefaultingModule()
+                .withModules(binder -> bindConfig(binder).to(SimpleConfig.class), new ConfigurationDefaultingModule()
                 {
                     @Override
                     public Map<String, String> getConfigurationDefaults()
@@ -417,19 +341,33 @@ public class TestBootstrap
     }
 
     @Test
+    public void testConfigAwareModuleWithPrefix()
+            throws Exception
+    {
+        final AtomicReference<SimpleConfig> simpleConfig = new AtomicReference<>();
+        Bootstrap bootstrap = bootstrapApplication("test-application")
+                .doNotInitializeLogging()
+                .withModules(new AbstractConfigurationAwareModule()
+                {
+                    @Override
+                    public void setup(Binder binder)
+                    {
+                         simpleConfig.set(buildConfigObject(SimpleConfig.class, "some-prefix"));
+                    }
+                })
+                .setRequiredConfigurationProperty("some-prefix.property", "required value");
+
+        bootstrap.initialize();
+        assertEquals(simpleConfig.get().getProperty(), "required value");
+    }
+
+    @Test
     public void testConfigObjectsNotShared()
             throws Exception
     {
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        bindConfig(binder).to(SimpleConfig.class);
-                    }
-                }).initialize();
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class)).initialize();
 
         injector.getInstance(SimpleConfig.class).setProperty("changed");
         SimpleConfig simpleConfig = injector.getInstance(SimpleConfig.class);
@@ -442,14 +380,7 @@ public class TestBootstrap
     {
         Bootstrap bootstrap = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(LifecycleInstance.class);
-                    }
-                })
+                .withModules((Module) binder -> binder.bind(LifecycleInstance.class))
                 .quiet()
                 .setRequiredConfigurationProperties(ImmutableMap.<String, String>of());
 

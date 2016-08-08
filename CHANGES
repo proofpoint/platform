@@ -28,6 +28,11 @@ Platform 1.44
   these objects now have a getHeaders() method that takes a field name
   and returns a list of field values.
 
+* Configuration
+
+  We added a AbstractConfigurationAwareModule.build(Class<T>, String) method
+  for building prefixed config objects.
+
 * Library Upgrades
 
   - Jetty to 9.3.12 (from 9.3.11)
