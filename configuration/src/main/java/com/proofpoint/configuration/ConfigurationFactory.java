@@ -149,6 +149,11 @@ public final class ConfigurationFactory
         return build(configClass, null, true).instance;
     }
 
+    public <T> T build(Class<T> configClass, String prefix)
+    {
+        return build(configClass, prefix, true).instance;
+    }
+
     /**
      * This is used by the configuration provider
      */
