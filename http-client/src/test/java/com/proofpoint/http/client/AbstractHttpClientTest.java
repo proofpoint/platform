@@ -986,7 +986,9 @@ public abstract class AbstractHttpClientTest
         httpConfiguration.setSendServerVersion(false);
         httpConfiguration.setSendXPoweredBy(false);
 
-        ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(httpConfiguration));
+        HttpConnectionFactory http1 = new HttpConnectionFactory(httpConfiguration);
+        HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(httpConfiguration);
+        ServerConnector connector = new ServerConnector(server, null, null, null, -1, -1, http1, http2c);
 
         connector.setIdleTimeout(30000);
         connector.setName("http");
