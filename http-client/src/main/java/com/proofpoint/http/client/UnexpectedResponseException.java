@@ -20,6 +20,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Beta
@@ -67,6 +68,7 @@ public class UnexpectedResponseException extends RuntimeException
         return statusMessage;
     }
 
+    @Nullable
     public String getHeader(String name)
     {
         List<String> values = getHeaders().get(HeaderName.of(name));

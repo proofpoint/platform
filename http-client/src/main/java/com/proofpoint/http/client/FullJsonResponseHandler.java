@@ -24,6 +24,7 @@ import com.proofpoint.http.client.FullJsonResponseHandler.JsonResponse;
 import com.proofpoint.json.JsonCodec;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -135,6 +136,7 @@ public class FullJsonResponseHandler<T>
             return statusMessage;
         }
 
+        @Nullable
         public String getHeader(String name)
         {
             List<String> values = getHeaders().get(HeaderName.of(name));
