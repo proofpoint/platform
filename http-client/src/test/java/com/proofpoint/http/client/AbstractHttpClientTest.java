@@ -1313,6 +1313,11 @@ public abstract class AbstractHttpClientTest
     public void testResponseHandlerThrowsBeforeReadingBody()
             throws Exception
     {
+        if (createClientConfig().isHttp2Enabled()) {
+            // To difficult to test with HTTP/2
+            return;
+        }
+
         try (LargeResponseServer largeResponseServer = new LargeResponseServer(scheme, host)) {
             RuntimeException expectedException = new RuntimeException();
 
