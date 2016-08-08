@@ -13,6 +13,9 @@ Platform 1.41
   servers. Attempting to connect to an older server will result in
   "refused_stream_error". Thus, HTTP/2 is disabled by default.
 
+  Setting http-client.max-requests-queued-per-destination=0 is not supported
+  when HTTP/2 is enabled.
+
 * HTTP Client API changes for Case-Insensitive Headers
 
   HTTP header field names are always lowercase in HTTP/2. They should

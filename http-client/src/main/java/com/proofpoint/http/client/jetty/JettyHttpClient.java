@@ -198,34 +198,48 @@ public class JettyHttpClient
             sslContextFactory.setKeyStorePassword(config.getKeyStorePassword());
         }
 
-        HttpClientTransport transport;
-        if (config.isHttp2Enabled()) {
-            HTTP2Client client = new HTTP2Client();
-            client.setSelectors(CLIENT_TRANSPORT_SELECTORS);
-            transport = new HttpClientTransportOverHTTP2(client);
+        if (config.getMaxRequestsQueuedPerDestination() == 0) {
+            HttpClientTransport transport;
+            if (config.isHttp2Enabled()) {
+                throw new IllegalArgumentException("MaxRequestsQueuedPerDestination value of 0 not supported with HTTP/2");
+                // todo Need getHttpClient() accessor; need to account for minimum 100 requests per connection
+//                HTTP2Client client = new HTTP2Client();
+//                client.setSelectors(CLIENT_TRANSPORT_SELECTORS);
+//                transport = new HttpClientTransportOverHTTP2(client)
+//                {
+//                    @Override
+//                    public HttpDestination newHttpDestination(Origin origin)
+//                    {
+//                        return new LimitQueuedToAvailableConnectionsHttpDestination(config.getMaxConnectionsPerServer(), getHttpClient(), origin);
+//                    }
+//                };
+            }
+            else {
+                transport = new HttpClientTransportOverHTTP(CLIENT_TRANSPORT_SELECTORS)
+                {
+                    @Override
+                    public HttpDestination newHttpDestination(Origin origin)
+                    {
+                        return new LimitQueuedToAvailableConnectionsHttpDestination(config.getMaxConnectionsPerServer(), getHttpClient(), origin);
+                    }
+                };
+            }
+            httpClient = new HttpClient(transport, sslContextFactory);
+            httpClient.setMaxRequestsQueuedPerDestination(config.getMaxConnectionsPerServer());
         }
         else {
-            transport = new HttpClientTransportOverHTTP(CLIENT_TRANSPORT_SELECTORS);
-        }
-
-//TODO
-//        if (config.getMaxRequestsQueuedPerDestination() == 0) {
-//            httpClient = new HttpClient(
-//                    new HttpClientTransportOverHTTP(2)
-//                    {
-//                        @Override
-//                        public HttpDestination newHttpDestination(Origin origin)
-//                        {
-//                            return new LimitQueuedToAvailableConnectionsHttpDestination(config.getMaxConnectionsPerServer(), getHttpClient(), origin);
-//                        }
-//                    },
-//                    sslContextFactory);
-//            httpClient.setMaxRequestsQueuedPerDestination(config.getMaxConnectionsPerServer());
-//        }
-//        else {
+            HttpClientTransport transport;
+            if (config.isHttp2Enabled()) {
+                HTTP2Client client = new HTTP2Client();
+                client.setSelectors(CLIENT_TRANSPORT_SELECTORS);
+                transport = new HttpClientTransportOverHTTP2(client);
+            }
+            else {
+                transport = new HttpClientTransportOverHTTP(CLIENT_TRANSPORT_SELECTORS);
+            }
             httpClient = new HttpClient(transport, sslContextFactory);
             httpClient.setMaxRequestsQueuedPerDestination(config.getMaxRequestsQueuedPerDestination());
-//        }
+        }
 
         httpClient.setMaxConnectionsPerDestination(config.getMaxConnectionsPerServer());
 

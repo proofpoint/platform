@@ -1355,10 +1355,14 @@ public abstract class AbstractHttpClientTest
         }
     }
 
-    @Test(enabled = false) //TODO
+    @Test
     public void testAllConnectionsUsed()
             throws Exception
     {
+        if (createClientConfig().isHttp2Enabled()) {
+            return;
+        }
+
         final Request request = prepareGet()
                 .setUri(uriBuilderFrom(baseURI).addParameter("latch").build())
                 .build();
