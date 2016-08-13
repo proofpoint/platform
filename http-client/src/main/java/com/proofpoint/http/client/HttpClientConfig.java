@@ -46,8 +46,8 @@ public class HttpClientConfig
     private HostAndPort socksProxy;
     private String keyStorePath = System.getProperty(JAVAX_NET_SSL_KEY_STORE);
     private String keyStorePassword = System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD);
-    private String trustStorePath = System.getProperty(JAVAX_NET_SSL_TRUST_STORE);
-    private String trustStorePassword = System.getProperty(JAVAX_NET_SSL_TRUST_STORE_PASSWORD);
+    private String trustStorePath;
+    private String trustStorePassword;
 
     @NotNull
     @MinDuration("0ms")
