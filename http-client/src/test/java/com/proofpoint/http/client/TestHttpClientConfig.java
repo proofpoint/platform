@@ -53,8 +53,8 @@ public class TestHttpClientConfig
                 .setSocksProxy(null)
                 .setKeyStorePath(System.getProperty(JAVAX_NET_SSL_KEY_STORE))
                 .setKeyStorePassword(System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD))
-                .setTrustStorePath(System.getProperty(JAVAX_NET_SSL_TRUST_STORE))
-                .setTrustStorePassword(System.getProperty(JAVAX_NET_SSL_TRUST_STORE_PASSWORD)));
+                .setTrustStorePath(null)
+                .setTrustStorePassword(null));
     }
 
     @Test
