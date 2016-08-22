@@ -325,7 +325,7 @@ public class TestMoreFutures
         assertEquals(tryGetFutureValue(toListenableFuture(new CompletableFuture<>()), 10, MILLISECONDS), Optional.empty());
     }
 
-    @Test
+    @Test(enabled = false) // intermittently fails per https://github.com/airlift/airlift/issues/447
     public void testTimeout()
             throws Exception
     {
