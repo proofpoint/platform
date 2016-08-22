@@ -1,5 +1,8 @@
 Platform 1.40
 
+* We re-enabled the SHA1 ciphers that Jetty disabled in the http client
+  in Platform 1.39.
+
 * Logging configuration
 
   We added the "http-server.log.enabled" configuration option for disabling

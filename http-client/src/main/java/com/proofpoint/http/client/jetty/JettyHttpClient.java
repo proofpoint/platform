@@ -182,8 +182,8 @@ public class JettyHttpClient
         sslContextFactory.addExcludeCipherSuites(DISABLED_CIPHERS);
         String[] excludeCipherSuites = sslContextFactory.getExcludeCipherSuites();
         for (int i = 0; i < excludeCipherSuites.length; i++) {
-            if ("^.*_RSA_.*_(MD5|SHA|SHA1)$".equals(excludeCipherSuites[i])) {
-                excludeCipherSuites[i] = "^.*_RSA_.*_MD5$";
+            if ("^.*_(MD5|SHA|SHA1)$".equals(excludeCipherSuites[i])) {
+                excludeCipherSuites[i] = "^.*_MD5$";
             }
         }
         sslContextFactory.setExcludeCipherSuites(excludeCipherSuites);
