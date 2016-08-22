@@ -811,6 +811,7 @@ public abstract class AbstractHttpClientTest
     {
         final String token = createAndRegisterNewRequestToken();
         final AtomicReference<String> writeToken = new AtomicReference<>();
+        CountDownLatch closeLatch = new CountDownLatch(1);
         final AtomicReference<String> closeToken = new AtomicReference<>();
         URI uri = baseURI.resolve("/road/to/nowhere");
         Request request = preparePut()
@@ -820,7 +821,7 @@ public abstract class AbstractHttpClientTest
                 .addHeader("dupe", "second")
                 .setBodySource((DynamicBodySource) out -> {
                     assertEquals(getCurrentRequestToken(), token);
-                    return new TraceTokenTestWriter(out, writeToken, closeToken);
+                    return new TraceTokenTestWriter(out, writeToken, closeLatch, closeToken);
                 })
                 .build();
 
@@ -833,6 +834,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.requestHeaders.get("x-custom-filter"), ImmutableList.of("custom value"));
         assertEquals(servlet.requestBytes, new byte[] {});
         assertEquals(writeToken.get(), token);
+        assertTrue(closeLatch.await(1, SECONDS));
         assertEquals(closeToken.get(), token);
     }
 
@@ -841,12 +843,14 @@ public abstract class AbstractHttpClientTest
     {
         private final OutputStream out;
         private final AtomicReference<String> writeToken;
+        private final CountDownLatch closeLatch;
         private final AtomicReference<String> closeToken;
 
-        TraceTokenTestWriter(OutputStream out, AtomicReference<String> writeToken, AtomicReference<String> closeToken)
+        TraceTokenTestWriter(OutputStream out, AtomicReference<String> writeToken, CountDownLatch closeLatch, AtomicReference<String> closeToken)
         {
             this.out = out;
             this.writeToken = writeToken;
+            this.closeLatch = closeLatch;
             this.closeToken = closeToken;
         }
 
@@ -862,6 +866,7 @@ public abstract class AbstractHttpClientTest
         public void close()
         {
             closeToken.set(getCurrentRequestToken());
+            closeLatch.countDown();
         }
     }
 
