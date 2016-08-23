@@ -32,6 +32,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.eclipse.jetty.http2</groupId>
+            <artifactId>http2-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty.http2</groupId>
+            <artifactId>http2-http-client-transport</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.proofpoint.platform</groupId>
             <artifactId>concurrent</artifactId>
         </dependency>
@@ -134,6 +144,12 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty.http2</groupId>
+            <artifactId>http2-server</artifactId>
             <scope>test</scope>
         </dependency>
 

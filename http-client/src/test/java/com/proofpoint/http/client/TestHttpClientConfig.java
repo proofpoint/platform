@@ -41,6 +41,7 @@ public class TestHttpClientConfig
     public void testDefaults()
     {
         assertRecordedDefaults(recordDefaults(HttpClientConfig.class)
+                .setHttp2Enabled(false)
                 .setConnectTimeout(new Duration(1, TimeUnit.SECONDS))
                 .setRequestTimeout(null)
                 .setIdleTimeout(new Duration(1, TimeUnit.MINUTES))
@@ -57,6 +58,7 @@ public class TestHttpClientConfig
     public void testExplicitPropertyMappings()
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
+                .put("http-client.http2.enabled", "true")
                 .put("http-client.connect-timeout", "4s")
                 .put("http-client.request-timeout", "15s")
                 .put("http-client.idle-timeout", "5s")
@@ -70,6 +72,7 @@ public class TestHttpClientConfig
                 .build();
 
         HttpClientConfig expected = new HttpClientConfig()
+                .setHttp2Enabled(true)
                 .setConnectTimeout(new Duration(4, TimeUnit.SECONDS))
                 .setRequestTimeout(new Duration(15, TimeUnit.SECONDS))
                 .setIdleTimeout(new Duration(5, TimeUnit.SECONDS))
