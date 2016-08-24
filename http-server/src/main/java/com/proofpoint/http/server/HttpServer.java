@@ -30,7 +30,6 @@ import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -210,6 +209,7 @@ public class HttpServer
             SslContextFactory sslContextFactory = new SslContextFactory(config.getKeystorePath());
             sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
             sslContextFactory.addExcludeProtocols("SSLv3");
+            sslContextFactory.setIncludeProtocols("SSLv2Hello", "TLSv1", "TLSv1.1", "TLSv1.2");
             sslContextFactory.addExcludeCipherSuites(DISABLED_CIPHERS);
             SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
 
