@@ -18,6 +18,7 @@ package com.proofpoint.http.server;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
 import com.proofpoint.bootstrap.AcceptRequests;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
@@ -79,27 +80,17 @@ import static java.util.Objects.requireNonNull;
 
 public class HttpServer
 {
-    private static final String[] DISABLED_CIPHERS = {
-            "TLS_ECDHE_ECDSA_WITH_RC4_128_SHA",
-            "TLS_ECDHE_RSA_WITH_RC4_128_SHA",
-            "SSL_RSA_WITH_RC4_128_SHA",
-            "TLS_ECDH_ECDSA_WITH_RC4_128_SHA",
-            "TLS_ECDH_RSA_WITH_RC4_128_SHA",
-            "SSL_RSA_WITH_RC4_128_MD5",
-            "TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
-            "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256",
-            "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-            "TLS_DHE_DSS_WITH_AES_256_CBC_SHA",
-            "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
-            "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256",
-            "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-            "TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
-            "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
-            "TLS_DHE_DSS_WITH_AES_256_GCM_SHA384",
-            "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-            "TLS_DHE_DSS_WITH_AES_128_GCM_SHA256",
-            "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
-            "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA",
+    private static final String[] ENABLED_PROTOCOLS = {"SSLv2Hello", "TLSv1", "TLSv1.1", "TLSv1.2"};
+    private static final String[] ENABLED_CIPHERS = {
+            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+            "TLS_RSA_WITH_AES_256_CBC_SHA",
+            "TLS_RSA_WITH_AES_128_CBC_SHA",
+            "TLS_EMPTY_RENEGOTIATION_INFO_SCSV",
     };
 
     private final Server server;
@@ -208,9 +199,11 @@ public class HttpServer
 
             SslContextFactory sslContextFactory = new SslContextFactory(config.getKeystorePath());
             sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
-            sslContextFactory.addExcludeProtocols("SSLv3");
-            sslContextFactory.setIncludeProtocols("SSLv2Hello", "TLSv1", "TLSv1.1", "TLSv1.2");
-            sslContextFactory.addExcludeCipherSuites(DISABLED_CIPHERS);
+            sslContextFactory.setExcludeProtocols();
+            sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);
+            sslContextFactory.setExcludeCipherSuites();
+            sslContextFactory.setIncludeCipherSuites(ENABLED_CIPHERS);
+            sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
             SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
 
             Integer acceptors = config.getHttpsAcceptorThreads();
@@ -247,8 +240,11 @@ public class HttpServer
 
                 SslContextFactory sslContextFactory = new SslContextFactory(config.getKeystorePath());
                 sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
-                sslContextFactory.addExcludeProtocols("SSLv3");
-                sslContextFactory.addExcludeCipherSuites(DISABLED_CIPHERS);
+                sslContextFactory.setExcludeProtocols();
+                sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);
+                sslContextFactory.setExcludeCipherSuites();
+                sslContextFactory.setIncludeCipherSuites(ENABLED_CIPHERS);
+                sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
                 SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
                 adminConnector = new ServerConnector(server, adminThreadPool, null, null, 0, -1, sslConnectionFactory, new HttpConnectionFactory(adminConfiguration));
             } else {

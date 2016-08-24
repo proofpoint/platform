@@ -7,6 +7,7 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Ordering;
 import com.google.common.io.Closeables;
 import com.google.common.io.CountingInputStream;
 import com.google.common.net.HostAndPort;
@@ -92,27 +93,17 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 public class JettyHttpClient
         implements com.proofpoint.http.client.HttpClient
 {
-    private static final String[] DISABLED_CIPHERS = {
-            "TLS_ECDHE_ECDSA_WITH_RC4_128_SHA",
-            "TLS_ECDHE_RSA_WITH_RC4_128_SHA",
-            "SSL_RSA_WITH_RC4_128_SHA",
-            "TLS_ECDH_ECDSA_WITH_RC4_128_SHA",
-            "TLS_ECDH_RSA_WITH_RC4_128_SHA",
-            "SSL_RSA_WITH_RC4_128_MD5",
-            "TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
-            "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256",
-            "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-            "TLS_DHE_DSS_WITH_AES_256_CBC_SHA",
-            "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
-            "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256",
-            "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-            "TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
-            "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
-            "TLS_DHE_DSS_WITH_AES_256_GCM_SHA384",
-            "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-            "TLS_DHE_DSS_WITH_AES_128_GCM_SHA256",
-            "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
-            "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA",
+    private static final String[] ENABLED_PROTOCOLS = {"TLSv1", "TLSv1.1", "TLSv1.2"};
+    private static final String[] ENABLED_CIPHERS = {
+            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+            "TLS_RSA_WITH_AES_256_CBC_SHA",
+            "TLS_RSA_WITH_AES_128_CBC_SHA",
+            "TLS_EMPTY_RENEGOTIATION_INFO_SCSV",
     };
 
     private static final AtomicLong nameCounter = new AtomicLong();
@@ -179,8 +170,11 @@ public class JettyHttpClient
 
         SslContextFactory sslContextFactory = new SslContextFactory();
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
-        sslContextFactory.addExcludeProtocols("SSLv3", "SSLv2Hello");
-        sslContextFactory.setExcludeCipherSuites(DISABLED_CIPHERS);
+        sslContextFactory.setExcludeProtocols();
+        sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);
+        sslContextFactory.setExcludeCipherSuites();
+        sslContextFactory.setIncludeCipherSuites(ENABLED_CIPHERS);
+        sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
         if (config.getKeyStorePath() != null) {
             sslContextFactory.setKeyStorePath(config.getKeyStorePath());
             sslContextFactory.setKeyStorePassword(config.getKeyStorePassword());
