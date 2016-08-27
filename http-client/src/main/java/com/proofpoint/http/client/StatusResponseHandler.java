@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 import static com.proofpoint.http.client.ResponseHandlerUtils.propagate;
@@ -52,9 +53,9 @@ public class StatusResponseHandler implements ResponseHandler<StatusResponse, Ru
     {
         private final int statusCode;
         private final String statusMessage;
-        private final ListMultimap<String, String> headers;
+        private final ListMultimap<HeaderName, String> headers;
 
-        public StatusResponse(int statusCode, String statusMessage, ListMultimap<String, String> headers)
+        public StatusResponse(int statusCode, String statusMessage, ListMultimap<HeaderName, String> headers)
         {
             this.statusCode = statusCode;
             this.statusMessage = statusMessage;
@@ -71,16 +72,22 @@ public class StatusResponseHandler implements ResponseHandler<StatusResponse, Ru
             return statusMessage;
         }
 
+        @Nullable
         public String getHeader(String name)
         {
-            List<String> values = getHeaders().get(name);
+            List<String> values = getHeaders().get(HeaderName.of(name));
             if (values.isEmpty()) {
                 return null;
             }
             return values.get(0);
         }
 
-        public ListMultimap<String, String> getHeaders()
+        public List<String> getHeaders(String name)
+        {
+            return headers.get(HeaderName.of(name));
+        }
+
+        public ListMultimap<HeaderName, String> getHeaders()
         {
             return headers;
         }

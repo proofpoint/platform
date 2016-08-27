@@ -28,7 +28,7 @@ public class TestJettyHttpClientSocksProxy
     {
         testingSocksProxy = new TestingSocksProxy().start();
         jettyIoPool = new JettyIoPool("test-shared", new JettyIoPoolConfig());
-        httpClient = new JettyHttpClient(new HttpClientConfig().setSocksProxy(testingSocksProxy.getHostAndPort()), jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()));
+//        httpClient = new JettyHttpClient(createClientConfig(), jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()));
     }
 
     @AfterMethod
@@ -39,6 +39,14 @@ public class TestJettyHttpClientSocksProxy
         closeQuietly(testingSocksProxy);
     }
 
+//    @Override
+//    protected HttpClientConfig createClientConfig()
+//    {
+//        return new HttpClientConfig()
+//                .setHttp2Enabled(false)
+//                .setSocksProxy(testingSocksProxy.getHostAndPort());
+//    }
+//
 //    @Override
 //    public <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)
 //            throws Exception

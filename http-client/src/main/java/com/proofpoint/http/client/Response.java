@@ -18,8 +18,10 @@ package com.proofpoint.http.client;
 import com.google.common.annotations.Beta;
 import com.google.common.collect.ListMultimap;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 @Beta
 public interface Response
@@ -28,9 +30,19 @@ public interface Response
 
     String getStatusMessage();
 
-    String getHeader(String name);
+    @Nullable
+    default String getHeader(String name)
+    {
+        List<String> values = getHeaders(name);
+        return values.isEmpty() ? null : values.get(0);
+    }
 
-    ListMultimap<String, String> getHeaders();
+    default List<String> getHeaders(String name)
+    {
+        return getHeaders().get(HeaderName.of(name));
+    }
+
+    ListMultimap<HeaderName, String> getHeaders();
 
     long getBytesRead();
 

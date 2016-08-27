@@ -15,6 +15,7 @@ import com.google.common.util.concurrent.AbstractFuture;
 import com.proofpoint.http.client.BodySource;
 import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
+import com.proofpoint.http.client.HeaderName;
 import com.proofpoint.http.client.HttpClientConfig;
 import com.proofpoint.http.client.HttpRequestFilter;
 import com.proofpoint.http.client.InputStreamBodySource;
@@ -29,6 +30,7 @@ import com.proofpoint.tracetoken.TraceTokenScope;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.client.DuplexConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.client.HttpRequest;
@@ -48,6 +50,8 @@ import org.eclipse.jetty.client.util.InputStreamContentProvider;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http2.client.HTTP2Client;
+import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.util.ArrayQueue;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -118,6 +122,7 @@ public class JettyHttpClient
     private static final AtomicLong nameCounter = new AtomicLong();
     private static final String PLATFORM_STATS_KEY = "platform_stats";
     private static final long SWEEP_PERIOD_MILLIS = 5000;
+    private static final int CLIENT_TRANSPORT_SELECTORS = 2;
 
     private final JettyIoPool anonymousPool;
     private final HttpClient httpClient;
@@ -194,22 +199,48 @@ public class JettyHttpClient
         }
 
         if (config.getMaxRequestsQueuedPerDestination() == 0) {
-            httpClient = new HttpClient(
-                    new HttpClientTransportOverHTTP(2)
+            HttpClientTransport transport;
+            if (config.isHttp2Enabled()) {
+                throw new IllegalArgumentException("MaxRequestsQueuedPerDestination value of 0 not supported with HTTP/2");
+                // todo Need getHttpClient() accessor; need to account for minimum 100 requests per connection
+//                HTTP2Client client = new HTTP2Client();
+//                client.setSelectors(CLIENT_TRANSPORT_SELECTORS);
+//                transport = new HttpClientTransportOverHTTP2(client)
+//                {
+//                    @Override
+//                    public HttpDestination newHttpDestination(Origin origin)
+//                    {
+//                        return new LimitQueuedToAvailableConnectionsHttpDestination(config.getMaxConnectionsPerServer(), getHttpClient(), origin);
+//                    }
+//                };
+            }
+            else {
+                transport = new HttpClientTransportOverHTTP(CLIENT_TRANSPORT_SELECTORS)
+                {
+                    @Override
+                    public HttpDestination newHttpDestination(Origin origin)
                     {
-                        @Override
-                        public HttpDestination newHttpDestination(Origin origin)
-                        {
-                            return new LimitQueuedToAvailableConnectionsHttpDestination(config.getMaxConnectionsPerServer(), getHttpClient(), origin);
-                        }
-                    },
-                    sslContextFactory);
+                        return new LimitQueuedToAvailableConnectionsHttpDestination(config.getMaxConnectionsPerServer(), getHttpClient(), origin);
+                    }
+                };
+            }
+            httpClient = new HttpClient(transport, sslContextFactory);
             httpClient.setMaxRequestsQueuedPerDestination(config.getMaxConnectionsPerServer());
         }
         else {
-            httpClient = new HttpClient(new HttpClientTransportOverHTTP(2), sslContextFactory);
+            HttpClientTransport transport;
+            if (config.isHttp2Enabled()) {
+                HTTP2Client client = new HTTP2Client();
+                client.setSelectors(CLIENT_TRANSPORT_SELECTORS);
+                transport = new HttpClientTransportOverHTTP2(client);
+            }
+            else {
+                transport = new HttpClientTransportOverHTTP(CLIENT_TRANSPORT_SELECTORS);
+            }
+            httpClient = new HttpClient(transport, sslContextFactory);
             httpClient.setMaxRequestsQueuedPerDestination(config.getMaxRequestsQueuedPerDestination());
         }
+
         httpClient.setMaxConnectionsPerDestination(config.getMaxConnectionsPerServer());
 
         // disable cookies
@@ -377,6 +408,9 @@ public class JettyHttpClient
             Throwable cause = e.getCause();
             if (cause instanceof Exception) {
                 return responseHandler.handleException(request, (Exception) cause);
+            }
+            else if ((cause instanceof NoClassDefFoundError) && cause.getMessage().endsWith("ALPNClientConnection")) {
+                return responseHandler.handleException(request, new RuntimeException("HTTPS cannot be used when HTTP/2 is enabled", cause));
             }
             else {
                 return responseHandler.handleException(request, new RuntimeException(cause));
@@ -693,11 +727,13 @@ public class JettyHttpClient
     {
         private final Response response;
         private final CountingInputStream inputStream;
+        private final ListMultimap<HeaderName, String> headers;
 
         JettyResponse(Response response, InputStream inputStream)
         {
             this.response = response;
             this.inputStream = new CountingInputStream(inputStream);
+            this.headers = toHeadersMap(response.getHeaders());
         }
 
         @Override
@@ -713,23 +749,9 @@ public class JettyHttpClient
         }
 
         @Override
-        public String getHeader(String name)
+        public ListMultimap<HeaderName, String> getHeaders()
         {
-            return response.getHeaders().get(name);
-        }
-
-        @Override
-        public ListMultimap<String, String> getHeaders()
-        {
-            HttpFields headers = response.getHeaders();
-
-            ImmutableListMultimap.Builder<String, String> builder = ImmutableListMultimap.builder();
-            for (String name : headers.getFieldNamesCollection()) {
-                for (String value : headers.getValuesList(name)) {
-                    builder.put(name, value);
-                }
-            }
-            return builder.build();
+            return headers;
         }
 
         @Override
@@ -752,6 +774,17 @@ public class JettyHttpClient
                     .add("statusMessage", getStatusMessage())
                     .add("headers", getHeaders())
                     .toString();
+        }
+
+        private static ListMultimap<HeaderName, String> toHeadersMap(HttpFields headers)
+        {
+            ImmutableListMultimap.Builder<HeaderName, String> builder = ImmutableListMultimap.builder();
+            for (String name : headers.getFieldNamesCollection()) {
+                for (String value : headers.getValuesList(name)) {
+                    builder.put(HeaderName.of(name), value);
+                }
+            }
+            return builder.build();
         }
     }
 

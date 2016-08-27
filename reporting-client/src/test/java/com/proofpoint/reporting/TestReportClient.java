@@ -19,13 +19,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.proofpoint.http.client.HttpClient;
+import com.proofpoint.http.client.HttpStatus;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.testing.TestingHttpClient;
@@ -39,7 +38,6 @@ import org.testng.annotations.Test;
 import javax.management.MalformedObjectNameException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +45,7 @@ import java.util.zip.GZIPInputStream;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.proofpoint.http.client.testing.BodySourceTester.writeBodySourceTo;
+import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
@@ -185,44 +184,7 @@ public class TestReportClient
                 throw propagate(e);
             }
 
-            return new Response()
-            {
-                @Override
-                public int getStatusCode()
-                {
-                    return 204;
-                }
-
-                @Override
-                public String getStatusMessage()
-                {
-                    return "No content";
-                }
-
-                @Override
-                public String getHeader(String name)
-                {
-                    throw new UnsupportedOperationException();
-                }
-
-                @Override
-                public ListMultimap<String, String> getHeaders()
-                {
-                    return ImmutableListMultimap.of();
-                }
-
-                @Override
-                public long getBytesRead()
-                {
-                    return 100;
-                }
-
-                @Override
-                public InputStream getInputStream()
-                {
-                    throw new UnsupportedOperationException();
-                }
-            };
+            return mockResponse(HttpStatus.NO_CONTENT);
         }
     }
 }

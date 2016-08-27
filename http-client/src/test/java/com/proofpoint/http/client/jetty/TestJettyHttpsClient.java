@@ -36,12 +36,7 @@ public class TestJettyHttpsClient
     public void setUpHttpClient()
     {
         jettyIoPool = new JettyIoPool("test-shared", new JettyIoPoolConfig());
-
-        HttpClientConfig config = new HttpClientConfig()
-                .setKeyStorePath(getResource("localhost.keystore").getPath())
-                .setKeyStorePassword("changeit");
-
-        httpClient = new JettyHttpClient(config, jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()));
+        httpClient = new JettyHttpClient(createClientConfig(), jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()));
         stats = httpClient.getStats();
     }
 
@@ -51,6 +46,15 @@ public class TestJettyHttpsClient
     {
         closeQuietly(httpClient);
         closeQuietly(jettyIoPool);
+    }
+
+    @Override
+    protected HttpClientConfig createClientConfig()
+    {
+        return new HttpClientConfig()
+                .setHttp2Enabled(false)
+                .setKeyStorePath(getResource("localhost.keystore").getPath())
+                .setKeyStorePassword("changeit");
     }
 
     @Override
@@ -95,7 +99,7 @@ public class TestJettyHttpsClient
                 .setUri(uri)
                 .build();
 
-        executeRequest(request, new ResponseToStringHandler());
+        executeRequest(request, new ExceptionResponseHandler());
     }
 
     @Override
