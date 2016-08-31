@@ -1,3 +1,9 @@
+Platform 1.42
+
+* We reverted the .withApplicationPrefix() method of the JaxrsBinder EDSL.
+  While this change was source compatible, it was not binary compatible.
+  This change will be made in a later version of Platform.
+
 Platform 1.41
 
 * We re-enabled http-server support for the SSLv2Hello protocol that Jetty

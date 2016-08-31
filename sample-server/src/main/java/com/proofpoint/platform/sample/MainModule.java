@@ -39,8 +39,8 @@ public class MainModule
         reportBinder(binder).export(PersonStore.class).withApplicationPrefix();
         healthBinder(binder).export(PersonStore.class);
 
-        jaxrsBinder(binder).bind(PersonsResource.class).withApplicationPrefix();
-        jaxrsBinder(binder).bind(PersonResource.class).withApplicationPrefix();
+        jaxrsBinder(binder).bind(PersonsResource.class);
+        jaxrsBinder(binder).bind(PersonResource.class);
 
         bindConfig(binder).to(StoreConfig.class);
 
