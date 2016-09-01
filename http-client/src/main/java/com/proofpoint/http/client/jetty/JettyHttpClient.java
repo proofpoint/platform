@@ -180,14 +180,7 @@ public class JettyHttpClient
         SslContextFactory sslContextFactory = new SslContextFactory();
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
         sslContextFactory.addExcludeProtocols("SSLv3", "SSLv2Hello");
-        sslContextFactory.addExcludeCipherSuites(DISABLED_CIPHERS);
-        String[] excludeCipherSuites = sslContextFactory.getExcludeCipherSuites();
-        for (int i = 0; i < excludeCipherSuites.length; i++) {
-            if ("^.*_(MD5|SHA|SHA1)$".equals(excludeCipherSuites[i])) {
-                excludeCipherSuites[i] = "^.*_MD5$";
-            }
-        }
-        sslContextFactory.setExcludeCipherSuites(excludeCipherSuites);
+        sslContextFactory.setExcludeCipherSuites(DISABLED_CIPHERS);
         if (config.getKeyStorePath() != null) {
             sslContextFactory.setKeyStorePath(config.getKeyStorePath());
             sslContextFactory.setKeyStorePassword(config.getKeyStorePassword());

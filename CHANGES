@@ -1,5 +1,8 @@
 Platform 1.42
 
+* Due to reports of random client request corruption, we reverted jetty
+  to 9.3.7.
+
 * We reverted the .withApplicationPrefix() method of the JaxrsBinder EDSL.
   While this change was source compatible, it was not binary compatible.
   This change will be made in a later version of Platform.
