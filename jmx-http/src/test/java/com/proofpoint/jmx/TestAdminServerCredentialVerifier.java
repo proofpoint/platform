@@ -15,6 +15,7 @@
  */
 package com.proofpoint.jmx;
 
+import com.proofpoint.http.server.HttpServerConfig;
 import org.testng.annotations.Test;
 
 import javax.ws.rs.WebApplicationException;
@@ -26,12 +27,26 @@ import static org.testng.Assert.fail;
 public class TestAdminServerCredentialVerifier
 {
     private static final AdminServerConfig ADMIN_SERVER_CONFIG = new AdminServerConfig().setUsername("foo").setPassword("bar");
+    private static final HttpServerConfig HTTP_SERVER_CONFIG = new HttpServerConfig().setHttpsEnabled(true);
+
+    @Test
+    public void testHttpsDisabled()
+    {
+        try {
+            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, new HttpServerConfig().setHttpsEnabled(false))
+                    .authenticate(null);
+            fail("Expected WebApplicationException");
+        }
+        catch (WebApplicationException e) {
+            assertEquals(e.getResponse().getStatus(), 403);
+        }
+    }
 
     @Test
     public void testNoPasswordConfigured()
     {
         try {
-            new AdminServerCredentialVerifier(new AdminServerConfig())
+            new AdminServerCredentialVerifier(new AdminServerConfig(), HTTP_SERVER_CONFIG)
                     .authenticate(null);
             fail("Expected WebApplicationException");
         }
@@ -44,7 +59,7 @@ public class TestAdminServerCredentialVerifier
     public void testNoAuthentication()
     {
         try {
-            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG)
+            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
                     .authenticate(null);
             fail("Expected WebApplicationException");
         }
@@ -56,7 +71,7 @@ public class TestAdminServerCredentialVerifier
     @Test
     public void testSuccess()
     {
-        new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG)
+        new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
                 .authenticate("Basic " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
     }
 
@@ -64,7 +79,7 @@ public class TestAdminServerCredentialVerifier
     public void testBadUsername()
     {
         try {
-            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG)
+            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
                     .authenticate("Basic " + Base64.getEncoder().encodeToString("bad:bar".getBytes()));
             fail("Expected WebApplicationException");
         }
@@ -77,7 +92,7 @@ public class TestAdminServerCredentialVerifier
     public void testBadPassword()
     {
         try {
-            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG)
+            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
                     .authenticate("Basic " + Base64.getEncoder().encodeToString("foo:bad".getBytes()));
             fail("Expected WebApplicationException");
         }
@@ -90,7 +105,7 @@ public class TestAdminServerCredentialVerifier
     public void testWrongScheme()
     {
         try {
-            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG)
+            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
                     .authenticate("Digest " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
             fail("Expected WebApplicationException");
         }
@@ -103,7 +118,7 @@ public class TestAdminServerCredentialVerifier
     public void testNoPassword()
     {
         try {
-            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG)
+            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
                     .authenticate("Digest " + Base64.getEncoder().encodeToString("foo".getBytes()));
             fail("Expected WebApplicationException");
         }

@@ -16,6 +16,7 @@
 package com.proofpoint.jmx;
 
 import com.google.common.base.Charsets;
+import com.proofpoint.http.server.HttpServerConfig;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
@@ -32,16 +33,24 @@ public class AdminServerCredentialVerifier
 
     private final String username;
     private final String password;
+    private final boolean httpsEnabled;
 
     @Inject
-    public AdminServerCredentialVerifier(AdminServerConfig config)
+    public AdminServerCredentialVerifier(AdminServerConfig adminServerConfig, HttpServerConfig httpServerConfig)
     {
-        this.username = requireNonNull(config, "config is null").getUsername();
-        this.password = config.getPassword();
+        this.username = requireNonNull(adminServerConfig, "adminServerConfig is null").getUsername();
+        this.password = adminServerConfig.getPassword();
+        httpsEnabled = requireNonNull(httpServerConfig, "httpServerConfig is null").isHttpsEnabled();
     }
 
     public void authenticate(String authHeader)
     {
+        if (!httpsEnabled) {
+            throw new WebApplicationException(Response.status(FORBIDDEN)
+                    .header("Content-Type", "text/plain")
+                    .entity("HTTPS not enabled")
+                    .build());
+        }
         if (username == null || password == null) {
             throw new WebApplicationException(Response.status(FORBIDDEN)
                     .header("Content-Type", "text/plain")
