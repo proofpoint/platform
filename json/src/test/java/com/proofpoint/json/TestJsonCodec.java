@@ -15,15 +15,18 @@
  */
 package com.proofpoint.json;
 
+import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import org.testng.annotations.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static com.proofpoint.json.JsonCodec.*;
 import static com.proofpoint.testing.Assertions.assertContains;
 import static com.proofpoint.testing.Assertions.assertNotContains;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
 
 public class TestJsonCodec
@@ -184,5 +187,30 @@ public class TestJsonCodec
 
         json = prettyJsonCodec.toJson(new Person().setName("dain").setRocks(true));
         assertContains(json, "\n");
+    }
+
+    @Test
+    public void testToJsonWithLengthLimitSimple()
+    {
+        JsonCodec<ImmutablePerson> jsonCodec = jsonCodec(ImmutablePerson.class);
+        ImmutablePerson person = new ImmutablePerson(Strings.repeat("a", 1000), false);
+
+        assertFalse(jsonCodec.toJsonWithLengthLimit(person, 0).isPresent());
+        assertFalse(jsonCodec.toJsonWithLengthLimit(person, 1000).isPresent());
+        assertFalse(jsonCodec.toJsonWithLengthLimit(person, 1035).isPresent());
+        jsonCodec.toJsonWithLengthLimit(person, 1036);
+    }
+
+    @Test
+    public void testToJsonWithLengthLimitComplex()
+    {
+        JsonCodec<List<ImmutablePerson>> jsonCodec = listJsonCodec(jsonCodec(ImmutablePerson.class));
+        ImmutablePerson person = new ImmutablePerson(Strings.repeat("a", 1000), false);
+        List<ImmutablePerson> people = Collections.nCopies(10, person);
+
+        assertFalse(jsonCodec.toJsonWithLengthLimit(people, 0).isPresent());
+        assertFalse(jsonCodec.toJsonWithLengthLimit(people, 5000).isPresent());
+        assertFalse(jsonCodec.toJsonWithLengthLimit(people, 10381).isPresent());
+        jsonCodec.toJsonWithLengthLimit(people, 10382);
     }
 }
