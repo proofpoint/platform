@@ -3,6 +3,8 @@ Platform 1.43
 * We now disable use of the /admin/stop-announcing resource on the admin port
   when HTTPS is not enabled.
 
+* We modified TraceTokenManager to put the trace token in the thread name.
+
 * We disabled the following TLS ciphers:
 
   - TLS_RSA_WITH_AES_256_CBC_SHA256
