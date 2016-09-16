@@ -15,26 +15,57 @@
  */
 package com.proofpoint.tracetoken;
 
+import com.google.auto.value.AutoValue;
+
 import javax.annotation.Nullable;
 import java.util.UUID;
 
+import static java.lang.Thread.currentThread;
+
 public final class TraceTokenManager
 {
-    private static final ThreadLocal<String> token = new ThreadLocal<>();
+    private static final ThreadLocal<TokenState> token = new ThreadLocal<>();
 
     private TraceTokenManager()
     {}
 
     public static TraceTokenScope registerRequestToken(@Nullable String token)
     {
-        String oldToken = TraceTokenManager.token.get();
-        TraceTokenManager.token.set(token);
-        return new TraceTokenScope(oldToken);
+        TokenState oldToken = TraceTokenManager.token.get();
+
+        String oldThreadName;
+        if (oldToken == null) {
+            oldThreadName = currentThread().getName();
+        }
+        else {
+            oldThreadName = oldToken.getOldThreadName();
+        }
+
+        if (token == null) {
+            TraceTokenManager.token.set(null);
+            currentThread().setName(oldThreadName);
+        }
+        else {
+            TraceTokenManager.token.set(new AutoValue_TraceTokenManager_TokenState(token, oldThreadName));
+            currentThread().setName(oldThreadName + " " + token);
+        }
+
+        if (oldToken == null) {
+            return new TraceTokenScope(null);
+        }
+        else {
+            return new TraceTokenScope(oldToken.getToken());
+        }
     }
 
+    @Nullable
     public static String getCurrentRequestToken()
     {
-        return token.get();
+        TokenState tokenState = token.get();
+        if (tokenState == null) {
+            return null;
+        }
+        return tokenState.getToken();
     }
 
     public static String createAndRegisterNewRequestToken()
@@ -47,6 +78,18 @@ public final class TraceTokenManager
 
     public static void clearRequestToken()
     {
+        TokenState oldToken = TraceTokenManager.token.get();
         token.remove();
+        if (oldToken != null) {
+            currentThread().setName(oldToken.getOldThreadName());
+        }
+    }
+
+    @AutoValue
+    abstract static class TokenState
+    {
+        abstract String getToken();
+
+        abstract String getOldThreadName();
     }
 }
