@@ -15,6 +15,8 @@
  */
 package com.proofpoint.reporting;
 
+import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
+
 import javax.inject.Inject;
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
@@ -28,6 +30,7 @@ import static java.util.Objects.requireNonNull;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 @Path("/inrotation.txt")
+@AccessDoesNotRequireAuthentication
 public class InRotationResource
 {
     private final HealthBeanRegistry healthBeanRegistry;

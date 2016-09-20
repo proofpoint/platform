@@ -22,6 +22,7 @@ import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.configuration.ConfigurationInspector;
 import com.proofpoint.configuration.ConfigurationInspector.ConfigAttribute;
 import com.proofpoint.configuration.ConfigurationInspector.ConfigRecord;
+import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -33,6 +34,7 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 @Path("/admin/configuration")
+@AccessDoesNotRequireAuthentication
 public class ConfigurationResource
 {
     private final ConfigurationFactory configurationFactory;
