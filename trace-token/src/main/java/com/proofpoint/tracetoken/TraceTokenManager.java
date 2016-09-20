@@ -15,28 +15,83 @@
  */
 package com.proofpoint.tracetoken;
 
+import com.google.auto.value.AutoValue;
+
 import javax.annotation.Nullable;
 import java.util.UUID;
 
+import static java.lang.Thread.currentThread;
+
+/**
+ * Utility class for managing the trace token, a request identifier associated
+ * with a thread while the thread is handling the request.
+ */
 public final class TraceTokenManager
 {
-    private static final ThreadLocal<String> token = new ThreadLocal<>();
+    private static final ThreadLocal<TokenState> token = new ThreadLocal<>();
 
     private TraceTokenManager()
     {}
 
+    /**
+     * Associate a given trace token with the current thread.
+     *
+     * @param token The token to associate with the current thread, or null to
+     * remove the thread's token.
+     * @return a TraceTokenScope which may be used to restore the thread's
+     * previous association. Intended to be used with try-with-resources:
+     * <code>
+     * try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
+     *     // process request
+     * }
+     * </code>
+     */
     public static TraceTokenScope registerRequestToken(@Nullable String token)
     {
-        String oldToken = TraceTokenManager.token.get();
-        TraceTokenManager.token.set(token);
-        return new TraceTokenScope(oldToken);
+        TokenState oldToken = TraceTokenManager.token.get();
+
+        String oldThreadName;
+        if (oldToken == null) {
+            oldThreadName = currentThread().getName();
+        }
+        else {
+            oldThreadName = oldToken.getOldThreadName();
+        }
+
+        if (token == null) {
+            TraceTokenManager.token.set(null);
+            currentThread().setName(oldThreadName);
+        }
+        else {
+            TraceTokenManager.token.set(new AutoValue_TraceTokenManager_TokenState(token, oldThreadName));
+            currentThread().setName(oldThreadName + " " + token);
+        }
+
+        if (oldToken == null) {
+            return new TraceTokenScope(null);
+        }
+        else {
+            return new TraceTokenScope(oldToken.getToken());
+        }
     }
 
+    /**
+     * @return The current thread's trace token, or null if no token.
+     */
+    @Nullable
     public static String getCurrentRequestToken()
     {
-        return token.get();
+        TokenState tokenState = token.get();
+        if (tokenState == null) {
+            return null;
+        }
+        return tokenState.getToken();
     }
 
+    /**
+     * Create and register a new trace token.
+     * @return The created token.
+     */
     public static String createAndRegisterNewRequestToken()
     {
         String newToken = UUID.randomUUID().toString();
@@ -45,8 +100,23 @@ public final class TraceTokenManager
         return newToken;
     }
 
+    /**
+     * Remove the thread's token.
+     */
     public static void clearRequestToken()
     {
+        TokenState oldToken = TraceTokenManager.token.get();
         token.remove();
+        if (oldToken != null) {
+            currentThread().setName(oldToken.getOldThreadName());
+        }
+    }
+
+    @AutoValue
+    abstract static class TokenState
+    {
+        abstract String getToken();
+
+        abstract String getOldThreadName();
     }
 }
