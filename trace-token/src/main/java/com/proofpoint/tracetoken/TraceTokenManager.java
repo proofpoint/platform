@@ -22,6 +22,10 @@ import java.util.UUID;
 
 import static java.lang.Thread.currentThread;
 
+/**
+ * Utility class for managing the trace token, a request identifier associated
+ * with a thread while the thread is handling the request.
+ */
 public final class TraceTokenManager
 {
     private static final ThreadLocal<TokenState> token = new ThreadLocal<>();
@@ -29,6 +33,19 @@ public final class TraceTokenManager
     private TraceTokenManager()
     {}
 
+    /**
+     * Associate a given trace token with the current thread.
+     *
+     * @param token The token to associate with the current thread, or null to
+     * remove the thread's token.
+     * @return a TraceTokenScope which may be used to restore the thread's
+     * previous association. Intended to be used with try-with-resources:
+     * <code>
+     * try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
+     *     // process request
+     * }
+     * </code>
+     */
     public static TraceTokenScope registerRequestToken(@Nullable String token)
     {
         TokenState oldToken = TraceTokenManager.token.get();
@@ -58,6 +75,9 @@ public final class TraceTokenManager
         }
     }
 
+    /**
+     * @return The current thread's trace token, or null if no token.
+     */
     @Nullable
     public static String getCurrentRequestToken()
     {
@@ -68,6 +88,10 @@ public final class TraceTokenManager
         return tokenState.getToken();
     }
 
+    /**
+     * Create and register a new trace token.
+     * @return The created token.
+     */
     public static String createAndRegisterNewRequestToken()
     {
         String newToken = UUID.randomUUID().toString();
@@ -76,6 +100,9 @@ public final class TraceTokenManager
         return newToken;
     }
 
+    /**
+     * Remove the thread's token.
+     */
     public static void clearRequestToken()
     {
         TokenState oldToken = TraceTokenManager.token.get();
