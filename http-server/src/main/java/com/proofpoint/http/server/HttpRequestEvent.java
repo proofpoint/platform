@@ -15,9 +15,6 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.proofpoint.event.client.EventField;
 import com.proofpoint.event.client.EventType;
 import org.eclipse.jetty.server.Request;
@@ -25,9 +22,9 @@ import org.eclipse.jetty.server.Response;
 import org.joda.time.DateTime;
 
 import java.security.Principal;
-import java.util.Enumeration;
 
 import static com.proofpoint.event.client.EventField.EventFieldMapping.TIMESTAMP;
+import static com.proofpoint.http.server.ClientInfoUtils.clientAddressFor;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 import static java.lang.Math.max;
 
@@ -64,32 +61,6 @@ public class HttpRequestEvent
 
         long timeToLastByte = max(currentTimeInMillis - request.getTimeStamp(), 0);
 
-        ImmutableList.Builder<String> builder = ImmutableList.builder();
-        for (Enumeration<String> e = request.getHeaders("X-FORWARDED-FOR"); e != null && e.hasMoreElements(); ) {
-            String forwardedFor = e.nextElement();
-            builder.addAll(Splitter.on(',').trimResults().omitEmptyStrings().split(forwardedFor));
-        }
-        if (request.getRemoteAddr() != null) {
-            builder.add(request.getRemoteAddr());
-        }
-        String clientAddress = null;
-        ImmutableList<String> clientAddresses = builder.build();
-        for (String address : Lists.reverse(clientAddresses)) {
-            try {
-                if (!Inet4Networks.isPrivateNetworkAddress(address)) {
-                    clientAddress = address;
-                    break;
-                }
-                clientAddress = address;
-            }
-            catch (IllegalArgumentException ignored) {
-                break;
-            }
-        }
-        if (clientAddress == null) {
-            clientAddress = request.getRemoteAddr();
-        }
-
         String requestUri = null;
         if (request.getHttpURI() != null) {
             requestUri = request.getHttpURI().getPathQuery();
@@ -111,7 +82,7 @@ public class HttpRequestEvent
         return new HttpRequestEvent(
                 new DateTime(request.getTimeStamp()),
                 token,
-                clientAddress,
+                clientAddressFor(request),
                 protocol,
                 method,
                 requestUri,
