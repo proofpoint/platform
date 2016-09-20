@@ -14,6 +14,10 @@ Platform 1.43
   - TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
   - SSL_RSA_WITH_3DES_EDE_CBC_SHA
 
+* Library Upgrades
+
+  - Jetty to 9.3.11 (from 9.3.7)
+
 Platform 1.42
 
 * Due to reports of random client request corruption, we reverted jetty
