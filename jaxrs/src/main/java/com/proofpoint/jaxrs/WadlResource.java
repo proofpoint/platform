@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.google.common.base.Throwables.propagate;
 
 @Path("/admin/wadl")
+@AccessDoesNotRequireAuthentication
 public class WadlResource
 {
     private final AtomicReference<org.glassfish.jersey.server.wadl.internal.WadlResource> wadlResource = new AtomicReference<>();

@@ -17,6 +17,7 @@ package com.proofpoint.jmx;
 
 import com.google.inject.Inject;
 import com.proofpoint.discovery.client.announce.Announcer;
+import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 import com.proofpoint.log.Logger;
 
 import javax.ws.rs.HeaderParam;
@@ -26,6 +27,7 @@ import javax.ws.rs.Path;
 import static java.util.Objects.requireNonNull;
 
 @Path("/admin/stop-announcing")
+@AccessDoesNotRequireAuthentication
 public class StopAnnouncingResource
 {
     private static final Logger log = Logger.get(StopAnnouncingResource.class);

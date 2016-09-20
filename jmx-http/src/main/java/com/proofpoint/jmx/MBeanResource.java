@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 
 import javax.management.JMException;
 import javax.management.MBeanServer;
@@ -31,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 @Path("/admin/jmx/mbean")
+@AccessDoesNotRequireAuthentication
 public class MBeanResource
 {
     private final MBeanServer mbeanServer;

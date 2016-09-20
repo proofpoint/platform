@@ -14,6 +14,13 @@ Platform 1.43
   - TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
   - SSL_RSA_WITH_3DES_EDE_CBC_SHA
 
+* JAX-RS
+
+  We created the @AccessDoesNotRequireAuthentication annotation for use by
+  JAX-RS request filters which would otherwise require authentication to
+  access a JAX-RS resource. We annotated several Platform-provided JAX-RS
+  resources with this annotation.
+
 * Library Upgrades
 
   - Jetty to 9.3.11 (from 9.3.7)
