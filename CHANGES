@@ -16,6 +16,9 @@ Platform 1.43
 
 * JAX-RS
 
+  We added support for a ClientInfo @Context parameter for getting the client
+  IP address, following the X-Forwarded-For: header.
+
   We created the @AccessDoesNotRequireAuthentication annotation for use by
   JAX-RS request filters which would otherwise require authentication to
   access a JAX-RS resource. We annotated several Platform-provided JAX-RS
