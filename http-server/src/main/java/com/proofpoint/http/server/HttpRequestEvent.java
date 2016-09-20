@@ -31,9 +31,17 @@ import static com.proofpoint.event.client.EventField.EventFieldMapping.TIMESTAMP
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 import static java.lang.Math.max;
 
+/**
+ * @deprecated Will no longer be public.
+ */
 @EventType("HttpRequest")
+@Deprecated
 public class HttpRequestEvent
 {
+    /**
+     * @deprecated Will no longer be public.
+     */
+    @Deprecated
     public static HttpRequestEvent createHttpRequestEvent(Request request, Response response, long currentTimeInMillis)
     {
         String user = null;
@@ -139,6 +147,10 @@ public class HttpRequestEvent
     private final Long timeToFirstByte;
     private final long timeToLastByte;
 
+    /**
+     * @deprecated Will no longer be public.
+     */
+    @Deprecated
     public HttpRequestEvent(DateTime timeStamp,
             String traceToken,
             String clientAddress,

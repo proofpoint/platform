@@ -9,6 +9,8 @@ Platform 1.43
   - TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
   - SSL_RSA_WITH_3DES_EDE_CBC_SHA
 
+* We deprecated HttpRequestEvent.
+
 Platform 1.42
 
 * Due to reports of random client request corruption, we reverted jetty
