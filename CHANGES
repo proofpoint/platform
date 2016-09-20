@@ -21,6 +21,8 @@ Platform 1.43
   access a JAX-RS resource. We annotated several Platform-provided JAX-RS
   resources with this annotation.
 
+* We deprecated HttpRequestEvent.
+
 * Library Upgrades
 
   - Jetty to 9.3.11 (from 9.3.7)
