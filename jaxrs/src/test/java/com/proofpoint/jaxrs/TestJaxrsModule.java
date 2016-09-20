@@ -126,6 +126,22 @@ public class TestJaxrsModule
         assertContains(response.getBody(), SECOND_INJECTED_MESSSAGE);
     }
 
+    @Test
+    public void testClientInfo()
+        throws Exception
+    {
+        createServer(binder -> jaxrsBinder(binder).bind(ClientInfoResource.class));
+
+        Request request = Request.builder()
+                            .setUri(server.getBaseUrl().resolve("/test"))
+                            .setMethod("GET")
+                            .setHeader("X-FORWARDED-FOR", "1.2.3.4")
+                            .build();
+        StringResponse response = client.execute(request, createStringResponseHandler());
+        assertEquals(response.getBody(), "1.2.3.4", "Response body");
+
+    }
+
     private void createServer(Module module)
             throws Exception
     {

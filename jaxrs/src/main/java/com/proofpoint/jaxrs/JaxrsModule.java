@@ -26,6 +26,7 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
+import com.proofpoint.http.server.ClientInfo;
 import com.proofpoint.http.server.TheAdminServlet;
 import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.log.Logger;
@@ -96,6 +97,7 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(TimingResourceDynamicFeature.class);
         jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
         jaxrsBinder(binder).bind(InRotationResource.class);
+        jaxrsBinder(binder).bindInjectionProvider(ClientInfo.class).to(ClientInfoSupplier.class);
         jaxrsBinder(binder).bindAdmin(ParsingExceptionMapper.class);
         jaxrsBinder(binder).bindAdmin(QueryParamExceptionMapper.class);
         jaxrsBinder(binder).bindAdmin(OverrideMethodFilter.class);
