@@ -23,6 +23,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.testng.Assert;
+import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -1713,7 +1714,7 @@ public abstract class AbstractHttpClientTest
                 }
                 i++;
             }
-            fail(format("socket backlog is too large (%s connections accepted)", i));
+            throw new SkipException(format("socket backlog is too large (%s connections accepted)", i));
         }
 
         @Override
