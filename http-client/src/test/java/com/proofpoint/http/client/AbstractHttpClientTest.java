@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.google.common.base.Throwables.getStackTraceAsString;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.base.Throwables.propagateIfInstanceOf;
 import static com.google.common.base.Throwables.propagateIfPossible;
@@ -243,7 +244,7 @@ public abstract class AbstractHttpClientTest
             catch (CapturedException e) {
                 Throwable t = e.getCause();
                 if (!isConnectTimeout(t)) {
-                    fail("unexpected exception: " + t);
+                    fail(format("unexpected exception: [%s]", getStackTraceAsString(t)));
                 }
                 assertLessThan(nanosSince(start), new Duration(300, MILLISECONDS));
             }
