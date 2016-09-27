@@ -75,7 +75,7 @@ public class TestFullJsonResponseHandler
         assertEquals(response.getException().getMessage(), format("Unable to create %s from JSON response:\n[%s]", User.class, json));
         assertInstanceOf(response.getException().getCause(), IllegalArgumentException.class);
 
-        assertEquals(response.getException().getCause().getMessage(), "Invalid json bytes for [simple type, class com.proofpoint.http.client.TestFullJsonResponseHandler$User]");
+        assertEquals(response.getException().getCause().getMessage(), "Invalid JSON bytes for [simple type, class com.proofpoint.http.client.TestFullJsonResponseHandler$User]");
         assertEquals(response.getJson(), json);
 
         assertEquals(response.getResponseBytes(), response.getJsonBytes());
