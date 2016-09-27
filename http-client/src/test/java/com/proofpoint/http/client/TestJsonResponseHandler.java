@@ -14,6 +14,7 @@ import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseH
 import static com.proofpoint.http.client.TestFullJsonResponseHandler.User;
 import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
+import static java.lang.String.format;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -52,7 +53,7 @@ public class TestJsonResponseHandler
             handler.handle(null, mockResponse().contentType(JSON_UTF_8).body(json).build());
         }
         catch (IllegalArgumentException e) {
-            assertEquals(e.getMessage(), "Unable to create " + User.class + " from JSON response:\n" + json);
+            assertEquals(e.getMessage(), format("Unable to create %s from JSON response:\n[%s]", User.class, json));
             assertInstanceOf(e.getCause(), IllegalArgumentException.class);
             assertEquals(e.getCause().getMessage(), "Invalid json bytes for [simple type, class com.proofpoint.http.client.TestFullJsonResponseHandler$User]");
         }

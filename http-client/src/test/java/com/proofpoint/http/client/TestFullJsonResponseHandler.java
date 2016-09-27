@@ -17,6 +17,7 @@ import static com.proofpoint.http.client.FullJsonResponseHandler.createFullJsonR
 import static com.proofpoint.http.client.HttpStatus.INTERNAL_SERVER_ERROR;
 import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
+import static java.lang.String.format;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -71,8 +72,7 @@ public class TestFullJsonResponseHandler
         JsonResponse<User> response = handler.handle(null, mockResponse().contentType(JSON_UTF_8).body(json).build());
 
         assertFalse(response.hasValue());
-        assertEquals(response.getException().getMessage(),
-                "Unable to create " + User.class + " from JSON response:\n" + json);
+        assertEquals(response.getException().getMessage(), format("Unable to create %s from JSON response:\n[%s]", User.class, json));
         assertInstanceOf(response.getException().getCause(), IllegalArgumentException.class);
 
         assertEquals(response.getException().getCause().getMessage(), "Invalid json bytes for [simple type, class com.proofpoint.http.client.TestFullJsonResponseHandler$User]");
