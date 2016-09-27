@@ -32,6 +32,7 @@ import java.util.Optional;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 public class JsonCodec<T>
 {
@@ -144,7 +145,7 @@ public class JsonCodec<T>
             return mapper.readValue(json, javaType);
         }
         catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Invalid json string for %s", javaType), e);
+            throw new IllegalArgumentException(format("Invalid JSON string for %s", javaType), e);
         }
     }
 
@@ -162,7 +163,7 @@ public class JsonCodec<T>
             return mapper.writeValueAsString(instance);
         }
         catch (IOException e) {
-            throw new IllegalArgumentException(String.format("%s could not be converted to json", instance.getClass().getName()), e);
+            throw new IllegalArgumentException(format("%s could not be converted to JSON", instance.getClass().getName()), e);
         }
     }
 
@@ -185,7 +186,7 @@ public class JsonCodec<T>
             return Optional.empty();
         }
         catch (IOException e) {
-            throw new IllegalArgumentException(String.format("%s could not be converted to json", instance.getClass().getName()), e);
+            throw new IllegalArgumentException(format("%s could not be converted to JSON", instance.getClass().getName()), e);
         }
     }
 
@@ -203,7 +204,7 @@ public class JsonCodec<T>
             return mapper.readValue(json, javaType);
         }
         catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Invalid json bytes for %s", javaType), e);
+            throw new IllegalArgumentException(format("Invalid JSON bytes for %s", javaType), e);
         }
     }
 
@@ -221,7 +222,7 @@ public class JsonCodec<T>
             return mapper.writeValueAsBytes(instance);
         }
         catch (IOException e) {
-            throw new IllegalArgumentException(String.format("%s could not be converted to json", instance.getClass().getName()), e);
+            throw new IllegalArgumentException(format("%s could not be converted to JSON", instance.getClass().getName()), e);
         }
     }
 
