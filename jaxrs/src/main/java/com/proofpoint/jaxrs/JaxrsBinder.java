@@ -99,6 +99,7 @@ public class JaxrsBinder
         return registerJaxRsBinding(Key.get(implementation));
     }
 
+    @Deprecated
     public PrefixedJaxrsBinder bind(TypeLiteral<?> implementation)
     {
         binder.bind(implementation).in(SINGLETON);
@@ -106,6 +107,7 @@ public class JaxrsBinder
         return registerJaxRsBinding(Key.get(implementation));
     }
 
+    @Deprecated
     public PrefixedJaxrsBinder bind(Key<?> targetKey)
     {
         binder.bind(targetKey).in(SINGLETON);
@@ -132,6 +134,7 @@ public class JaxrsBinder
         return registerJaxRsBinding(Key.get(implementation));
     }
 
+    @Deprecated
     public PrefixedJaxrsBinder bindAdmin(TypeLiteral<?> implementation)
     {
         binder.bind(implementation).in(SINGLETON);
@@ -139,6 +142,7 @@ public class JaxrsBinder
         return registerJaxRsBinding(Key.get(implementation));
     }
 
+    @Deprecated
     public PrefixedJaxrsBinder bindAdmin(Key<?> targetKey)
     {
         binder.bind(targetKey).in(SINGLETON);

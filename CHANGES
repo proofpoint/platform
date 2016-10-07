@@ -6,6 +6,9 @@ Platform 1.44
   causes the reported metrics to have names prefixed with the application
   name.
 
+  We deprecated the nonsensical JaxrsBinder.bind(TypeLiteral<?>),
+  JaxrsBinder.bind(Key<?>), and their corresponding bindAdmin methods.
+
 * HTTP/2 support
 
   The HTTP server now has experimental support for the HTTP/2
