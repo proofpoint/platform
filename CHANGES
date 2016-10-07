@@ -1,5 +1,11 @@
 Platform 1.44
 
+* JAX-RS
+
+  The JaxrsBinder EDSL now supports a .withApplicationPrefix() method which
+  causes the reported metrics to have names prefixed with the application
+  name.
+
 * HTTP/2 support
 
   The HTTP server now has experimental support for the HTTP/2

@@ -28,6 +28,7 @@ import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
 import java.lang.reflect.Method;
+import java.util.Set;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.Objects.requireNonNull;
@@ -36,21 +37,28 @@ import static java.util.Objects.requireNonNull;
 class TimingResourceDynamicFeature
         implements DynamicFeature
 {
+    private final Set<Class<?>> applicationPrefixedClasses;
     private final ReportCollectionFactory reportCollectionFactory;
-    private final LoadingCache<String, RequestStats> requestStatsLoadingCache = newBuilder()
-            .build(new CacheLoader<String, RequestStats>()
+    private final LoadingCache<Class<?>, RequestStats> requestStatsLoadingCache = newBuilder()
+            .build(new CacheLoader<Class<?>, RequestStats>()
             {
                 @Override
-                public RequestStats load(@Nonnull String namePrefix)
+                public RequestStats load(@Nonnull Class<?> resourceClass)
                 {
-                    return reportCollectionFactory.createReportCollection(RequestStats.class, false, namePrefix, ImmutableMap.of());
+                    return reportCollectionFactory.createReportCollection(
+                            RequestStats.class,
+                            applicationPrefixedClasses.contains(resourceClass),
+                            resourceClass.getSimpleName(),
+                            ImmutableMap.of()
+                    );
                 }
             });
 
     @Inject
-    public TimingResourceDynamicFeature(ReportCollectionFactory reportCollectionFactory)
+    public TimingResourceDynamicFeature(ReportCollectionFactory reportCollectionFactory, @JaxrsApplicationPrefixed Set<Class<?>> applicationPrefixedClasses)
     {
         this.reportCollectionFactory = requireNonNull(reportCollectionFactory, "reportCollectionFactory is null");
+        this.applicationPrefixedClasses = requireNonNull(applicationPrefixedClasses, "applicationPrefixedClasses is null");
     }
 
     @Override
@@ -67,7 +75,7 @@ class TimingResourceDynamicFeature
             return;
         }
 
-        RequestStats requestStats = requestStatsLoadingCache.getUnchecked(resourceClass.getSimpleName());
+        RequestStats requestStats = requestStatsLoadingCache.getUnchecked(resourceClass);
 
         featureContext.register(new TimingFilter(resourceMethod.getName(), requestStats));
     }
