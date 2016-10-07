@@ -6,6 +6,7 @@ Platform 1.47
 * Library Upgrades
 
   - Jetty to 9.3.14 (from 9.3.12)
+  - Guava to 20.0 (from 19.0)
 
 Platform 1.46
 
