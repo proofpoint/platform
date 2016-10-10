@@ -24,6 +24,7 @@ import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
+import com.proofpoint.reporting.Diagnostic;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 
@@ -170,6 +171,7 @@ public class BalancingHttpClient
         return httpClient.getStats();
     }
 
+    @Diagnostic
     @Managed
     public String dump()
     {

@@ -16,6 +16,7 @@
 package com.proofpoint.http.client;
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.CaseFormat;
 import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
@@ -33,10 +34,13 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 
+import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.reporting.DiagnosticBinder.diagnosticBinder;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
@@ -83,6 +87,7 @@ public class HttpClientBinder
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
         reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
+        diagnosticBinder(binder).export(HttpClient.class).annotatedWith(annotation).withNamePrefix("HttpClient." + LOWER_HYPHEN.to(UPPER_CAMEL, name));
         newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
@@ -101,6 +106,7 @@ public class HttpClientBinder
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
         reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
+        diagnosticBinder(binder).export(HttpClient.class).annotatedWith(annotation).withNamePrefix("HttpClient." + LOWER_HYPHEN.to(UPPER_CAMEL, name));
         newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
