@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.proofpoint.reporting.FieldHealthBeanAttribute.fieldHealthBeanAttribute;
 import static com.proofpoint.reporting.MethodHealthBeanAttribute.methodHealthBeanAttribute;
-import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
+import static com.proofpoint.reporting.ReflectionUtils.isNoArgsReturnsValue;
 import static java.util.Objects.requireNonNull;
 
 class HealthBeanAttributeBuilder
@@ -45,7 +45,7 @@ class HealthBeanAttributeBuilder
     HealthBeanAttributeBuilder withConcreteGetter(Method concreteGetter)
     {
         requireNonNull(concreteGetter, "concreteGetter is null");
-        checkArgument(isValidGetter(concreteGetter), "Method is not a valid getter: " + concreteGetter);
+        checkArgument(isNoArgsReturnsValue(concreteGetter), "Method is not a valid getter: " + concreteGetter);
         this.concreteGetter = concreteGetter;
         return this;
     }
@@ -53,7 +53,7 @@ class HealthBeanAttributeBuilder
     HealthBeanAttributeBuilder withAnnotatedGetter(Method annotatedGetter)
     {
         requireNonNull(annotatedGetter, "annotatedGetter is null");
-        checkArgument(isValidGetter(annotatedGetter), "Method is not a valid getter: " + annotatedGetter);
+        checkArgument(isNoArgsReturnsValue(annotatedGetter), "Method is not a valid getter: " + annotatedGetter);
         this.annotatedGetter = annotatedGetter;
         return this;
     }

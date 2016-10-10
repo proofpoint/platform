@@ -23,7 +23,7 @@ import java.util.Collections;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
+import static com.proofpoint.reporting.ReflectionUtils.isNoArgsReturnsValue;
 
 class ReportedBeanAttributeBuilder
 {
@@ -49,7 +49,7 @@ class ReportedBeanAttributeBuilder
     public ReportedBeanAttributeBuilder withConcreteGetter(Method concreteGetter)
     {
         checkNotNull(concreteGetter, "concreteGetter is null");
-        checkArgument(isValidGetter(concreteGetter), "Method is not a valid getter: " + concreteGetter);
+        checkArgument(isNoArgsReturnsValue(concreteGetter), "Method is not a valid getter: " + concreteGetter);
         this.concreteGetter = concreteGetter;
         return this;
     }
@@ -57,7 +57,7 @@ class ReportedBeanAttributeBuilder
     public ReportedBeanAttributeBuilder withAnnotatedGetter(Method annotatedGetter)
     {
         checkNotNull(annotatedGetter, "annotatedGetter is null");
-        checkArgument(isValidGetter(annotatedGetter), "Method is not a valid getter: " + annotatedGetter);
+        checkArgument(isNoArgsReturnsValue(annotatedGetter), "Method is not a valid getter: " + annotatedGetter);
         this.annotatedGetter = annotatedGetter;
         return this;
     }
