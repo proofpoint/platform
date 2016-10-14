@@ -28,6 +28,16 @@ Platform 1.44
   these objects now have a getHeaders() method that takes a field name
   and returns a list of field values.
 
+* Logging
+
+  We have created new configuration options "log.max-total-size" and
+  "http-server.log.max-total-size" for limiting the total amount of
+  space taken by archived log files.
+
+  As part of this change, we deprecated the existing Logging.logToFile() and
+  Logging.createFileAppender() methods for versions which take this new option
+  as an additional parameter.
+
 * HttpClient
 
   We added configuration options for specifying the certificate trust store.

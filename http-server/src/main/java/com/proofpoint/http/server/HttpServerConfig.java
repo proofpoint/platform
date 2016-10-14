@@ -60,6 +60,7 @@ public class HttpServerConfig
     private boolean logEnabled = true;
     private DataSize logMaxSegmentSize = new DataSize(100, Unit.MEGABYTE);
     private int logMaxHistory = 30;
+    private DataSize logMaxTotalSize = new DataSize(1, Unit.GIGABYTE);
 
     private Integer httpAcceptorThreads;
     private Integer httpSelectorThreads;
@@ -286,6 +287,7 @@ public class HttpServerConfig
     }
 
     @Config("http-server.log.max-size")
+    @ConfigDescription("Maximum size of a single request log file")
     public HttpServerConfig setLogMaxSegmentSize(DataSize logMaxSegmentSize)
     {
         this.logMaxSegmentSize = logMaxSegmentSize;
@@ -301,6 +303,19 @@ public class HttpServerConfig
     public HttpServerConfig setLogMaxHistory(int logMaxHistory)
     {
         this.logMaxHistory = logMaxHistory;
+        return this;
+    }
+
+    public DataSize getLogMaxTotalSize()
+    {
+        return logMaxTotalSize;
+    }
+
+    @Config("http-server.log.max-total-size")
+    @ConfigDescription("Maximum size of all archived request log files")
+    public HttpServerConfig setLogMaxTotalSize(DataSize logMaxTotalSize)
+    {
+        this.logMaxTotalSize = logMaxTotalSize;
         return this;
     }
 

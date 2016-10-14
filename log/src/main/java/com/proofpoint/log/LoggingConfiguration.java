@@ -16,6 +16,7 @@
 package com.proofpoint.log;
 
 import com.proofpoint.configuration.Config;
+import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
@@ -27,6 +28,7 @@ public class LoggingConfiguration
     private DataSize maxSegmentSize = new DataSize(100, Unit.MEGABYTE);
     private int maxHistory = 30;
     private String levelsFile = null;
+    private DataSize maxTotalSize = new DataSize(1, Unit.GIGABYTE);
 
     public boolean isConsoleEnabled()
     {
@@ -59,6 +61,7 @@ public class LoggingConfiguration
     }
 
     @Config("log.max-size")
+    @ConfigDescription("Maximum size of a single log file")
     public LoggingConfiguration setMaxSegmentSize(DataSize maxSegmentSize)
     {
         this.maxSegmentSize = maxSegmentSize;
@@ -93,6 +96,19 @@ public class LoggingConfiguration
     public LoggingConfiguration setLevelsFile(String levelsFile)
     {
         this.levelsFile = levelsFile;
+        return this;
+    }
+
+    public DataSize getMaxTotalSize()
+    {
+        return maxTotalSize;
+    }
+
+    @Config("log.max-total-size")
+    @ConfigDescription("Maximum size of all archived log files")
+    public LoggingConfiguration setMaxTotalSize(DataSize maxTotalSize)
+    {
+        this.maxTotalSize = maxTotalSize;
         return this;
     }
 }
