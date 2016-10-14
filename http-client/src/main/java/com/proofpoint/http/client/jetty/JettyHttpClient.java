@@ -333,7 +333,7 @@ public class JettyHttpClient
 
         // create jetty request and response listener
         HttpRequest jettyRequest = buildJettyRequest(request, bytesWritten);
-        InputStreamResponseListener listener = new InputStreamResponseListener(maxContentLength)
+        InputStreamResponseListener listener = new InputStreamResponseListener()
         {
             @Override
             public void onContent(Response response, ByteBuffer content)
