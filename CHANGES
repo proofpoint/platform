@@ -41,6 +41,7 @@ Platform 1.44
 
   - Jetty to 9.3.12 (from 9.3.11)
   - bval-jsr 1.1.1 (from bval-jsr303 0.5)
+  - logback to 1.1.7 (from 1.1.5)
 
 Platform 1.43
 
