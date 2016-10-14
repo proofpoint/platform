@@ -18,6 +18,8 @@ package com.proofpoint.http.server;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
+import com.proofpoint.units.DataSize;
+import com.proofpoint.units.DataSize.Unit;
 import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -98,7 +100,12 @@ public class TestDelimitedRequestLog
                 .appendTimeZoneOffset("Z", true, 2, 2)
                 .toFormatter();
         currentTimeMillisProvider = new MockCurrentTimeMillisProvider(timestamp + timeToLastByte);
-        logger = new DelimitedRequestLog(file.getAbsolutePath(), 1, 1_000_000_000, currentTimeMillisProvider);
+        HttpServerConfig httpServerConfig = new HttpServerConfig()
+                .setLogPath(file.getAbsolutePath())
+                .setLogMaxHistory(1)
+                .setLogMaxSegmentSize(new DataSize(1, Unit.MEGABYTE))
+                .setLogMaxTotalSize(new DataSize(1, Unit.GIGABYTE));
+        logger = new DelimitedRequestLog(httpServerConfig, currentTimeMillisProvider);
 
         when(principal.getName()).thenReturn(user);
         when(request.getTimeStamp()).thenReturn(timestamp);
