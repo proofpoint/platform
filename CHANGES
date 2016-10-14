@@ -28,9 +28,20 @@ Platform 1.44
   these objects now have a getHeaders() method that takes a field name
   and returns a list of field values.
 
+* Logging
+
+  We have created new configuration options "log.max-total-size" and
+  "http-server.log.max-total-size" for limiting the total amount of
+  space taken by archived log files.
+
+  As part of this change, we deprecated the existing Logging.logToFile() and
+  Logging.createFileAppender() methods for versions which take this new option
+  as an additional parameter.
+
 * Library Upgrades
 
   - Jetty to 9.3.12 (from 9.3.11)
+  - logback to 1.1.7 (from 1.1.5)
 
 Platform 1.43
 

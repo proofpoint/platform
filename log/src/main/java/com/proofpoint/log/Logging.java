@@ -21,10 +21,12 @@ import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
+import ch.qos.logback.core.util.FileSize;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
+import com.proofpoint.units.DataSize;
 
 import javax.annotation.concurrent.GuardedBy;
 import java.io.BufferedWriter;
@@ -55,6 +57,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
 import static com.proofpoint.log.Level.fromJulLevel;
+import static com.proofpoint.units.DataSize.Unit.BYTE;
+import static com.proofpoint.units.DataSize.Unit.GIGABYTE;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -145,12 +149,22 @@ public class Logging
         consoleHandler = null;
     }
 
+    /**
+     * @deprecated Use {@link #logToFile(String, int, DataSize, DataSize)}
+     */
+    @Deprecated
     @SuppressWarnings("MethodMayBeStatic")
     public void logToFile(String logPath, int maxHistory, long maxSizeInBytes)
     {
+        logToFile(logPath, maxHistory, new DataSize(maxSizeInBytes, BYTE), new DataSize(1, GIGABYTE));
+    }
+
+    @SuppressWarnings("MethodMayBeStatic")
+    public void logToFile(String logPath, int maxHistory, DataSize maxSize, DataSize maxTotalSize)
+    {
         log.info("Logging to %s", logPath);
 
-        RollingFileHandler rollingFileHandler = new RollingFileHandler(logPath, maxHistory, maxSizeInBytes);
+        RollingFileHandler rollingFileHandler = new RollingFileHandler(logPath, maxHistory, maxSize, maxTotalSize);
         ROOT.addHandler(rollingFileHandler);
     }
 
@@ -215,7 +229,16 @@ public class Logging
         instance.testingHandlers.clear();
     }
 
+    /**
+     * @deprecated Use {@link #createFileAppender(String, int, DataSize, DataSize, Encoder, Context)}
+     */
+    @Deprecated
     public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, long maxFileSizeInBytes, Encoder<T> encoder, Context context)
+    {
+        return createFileAppender(logPath, maxHistory, new DataSize(maxFileSizeInBytes, BYTE), new DataSize(1, GIGABYTE), encoder, context);
+    }
+
+    public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context)
     {
         recoverTempFiles(logPath);
 
@@ -226,13 +249,14 @@ public class Logging
         rollingPolicy.setContext(context);
         rollingPolicy.setFileNamePattern(logPath + "-%d{yyyy-MM-dd}.%i.log.gz");
         rollingPolicy.setMaxHistory(maxHistory);
+        rollingPolicy.setTotalSizeCap(new FileSize(maxTotalSize.toBytes()));
         rollingPolicy.setTimeBasedFileNamingAndTriggeringPolicy(triggeringPolicy);
         rollingPolicy.setParent(fileAppender);
         rollingPolicy.start();
 
         triggeringPolicy.setContext(context);
         triggeringPolicy.setTimeBasedRollingPolicy(rollingPolicy);
-        triggeringPolicy.setMaxFileSize(Long.toString(maxFileSizeInBytes));
+        triggeringPolicy.setMaxFileSize(Long.toString(maxFileSize.toBytes()));
         triggeringPolicy.start();
 
         fileAppender.setContext(context);
@@ -347,7 +371,7 @@ public class Logging
         }
 
         if (config.getLogPath() != null) {
-            logToFile(config.getLogPath(), config.getMaxHistory(), config.getMaxSegmentSize().toBytes());
+            logToFile(config.getLogPath(), config.getMaxHistory(), config.getMaxSegmentSize(), config.getMaxTotalSize());
             setupBootstrapLog(config);
         }
 

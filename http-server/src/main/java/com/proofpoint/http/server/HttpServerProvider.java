@@ -165,7 +165,6 @@ public class HttpServerProvider
     protected RequestLog createRequestLog(HttpServerConfig config)
             throws IOException
     {
-        // TODO: use custom (more easily-parseable) format
         File logFile = new File(config.getLogPath());
         if (logFile.exists() && !logFile.isFile()) {
             throw new IOException(format("Log path %s exists but is not a file", logFile.getAbsolutePath()));
@@ -176,6 +175,6 @@ public class HttpServerProvider
             throw new IOException(format("Cannot create %s and path does not already exist", logPath.getAbsolutePath()));
         }
 
-        return new DelimitedRequestLog(config.getLogPath(), config.getLogMaxHistory(), config.getLogMaxSegmentSize().toBytes());
+        return new DelimitedRequestLog(config, new SystemCurrentTimeMillisProvider());
     }
 }
