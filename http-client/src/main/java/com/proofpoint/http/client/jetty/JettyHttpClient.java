@@ -94,6 +94,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 public class JettyHttpClient
         implements com.proofpoint.http.client.HttpClient
 {
+    private static final Logger log = Logger.get(JettyHttpClient.class);
     private static final String[] ENABLED_PROTOCOLS = {"TLSv1", "TLSv1.1", "TLSv1.2"};
     private static final String[] ENABLED_CIPHERS = {
             "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
@@ -130,6 +131,7 @@ public class JettyHttpClient
     private final List<HttpRequestFilter> requestFilters;
     private final Exception creationLocation = new Exception();
     private final String name;
+    private final AtomicLong lastLoggedJettyState = new AtomicLong();
 
     public JettyHttpClient()
     {
@@ -333,7 +335,7 @@ public class JettyHttpClient
 
         // create jetty request and response listener
         HttpRequest jettyRequest = buildJettyRequest(request, bytesWritten);
-        InputStreamResponseListener listener = new InputStreamResponseListener(maxContentLength)
+        InputStreamResponseListener listener = new InputStreamResponseListener()
         {
             @Override
             public void onContent(Response response, ByteBuffer content)
@@ -363,6 +365,9 @@ public class JettyHttpClient
         }
         catch (ExecutionException e) {
             Throwable cause = e.getCause();
+            if (cause instanceof RejectedExecutionException) {
+                maybeLogJettyState();
+            }
             if (cause instanceof Exception) {
                 return responseHandler.handleException(request, (Exception) cause);
             }
@@ -390,6 +395,18 @@ public class JettyHttpClient
             recordRequestComplete(stats, request, requestStart, bytesWritten.get(), jettyResponse, responseStart);
         }
         return value;
+    }
+
+    private void maybeLogJettyState()
+    {
+        long lastLogged = lastLoggedJettyState.get();
+        long time = System.nanoTime();
+        if (lastLogged + 60_000_000_000L > time) {
+            return;
+        }
+        if (lastLoggedJettyState.compareAndSet(lastLogged, time)) {
+            log.warn("Received RejectedExecutionException. Jetty dump:\n%s", dump());
+        }
     }
 
     @Override
@@ -742,23 +759,21 @@ public class JettyHttpClient
         }
     }
 
-    private static class JettyResponseFuture<T, E extends Exception>
+    enum JettyAsyncHttpState
+    {
+        WAITING_FOR_CONNECTION,
+        SENDING_REQUEST,
+        WAITING_FOR_RESPONSE,
+        PROCESSING_RESPONSE,
+        DONE,
+        FAILED,
+        CANCELED
+    }
+
+    private class JettyResponseFuture<T, E extends Exception>
             extends AbstractFuture<T>
             implements HttpResponseFuture<T>
     {
-        public enum JettyAsyncHttpState
-        {
-            WAITING_FOR_CONNECTION,
-            SENDING_REQUEST,
-            WAITING_FOR_RESPONSE,
-            PROCESSING_RESPONSE,
-            DONE,
-            FAILED,
-            CANCELED
-        }
-
-        private static final Logger log = Logger.get(JettyResponseFuture.class);
-
         private final long requestStart = System.nanoTime();
         private final AtomicReference<JettyAsyncHttpState> state = new AtomicReference<>(JettyAsyncHttpState.WAITING_FOR_CONNECTION);
         private final Request request;
@@ -846,6 +861,9 @@ public class JettyHttpClient
             // give handler a chance to rewrite the exception or return a value instead
             if (throwable instanceof Exception) {
                 try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
+                    if (throwable instanceof RejectedExecutionException) {
+                        maybeLogJettyState();
+                    }
                     T value = responseHandler.handleException(request, (Exception) throwable);
                     // handler returned a value, store it in the future
                     state.set(JettyAsyncHttpState.DONE);

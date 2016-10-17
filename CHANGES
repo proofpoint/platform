@@ -9,6 +9,9 @@ Platform 1.44
   We deprecated the nonsensical JaxrsBinder.bind(TypeLiteral<?>),
   JaxrsBinder.bind(Key<?>), and their corresponding bindAdmin methods.
 
+* HttpClient will periodically log a dump of its state upon getting a
+  RejectedExecutionException.
+
 * HTTP/2 support
 
   The HTTP server now has experimental support for the HTTP/2
