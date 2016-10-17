@@ -40,6 +40,9 @@ Platform 1.44
 
 * HttpClient
 
+  HttpClient will periodically log a dump of its state upon getting a
+  RejectedExecutionException.
+
   We added configuration options for specifying the certificate trust store.
 
 * Configuration
