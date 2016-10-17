@@ -186,13 +186,14 @@ public abstract class AbstractHttpClientTest
         baseURI = new URI(scheme, null, host, connector.getLocalPort(), null, null, null);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void abstractTeardown()
             throws Exception
     {
         if (server != null) {
             server.stop();
         }
+        Logging.resetLogTesters();
     }
 
     @Test(enabled = false, description = "This takes over a minute to run")
@@ -1334,9 +1335,17 @@ public abstract class AbstractHttpClientTest
         final ClientTester clientTester = clientTester(createClientConfig()
                 .setMaxConnectionsPerServer(2)
                 .setMaxRequestsQueuedPerDestination(0));
+        final AtomicBoolean sawJettyDump = new AtomicBoolean();
 
         ExecutorService executor = newFixedThreadPool(3, threadsNamed("test-use-connections"));
         final CountDownLatch countDownLatch = new CountDownLatch(2);
+
+        // The logging test is unfortunately specific to the Jetty implementation
+        Logging.addLogTester(JettyHttpClient.class, (level, message, thrown) -> {
+            if (message.matches("(?s).*Jetty dump:.*")) {
+                sawJettyDump.set(true);
+            }
+        });
 
         for (int i = 0; i < 2; ++i) {
             executor.submit(() -> {
@@ -1353,6 +1362,8 @@ public abstract class AbstractHttpClientTest
         }
         catch (RejectedExecutionException ignored) {
         }
+
+        assertTrue(sawJettyDump.get(), "Saw dump in log");
 
         servlet.countDown();
         countDownLatch.await();
