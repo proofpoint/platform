@@ -16,7 +16,7 @@
 package com.proofpoint.jaxrs;
 
 import com.google.common.reflect.TypeToken;
-import org.apache.bval.jsr.ApacheValidationProvider;
+import org.apache.bval.jsr303.ApacheValidationProvider;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Valid;

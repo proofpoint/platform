@@ -17,7 +17,7 @@ package com.proofpoint.units;
 
 import com.google.common.base.Throwables;
 import com.proofpoint.testing.Assertions;
-import org.apache.bval.jsr.ApacheValidationProvider;
+import org.apache.bval.jsr303.ApacheValidationProvider;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

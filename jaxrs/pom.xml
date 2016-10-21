@@ -86,7 +86,7 @@
 
         <dependency>
             <groupId>org.apache.bval</groupId>
-            <artifactId>bval-jsr</artifactId>
+            <artifactId>bval-jsr303</artifactId>
         </dependency>
 
         <dependency>

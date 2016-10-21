@@ -35,7 +35,7 @@ import com.google.inject.spi.ProviderInstanceBinding;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
 import com.proofpoint.configuration.ConfigurationMetadata.InjectionPointMetaData;
 import com.proofpoint.configuration.Problems.Monitor;
-import org.apache.bval.jsr.ApacheValidationProvider;
+import org.apache.bval.jsr303.ApacheValidationProvider;
 
 import javax.inject.Provider;
 import javax.validation.ConstraintViolation;

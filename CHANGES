@@ -1,3 +1,7 @@
+Platform 1.45
+
+* Reverted bval-jsr 1.1.1 back to bval-jsr303 0.5
+
 Platform 1.44
 
 * JAX-RS
