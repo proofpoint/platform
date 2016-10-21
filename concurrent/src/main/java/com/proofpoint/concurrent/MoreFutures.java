@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Throwables.propagateIfInstanceOf;
 import static com.google.common.collect.Iterables.isEmpty;
@@ -32,6 +34,17 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public final class MoreFutures
 {
     private MoreFutures() { }
+
+    /**
+     * Attempts to unwrap a throwable that has been wrapped in a {@link CompletionException}.
+     */
+    public static Throwable unwrapCompletionException(Throwable throwable)
+    {
+        if (throwable instanceof CompletionException) {
+            return firstNonNull(throwable.getCause(), throwable);
+        }
+        return throwable;
+    }
 
     /**
      * Returns a future that can not be completed or canceled.

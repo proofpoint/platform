@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
@@ -24,6 +25,7 @@ import static com.proofpoint.concurrent.MoreFutures.toCompletableFuture;
 import static com.proofpoint.concurrent.MoreFutures.toListenableFuture;
 import static com.proofpoint.concurrent.MoreFutures.tryGetFutureValue;
 import static com.proofpoint.concurrent.MoreFutures.unmodifiableFuture;
+import static com.proofpoint.concurrent.MoreFutures.unwrapCompletionException;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -33,6 +35,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -44,6 +47,17 @@ public class TestMoreFutures
     public void tearDown()
     {
         executorService.shutdownNow();
+    }
+
+    @Test
+    public void testUnwrapCompletionException()
+    {
+        RuntimeException original = new RuntimeException();
+        assertSame(unwrapCompletionException(original), original);
+        assertSame(unwrapCompletionException(new CompletionException(original)), original);
+
+        CompletionException completion = new CompletionException(null);
+        assertSame(unwrapCompletionException(completion), completion);
     }
 
     @Test
