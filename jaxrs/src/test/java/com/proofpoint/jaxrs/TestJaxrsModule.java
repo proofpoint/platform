@@ -142,6 +142,21 @@ public class TestJaxrsModule
 
     }
 
+    @Test
+    public void testRedirectWithUnquotedSearch()
+        throws Exception
+    {
+        createServer(binder -> jaxrsBinder(binder).bind(RedirectResource.class));
+
+        Request request = Request.builder()
+                            .setUri(server.getBaseUrl().resolve("/test"))
+                            .setMethod("GET")
+                            .build();
+        StringResponse response = client.execute(request, createStringResponseHandler());
+        assertEquals(response.getHeader("Location"), "https://maps.example.com/maps?q=Dirtt&#43;Environmental&#43;Solutions&#43;Ltd", "Location header");
+
+    }
+
     private void createServer(Module module)
             throws Exception
     {

@@ -117,7 +117,10 @@ public class JaxrsModule
     public ResourceConfig createResourceConfig(Application application, @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap, WadlResource wadlResource)
     {
         ResourceConfig config = ResourceConfig.forApplication(application);
-        config.setProperties(ImmutableMap.of("jersey.config.server.wadl.disableWadl", "true"));
+        config.setProperties(ImmutableMap.of(
+                "jersey.config.server.wadl.disableWadl", "true",
+                "jersey.config.server.headers.location.relative.resolution.disabled", "true"
+        ));
         config.register(MultiPartFeature.class);
 
         config.register(new ContainerLifecycleListener()
