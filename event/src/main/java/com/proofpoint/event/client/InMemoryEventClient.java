@@ -17,6 +17,7 @@ package com.proofpoint.event.client;
 
 import com.google.common.collect.ImmutableList;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,16 +25,17 @@ import java.util.List;
 public class InMemoryEventClient
         extends AbstractEventClient
 {
+    @GuardedBy("this")
     private final List<Object> events = new ArrayList<>();
 
     @Override
-    protected <T> void postEvent(T event)
+    protected synchronized  <T> void postEvent(T event)
             throws IOException
     {
         events.add(event);
     }
 
-    public List<Object> getEvents()
+    public synchronized List<Object> getEvents()
     {
         return ImmutableList.copyOf(events);
     }
