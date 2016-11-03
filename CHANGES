@@ -1,3 +1,8 @@
+Platform 1.47
+
+* We added TraceTokenCopyingExecutor, which wraps an ExecutorService to copy
+  trace tokens into the destination thread for the duration of the call.
+
 Platform 1.46
 
 * We disabled JAX-RS resolution of relative URIs in the Location header, as
