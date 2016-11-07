@@ -9,6 +9,10 @@ Platform 1.47
 * HttpClient will periodically log a dump of its state upon getting a
   ClosedByInterruptException.
 
+* Library Upgrades
+
+  - Jetty to 9.3.14 (from 9.3.12)
+
 Platform 1.46
 
 * We disabled JAX-RS resolution of relative URIs in the Location header, as
