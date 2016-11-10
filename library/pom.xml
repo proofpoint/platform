@@ -545,12 +545,6 @@
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
-                <artifactId>dbpool</artifactId>
-                <version>1.28-SNAPSHOT</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.proofpoint.platform</groupId>
                 <artifactId>discovery</artifactId>
                 <version>1.47-SNAPSHOT</version>
             </dependency>
