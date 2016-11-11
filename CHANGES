@@ -8,6 +8,10 @@ Platform 1.48
   the BalancingHttpClient will call the ResponseHandler with the Request that
   was passed to the BalancingHttpClient.
 
+* Library Upgrades
+
+  - bval-jsr 1.1.2 (from bval-jsr303 0.5)
+
 Platform 1.47
 
 * We made the server refuse to start if the discovery client is configured to
