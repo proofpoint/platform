@@ -31,6 +31,14 @@ public class TraceTokenCopyingExecutor
         super(executor);
     }
 
+    /**
+     * Wraps an {@link ExecutorService} so that the trace token is copied from
+     * the submitter of a task to the thread performing the task while the
+     * task is run.
+     *
+     * @param executor The underlying {@link ExecutorService} to wrap.
+     * @return The {@link ExecutorService} which copies trace tokens.
+     */
     public static ExecutorService traceTokenCopyingExecutor(ExecutorService executor) {
         return new TraceTokenCopyingExecutor(executor);
     }
