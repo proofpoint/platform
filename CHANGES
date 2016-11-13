@@ -1,5 +1,8 @@
 Platform 1.47
 
+* We made the server refuse to start if the discovery client is configured to
+  announce an HTTPS service with an unqualified hostname.
+
 * We added TraceTokenCopyingExecutor, which wraps an ExecutorService to copy
   trace tokens into the destination thread for the duration of the call.
 

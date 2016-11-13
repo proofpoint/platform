@@ -19,6 +19,7 @@ import com.google.common.collect.Iterables;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
@@ -138,6 +139,22 @@ public class TestHttpAnnouncementBinder
         }));
 
         assertAnnouncement(announcements, announcement);
+    }
+
+    @Test(expectedExceptions = ProvisionException.class, expectedExceptionsMessageRegExp = ".*HttpServer's HTTPS URI host \"example\" must be a FQDN.*")
+    public void testHttpsAnnouncementFailsWithoutFqdn()
+    {
+        final StaticAnnouncementHttpServerInfoImpl httpServerInfo = new StaticAnnouncementHttpServerInfoImpl(
+                null,
+                null,
+                URI.create("https://example:4444")
+        );
+
+        Injector injector = createInjector(httpServerInfo);
+
+        injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
+        {
+        }));
     }
 
     private Injector createInjector(final StaticAnnouncementHttpServerInfoImpl httpServerInfo)

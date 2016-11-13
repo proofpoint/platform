@@ -20,6 +20,7 @@ import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
 import com.google.inject.Provider;
+import com.google.inject.ProvisionException;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
@@ -36,6 +37,7 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import org.weakref.jmx.ObjectNameBuilder;
 
 import java.lang.annotation.Annotation;
+import java.net.URI;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
@@ -213,8 +215,12 @@ public class DiscoveryBinder
                 builder.addProperty("http", httpServerInfo.getHttpUri().toString());
                 builder.addProperty("http-external", httpServerInfo.getHttpExternalUri().toString());
             }
-            if (httpServerInfo.getHttpsUri() != null) {
-                builder.addProperty("https", httpServerInfo.getHttpsUri().toString());
+            URI httpsUri = httpServerInfo.getHttpsUri();
+            if (httpsUri != null) {
+                if (!httpsUri.getHost().contains(".")) {
+                    throw new ProvisionException("HttpServer's HTTPS URI host \"" + httpsUri.getHost() + "\" must be a FQDN");
+                }
+                builder.addProperty("https", httpsUri.toString());
             }
             return builder.build();
         }
