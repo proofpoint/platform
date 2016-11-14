@@ -15,7 +15,6 @@
  */
 package com.proofpoint.bootstrap;
 
-import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -63,9 +62,81 @@ import static com.google.common.base.Preconditions.checkState;
  * <ul>
  *  <li>load, validate and bind configurations</li>
  *  <li>initialize logging</li>
- *  <li>set up bootstrap management</li>
+ *  <li>set up lifecycle management</li>
  *  <li>create an Guice injector</li>
  * </ul>
+ * <p>
+ * An application is started with an invocation such as:
+ * <pre>
+ *   try {
+ *       Injector injector = bootstrapApplication("nameOfApplication")
+ *               .withModules(
+ *                       new NodeModule(),
+ *                       new DiscoveryModule(),
+ *                       new HttpServerModule(),
+ *                       new JsonModule(),
+ *                       explicitJaxrsModule(),
+ *                       new MBeanModule(),
+ *                       new JmxModule(),
+ *                       new JmxHttpModule(),
+ *                       new LogJmxModule(),
+ *                       new ReportingModule(),
+ *                       new ReportingClientModule(),
+ *                       new MainModule()
+ *               )
+ *               .withApplicationDefaults(ImmutableMap.&lt;String, String&gt;builder()
+ *                       .put("http-server.http.enabled", "false")
+ *                       .put("http-server.https.enabled", "true")
+ *                       .put("http-server.https.port", "8443")
+ *                       .build()
+ *               )
+ *               .initialize();
+ *
+ *       injector.getInstance(Announcer.class).start();
+ *   }
+ *   catch (Throwable e) {
+ *       log.error(e);
+ *       System.exit(1);
+ *   }
+ * </pre>
+ *
+ * The configuration is read from a file specified by the "config" system property.
+ *
+ * <p>
+ * A unit test would start an application instance with an invocation such as:
+ * <pre>
+ *   &#64;BeforeMethod
+ *   public void setup()
+ *           throws Exception
+ *   {
+ *       Injector injector = bootstrapApplication("test-application")
+ *               .doNotInitializeLogging()
+ *               .withModules(
+ *                       new TestingNodeModule(),
+ *                       new TestingHttpServerModule(),
+ *                       new JsonModule(),
+ *                       explicitJaxrsModule(),
+ *                       new ReportingModule(),
+ *                       new TestingMBeanModule(),
+ *                       new MainModule()
+ *               )
+ *               .quiet()
+ *               .setRequiredConfigurationProperties(properties)
+ *               .initialize();
+ *
+ *       lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+ *       server = injector.getInstance(TestingHttpServer.class);
+ *   }
+ *
+ * &#64;AfterMethod(alwaysRun = true)
+ * public void teardown()
+ *         throws Exception
+ * {
+ *     if (lifeCycleManager != null) {
+ *         lifeCycleManager.stop();
+ *     }
+ * }
+ * </pre>
  */
 public class Bootstrap
 {
@@ -80,11 +151,25 @@ public class Bootstrap
 
     private boolean initialized = false;
 
+    /**
+     * Start building an object for starting an application.
+     *
+     * @param applicationName the lowercase hyphen-separated name of the application
+     * @return an intermediate object for initializing the application
+     */
     public static BootstrapBeforeModules bootstrapApplication(String applicationName)
     {
         return new StaticBootstrapBeforeModules(applicationName);
     }
 
+    /**
+     * Start building an object for starting an application whose name is dependent upon configuration.
+     *
+     * @param configClass the configuration class needed to determine the application name
+     * @param applicationNameFunction the {@link Function} to map from the configuration class
+     * to the lowercase hyphen-separated name of the application
+     * @return an intermediate object for initializing the application
+     */
     public static <T> BootstrapBeforeModules bootstrapApplication(Class<T> configClass, Function<T, String> applicationNameFunction)
     {
         return new DynamicBootstrapBeforeModules<>(configClass, applicationNameFunction);
@@ -108,7 +193,15 @@ public class Bootstrap
                 .build();
     }
 
-    @Beta
+    /**
+     * Set a configuration property for use by the application's configuration. The property
+     * must be consumed by configuration. Suppresses reading a configuration file.
+     * Intended for use in unit tests.
+     *
+     * @param key the name of the configuration property
+     * @param value the value of the configuration property
+     * @return the object, for chaining method calls.
+     */
     public Bootstrap setRequiredConfigurationProperty(String key, String value)
     {
         if (this.requiredConfigurationProperties == null) {
@@ -118,7 +211,14 @@ public class Bootstrap
         return this;
     }
 
-    @Beta
+    /**
+     * Set configuration properties for use by the application's configuration.
+     * All specified properties must be consumed by configuration.  Suppresses
+     * reading a configuration file. Intended for use in unit tests.
+     *
+     * @param requiredConfigurationProperties the configuration properties
+     * @return the object, for chaining method calls.
+     */
     public Bootstrap setRequiredConfigurationProperties(Map<String, String> requiredConfigurationProperties)
     {
         if (this.requiredConfigurationProperties == null) {
@@ -128,6 +228,17 @@ public class Bootstrap
         return this;
     }
 
+    /**
+     * Override the configuration parameter defaults with application-specific
+     * values. All specified properties must be consumed by configuration,
+     * though the values may be overridden by the application's configuration.
+     *
+     * An application would normally use this to, as a minimum, enable HTTPS
+     * by default and specify the application's ports.
+     *
+     * @param applicationDefaults properties specifying the application's defaults
+     * @return the object, for chaining method calls.
+     */
     public Bootstrap withApplicationDefaults(Map<String, String> applicationDefaults)
     {
         checkState(this.applicationDefaults == null, "applicationDefaults already specified");
@@ -135,18 +246,38 @@ public class Bootstrap
         return this;
     }
 
+    /**
+     * Suppress some logging, such as that of the configuration. Intended for
+     * use in unit tests.
+     *
+     * @return the object, for chaining method calls.
+     */
     public Bootstrap quiet()
     {
         this.quiet = true;
         return this;
     }
 
+    /**
+     * Set whether properties in configuration files must be consumed by
+     * configuration.
+     *
+     * @param requireExplicitBindings true if properties in configuration
+     * files must be consumed. Default true.
+     * @return the object, for chaining method calls.
+     */
     public Bootstrap requireExplicitBindings(boolean requireExplicitBindings)
     {
         this.requireExplicitBindings = requireExplicitBindings;
         return this;
     }
 
+    /**
+     * Initialize the application and start its lifecycle.
+     *
+     * @return the application's Guice injector
+     * @throws Exception
+     */
     public Injector initialize()
             throws Exception
     {
@@ -309,18 +440,35 @@ public class Bootstrap
     {
         protected boolean initializeLogging = true;
 
-        @Beta
+        /**
+         * Suppresses initialization of the logging subsystem. Intended for
+         * use by unit tests.
+         *
+         * @return the object, for chaining method calls.
+         */
         public BootstrapBeforeModules doNotInitializeLogging()
         {
             this.initializeLogging = false;
             return this;
         }
 
+        /**
+         * Specify the application's Guice Modules
+         *
+         * @param modules the application's Modules
+         * @return the object, for chaining method calls.
+         */
         public Bootstrap withModules(Module... modules)
         {
             return withModules(ImmutableList.copyOf(modules));
         }
 
+        /**
+         * Specify the application's Guice Modules
+         *
+         * @param modules the application's Modules
+         * @return the object, for chaining method calls.
+         */
         public abstract Bootstrap withModules(Iterable<? extends Module> modules);
     }
 

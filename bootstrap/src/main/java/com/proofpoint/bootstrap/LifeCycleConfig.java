@@ -16,6 +16,7 @@
 package com.proofpoint.bootstrap;
 
 import com.proofpoint.configuration.Config;
+import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.units.Duration;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -25,6 +26,7 @@ public class LifeCycleConfig
     private Duration stopTrafficDelay = new Duration(0, SECONDS);
 
     @Config("lifecycle.stop-traffic.delay")
+    @ConfigDescription("Amount of time to wait on shutdown after remove from load balancers before stop taking requests")
     public LifeCycleConfig setStopTrafficDelay(Duration stopTrafficDelay)
     {
         this.stopTrafficDelay = stopTrafficDelay;
