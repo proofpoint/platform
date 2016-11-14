@@ -15,6 +15,7 @@
  */
 package com.proofpoint.jaxrs;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -28,6 +29,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * Intended to be examined by any JAX-RS request filters that would otherwise
  * enforce an authentication requirement.
  */
+@Documented
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
 public @interface AccessDoesNotRequireAuthentication
