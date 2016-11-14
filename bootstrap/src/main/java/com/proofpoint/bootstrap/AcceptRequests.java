@@ -27,14 +27,16 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * after all @PostConstruct calls are done. This is intended to be applied to
  * methods that start accepting external requests into the service.
  * The method on which the AcceptRequests annotation is applied MUST fulfill
- * all of the following criteria -
- * - The method MUST NOT have any parameters.
- * - The return type of the method MUST be void.
- * - The method MUST NOT throw a checked exception.
- * - The method on which AcceptRequests is applied MAY be public, protected,
- * package private or private.
- * - The method MUST NOT be static except for the application client.
- * - The method MAY be final.
+ * all of the following criteria:
+ * <ul>
+ *     <li>The method MUST NOT have any parameters.</li>
+ *     <li>The return type of the method MUST be void.</li>
+ *     <li>The method MUST NOT throw a checked exception.</li>
+ *     <li>The method on which AcceptRequests is applied MAY be public, protected,
+ *     package private or private.</li>
+ *     <li>The method MUST NOT be static except for the application client.</li>
+ *     <li>The method MAY be final.</li>
+ * </ul>
  * @see javax.annotation.PreDestroy
  */
 @Documented

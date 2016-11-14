@@ -18,6 +18,7 @@ package com.proofpoint.bootstrap;
 import com.google.common.collect.Lists;
 import com.proofpoint.log.Logger;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.lang.annotation.Annotation;
@@ -34,7 +35,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Manages PostConstruct and PreDestroy life cycles
+ * Manages the startup and shutdown life cycle of the service.
+ *
+ * Maintains a list of managed instances. Calls annotated methods of those
+ * instances as documented in the {@link #start()} and {@link #stop()}
+ * methods.
  */
 public final class LifeCycleManager
 {
@@ -56,12 +61,12 @@ public final class LifeCycleManager
     }
 
     /**
-     * @param managedInstances list of objects that have life cycle annotations
-     * @param methodsMap existing or new methods map
+     * @param managedInstances initial list of objects that have life cycle annotations
+     * @param methodsMap cache of mappings from class to annotated methods. Use null to get a default implementation.
      * @param config configuration
      * @throws Exception exceptions starting instances (depending on mode)
      */
-    public LifeCycleManager(List<Object> managedInstances, LifeCycleMethodsMap methodsMap, LifeCycleConfig config)
+    public LifeCycleManager(List<Object> managedInstances, @Nullable LifeCycleMethodsMap methodsMap, LifeCycleConfig config)
             throws Exception
     {
         this.methodsMap = (methodsMap != null) ? methodsMap : new LifeCycleMethodsMap();
@@ -72,9 +77,7 @@ public final class LifeCycleManager
     }
 
     /**
-     * Returns the number of managed instances
-     *
-     * @return qty
+     * @return the number of managed instances
      */
     public int size()
     {
@@ -82,7 +85,11 @@ public final class LifeCycleManager
     }
 
     /**
-     * Start the life cycle - all instances will have their {@link javax.annotation.PostConstruct} method(s) called
+     * Start the life cycle:
+     * <ul>
+     *     <li>Call the {@link AcceptRequests} method(s) of all managed instances.</li>
+     *     <li>Install a shutdown hook to call {@link #stop()}.</li>
+     * </ul>
      *
      * @throws Exception errors
      */
@@ -127,7 +134,13 @@ public final class LifeCycleManager
     }
 
     /**
-     * Stop the life cycle - all instances will have their {@link javax.annotation.PreDestroy} method(s) called
+     * Stop the life cycle:
+     * <ul>
+     *     <li>Call the {@link StopTraffic} method(s) of all managed instances.</li>
+     *     <li>Wait the configured stop traffic delay.</li>
+     *     <li>Call in reverse order the {@link PreDestroy} method(s) of all managed instances with an {@link AcceptRequests} method.</li>
+     *     <li>Call in reverse order the {@link PreDestroy} method(s) of all other managed instances.</li>
+     * </ul>
      *
      * @throws Exception errors
      */
@@ -173,7 +186,7 @@ public final class LifeCycleManager
     }
 
     /**
-     * Add an additional managed instance
+     * Add an additional managed instance and call its {@link PostConstruct} method(s).
      *
      * @param instance instance to add
      * @throws Exception errors
