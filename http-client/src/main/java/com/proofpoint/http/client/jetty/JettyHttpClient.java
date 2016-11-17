@@ -67,6 +67,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -373,7 +374,7 @@ public class JettyHttpClient
         }
         catch (ExecutionException e) {
             Throwable cause = e.getCause();
-            if (cause instanceof RejectedExecutionException) {
+            if (cause instanceof RejectedExecutionException || cause instanceof ClosedByInterruptException) {
                 maybeLogJettyState();
             }
             if (cause instanceof Exception) {
