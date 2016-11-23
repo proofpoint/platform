@@ -470,6 +470,7 @@ public class Main
                 mainClassMethod.invoke(null, (Object) args.toArray(new String[0]));
             }
             catch (Throwable e) {
+                System.err.println("Main method " + mainClassMethod.getDeclaringClass() + "." + mainClassMethod.getName() + " threw " + e);
                 System.exit(STATUS_GENERIC_ERROR);
             }
         }
