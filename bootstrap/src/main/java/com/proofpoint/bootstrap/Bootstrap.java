@@ -128,14 +128,14 @@ import static com.google.common.base.Preconditions.checkState;
  *       server = injector.getInstance(TestingHttpServer.class);
  *   }
  *
- * &#64;AfterMethod(alwaysRun = true)
- * public void teardown()
- *         throws Exception
- * {
- *     if (lifeCycleManager != null) {
- *         lifeCycleManager.stop();
- *     }
- * }
+ *   &#64;AfterMethod(alwaysRun = true)
+ *   public void teardown()
+ *           throws Exception
+ *   {
+ *       if (lifeCycleManager != null) {
+ *           lifeCycleManager.stop();
+ *       }
+ *   }
  * </pre>
  */
 public class Bootstrap
