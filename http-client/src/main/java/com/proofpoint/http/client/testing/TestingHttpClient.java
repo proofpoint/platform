@@ -1,6 +1,5 @@
 package com.proofpoint.http.client.testing;
 
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -39,32 +38,14 @@ public class TestingHttpClient
 
     public TestingHttpClient(ExecutorService executor)
     {
-        this((Processor) (request) -> {
+        this((request) -> {
             throw new UnsupportedOperationException();
         }, executor);
-    }
-
-    /**
-     * @deprecated Use {@link TestingHttpClient(Processor)}
-     */
-    @Deprecated
-    public TestingHttpClient(Function<Request, Response> processor)
-    {
-        this(processor, MoreExecutors.sameThreadExecutor());
     }
 
     public TestingHttpClient(Processor processor)
     {
         this(processor, MoreExecutors.sameThreadExecutor());
-    }
-
-    /**
-     * @deprecated Use {@link TestingHttpClient(Processor, ExecutorService)}
-     */
-    @Deprecated
-    public TestingHttpClient(final Function<Request, Response> processor, ExecutorService executor)
-    {
-        this((Processor) processor::apply, executor);
     }
 
     public TestingHttpClient(Processor processor, ExecutorService executor)
