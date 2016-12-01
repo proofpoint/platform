@@ -1,12 +1,10 @@
 package com.proofpoint.http.client.testing;
 
-import com.google.common.base.Function;
 import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
 import com.proofpoint.http.client.HttpStatus;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
-import com.proofpoint.http.client.testing.TestingHttpClient.Processor;
 import org.testng.annotations.Test;
 
 import java.net.URI;
@@ -31,11 +29,10 @@ public class TestTestingHttpClient
                 .build();
         Response expectedResponse = mockResponse(HttpStatus.BAD_REQUEST);
 
-        TestingHttpClient client = new TestingHttpClient(
-                (Function<Request, Response>) input -> {
-                    assertSame(input, request);
-                    return expectedResponse;
-                });
+        TestingHttpClient client = new TestingHttpClient(input -> {
+            assertSame(input, request);
+            return expectedResponse;
+        });
         String result = client
                 .execute(request, new ResponseHandler<String, RuntimeException>()
                 {
@@ -66,11 +63,10 @@ public class TestTestingHttpClient
                 .build();
         Response expectedResponse = mockResponse(HttpStatus.BAD_REQUEST);
 
-        TestingHttpClient client = new TestingHttpClient(
-                (Function<Request, Response>) input -> {
-                    assertSame(input, request);
-                    return expectedResponse;
-                });
+        TestingHttpClient client = new TestingHttpClient(input -> {
+            assertSame(input, request);
+            return expectedResponse;
+        });
         HttpResponseFuture<String> future = client
                 .executeAsync(request, new ResponseHandler<String, RuntimeException>()
                 {
@@ -102,10 +98,9 @@ public class TestTestingHttpClient
 
         final RuntimeException expectedException = new RuntimeException("test exception");
 
-        TestingHttpClient client = new TestingHttpClient(
-                (Function<Request, Response>) input -> {
-                    throw expectedException;
-                });
+        TestingHttpClient client = new TestingHttpClient(input -> {
+            throw expectedException;
+        });
         HttpResponseFuture<String> future = client.executeAsync(request, new CaptureExceptionResponseHandler());
 
         try {
@@ -131,10 +126,9 @@ public class TestTestingHttpClient
         final RuntimeException testingException = new RuntimeException("test exception");
         final Object expectedResponse = new Object();
 
-        TestingHttpClient client = new TestingHttpClient(
-                (Function<Request, Response>) input -> {
-                    throw testingException;
-                });
+        TestingHttpClient client = new TestingHttpClient(input -> {
+            throw testingException;
+        });
         HttpResponseFuture<Object> future = client.executeAsync(request, new DefaultExceptionResponseHandler(testingException, expectedResponse));
 
         assertSame(future.get(), expectedResponse);
@@ -150,7 +144,7 @@ public class TestTestingHttpClient
                 .build();
         Response expectedResponse = mockResponse(HttpStatus.BAD_REQUEST);
 
-        TestingHttpClient client = new TestingHttpClient((Processor) input -> {
+        TestingHttpClient client = new TestingHttpClient(input -> {
             throw new UnsupportedOperationException();
         });
         client.execute(request, new ResponseHandler<String, RuntimeException>()
