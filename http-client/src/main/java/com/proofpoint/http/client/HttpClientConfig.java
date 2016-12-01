@@ -28,7 +28,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.concurrent.TimeUnit;
 
-@DefunctConfig({"http-client.max-connections"})
+@DefunctConfig({"http-client.max-connections", "http-client.keep-alive-interval"})
 public class HttpClientConfig
 {
     public static final String JAVAX_NET_SSL_KEY_STORE = "javax.net.ssl.keyStore";
@@ -39,7 +39,6 @@ public class HttpClientConfig
     private Duration connectTimeout = new Duration(1, TimeUnit.SECONDS);
     private Duration requestTimeout = null;
     private Duration idleTimeout = new Duration(1, TimeUnit.MINUTES);
-    private Duration keepAliveInterval = null;
     private int maxConnectionsPerServer = 20;
     private int maxRequestsQueuedPerDestination = 20;
     private DataSize maxContentLength = new DataSize(16, Unit.MEGABYTE);
@@ -88,20 +87,6 @@ public class HttpClientConfig
     public HttpClientConfig setIdleTimeout(Duration idleTimeout)
     {
         this.idleTimeout = idleTimeout;
-        return this;
-    }
-
-    @Deprecated
-    public Duration getKeepAliveInterval()
-    {
-        return keepAliveInterval;
-    }
-
-    @Deprecated
-    @Config("http-client.keep-alive-interval")
-    public HttpClientConfig setKeepAliveInterval(Duration keepAliveInterval)
-    {
-        this.keepAliveInterval = keepAliveInterval;
         return this;
     }
 
