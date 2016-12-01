@@ -33,14 +33,12 @@ final class RetryingResponseHandler<T, E extends Exception>
 {
     private static final Set<Integer> RETRYABLE_STATUS_CODES = ImmutableSet.of(408, 499, 500, 502, 503, 504, 598, 599);
     private static final Logger log = Logger.get(RetryingResponseHandler.class);
-    private final Request originalRequest;
     private final ResponseHandler<T, E> innerHandler;
     private final boolean finalAttempt;
     private final Cache<Class<? extends Exception>, Boolean> exceptionCache;
 
-    RetryingResponseHandler(Request originalRequest, ResponseHandler<T, E> innerHandler, boolean finalAttempt, Cache<Class<? extends Exception>, Boolean> exceptionCache)
+    RetryingResponseHandler(ResponseHandler<T, E> innerHandler, boolean finalAttempt, Cache<Class<? extends Exception>, Boolean> exceptionCache)
     {
-        this.originalRequest = originalRequest;
         this.innerHandler = innerHandler;
         this.finalAttempt = finalAttempt;
         this.exceptionCache = exceptionCache;
@@ -71,7 +69,7 @@ final class RetryingResponseHandler<T, E extends Exception>
         if (finalAttempt || !bodySourceRetryable(request)) {
             Object result;
             try {
-                result = innerHandler.handleException(originalRequest, exception);
+                result = innerHandler.handleException(request, exception);
             }
             catch (Exception e) {
                 throw new InnerHandlerException(e, exception);
@@ -97,7 +95,7 @@ final class RetryingResponseHandler<T, E extends Exception>
 
             Object result;
             try {
-                result = innerHandler.handle(originalRequest, response);
+                result = innerHandler.handle(request, response);
             }
             catch (Exception e) {
                 throw new InnerHandlerException(e, failureCategory);
@@ -106,7 +104,7 @@ final class RetryingResponseHandler<T, E extends Exception>
         }
 
         try {
-            return innerHandler.handle(originalRequest, response);
+            return innerHandler.handle(request, response);
         }
         catch (Exception e) {
             throw new InnerHandlerException(e, failureCategory);

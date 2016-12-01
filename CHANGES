@@ -1,3 +1,13 @@
+Platform 1.48
+
+* We changed the BalancingHttpClient to call the ResponseHandler with the
+  Request as made to the selected instance instead of the Request that was
+  passed to the BalancingHttpClient. That way, the ResponseHandler may inspect
+  the Request URI to determine which instance was used. In the case where the
+  HttpServiceBalancer threw an exception (such as ServiceUnavailableException)
+  the BalancingHttpClient will call the ResponseHandler with the Request that
+  was passed to the BalancingHttpClient.
+
 Platform 1.47
 
 * We made the server refuse to start if the discovery client is configured to

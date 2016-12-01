@@ -74,7 +74,7 @@ public class BalancingHttpClient
         }
         int attemptsLeft = maxAttempts;
 
-        RetryingResponseHandler<T, E> retryingResponseHandler = new RetryingResponseHandler<>(request, responseHandler, false, exceptionCache);
+        RetryingResponseHandler<T, E> retryingResponseHandler = new RetryingResponseHandler<>(responseHandler, false, exceptionCache);
 
         for (;;) {
             URI uri = attempt.getUri();
@@ -88,7 +88,7 @@ public class BalancingHttpClient
                     .build();
 
             if (attemptsLeft <= 1) {
-                retryingResponseHandler = new RetryingResponseHandler<>(request, responseHandler, true, exceptionCache);
+                retryingResponseHandler = new RetryingResponseHandler<>(responseHandler, true, exceptionCache);
             }
 
             --attemptsLeft;
@@ -146,7 +146,7 @@ public class BalancingHttpClient
 
     private <T, E extends Exception> void attemptQuery(RetryFuture<T, E> retryFuture, Request request, ResponseHandler<T, E> responseHandler, HttpServiceAttempt attempt, int attemptsLeft)
     {
-        RetryingResponseHandler<T, E> retryingResponseHandler = new RetryingResponseHandler<>(request, responseHandler, attemptsLeft <= 1, exceptionCache);
+        RetryingResponseHandler<T, E> retryingResponseHandler = new RetryingResponseHandler<>(responseHandler, attemptsLeft <= 1, exceptionCache);
 
         URI uri = attempt.getUri();
         if (!uri.toString().endsWith("/")) {
