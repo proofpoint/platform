@@ -1,5 +1,11 @@
 Platform 1.50
 
+* Deprecation removals
+
+  We removed the following deprecated features:
+
+  - The unused http-client.keep-alive-interval config option
+
 * Version numbers
 
   We added the application and Platform version numbers to NodeInfo.
