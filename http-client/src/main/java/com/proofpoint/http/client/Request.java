@@ -209,7 +209,6 @@ public class Request
          * @deprecated Use @{link #setBodySource(BodySource)}.
          */
         @Deprecated
-        @SuppressWarnings("deprecation")
         public Builder setBodyGenerator(StaticBodyGenerator bodyGenerator)
         {
             this.bodySource = bodyGenerator;
