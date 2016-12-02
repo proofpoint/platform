@@ -9,6 +9,8 @@ Platform 1.50
   - The TestingHttpClient constructors taking Function
   - The public TestingResponse constructors
   - TestingResponse.mockResponse(HttpStatus, MediaType, String)
+  - AsyncHttpClientModule
+  - HttpClientAsyncBindingBuilder
   - The unused http-client.keep-alive-interval config option
 
 * Version numbers
