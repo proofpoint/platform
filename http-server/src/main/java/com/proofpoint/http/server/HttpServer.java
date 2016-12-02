@@ -103,7 +103,6 @@ public class HttpServer
 
     private final Optional<ZonedDateTime> certificateExpiration;
 
-    @SuppressWarnings({"deprecation"})
     public HttpServer(HttpServerInfo httpServerInfo,
             NodeInfo nodeInfo,
             HttpServerConfig config,
