@@ -5,6 +5,8 @@ Platform 1.50
   We removed the following deprecated features:
 
   - The TestingHttpClient constructors taking Function
+  - The public TestingResponse constructors
+  - TestingResponse.mockResponse(HttpStatus, MediaType, String)
   - The unused http-client.keep-alive-interval config option
 
 * Version numbers
