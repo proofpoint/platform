@@ -1,7 +1,6 @@
 package com.proofpoint.http.client.testing;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
@@ -36,21 +35,12 @@ public class TestingResponse
     private final ListMultimap<HeaderName, String> headers;
     private final CountingInputStream countingInputStream;
 
-    /**
-     * @deprecated use {@link TestingResponse#mockResponse()}{@code .status(status).headers(header).body(bytes).build()}
-     */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public TestingResponse(HttpStatus status, ListMultimap<String, String> headers, byte[] bytes)
+    private TestingResponse(HttpStatus status, ListMultimap<String, String> headers, byte[] bytes)
     {
         this(status, headers, new ByteArrayInputStream(checkNotNull(bytes, "bytes is null")));
     }
 
-    /**
-     * @deprecated use {@link TestingResponse#mockResponse()}{@code .status(status).headers(header).body(input).build()}
-     */
-    @Deprecated
-    public TestingResponse(HttpStatus status, ListMultimap<String, String> headers, InputStream input)
+    private TestingResponse(HttpStatus status, ListMultimap<String, String> headers, InputStream input)
     {
         this.status = requireNonNull(status, "status is null");
         this.headers = ImmutableListMultimap.copyOf(toHeaderMap(checkNotNull(headers, "headers is null")));
@@ -106,20 +96,9 @@ public class TestingResponse
     /**
      * Returns a response with the specified status.
      */
-    @SuppressWarnings("deprecation")
     public static Response mockResponse(HttpStatus status)
     {
         return new TestingResponse(status, ImmutableListMultimap.<String, String>of(), new byte[0]);
-    }
-
-    /**
-     * @deprecated use {@link TestingResponse#mockResponse()}{@code .status(status).contentType(type).body(content).build()}
-     */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public static Response mockResponse(HttpStatus status, MediaType type, String content)
-    {
-        return new TestingResponse(status, contentType(type), content.getBytes(Charsets.UTF_8));
     }
 
     /**
@@ -251,7 +230,6 @@ public class TestingResponse
         /**
          * Returns a newly created TestingResponse.
          */
-        @SuppressWarnings("deprecation")
         public TestingResponse build()
         {
             if (status == null) {

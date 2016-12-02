@@ -15,7 +15,6 @@ import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
 import static com.proofpoint.http.client.FullJsonResponseHandler.JsonResponse;
 import static com.proofpoint.http.client.FullJsonResponseHandler.createFullJsonResponseHandler;
 import static com.proofpoint.http.client.HttpStatus.INTERNAL_SERVER_ERROR;
-import static com.proofpoint.http.client.HttpStatus.OK;
 import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static org.mockito.Matchers.any;
@@ -48,7 +47,7 @@ public class TestFullJsonResponseHandler
     {
         User user = new User("Joe", 25);
         String json = codec.toJson(user);
-        JsonResponse<User> response = handler.handle(null, mockResponse(OK, JSON_UTF_8, json));
+        JsonResponse<User> response = handler.handle(null, mockResponse().contentType(JSON_UTF_8).body(json).build());
 
         assertTrue(response.hasValue());
         assertEquals(response.getJsonBytes(), json.getBytes(UTF_8));
@@ -69,7 +68,7 @@ public class TestFullJsonResponseHandler
     public void testInvalidJson()
     {
         String json = "{\"age\": \"foo\"}";
-        JsonResponse<User> response = handler.handle(null, mockResponse(OK, JSON_UTF_8, json));
+        JsonResponse<User> response = handler.handle(null, mockResponse().contentType(JSON_UTF_8).body(json).build());
 
         assertFalse(response.hasValue());
         assertEquals(response.getException().getMessage(),
@@ -87,7 +86,7 @@ public class TestFullJsonResponseHandler
     public void testInvalidJsonGetValue()
     {
         String json = "{\"age\": \"foo\"}";
-        JsonResponse<User> response = handler.handle(null, mockResponse(OK, JSON_UTF_8, json));
+        JsonResponse<User> response = handler.handle(null, mockResponse().contentType(JSON_UTF_8).body(json).build());
 
         try {
             response.getValue();
@@ -108,7 +107,7 @@ public class TestFullJsonResponseHandler
     @Test
     public void testNonJsonResponse()
     {
-        JsonResponse<User> response = handler.handle(null, mockResponse(OK, PLAIN_TEXT_UTF_8, "hello"));
+        JsonResponse<User> response = handler.handle(null, mockResponse().contentType(PLAIN_TEXT_UTF_8).body("hello").build());
 
         assertFalse(response.hasValue());
         assertNull(response.getException());
@@ -139,7 +138,7 @@ public class TestFullJsonResponseHandler
     public void testJsonErrorResponse()
     {
         String json = "{\"error\": true}";
-        JsonResponse<User> response = handler.handle(null, mockResponse(INTERNAL_SERVER_ERROR, JSON_UTF_8, json));
+        JsonResponse<User> response = handler.handle(null, mockResponse().status(INTERNAL_SERVER_ERROR).contentType(JSON_UTF_8).body(json).build());
 
         assertTrue(response.hasValue());
         assertEquals(response.getJson(), json);

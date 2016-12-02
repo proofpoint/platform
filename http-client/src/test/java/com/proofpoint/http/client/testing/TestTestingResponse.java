@@ -35,17 +35,6 @@ public class TestTestingResponse
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    public void testStringContent()
-    {
-        assertResponse(mockResponse(HttpStatus.ENHANCE_YOUR_CALM, MediaType.TEXT_JAVASCRIPT_UTF_8, "neé"),
-                HttpStatus.ENHANCE_YOUR_CALM,
-                ImmutableListMultimap.of("Content-Type", "text/javascript; charset=utf-8"),
-                new byte[] { 'n', 'e', -61, -87}
-        );
-    }
-
-    @Test
     public void testBuilderDefault()
     {
         assertResponse(mockResponse().build(), HttpStatus.NO_CONTENT, ImmutableListMultimap.of(), new byte[0]);

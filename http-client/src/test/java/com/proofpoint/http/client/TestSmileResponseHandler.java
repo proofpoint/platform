@@ -92,7 +92,7 @@ public class TestSmileResponseHandler
     public void testJsonErrorResponse()
     {
         String json = "{\"error\": true}";
-        handler.handle(null, mockResponse(INTERNAL_SERVER_ERROR, JSON_UTF_8, json));
+        handler.handle(null, mockResponse().status(INTERNAL_SERVER_ERROR).contentType(JSON_UTF_8).body(json).build());
     }
 
     @Test

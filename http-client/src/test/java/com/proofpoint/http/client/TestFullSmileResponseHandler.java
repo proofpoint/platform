@@ -99,7 +99,7 @@ public class TestFullSmileResponseHandler
     @Test
     public void testNonSmileResponse()
     {
-        SmileResponse<User> response = handler.handle(null, mockResponse(OK, PLAIN_TEXT_UTF_8, "hello"));
+        SmileResponse<User> response = handler.handle(null, mockResponse().contentType(PLAIN_TEXT_UTF_8).body("hello").build());
 
         assertFalse(response.hasValue());
         assertNull(response.getException());
