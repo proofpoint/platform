@@ -4,6 +4,8 @@ Platform 1.50
 
   We removed the following deprecated features:
 
+  - @ConfigMap
+  - ConfigurationModule.registerConfigurationClasses(Module)
   - The TestingHttpClient constructors taking Function
   - The public TestingResponse constructors
   - TestingResponse.mockResponse(HttpStatus, MediaType, String)
