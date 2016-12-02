@@ -130,15 +130,6 @@ public final class ConfigurationFactory
         return initialErrors;
     }
 
-    /**
-     * Registers all configuration classes in the module so they can be part of configuration inspection.
-     */
-    @Deprecated
-    public void registerConfigurationClasses(Module module)
-    {
-        registeredProviders.addAll(getAllProviders(module));
-    }
-
     Iterable<ConfigurationProvider<?>> getConfigurationProviders()
     {
         return ImmutableList.copyOf(registeredProviders);
@@ -648,32 +639,5 @@ public final class ConfigurationFactory
             this.instance = instance;
             this.problems = problems;
         }
-    }
-
-    private static List<ConfigurationProvider<?>> getAllProviders(Module... modules)
-    {
-        final List<ConfigurationProvider<?>> providers = Lists.newArrayList();
-
-        ElementsIterator elementsIterator = new ElementsIterator(modules);
-        for (final Element element : elementsIterator) {
-            element.acceptVisitor(new DefaultElementVisitor<Void>()
-            {
-                @Override
-                public <T> Void visit(Binding<T> binding)
-                {
-                    // look for ConfigurationProviders...
-                    if (binding instanceof ProviderInstanceBinding) {
-                        ProviderInstanceBinding<?> providerInstanceBinding = (ProviderInstanceBinding<?>) binding;
-                        Provider<?> provider = providerInstanceBinding.getUserSuppliedProvider();
-                        if (provider instanceof ConfigurationProvider) {
-                            ConfigurationProvider<?> configurationProvider = (ConfigurationProvider<?>) provider;
-                            providers.add(configurationProvider);
-                        }
-                    }
-                    return null;
-                }
-            });
-        }
-        return providers;
     }
 }
