@@ -18,6 +18,7 @@ package com.proofpoint.bootstrap;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -109,8 +110,7 @@ import static com.google.common.base.Preconditions.checkState;
  *   public void setup()
  *           throws Exception
  *   {
- *       Injector injector = bootstrapApplication("test-application")
- *               .doNotInitializeLogging()
+ *       Injector injector = bootstrapTest()
  *               .withModules(
  *                       new TestingNodeModule(),
  *                       new TestingHttpServerModule(),
@@ -120,7 +120,6 @@ import static com.google.common.base.Preconditions.checkState;
  *                       new TestingMBeanModule(),
  *                       new MainModule()
  *               )
- *               .quiet()
  *               .setRequiredConfigurationProperties(properties)
  *               .initialize();
  *
@@ -175,6 +174,18 @@ public class Bootstrap
         return new DynamicBootstrapBeforeModules<>(configClass, applicationNameFunction);
     }
 
+    /**
+     * Start building an object for starting an application for a unit test.
+     *
+     * Suppresses logging initializing, reading of a configuration file, and verbose logging.
+     *
+     * @return an intermediate object for initializing the test application
+     */
+    public static UnitTestBootstrapBeforeModules bootstrapTest()
+    {
+        return new UnitTestBootstrapBeforeModules();
+    }
+
     private Bootstrap(Module applicationNameModule, Iterable<? extends Module> modules, boolean initializeLogging)
     {
         if (initializeLogging) {
@@ -198,10 +209,12 @@ public class Bootstrap
      * must be consumed by configuration. Suppresses reading a configuration file.
      * Intended for use in unit tests.
      *
+     * @deprecated Use {@link #bootstrapTest()} to bootstrap a unit test.
      * @param key the name of the configuration property
      * @param value the value of the configuration property
      * @return the object, for chaining method calls.
      */
+    @Deprecated
     public Bootstrap setRequiredConfigurationProperty(String key, String value)
     {
         if (this.requiredConfigurationProperties == null) {
@@ -216,9 +229,11 @@ public class Bootstrap
      * All specified properties must be consumed by configuration.  Suppresses
      * reading a configuration file. Intended for use in unit tests.
      *
+     * @deprecated Use {@link #bootstrapTest()} to bootstrap a unit test.
      * @param requiredConfigurationProperties the configuration properties
      * @return the object, for chaining method calls.
      */
+    @Deprecated
     public Bootstrap setRequiredConfigurationProperties(Map<String, String> requiredConfigurationProperties)
     {
         if (this.requiredConfigurationProperties == null) {
@@ -438,7 +453,11 @@ public class Bootstrap
 
     public abstract static class BootstrapBeforeModules
     {
-        protected boolean initializeLogging = true;
+        private BootstrapBeforeModules()
+        {
+        }
+
+        boolean initializeLogging = true;
 
         /**
          * Suppresses initialization of the logging subsystem. Intended for
@@ -503,6 +522,119 @@ public class Bootstrap
         public Bootstrap withModules(Iterable<? extends Module> modules)
         {
             return new Bootstrap(new DynamicApplicationNameModule<>(configClass, applicationNameFunction), modules, initializeLogging);
+        }
+    }
+
+    public static class UnitTestBootstrapBeforeModules
+    {
+        private UnitTestBootstrapBeforeModules()
+        {
+        }
+
+        /**
+         * Specify the application's Guice Modules
+         *
+         * @param modules the application's Modules
+         * @return the object, for chaining method calls.
+         */
+        public UnitTestBootstrap withModules(Iterable<? extends Module> modules)
+        {
+            return new UnitTestBootstrap(modules);
+        }
+
+        /**
+         * Specify the application's Guice Modules
+         *
+         * @param modules the application's Modules
+         * @return the object, for chaining method calls.
+         */
+        public UnitTestBootstrap withModules(Module... modules)
+        {
+            return withModules(ImmutableList.copyOf(modules));
+        }
+    }
+
+    public static class UnitTestBootstrap
+    {
+        private Bootstrap bootstrap;
+
+        @SuppressWarnings("deprecation")
+        private UnitTestBootstrap(Iterable<? extends Module> modules)
+        {
+            bootstrap = new Bootstrap(new ApplicationNameModule("test-application"), modules, false)
+                    .quiet()
+                    .setRequiredConfigurationProperties(ImmutableMap.of()); // Suppress reading configuration file
+        }
+
+        /**
+         * Set a configuration property for use by the application's configuration. The property
+         * must be consumed by configuration.
+         *
+         * @param key the name of the configuration property
+         * @param value the value of the configuration property
+         * @return the object, for chaining method calls.
+         */
+        @SuppressWarnings("deprecation")
+        public UnitTestBootstrap setRequiredConfigurationProperty(String key, String value)
+        {
+            bootstrap = bootstrap.setRequiredConfigurationProperty(key, value);
+            return this;
+        }
+
+        /**
+         * Set configuration properties for use by the application's configuration.
+         * All specified properties must be consumed by configuration.
+         *
+         * @param requiredConfigurationProperties the configuration properties
+         * @return the object, for chaining method calls.
+         */
+        @SuppressWarnings("deprecation")
+        public UnitTestBootstrap setRequiredConfigurationProperties(Map<String, String> requiredConfigurationProperties)
+        {
+            bootstrap = bootstrap.setRequiredConfigurationProperties(requiredConfigurationProperties);
+            return this;
+        }
+
+        /**
+         * Override the configuration parameter defaults with application-specific
+         * values. All specified properties must be consumed by configuration,
+         * though the values may be overridden by the application's configuration.
+         * <p>
+         * An application would normally use this to, as a minimum, enable HTTPS
+         * by default and specify the application's ports.
+         *
+         * @param applicationDefaults properties specifying the application's defaults
+         * @return the object, for chaining method calls.
+         */
+        public UnitTestBootstrap withApplicationDefaults(Map<String, String> applicationDefaults)
+        {
+            bootstrap = bootstrap.withApplicationDefaults(applicationDefaults);
+            return this;
+        }
+
+        /**
+         * Set whether properties in configuration files must be consumed by
+         * configuration.
+         *
+         * @param requireExplicitBindings true if properties in configuration
+         * files must be consumed. Default true.
+         * @return the object, for chaining method calls.
+         */
+        public UnitTestBootstrap requireExplicitBindings(boolean requireExplicitBindings)
+        {
+            bootstrap = bootstrap.requireExplicitBindings(requireExplicitBindings);
+            return this;
+        }
+
+        /**
+         * Initialize the application and start its lifecycle.
+         *
+         * @return the application's Guice injector
+         */
+        public Injector initialize()
+                throws Exception
+        {
+            return bootstrap.initialize();
         }
     }
 }

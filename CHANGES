@@ -1,5 +1,12 @@
 Platform 1.48
 
+* Bootstrap
+
+  We created Bootstrap.bootstrapTest() to simplify using Bootstrap in unit
+  tests. We deprecated Bootstrap.setRequiredConfigurationProperty() and
+  Bootstrap.setRequiredConfigurationProperties() when not using
+  Bootstrap.bootstrapTest().
+
 * We changed the BalancingHttpClient to call the ResponseHandler with the
   Request as made to the selected instance instead of the Request that was
   passed to the BalancingHttpClient. That way, the ResponseHandler may inspect
