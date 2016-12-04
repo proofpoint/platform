@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.configuration.ConfigurationModule;
@@ -36,7 +35,7 @@ import org.weakref.jmx.testing.TestingMBeanModule;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
@@ -66,17 +65,15 @@ public class TestDiscoveryModule
     public void testExecutorShutdown()
             throws Exception
     {
-        Bootstrap app = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        Injector injector = bootstrapTest()
                 .withModules(
                         new JsonModule(),
                         new TestingNodeModule(),
                         new DiscoveryModule(),
                         new ReportingModule(),
                         new TestingMBeanModule()
-                );
-
-        Injector injector = app.initialize();
+                )
+                .initialize();
 
         ExecutorService executor = injector.getInstance(Key.get(ScheduledExecutorService.class, ForDiscoveryClient.class));
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);

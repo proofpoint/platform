@@ -17,7 +17,6 @@ package com.proofpoint.platform.skeleton;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
-import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.discovery.client.DiscoveryModule;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.http.server.HttpServerModule;
@@ -42,7 +41,7 @@ public class Main
             throws Exception
     {
         try {
-            Bootstrap app = bootstrapApplication("skeleton")
+            Injector injector = bootstrapApplication("skeleton")
                     .withModules(
                             new NodeModule(),
                             new DiscoveryModule(),
@@ -56,14 +55,15 @@ public class Main
                             new ReportingModule(),
                             new ReportingClientModule(),
                             new MainModule()
-                    ).withApplicationDefaults(ImmutableMap.<String, String>builder()
+                    )
+                    .withApplicationDefaults(ImmutableMap.<String, String>builder()
                             .put("http-server.http.enabled", "false")
                             .put("http-server.https.enabled", "true")
                             .put("http-server.https.port", "8443")
                             .build()
-                    );
+                    )
+                    .initialize();
 
-            Injector injector = app.initialize();
             injector.getInstance(Announcer.class).start();
         }
         catch (Throwable e) {

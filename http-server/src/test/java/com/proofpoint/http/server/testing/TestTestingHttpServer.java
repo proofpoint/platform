@@ -19,11 +19,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
-import com.google.inject.Binder;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
-import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.HttpClientConfig;
@@ -32,7 +29,6 @@ import com.proofpoint.http.client.HttpUriBuilder;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.StringResponseHandler;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
-import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
 import com.proofpoint.http.server.QueryStringFilter;
@@ -62,7 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
@@ -104,7 +100,7 @@ public class TestTestingHttpServer
             throws Exception
     {
         DummyServlet servlet = new DummyServlet();
-        TestingHttpServer server = createTestingHttpServer(servlet, ImmutableMap.<String, String>of());
+        TestingHttpServer server = createTestingHttpServer(servlet, ImmutableMap.of());
 
         try {
             server.start();
@@ -127,7 +123,7 @@ public class TestTestingHttpServer
     {
         DummyServlet servlet = new DummyServlet();
         DummyFilter filter = new DummyFilter();
-        TestingHttpServer server = createTestingHttpServerWithFilter(servlet, ImmutableMap.<String, String>of(), filter);
+        TestingHttpServer server = createTestingHttpServerWithFilter(servlet, ImmutableMap.of(), filter);
 
         try {
             server.start();
@@ -151,25 +147,17 @@ public class TestTestingHttpServer
     {
         final DummyServlet servlet = new DummyServlet();
 
-        Bootstrap app = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         new TestingHttpServerModule(),
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
+                        binder -> {
+                            binder.bind(Servlet.class).annotatedWith(TheServlet.class).toInstance(servlet);
+                            binder.bind(new TypeLiteral<Map<String, String>>()
                             {
-                                binder.bind(Servlet.class).annotatedWith(TheServlet.class).toInstance(servlet);
-                                binder.bind(new TypeLiteral<Map<String, String>>()
-                                {
-                                }).annotatedWith(TheServlet.class).toInstance(ImmutableMap.<String, String>of());
-                            }
+                            }).annotatedWith(TheServlet.class).toInstance(ImmutableMap.of());
                         })
-                .quiet();
-
-        Injector injector = app.initialize();
+                .initialize();
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         TestingHttpServer server = injector.getInstance(TestingHttpServer.class);
@@ -191,26 +179,18 @@ public class TestTestingHttpServer
         final DummyServlet servlet = new DummyServlet();
         final DummyFilter filter = new DummyFilter();
 
-        Bootstrap app = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         new TestingHttpServerModule(),
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
+                        binder -> {
+                            binder.bind(Servlet.class).annotatedWith(TheServlet.class).toInstance(servlet);
+                            binder.bind(new TypeLiteral<Map<String, String>>()
                             {
-                                binder.bind(Servlet.class).annotatedWith(TheServlet.class).toInstance(servlet);
-                                binder.bind(new TypeLiteral<Map<String, String>>()
-                                {
-                                }).annotatedWith(TheServlet.class).toInstance(ImmutableMap.<String, String>of());
-                                newSetBinder(binder, Filter.class, TheServlet.class).addBinding().toInstance(filter);
-                            }
+                            }).annotatedWith(TheServlet.class).toInstance(ImmutableMap.of());
+                            newSetBinder(binder, Filter.class, TheServlet.class).addBinding().toInstance(filter);
                         })
-                .quiet();
-
-        Injector injector = app.initialize();
+                .initialize();
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         TestingHttpServer server = injector.getInstance(TestingHttpServer.class);
@@ -234,29 +214,21 @@ public class TestTestingHttpServer
     {
         final DummyServlet servlet = new DummyServlet();
 
-        Bootstrap app = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         new TestingHttpServerModule(),
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
+                        binder -> {
+                            binder.bind(Servlet.class).annotatedWith(TheServlet.class).toInstance(servlet);
+                            binder.bind(new TypeLiteral<Map<String, String>>()
                             {
-                                binder.bind(Servlet.class).annotatedWith(TheServlet.class).toInstance(servlet);
-                                binder.bind(new TypeLiteral<Map<String, String>>()
-                                {
-                                }).annotatedWith(TheServlet.class).toInstance(ImmutableMap.<String, String>of());
-                                httpServerBinder(binder).bindResource("/", "webapp/user").withWelcomeFile("user-welcome.txt");
-                                httpServerBinder(binder).bindResource("/", "webapp/user2");
-                                httpServerBinder(binder).bindResource("path", "webapp/user").withWelcomeFile("user-welcome.txt");
-                                httpServerBinder(binder).bindResource("path", "webapp/user2");
-                            }
+                            }).annotatedWith(TheServlet.class).toInstance(ImmutableMap.of());
+                            httpServerBinder(binder).bindResource("/", "webapp/user").withWelcomeFile("user-welcome.txt");
+                            httpServerBinder(binder).bindResource("/", "webapp/user2");
+                            httpServerBinder(binder).bindResource("path", "webapp/user").withWelcomeFile("user-welcome.txt");
+                            httpServerBinder(binder).bindResource("path", "webapp/user2");
                         })
-                .quiet();
-
-        Injector injector = app.initialize();
+                .initialize();
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         TestingHttpServer server = injector.getInstance(TestingHttpServer.class);
@@ -292,7 +264,7 @@ public class TestTestingHttpServer
         assertEquals(data.getBody().trim(), contents);
     }
 
-    private TestingHttpServer createTestingHttpServer(DummyServlet servlet, Map<String, String> params)
+    private static TestingHttpServer createTestingHttpServer(DummyServlet servlet, Map<String, String> params)
             throws IOException
     {
         NodeInfo nodeInfo = new NodeInfo("test");
@@ -301,13 +273,13 @@ public class TestTestingHttpServer
         return new TestingHttpServer(httpServerInfo, nodeInfo, config, servlet, params);
     }
 
-    private TestingHttpServer createTestingHttpServerWithFilter(DummyServlet servlet, Map<String, String> params, DummyFilter filter)
+    private static TestingHttpServer createTestingHttpServerWithFilter(DummyServlet servlet, Map<String, String> params, DummyFilter filter)
             throws IOException
     {
         NodeInfo nodeInfo = new NodeInfo("test");
         HttpServerConfig config = new HttpServerConfig().setHttpPort(0);
         HttpServerInfo httpServerInfo = new HttpServerInfo(config, nodeInfo);
-        return new TestingHttpServer(httpServerInfo, nodeInfo, config, servlet, params, ImmutableSet.<Filter>of(filter), ImmutableSet.<HttpResourceBinding>of(), new QueryStringFilter());
+        return new TestingHttpServer(httpServerInfo, nodeInfo, config, servlet, params, ImmutableSet.of(filter), ImmutableSet.of(), new QueryStringFilter());
     }
 
     static class DummyServlet

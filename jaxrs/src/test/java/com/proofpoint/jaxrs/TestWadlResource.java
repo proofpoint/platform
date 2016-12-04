@@ -36,7 +36,7 @@ import org.testng.annotations.Test;
 import javax.servlet.Servlet;
 import java.net.URI;
 
-import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.http.server.testing.TestingAdminHttpServerModule.initializesMainServletTestingAdminHttpServerModule;
@@ -57,8 +57,7 @@ public class TestWadlResource
             throws Exception
     {
 
-        Injector injector = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         initializesMainServletTestingAdminHttpServerModule(),
@@ -68,7 +67,6 @@ public class TestWadlResource
                         new TestingDiscoveryModule(),
                         binder -> jaxrsBinder(binder).bind(TestingResource.class)
                 )
-                .quiet()
                 .initialize();
 
         injector.getInstance(Key.get(Servlet.class, TheServlet.class));

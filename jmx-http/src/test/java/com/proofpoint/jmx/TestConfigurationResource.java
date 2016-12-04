@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Injector;
-import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.ConfigDescription;
@@ -47,7 +46,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseHandler;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
@@ -67,8 +66,7 @@ public class TestConfigurationResource
     public void setup()
             throws Exception
     {
-        Bootstrap app = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         new TestingAdminHttpServerModule(),
@@ -78,17 +76,12 @@ public class TestConfigurationResource
                         new TestingMBeanModule(),
                         new JmxHttpModule(),
                         new TestingDiscoveryModule(),
-                        binder -> {
-                            bindConfig(binder).to(TestingConfig.class);
-                        }
+                        binder -> bindConfig(binder).to(TestingConfig.class)
                 )
                 .setRequiredConfigurationProperties(ImmutableMap.of(
                         "testing.duration", "3m",
                         "testing.password", "password1"
                 ))
-                .quiet();
-
-        Injector injector = app
                 .initialize();
 
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);
