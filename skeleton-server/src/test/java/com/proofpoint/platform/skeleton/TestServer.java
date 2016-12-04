@@ -1,7 +1,6 @@
 package com.proofpoint.platform.skeleton;
 
 import com.google.inject.Injector;
-import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
@@ -20,7 +19,7 @@ import org.weakref.jmx.testing.TestingMBeanModule;
 
 import java.net.URI;
 
-import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
@@ -38,8 +37,7 @@ public class TestServer
     public void setup()
             throws Exception
     {
-        Bootstrap app = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         new TestingHttpServerModule(),
@@ -49,9 +47,6 @@ public class TestServer
                         new TestingMBeanModule(),
                         new MainModule()
                 )
-                .quiet();
-
-        Injector injector = app
                 .initialize();
 
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);

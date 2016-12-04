@@ -16,7 +16,6 @@
 package com.proofpoint.jmx;
 
 import com.google.inject.Injector;
-import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
@@ -39,7 +38,7 @@ import javax.ws.rs.WebApplicationException;
 import java.net.URI;
 
 import static com.google.inject.util.Modules.override;
-import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.preparePut;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
@@ -69,8 +68,7 @@ public class TestStopAnnouncingResource
         verifier = mock(AdminServerCredentialVerifier.class);
         StopAnnouncingResource resource = new StopAnnouncingResource(announcer, verifier);
 
-        Bootstrap app = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         new TestingAdminHttpServerModule(),
@@ -86,9 +84,6 @@ public class TestStopAnnouncingResource
                                     binder.bind(StopAnnouncingResource.class).toInstance(resource);
                                 })
                 )
-                .quiet();
-
-        Injector injector = app
                 .initialize();
 
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);

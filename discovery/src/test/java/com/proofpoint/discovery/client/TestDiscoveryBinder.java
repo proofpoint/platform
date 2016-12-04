@@ -57,7 +57,7 @@ public class TestDiscoveryBinder
             throws Exception
     {
         Injector injector = createInjector(
-                ImmutableMap.<String, String>of(),
+                ImmutableMap.of(),
                 binder -> discoveryBinder(binder).bindServiceAnnouncement(new ServiceAnnouncementProvider().get())
         );
 
@@ -72,7 +72,7 @@ public class TestDiscoveryBinder
             throws Exception
     {
         Injector injector = createInjector(
-                ImmutableMap.<String, String>of(),
+                ImmutableMap.of(),
                 binder -> discoveryBinder(binder).bindServiceAnnouncement(ServiceAnnouncementProvider.class)
         );
 
@@ -87,7 +87,7 @@ public class TestDiscoveryBinder
             throws Exception
     {
         Injector injector = createInjector(
-                ImmutableMap.<String, String>of(),
+                ImmutableMap.of(),
                 binder -> discoveryBinder(binder).bindServiceAnnouncement(new ServiceAnnouncementProvider())
         );
 
@@ -102,7 +102,7 @@ public class TestDiscoveryBinder
             throws Exception
     {
         Injector injector = createInjector(
-                ImmutableMap.<String, String>of(),
+                ImmutableMap.of(),
                 binder -> discoveryBinder(binder).bindSelector("apple")
         );
 
@@ -114,7 +114,7 @@ public class TestDiscoveryBinder
             throws Exception
     {
         Injector injector = createInjector(
-                ImmutableMap.<String, String>of(),
+                ImmutableMap.of(),
                 binder -> discoveryBinder(binder).bindSelector(serviceType("apple"))
         );
 
@@ -150,7 +150,7 @@ public class TestDiscoveryBinder
             throws Exception
     {
         Injector injector = createInjector(
-                ImmutableMap.<String, String>of(),
+                ImmutableMap.of(),
                 binder -> discoveryBinder(binder).bindHttpBalancer("apple")
         );
 
@@ -162,7 +162,7 @@ public class TestDiscoveryBinder
             throws Exception
     {
         Injector injector = createInjector(
-                ImmutableMap.<String, String>of(),
+                ImmutableMap.of(),
                 binder -> discoveryBinder(binder).bindHttpBalancer(serviceType("apple"))
         );
 
@@ -299,18 +299,16 @@ public class TestDiscoveryBinder
         Assert.assertEquals(actualServiceSelector.getPool(), expectedPool);
     }
 
-    private Injector createInjector(ImmutableMap<String, String> configurationProperties, Module module)
+    private static Injector createInjector(ImmutableMap<String, String> configurationProperties, Module module)
             throws Exception
     {
-        return Bootstrap.bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        return Bootstrap.bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         new TestingDiscoveryModule(),
                         new ReportingModule(),
                         module
                 )
-                .quiet()
                 .setRequiredConfigurationProperties(configurationProperties)
                 .initialize();
     }

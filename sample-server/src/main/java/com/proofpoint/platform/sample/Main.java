@@ -16,7 +16,6 @@
 package com.proofpoint.platform.sample;
 
 import com.google.inject.Injector;
-import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.discovery.client.DiscoveryModule;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.http.server.HttpServerModule;
@@ -41,7 +40,7 @@ public class Main
             throws Exception
     {
         try {
-            Bootstrap app = bootstrapApplication("sample-server")
+            Injector injector = bootstrapApplication("sample-server")
                     .withModules(
                             new NodeModule(),
                             new DiscoveryModule(),
@@ -55,9 +54,9 @@ public class Main
                             new ReportingModule(),
                             new ReportingClientModule(),
                             new MainModule()
-                    );
+                    )
+                    .initialize();
 
-            Injector injector = app.initialize();
             injector.getInstance(Announcer.class).start();
         }
         catch (Throwable e) {

@@ -17,9 +17,7 @@ package com.proofpoint.platform.sample;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
-import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.bootstrap.LifeCycleManager;
-import com.proofpoint.event.client.InMemoryEventModule;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
@@ -42,7 +40,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.JsonBodyGenerator.jsonBodyGenerator;
 import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseHandler;
 import static com.proofpoint.http.client.Request.Builder.prepareDelete;
@@ -82,8 +80,7 @@ public class TestServer
     public void setup()
             throws Exception
     {
-        Bootstrap app = bootstrapApplication("test-application")
-                .doNotInitializeLogging()
+        Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         new TestingHttpServerModule(),
@@ -93,9 +90,6 @@ public class TestServer
                         new TestingMBeanModule(),
                         new MainModule()
                 )
-                .quiet();
-
-        Injector injector = app
                 .initialize();
 
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);
