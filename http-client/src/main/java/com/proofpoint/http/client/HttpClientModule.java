@@ -34,6 +34,7 @@ import com.proofpoint.log.Logger;
 import javax.annotation.PreDestroy;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -131,7 +132,8 @@ public class HttpClientModule
         public HttpClient get()
         {
             HttpClientConfig config = injector.getInstance(Key.get(HttpClientConfig.class, annotation));
-            Set<HttpRequestFilter> filters = injector.getInstance(filterKey(annotation));
+            Set<HttpRequestFilter> filters = new HashSet<>(injector.getInstance(filterKey(annotation)));
+            HttpClientBindOptions httpClientBindOptions = injector.getInstance(Key.get(HttpClientBindOptions.class, filterQualifier(annotation)));
 
             JettyIoPoolManager ioPoolProvider;
             if (injector.getExistingBinding(Key.get(JettyIoPoolManager.class, annotation)) != null) {
@@ -143,7 +145,11 @@ public class HttpClientModule
                 ioPoolProvider = injector.getInstance(JettyIoPoolManager.class);
             }
 
-            JettyHttpClient client = new JettyHttpClient(config, ioPoolProvider.get(), ImmutableList.copyOf(filters));
+            if (httpClientBindOptions.isWithTracing()) {
+                filters.add(new TraceTokenRequestFilter());
+            }
+
+            JettyHttpClient client = new JettyHttpClient(config, ioPoolProvider.get(), filters);
             ioPoolProvider.addClient(client);
             return client;
         }
