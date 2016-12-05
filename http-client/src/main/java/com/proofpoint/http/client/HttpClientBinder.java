@@ -110,8 +110,11 @@ public class HttpClientBinder
     private HttpClientBindingBuilder createBindingBuilder(HttpClientModule module)
     {
         binder.install(module);
+        HttpClientBindOptions options = new HttpClientBindOptions();
+        binder.bind(HttpClientBindOptions.class).annotatedWith(module.getFilterQualifier()).toInstance(options);
         return new HttpClientAsyncBindingBuilder(module,
-                newSetBinder(binder, HttpRequestFilter.class, module.getFilterQualifier()));
+                newSetBinder(binder, HttpRequestFilter.class, module.getFilterQualifier()),
+                options);
     }
 
     /**
@@ -121,9 +124,9 @@ public class HttpClientBinder
     public static class HttpClientAsyncBindingBuilder
         extends HttpClientBindingBuilder
     {
-        private HttpClientAsyncBindingBuilder(HttpClientModule module, Multibinder<HttpRequestFilter> multibinder)
+        private HttpClientAsyncBindingBuilder(HttpClientModule module, Multibinder<HttpRequestFilter> multibinder, HttpClientBindOptions options)
         {
-            super(module, multibinder);
+            super(module, multibinder, options);
         }
     }
 
@@ -132,11 +135,13 @@ public class HttpClientBinder
     {
         private final HttpClientModule module;
         private final Multibinder<HttpRequestFilter> multibinder;
+        private final HttpClientBindOptions options;
 
-        private HttpClientBindingBuilder(HttpClientModule module, Multibinder<HttpRequestFilter> multibinder)
+        private HttpClientBindingBuilder(HttpClientModule module, Multibinder<HttpRequestFilter> multibinder, HttpClientBindOptions options)
         {
             this.module = module;
             this.multibinder = multibinder;
+            this.options = options;
         }
 
         public HttpClientAsyncBindingBuilder withAlias(Class<? extends Annotation> alias)
@@ -162,9 +167,19 @@ public class HttpClientBinder
             return (HttpClientAsyncBindingBuilder) this;
         }
 
+        /**
+         * @deprecated No longer necessary.
+         */
+        @Deprecated
         public HttpClientAsyncBindingBuilder withTracing()
         {
-            return withFilter(TraceTokenRequestFilter.class);
+            return (HttpClientAsyncBindingBuilder) this;
+        }
+
+        public HttpClientAsyncBindingBuilder withoutTracing()
+        {
+            options.setWithTracing(false);
+            return (HttpClientAsyncBindingBuilder) this;
         }
 
         public HttpClientAsyncBindingBuilder withPrivateIoThreadPool()

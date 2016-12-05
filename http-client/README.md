@@ -26,10 +26,6 @@ The client supports modifying requests via a user specified set of filters. Thes
         .withFilter(FirstFilter.class)
         .withFilter(SecondFilter.class);
 
-When using the `HttpClient` with other platform services, you can use the `TraceTokenRequestFilter` to automatically send the current trace token with each request. The binder has shortcut for this:
-
-    httpClientBinder(binder).bindHttpClient("foo", FooClient.class).withTracing();
-
 The binder also supports alias annotations. These are useful when you have multiple logical clients that all use the same physical service. For example, the `foo-server` might implement the `foo` and `bar` services. In the future, the `bar` service could be moved to it's own `bar-server`. Using aliases allows you to have separate annotations, `FooClient` and `BarClient`, for the different logical services, making it easy to later migrate to separate clients and configurations by making a single change to the bindings.
 
 Using aliases is similar to using filters:

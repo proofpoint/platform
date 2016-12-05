@@ -64,20 +64,15 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
-                                        .withFilter(TestingRequestFilter.class)
-                                        .withFilter(AnotherHttpRequestFilter.class)
-                                        .withTracing();
+                        (Module) binder -> {
+                            httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+                                    .withFilter(TestingRequestFilter.class)
+                                    .withFilter(AnotherHttpRequestFilter.class);
 
-                                HttpClientBindingBuilder builder = httpClientBinder(binder).bindHttpClient("bar", BarClient.class);
-                                builder.withFilter(TestingRequestFilter.class);
-                                builder.addFilterBinding().to(AnotherHttpRequestFilter.class);
-                            }
+                            HttpClientBindingBuilder builder = httpClientBinder(binder).bindHttpClient("bar", BarClient.class)
+                                    .withoutTracing();
+                            builder.withFilter(TestingRequestFilter.class);
+                            builder.addFilterBinding().to(AnotherHttpRequestFilter.class);
                         })
                 .quiet()
                 .initialize();
@@ -99,17 +94,9 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
-                                        .withFilter(TestingRequestFilter.class)
-                                        .withFilter(AnotherHttpRequestFilter.class)
-                                        .withTracing();
-                            }
-                        })
+                        (Module) binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+                                .withFilter(TestingRequestFilter.class)
+                                .withFilter(AnotherHttpRequestFilter.class))
                 .quiet()
                 .initialize();
 
@@ -131,14 +118,7 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                httpClientBinder(binder).bindHttpClient("foo", FooClient.class);
-                            }
-                        })
+                        (Module) binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class))
                 .quiet()
                 .initialize();
 
@@ -157,16 +137,9 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
-                                        .withAlias(FooAlias1.class)
-                                        .withAliases(ImmutableList.of(FooAlias2.class, FooAlias3.class));
-                            }
-                        })
+                        (Module) binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+                                .withAlias(FooAlias1.class)
+                                .withAliases(ImmutableList.of(FooAlias2.class, FooAlias3.class)))
                 .quiet()
                 .initialize();
 
@@ -191,14 +164,9 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                httpClientBinder(binder).bindHttpClient("foo", FooClient.class);
-                                httpClientBinder(binder).bindHttpClient("bar", BarClient.class);
-                            }
+                        (Module) binder -> {
+                            httpClientBinder(binder).bindHttpClient("foo", FooClient.class);
+                            httpClientBinder(binder).bindHttpClient("bar", BarClient.class);
                         })
                 .quiet()
                 .initialize();
@@ -225,15 +193,10 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                binder.requireExplicitBindings();
-                                binder.disableCircularProxies();
-                                httpClientBinder(binder).bindHttpClient("foo", FooClient.class).withPrivateIoThreadPool();
-                            }
+                        (Module) binder -> {
+                            binder.requireExplicitBindings();
+                            binder.disableCircularProxies();
+                            httpClientBinder(binder).bindHttpClient("foo", FooClient.class).withPrivateIoThreadPool();
                         })
                 .quiet()
                 .initialize();
@@ -253,14 +216,9 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                httpClientBinder(binder).bindHttpClient("foo", FooClient.class).withPrivateIoThreadPool();
-                                httpClientBinder(binder).bindHttpClient("bar", BarClient.class).withPrivateIoThreadPool();
-                            }
+                        (Module) binder -> {
+                            httpClientBinder(binder).bindHttpClient("foo", FooClient.class).withPrivateIoThreadPool();
+                            httpClientBinder(binder).bindHttpClient("bar", BarClient.class).withPrivateIoThreadPool();
                         })
                 .quiet()
                 .initialize();
@@ -281,14 +239,9 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                httpClientBinder(binder).bindHttpClient("foo", FooClient.class);
-                                httpClientBinder(binder).bindHttpClient("bar", BarClient.class).withPrivateIoThreadPool();
-                            }
+                        (Module) binder -> {
+                            httpClientBinder(binder).bindHttpClient("foo", FooClient.class);
+                            httpClientBinder(binder).bindHttpClient("bar", BarClient.class).withPrivateIoThreadPool();
                         })
                 .quiet()
                 .initialize();
@@ -332,17 +285,12 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                newExporter(binder).export(ManagedClass.class);
-                                PrivateBinder privateBinder = binder.newPrivateBinder();
-                                HttpClientBinder.httpClientPrivateBinder(privateBinder, binder).bindHttpClient("foo", FooClient.class);
-                                privateBinder.bind(ExposeHttpClient.class);
-                                privateBinder.expose(ExposeHttpClient.class);
-                            }
+                        (Module) binder -> {
+                            newExporter(binder).export(ManagedClass.class);
+                            PrivateBinder privateBinder = binder.newPrivateBinder();
+                            HttpClientBinder.httpClientPrivateBinder(privateBinder, binder).bindHttpClient("foo", FooClient.class);
+                            privateBinder.bind(ExposeHttpClient.class);
+                            privateBinder.expose(ExposeHttpClient.class);
                         })
                 .quiet()
                 .initialize();
@@ -359,18 +307,13 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                newExporter(binder).export(ManagedClass.class);
-                                PrivateBinder privateBinder = binder.newPrivateBinder();
-                                HttpClientBinder.httpClientPrivateBinder(privateBinder, binder).bindHttpClient("foo", FooClient.class);
-                                privateBinder.bind(ExposeHttpClient.class);
-                                privateBinder.expose(ExposeHttpClient.class);
-                                HttpClientBinder.httpClientBinder(binder).bindHttpClient("bar", BarClient.class);
-                            }
+                        (Module) binder -> {
+                            newExporter(binder).export(ManagedClass.class);
+                            PrivateBinder privateBinder = binder.newPrivateBinder();
+                            HttpClientBinder.httpClientPrivateBinder(privateBinder, binder).bindHttpClient("foo", FooClient.class);
+                            privateBinder.bind(ExposeHttpClient.class);
+                            privateBinder.expose(ExposeHttpClient.class);
+                            HttpClientBinder.httpClientBinder(binder).bindHttpClient("bar", BarClient.class);
                         })
                 .quiet()
                 .initialize();
@@ -388,14 +331,7 @@ public class TestHttpClientBinder
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
                 .withModules(
-                        new Module()
-                        {
-                            @Override
-                            public void configure(Binder binder)
-                            {
-                                httpClientBinder(binder).bindBalancingHttpClient("foo", FooClient.class, ImmutableSet.of(URI.create("http://nonexistent.nonexistent")));
-                            }
-                        },
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", FooClient.class, ImmutableSet.of(URI.create("http://nonexistent.nonexistent"))),
                         new ReportingModule(),
                         new TestingMBeanModule())
                 .quiet()

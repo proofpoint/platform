@@ -73,9 +73,20 @@ public class BalancingHttpClientBindingBuilder
         return this;
     }
 
+    /**
+     * @deprecated No longer necessary.
+     */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public BalancingHttpClientBindingBuilder withTracing()
     {
         delegateBindingBuilder.withTracing();
+        return this;
+    }
+
+    public BalancingHttpClientBindingBuilder withoutTracing()
+    {
+        delegateBindingBuilder.withoutTracing();
         return this;
     }
 

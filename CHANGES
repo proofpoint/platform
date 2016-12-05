@@ -1,6 +1,12 @@
 Platform 1.48
 
-* We changed the BalancingHttpClient to call the ResponseHandler with the
+* HttpClient
+
+  HttpClient implementations now forward trace tokens by default. We added
+  a .withoutTracing() method to the binding builders to disable this and
+  deprecated the .withTracing() method.
+
+  We changed the BalancingHttpClient to call the ResponseHandler with the
   Request as made to the selected instance instead of the Request that was
   passed to the BalancingHttpClient. That way, the ResponseHandler may inspect
   the Request URI to determine which instance was used. In the case where the
