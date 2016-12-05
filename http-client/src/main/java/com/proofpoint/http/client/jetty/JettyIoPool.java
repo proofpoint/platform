@@ -2,6 +2,7 @@ package com.proofpoint.http.client.jetty;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
+import com.proofpoint.reporting.Gauge;
 import org.eclipse.jetty.io.ByteBufferPool;
 import org.eclipse.jetty.io.MappedByteBufferPool;
 import org.eclipse.jetty.util.component.LifeCycle;
@@ -90,6 +91,11 @@ public final class JettyIoPool
     public Scheduler getScheduler()
     {
         return scheduler;
+    }
+
+    @Gauge
+    public int getFreeThreadCount() {
+        return (executor.getMaxThreads() - executor.getThreads()) + executor.getIdleThreads() ;
     }
 
     @Override

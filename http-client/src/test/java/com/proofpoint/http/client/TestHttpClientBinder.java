@@ -62,7 +62,7 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> {
+                        binder -> {
                             httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
                                     .withFilter(TestingRequestFilter.class)
                                     .withFilter(AnotherHttpRequestFilter.class);
@@ -71,7 +71,9 @@ public class TestHttpClientBinder
                                     .withoutTracing();
                             builder.withFilter(TestingRequestFilter.class);
                             builder.addFilterBinding().to(AnotherHttpRequestFilter.class);
-                        })
+                        },
+                        new ReportingModule()
+                )
                 .initialize();
 
         assertFilterCount(injector.getInstance(Key.get(HttpClient.class, FooClient.class)), 3);
@@ -90,9 +92,11 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+                        binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
                                 .withFilter(TestingRequestFilter.class)
-                                .withFilter(AnotherHttpRequestFilter.class))
+                                .withFilter(AnotherHttpRequestFilter.class),
+                        new ReportingModule()
+                )
                 .initialize();
 
 
@@ -112,7 +116,9 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class))
+                        binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class),
+                        new ReportingModule()
+                )
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
@@ -129,9 +135,12 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+                        binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
                                 .withAlias(FooAlias1.class)
-                                .withAliases(ImmutableList.of(FooAlias2.class, FooAlias3.class)))
+                                .withAliases(ImmutableList.of(FooAlias2.class, FooAlias3.class)),
+                        new ReportingModule()
+                )
+
                 .initialize();
 
         HttpClient client = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
@@ -154,10 +163,12 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> {
+                        binder -> {
                             httpClientBinder(binder).bindHttpClient("foo", FooClient.class);
                             httpClientBinder(binder).bindHttpClient("bar", BarClient.class);
-                        })
+                        },
+                        new ReportingModule()
+                )
                 .initialize();
 
         HttpClient fooClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
@@ -181,11 +192,13 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> {
+                        binder -> {
                             binder.requireExplicitBindings();
                             binder.disableCircularProxies();
                             httpClientBinder(binder).bindHttpClient("foo", FooClient.class).withPrivateIoThreadPool();
-                        })
+                        },
+                        new ReportingModule()
+                )
                 .initialize();
 
         HttpClient fooClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
@@ -202,10 +215,12 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> {
+                        binder -> {
                             httpClientBinder(binder).bindHttpClient("foo", FooClient.class).withPrivateIoThreadPool();
                             httpClientBinder(binder).bindHttpClient("bar", BarClient.class).withPrivateIoThreadPool();
-                        })
+                        },
+                        new ReportingModule()
+                )
                 .initialize();
 
         HttpClient fooClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
@@ -223,10 +238,12 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> {
+                        binder -> {
                             httpClientBinder(binder).bindHttpClient("foo", FooClient.class);
                             httpClientBinder(binder).bindHttpClient("bar", BarClient.class).withPrivateIoThreadPool();
-                        })
+                        },
+                        new ReportingModule()
+                )
                 .initialize();
 
         HttpClient fooClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
@@ -267,13 +284,15 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> {
+                        binder -> {
                             newExporter(binder).export(ManagedClass.class);
                             PrivateBinder privateBinder = binder.newPrivateBinder();
                             HttpClientBinder.httpClientPrivateBinder(privateBinder, binder).bindHttpClient("foo", FooClient.class);
                             privateBinder.bind(ExposeHttpClient.class);
                             privateBinder.expose(ExposeHttpClient.class);
-                        })
+                        },
+                        new ReportingModule()
+                )
                 .initialize();
 
         assertNotNull(injector.getInstance(ExposeHttpClient.class).httpClient);
@@ -287,14 +306,16 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        (Module) binder -> {
+                        binder -> {
                             newExporter(binder).export(ManagedClass.class);
                             PrivateBinder privateBinder = binder.newPrivateBinder();
                             HttpClientBinder.httpClientPrivateBinder(privateBinder, binder).bindHttpClient("foo", FooClient.class);
                             privateBinder.bind(ExposeHttpClient.class);
                             privateBinder.expose(ExposeHttpClient.class);
                             HttpClientBinder.httpClientBinder(binder).bindHttpClient("bar", BarClient.class);
-                        })
+                        },
+                        new ReportingModule()
+                )
                 .initialize();
 
         assertNotNull(injector.getInstance(ExposeHttpClient.class).httpClient);

@@ -18,6 +18,7 @@ package com.proofpoint.http.client;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -30,6 +31,7 @@ import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.client.jetty.JettyIoPool;
 import com.proofpoint.http.client.jetty.JettyIoPoolConfig;
 import com.proofpoint.log.Logger;
+import com.proofpoint.reporting.ReportExporter;
 
 import javax.annotation.PreDestroy;
 import java.lang.annotation.Annotation;
@@ -213,7 +215,16 @@ public class HttpClientModule
         {
             if (pool == null) {
                 JettyIoPoolConfig config = injector.getInstance(keyFromNullable(JettyIoPoolConfig.class, annotation));
+                ReportExporter reportExporter = injector.getInstance(ReportExporter.class);
                 pool = new JettyIoPool(name, config);
+                String annotationName;
+                if (annotation == null) {
+                    annotationName = "Shared";
+                }
+                else {
+                    annotationName = annotation.getSimpleName();
+                }
+                reportExporter.export(pool, false, "HttpClient.IoPool." + annotationName, ImmutableMap.of());
             }
             return pool;
         }
