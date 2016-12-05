@@ -97,7 +97,7 @@ public class TestServer
         store = injector.getInstance(PersonStore.class);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void teardown()
             throws Exception
     {

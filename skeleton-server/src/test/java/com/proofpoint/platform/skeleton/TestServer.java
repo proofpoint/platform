@@ -53,7 +53,7 @@ public class TestServer
         server = injector.getInstance(TestingHttpServer.class);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void teardown()
             throws Exception
     {
