@@ -265,10 +265,10 @@ public class TestDiscoveryBinder
                 binder -> {
                     discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
                             .withFilter(TestingRequestFilter.class)
-                            .withFilter(AnotherHttpRequestFilter.class)
-                            .withTracing();
+                            .withFilter(AnotherHttpRequestFilter.class);
 
-                    BalancingHttpClientBindingBuilder builder = discoveryBinder(binder).bindDiscoveredHttpClient("bar", BarClient.class);
+                    BalancingHttpClientBindingBuilder builder = discoveryBinder(binder).bindDiscoveredHttpClient("bar", BarClient.class)
+                            .withoutTracing();
                     builder.withFilter(TestingRequestFilter.class);
                     builder.addFilterBinding().to(AnotherHttpRequestFilter.class);
                 });

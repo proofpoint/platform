@@ -65,10 +65,10 @@ public class TestHttpClientBinder
                         (Module) binder -> {
                             httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
                                     .withFilter(TestingRequestFilter.class)
-                                    .withFilter(AnotherHttpRequestFilter.class)
-                                    .withTracing();
+                                    .withFilter(AnotherHttpRequestFilter.class);
 
-                            HttpClientBindingBuilder builder = httpClientBinder(binder).bindHttpClient("bar", BarClient.class);
+                            HttpClientBindingBuilder builder = httpClientBinder(binder).bindHttpClient("bar", BarClient.class)
+                                    .withoutTracing();
                             builder.withFilter(TestingRequestFilter.class);
                             builder.addFilterBinding().to(AnotherHttpRequestFilter.class);
                         })
@@ -92,8 +92,8 @@ public class TestHttpClientBinder
                 .withModules(
                         (Module) binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
                                 .withFilter(TestingRequestFilter.class)
-                                .withFilter(AnotherHttpRequestFilter.class)
-                                .withTracing())
+                                .withFilter(AnotherHttpRequestFilter.class))
+                .quiet()
                 .initialize();
 
 
@@ -114,6 +114,7 @@ public class TestHttpClientBinder
         Injector injector = bootstrapTest()
                 .withModules(
                         (Module) binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class))
+                .quiet()
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
@@ -133,6 +134,7 @@ public class TestHttpClientBinder
                         (Module) binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
                                 .withAlias(FooAlias1.class)
                                 .withAliases(ImmutableList.of(FooAlias2.class, FooAlias3.class)))
+                .quiet()
                 .initialize();
 
         HttpClient client = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
