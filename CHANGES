@@ -35,6 +35,10 @@ Platform 1.48
 * Library Upgrades
 
   - bval-jsr 1.1.2 (from bval-jsr303 0.5)
+  - mockito to 2.2.28 (from 1.10.8)
+    - Hamcrest matchers, such as Matchers.argThat(), have moved to
+      MockitoHamcrest (MockitoHamcrest.argThat())
+    - anyX() and any(SomeType.class) matchers now reject nulls and check type.
 
 Platform 1.47
 
