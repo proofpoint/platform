@@ -1,5 +1,8 @@
 Platform 1.48
 
+* We added an /admin/jstack resource on the admin port to dump the thread
+  stacks.
+
 * Bootstrap
 
   We created Bootstrap.bootstrapTest() to simplify using Bootstrap in unit

@@ -104,6 +104,7 @@ public class JaxrsModule
         jaxrsBinder(binder).bindAdmin(QueryParamExceptionMapper.class);
         jaxrsBinder(binder).bindAdmin(OverrideMethodFilter.class);
         jaxrsBinder(binder).bindAdmin(WadlResource.class);
+        jaxrsBinder(binder).bindAdmin(ThreadDumpResource.class);
 
         bindConfig(binder).to(JaxrsConfig.class);
 
