@@ -13,6 +13,8 @@ Platform 1.48
 
 * [Bug] Ensure LifeCycleManager shutdown methods can log.
 
+* [Bug] Catch and log exceptions thrown by LifeCycleManager shutdown methods.
+
 Platform 1.47
 
 * We made the server refuse to start if the discovery client is configured to

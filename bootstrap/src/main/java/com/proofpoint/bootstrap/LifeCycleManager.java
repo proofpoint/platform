@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Objects.requireNonNull;
@@ -178,7 +177,12 @@ public final class LifeCycleManager
             LifeCycleMethods methods = methodsMap.get(obj.getClass());
             for (Method preDestroy : methods.methodsFor(annotation)) {
                 log.debug("\t%s()", preDestroy.getName());
-                preDestroy.invoke(obj);
+                try {
+                    preDestroy.invoke(obj);
+                }
+                catch (Exception e) {
+                    log.error(e, "Stopping %s.%s() failed:", obj.getClass().getName(), preDestroy.getName());
+                }
             }
         }
     }
