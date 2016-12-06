@@ -15,6 +15,9 @@
  */
 package com.proofpoint.jaxrs;
 
+import com.proofpoint.bootstrap.StopTraffic;
+import com.proofpoint.log.Logger;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -31,7 +34,7 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 @AccessDoesNotRequireAuthentication
 public class ThreadDumpResource
 {
-
+    private static final Logger log = Logger.get(ThreadDumpResource.class);
     private static final ThreadMXBean THREAD_MX_BEAN = ManagementFactory.getThreadMXBean();
 
     @GET
@@ -108,5 +111,11 @@ public class ThreadDumpResource
         }
 
         sb.append("\n\n");
+    }
+
+    @StopTraffic
+    public void logThreadDump()
+    {
+        log.info("Thread dump at shutdown:\n%s", get());
     }
 }

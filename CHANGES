@@ -1,7 +1,7 @@
 Platform 1.48
 
 * We added an /admin/jstack resource on the admin port to dump the thread
-  stacks.
+  stacks. We also dump the thread stacks upon shutdown.
 
 * Bootstrap
 
