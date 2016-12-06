@@ -40,6 +40,8 @@ Platform 1.48
 
 * [Bug] Ensure LifeCycleManager shutdown methods can log.
 
+* [Bug] Catch and log exceptions thrown by LifeCycleManager shutdown methods.
+
 * Library Upgrades
 
   - bval-jsr 1.1.2 (from bval-jsr303 0.5)
