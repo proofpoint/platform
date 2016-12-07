@@ -281,6 +281,7 @@ public class Main
             else {
                 javaArgs.add("-XX:OnOutOfMemoryError=kill -9 %p");
             }
+            javaArgs.add("-Djava.util.logging.manager=com.proofpoint.log.ShutdownWaitingLogManager");
 
             if (!new File(configPath).exists()) {
                 System.err.println("Config file is missing: " + configPath);

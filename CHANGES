@@ -38,6 +38,8 @@ Platform 1.48
 * We fixed warnings caused by how the library pom was invoking the Surefire
   plugin.
 
+* [Bug] Ensure LifeCycleManager shutdown methods can log.
+
 * Library Upgrades
 
   - bval-jsr 1.1.2 (from bval-jsr303 0.5)

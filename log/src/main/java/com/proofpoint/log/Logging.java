@@ -432,4 +432,15 @@ public class Logging
             }
         });
     }
+
+    public static void addShutdownHookToWaitFor(Thread shutdownHook)
+    {
+        LogManager logManager = LogManager.getLogManager();
+        if (logManager instanceof ShutdownWaitingLogManager) {
+            ((ShutdownWaitingLogManager) logManager).addWaitForShutdownHook(shutdownHook);
+        } else {
+            log.warn("LogManager is not a ShutdownWaitingLogManager, so shutdown hooks might not be able to log. Please run java with -Djava.util.logging.manager=%s",
+                    ShutdownWaitingLogManager.class.getTypeName());
+        }
+    }
 }
