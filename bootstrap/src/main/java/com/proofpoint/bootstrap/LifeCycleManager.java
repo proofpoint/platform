@@ -17,6 +17,7 @@ package com.proofpoint.bootstrap;
 
 import com.google.common.collect.Lists;
 import com.proofpoint.log.Logger;
+import com.proofpoint.log.Logging;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
@@ -115,19 +116,16 @@ public final class LifeCycleManager
             }
         }
 
-        Runtime.getRuntime().addShutdownHook(new Thread()
-        {
-            @Override
-            public void run()
-            {
-                try {
-                    LifeCycleManager.this.stop();
-                }
-                catch (Exception e) {
-                    log.error(e, "Trying to shut down");
-                }
+        Thread shutdownHook = new Thread(() -> {
+            try {
+                LifeCycleManager.this.stop();
+            }
+            catch (Exception e) {
+                log.error(e, "Trying to shut down");
             }
         });
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
+        Logging.addShutdownHookToWaitFor(shutdownHook);
 
         state.set(State.STARTED);
         log.info("Life cycle startup complete. System ready.");
