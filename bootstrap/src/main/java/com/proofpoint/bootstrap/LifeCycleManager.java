@@ -17,6 +17,7 @@ package com.proofpoint.bootstrap;
 
 import com.google.common.collect.Lists;
 import com.proofpoint.log.Logger;
+import com.proofpoint.log.Logging;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
@@ -29,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Objects.requireNonNull;
@@ -115,19 +115,16 @@ public final class LifeCycleManager
             }
         }
 
-        Runtime.getRuntime().addShutdownHook(new Thread()
-        {
-            @Override
-            public void run()
-            {
-                try {
-                    LifeCycleManager.this.stop();
-                }
-                catch (Exception e) {
-                    log.error(e, "Trying to shut down");
-                }
+        Thread shutdownHook = new Thread(() -> {
+            try {
+                LifeCycleManager.this.stop();
+            }
+            catch (Exception e) {
+                log.error(e, "Trying to shut down");
             }
         });
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
+        Logging.addShutdownHookToWaitFor(shutdownHook);
 
         state.set(State.STARTED);
         log.info("Life cycle startup complete. System ready.");
@@ -180,7 +177,12 @@ public final class LifeCycleManager
             LifeCycleMethods methods = methodsMap.get(obj.getClass());
             for (Method preDestroy : methods.methodsFor(annotation)) {
                 log.debug("\t%s()", preDestroy.getName());
-                preDestroy.invoke(obj);
+                try {
+                    preDestroy.invoke(obj);
+                }
+                catch (Exception e) {
+                    log.error(e, "Stopping %s.%s() failed:", obj.getClass().getName(), preDestroy.getName());
+                }
             }
         }
     }

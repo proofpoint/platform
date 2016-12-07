@@ -1,5 +1,8 @@
 Platform 1.48
 
+* We added an /admin/jstack resource on the admin port to dump the thread
+  stacks. We also dump the thread stacks upon shutdown.
+
 * We changed the BalancingHttpClient to call the ResponseHandler with the
   Request as made to the selected instance instead of the Request that was
   passed to the BalancingHttpClient. That way, the ResponseHandler may inspect
@@ -7,6 +10,10 @@ Platform 1.48
   HttpServiceBalancer threw an exception (such as ServiceUnavailableException)
   the BalancingHttpClient will call the ResponseHandler with the Request that
   was passed to the BalancingHttpClient.
+
+* [Bug] Ensure LifeCycleManager shutdown methods can log.
+
+* [Bug] Catch and log exceptions thrown by LifeCycleManager shutdown methods.
 
 Platform 1.47
 
