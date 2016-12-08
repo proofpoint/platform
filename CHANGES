@@ -39,6 +39,7 @@ Platform 1.48
     - Hamcrest matchers, such as Matchers.argThat(), have moved to
       MockitoHamcrest (MockitoHamcrest.argThat())
     - anyX() and any(SomeType.class) matchers now reject nulls and check type.
+  - testng to 6.10 (from 6.9.6)
 
 Platform 1.47
 
