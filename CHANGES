@@ -25,6 +25,7 @@ Platform 1.48
 
   - bval-jsr 1.1.2 (from bval-jsr303 0.5)
   - mockito to 2.2.28 (from 1.10.8)
+  - testng to 6.10 (from 6.9.6)
 
 Platform 1.47
 
