@@ -1,6 +1,5 @@
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
 import com.proofpoint.reporting.Gauge;
 import org.eclipse.jetty.io.ByteBufferPool;
@@ -13,6 +12,7 @@ import org.eclipse.jetty.util.thread.Scheduler;
 import java.io.Closeable;
 import java.util.concurrent.Executor;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.lang.Thread.currentThread;
 
 public final class JettyIoPool
@@ -101,7 +101,7 @@ public final class JettyIoPool
     @Override
     public String toString()
     {
-        return Objects.toStringHelper(this)
+        return toStringHelper(this)
                 .add("name", name)
                 .toString();
     }
