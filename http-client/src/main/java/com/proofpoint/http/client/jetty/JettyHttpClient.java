@@ -27,6 +27,7 @@ import com.proofpoint.http.client.ResponseTooLargeException;
 import com.proofpoint.http.client.StaticBodyGenerator;
 import com.proofpoint.log.Logger;
 import com.proofpoint.stats.Distribution;
+import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.tracetoken.TraceTokenScope;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.client.DuplexConnectionPool;
@@ -85,8 +86,8 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Throwables.propagate;
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
-import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -790,7 +791,7 @@ public class JettyHttpClient
         private final ResponseHandler<T, E> responseHandler;
         private final AtomicLong bytesWritten;
         private final RequestStats stats;
-        private final String traceToken;
+        private final TraceToken traceToken;
 
         JettyResponseFuture(Request request, org.eclipse.jetty.client.api.Request jettyRequest, ResponseHandler<T, E> responseHandler, AtomicLong bytesWritten, RequestStats stats)
         {
@@ -799,7 +800,7 @@ public class JettyHttpClient
             this.responseHandler = responseHandler;
             this.bytesWritten = bytesWritten;
             this.stats = stats;
-            traceToken = getCurrentRequestToken();
+            traceToken = getCurrentTraceToken();
         }
 
         @Override
@@ -851,7 +852,7 @@ public class JettyHttpClient
             state.set(JettyAsyncHttpState.PROCESSING_RESPONSE);
             JettyResponse jettyResponse = null;
             T value;
-            try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
+            try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
                 jettyResponse = new JettyResponse(response, content);
                 value = responseHandler.handle(request, jettyResponse);
             }
@@ -869,7 +870,7 @@ public class JettyHttpClient
 
             // give handler a chance to rewrite the exception or return a value instead
             if (throwable instanceof Exception) {
-                try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
+                try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
                     if (throwable instanceof RejectedExecutionException) {
                         maybeLogJettyState();
                     }
@@ -1042,13 +1043,13 @@ public class JettyHttpClient
 
         private final DynamicBodySource dynamicBodySource;
         private final AtomicLong bytesWritten;
-        private final String traceToken;
+        private final TraceToken traceToken;
 
         DynamicBodySourceContentProvider(DynamicBodySource dynamicBodySource, AtomicLong bytesWritten)
         {
             this.dynamicBodySource = dynamicBodySource;
             this.bytesWritten = bytesWritten;
-            traceToken = getCurrentRequestToken();
+            traceToken = getCurrentTraceToken();
         }
 
         @Override
@@ -1063,7 +1064,7 @@ public class JettyHttpClient
             final Queue<ByteBuffer> chunks = new ArrayQueue<>(4, 64);
 
             Writer writer;
-            try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
+            try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
                 writer = dynamicBodySource.start(new DynamicBodySourceOutputStream(chunks));
             }
             catch (Exception e) {
@@ -1131,10 +1132,10 @@ public class JettyHttpClient
             private final Queue<ByteBuffer> chunks;
             private final Writer writer;
             private final AtomicLong bytesWritten;
-            private final String traceToken;
+            private final TraceToken traceToken;
 
             @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-            DynamicBodySourceIterator(Queue<ByteBuffer> chunks, Writer writer, AtomicLong bytesWritten, String traceToken)
+            DynamicBodySourceIterator(Queue<ByteBuffer> chunks, Writer writer, AtomicLong bytesWritten, TraceToken traceToken)
             {
                 this.chunks = chunks;
                 this.writer = writer;
@@ -1146,14 +1147,18 @@ public class JettyHttpClient
             protected ByteBuffer computeNext()
             {
                 ByteBuffer chunk = chunks.poll();
-                while (chunk == null) {
-                    try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
-                        writer.write();
+                if (chunk == null) {
+                    try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
+                        while (chunk == null) {
+                            try {
+                                writer.write();
+                            }
+                            catch (Exception e) {
+                                throw propagate(e);
+                            }
+                            chunk = chunks.poll();
+                        }
                     }
-                    catch (Exception e) {
-                        throw propagate(e);
-                    }
-                    chunk = chunks.poll();
                 }
 
                 if (chunk == DONE) {
@@ -1168,7 +1173,7 @@ public class JettyHttpClient
             public void close()
             {
                 if (writer instanceof AutoCloseable) {
-                    try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
+                    try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
                         ((AutoCloseable)writer).close();
                     }
                     catch (Exception e) {

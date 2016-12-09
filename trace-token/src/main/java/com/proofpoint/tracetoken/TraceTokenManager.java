@@ -16,15 +16,21 @@
 package com.proofpoint.tracetoken;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Thread.currentThread;
+import static java.util.Objects.requireNonNull;
 
 /**
- * Utility class for managing the trace token, a request identifier associated
- * with a thread while the thread is handling the request.
+ * Utility class for managing the trace token, a request identifier and set of
+ * properties associated with a thread while the thread is handling the request.
  */
 public final class TraceTokenManager
 {
@@ -34,28 +40,50 @@ public final class TraceTokenManager
     {}
 
     /**
-     * Associate a given trace token with the current thread.
+     * Associate a given trace token id, with no other properties, with the
+     * current thread.
      *
-     * @param token The token to associate with the current thread, or null to
+     * @param tokenId The tokenId to associate with the current thread, or null to
      * remove the thread's token.
-     * @return a TraceTokenScope which may be used to restore the thread's
+     * @return a {@link TraceTokenScope} which may be used to restore the thread's
      * previous association. Intended to be used with try-with-resources:
      * <code>
-     * try (TraceTokenScope ignored = registerRequestToken(traceToken)) {
+     * try (TraceTokenScope ignored = registerRequestToken(traceTokenId)) {
      *     // process request
      * }
      * </code>
      */
-    public static TraceTokenScope registerRequestToken(@Nullable String token)
+    public static TraceTokenScope registerRequestToken(@Nullable String tokenId)
     {
-        TokenState oldToken = TraceTokenManager.token.get();
+        if (tokenId == null) {
+            return registerTraceToken(null);
+        }
+        return registerTraceToken(new TraceToken(ImmutableMap.of("id", tokenId)));
+    }
+
+    /**
+     * Associate a given trace token with the current thread.
+     *
+     * @param token The {@link TraceToken} to associate with the current thread, or null to
+     * remove the thread's token.
+     * @return a {@link TraceTokenScope} which may be used to restore the thread's
+     * previous association. Intended to be used with try-with-resources:
+     * <code>
+     * try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
+     *     // process request
+     * }
+     * </code>
+     */
+    public static TraceTokenScope registerTraceToken(@Nullable TraceToken token)
+    {
+        TokenState oldTokenState = TraceTokenManager.token.get();
 
         String oldThreadName;
-        if (oldToken == null) {
+        if (oldTokenState == null) {
             oldThreadName = currentThread().getName();
         }
         else {
-            oldThreadName = oldToken.getOldThreadName();
+            oldThreadName = oldTokenState.getOldThreadName();
         }
 
         if (token == null) {
@@ -67,19 +95,34 @@ public final class TraceTokenManager
             currentThread().setName(oldThreadName + " " + token);
         }
 
-        if (oldToken == null) {
+        if (oldTokenState == null) {
             return new TraceTokenScope(null);
         }
         else {
-            return new TraceTokenScope(oldToken.getToken());
+            return new TraceTokenScope(oldTokenState.getToken());
         }
+    }
+
+    /**
+     * @return The current thread's trace token in string form, or null if no token.
+     * @deprecated Use {@link #getCurrentTraceToken()}.
+     */
+    @Deprecated
+    @Nullable
+    public static String getCurrentRequestToken()
+    {
+        TokenState tokenState = token.get();
+        if (tokenState == null) {
+            return null;
+        }
+        return tokenState.getToken().toString();
     }
 
     /**
      * @return The current thread's trace token, or null if no token.
      */
     @Nullable
-    public static String getCurrentRequestToken()
+    public static TraceToken getCurrentTraceToken()
     {
         TokenState tokenState = token.get();
         if (tokenState == null) {
@@ -89,13 +132,18 @@ public final class TraceTokenManager
     }
 
     /**
-     * Create and register a new trace token.
-     * @return The created token.
+     * Create and register a new trace token with a random id.
+     * @param properties Additional properties to include in the token.
+     * @return The id of the created token.
      */
-    public static String createAndRegisterNewRequestToken()
+    public static String createAndRegisterNewRequestToken(String... properties)
     {
+        checkArgument((properties.length % 2) == 0, "odd number of elements in properties");
         String newToken = UUID.randomUUID().toString();
         registerRequestToken(newToken);
+        if (properties.length != 0) {
+            addTraceTokenProperties(properties);
+        }
 
         return newToken;
     }
@@ -112,10 +160,38 @@ public final class TraceTokenManager
         }
     }
 
+    /**
+     * Add properties to the current thread's trace token. If there is
+     * currently no trace token, does nothing.
+     *
+     * @param properties Properties to add or replace.
+     * @return a {@link TraceTokenScope} which may be used to restore the thread's
+     * previous set of properties.
+     */
+    public static TraceTokenScope addTraceTokenProperties(String... properties)
+    {
+        TokenState tokenState = token.get();
+
+        if (tokenState == null) {
+            return new TraceTokenScope(null);
+        }
+
+        Map<String, String> map = new LinkedHashMap<>(tokenState.getToken());
+
+        checkArgument((properties.length % 2) == 0, "odd number of elements in properties");
+        for (int i = 0; i < properties.length; i += 2) {
+            requireNonNull(properties[i], "property key is null");
+            requireNonNull(properties[i+1], "property value is null");
+            map.put(properties[i], properties[i+1]);
+        }
+
+        return registerTraceToken(new TraceToken(map));
+    }
+
     @AutoValue
     abstract static class TokenState
     {
-        abstract String getToken();
+        abstract TraceToken getToken();
 
         abstract String getOldThreadName();
     }

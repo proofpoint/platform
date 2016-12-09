@@ -15,6 +15,9 @@
  */
 package com.proofpoint.http.server;
 
+import com.proofpoint.json.JsonCodec;
+import com.proofpoint.tracetoken.TraceToken;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -25,12 +28,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
 
 class TraceTokenFilter
         implements Filter
 {
+    private static final JsonCodec<TraceToken> TRACE_TOKEN_JSON_CODEC = jsonCodec(TraceToken.class);
+
     @Override
     public void init(FilterConfig filterConfig)
             throws ServletException
@@ -45,11 +52,19 @@ class TraceTokenFilter
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         String token = request.getHeader("X-Proofpoint-TraceToken");
-        if (token != null) {
-            registerRequestToken(token);
+        if (token == null || token.isEmpty()) {
+            createAndRegisterNewRequestToken();
+        }
+        else if (token.charAt(0) == '{') {
+            try {
+                registerTraceToken(TRACE_TOKEN_JSON_CODEC.fromJson(token));
+            }
+            catch (RuntimeException e) {
+                createAndRegisterNewRequestToken();
+            }
         }
         else {
-            createAndRegisterNewRequestToken();
+            registerRequestToken(token);
         }
         chain.doFilter(request, response);
     }

@@ -22,6 +22,7 @@ import java.net.URI;
 
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.TraceTokenRequestFilter.TRACETOKEN_HEADER;
+import static com.proofpoint.tracetoken.TraceTokenManager.addTraceTokenProperties;
 import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
 import static org.testng.Assert.assertEquals;
@@ -44,6 +45,23 @@ public class TestTraceTokenRequestFilter
         assertEquals(original.getHeaders().size(), 0);
         assertEquals(filtered.getHeaders().size(), 1);
         assertEquals(filtered.getHeaders().get(TRACETOKEN_HEADER), ImmutableList.of("testBasic"));
+    }
+
+    @Test
+    public void testWithProperties()
+    {
+        registerRequestToken("testBasic");
+        addTraceTokenProperties("key-b", "value-b", "key-a", "value-a", "key-c", "value-c");
+        TraceTokenRequestFilter filter = new TraceTokenRequestFilter();
+        Request original = prepareGet().setUri(URI.create("http://example.com")).build();
+
+        Request filtered = filter.filterRequest(original);
+
+        assertNotSame(filter, original);
+        assertEquals(filtered.getUri(), original.getUri());
+        assertEquals(original.getHeaders().size(), 0);
+        assertEquals(filtered.getHeaders().size(), 1);
+        assertEquals(filtered.getHeaders().get(TRACETOKEN_HEADER), ImmutableList.of("{\"id\":\"testBasic\",\"key-b\":\"value-b\",\"key-a\":\"value-a\",\"key-c\":\"value-c\"}"));
     }
 
     @Test

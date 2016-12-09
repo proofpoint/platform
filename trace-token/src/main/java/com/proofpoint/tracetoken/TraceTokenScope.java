@@ -17,7 +17,7 @@ package com.proofpoint.tracetoken;
 
 import javax.annotation.Nullable;
 
-import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
 
 /**
  * An object which, when closed, causes the thread's trace token state to be restored.
@@ -25,9 +25,9 @@ import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
 public class TraceTokenScope
     implements AutoCloseable
 {
-    private final String oldToken;
+    private final TraceToken oldToken;
 
-    TraceTokenScope(@Nullable String oldToken)
+    TraceTokenScope(@Nullable TraceToken oldToken)
     {
         this.oldToken = oldToken;
     }
@@ -35,6 +35,6 @@ public class TraceTokenScope
     @Override
     public void close()
     {
-        registerRequestToken(oldToken);
+        registerTraceToken(oldToken);
     }
 }
