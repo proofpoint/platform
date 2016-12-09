@@ -12,6 +12,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.proofpoint.platform</groupId>
+            <artifactId>json</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
         </dependency>

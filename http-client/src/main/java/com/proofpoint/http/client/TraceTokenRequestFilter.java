@@ -15,27 +15,43 @@
  */
 package com.proofpoint.http.client;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.proofpoint.json.JsonCodec;
+import com.proofpoint.tracetoken.TraceToken;
+
+import javax.inject.Inject;
+
 import static com.proofpoint.http.client.Request.Builder.fromRequest;
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
+import static com.proofpoint.json.JsonCodec.jsonCodec;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
+import static java.util.Objects.requireNonNull;
 
 public class TraceTokenRequestFilter
         implements HttpRequestFilter
 {
     public static final String TRACETOKEN_HEADER = "X-Proofpoint-Tracetoken";
+    private static final JsonCodec<TraceToken> TRACE_TOKEN_JSON_CODEC = jsonCodec(TraceToken.class).withoutPretty();
 
     @Override
     public Request filterRequest(Request request)
     {
-        checkNotNull(request, "request is null");
+        requireNonNull(request, "request is null");
 
-        String token = getCurrentRequestToken();
+        TraceToken token = getCurrentTraceToken();
         if (token == null) {
             return request;
         }
 
+        String tokenString;
+        if (token.size() == 1) {
+            tokenString = token.toString();
+        }
+        else {
+            tokenString = TRACE_TOKEN_JSON_CODEC.toJson(token);
+        }
+
         return fromRequest(request)
-                .addHeader(TRACETOKEN_HEADER, token)
+                .addHeader(TRACETOKEN_HEADER, tokenString)
                 .build();
     }
 
