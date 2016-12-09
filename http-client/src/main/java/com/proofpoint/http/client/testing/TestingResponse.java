@@ -1,7 +1,6 @@
 package com.proofpoint.http.client.testing;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -22,6 +21,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
@@ -81,7 +81,7 @@ public class TestingResponse
     @Override
     public String toString()
     {
-        return Objects.toStringHelper(this)
+        return toStringHelper(this)
                 .add("statusCode", getStatusCode())
                 .add("statusMessage", getStatusMessage())
                 .add("headers", getHeaders())
