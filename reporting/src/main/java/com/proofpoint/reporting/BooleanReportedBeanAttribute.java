@@ -21,7 +21,7 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
 
-import static com.google.common.base.Objects.firstNonNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
 import static java.util.Objects.requireNonNull;
 
