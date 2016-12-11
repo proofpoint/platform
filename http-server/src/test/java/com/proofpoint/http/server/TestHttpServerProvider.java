@@ -325,11 +325,14 @@ public class TestHttpServerProvider
         lifeCycleManager.start();
 
         try (JettyHttpClient client = new JettyHttpClient()) {
-            StatusResponse response = client.execute(prepareGet().setUri(httpServerInfo.getHttpUri()).build(), createStatusResponseHandler());
+            StatusResponse response = client.execute(prepareGet()
+                    .setUri(httpServerInfo.getHttpUri())
+                    .setHeader("X-Forwarded-For", "10.2.3.4")
+                    .build(), createStatusResponseHandler());
 
             String token = response.getHeader("X-Trace-Token-Was");
-            assertNotNull(token);
-            assertNotContains(token, "{");
+            assertEquals(token.length(), 32);
+            assertEquals(token.substring(0, 12), "fwAAAQ=AgME=");
         }
     }
 
@@ -379,12 +382,13 @@ public class TestHttpServerProvider
         try (JettyHttpClient client = new JettyHttpClient()) {
             StatusResponse response = client.execute(prepareGet()
                     .setUri(httpServerInfo.getHttpUri())
+                    .setHeader("X-Forwarded-For", "10.2.3.4")
                     .setHeader("X-Proofpoint-TraceToken", "{\"id\":\"testBasic\"")
                     .build(), createStatusResponseHandler());
 
             String token = response.getHeader("X-Trace-Token-Was");
-            assertNotNull(token);
-            assertNotContains(token, "{");
+            assertEquals(token.length(), 32);
+            assertEquals(token.substring(0, 12), "fwAAAQ=AgME=");
         }
     }
 

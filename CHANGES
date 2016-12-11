@@ -28,6 +28,9 @@ Platform 1.48
   deprecated TraceTokenManager.getCurrentRequestToken() in favor of the new
   TraceTokenManager.getCurrentTraceToken().
 
+  We changed the format of trace token ids created by the HTTP server so that
+  they start with an encoding of the server's and client's IPs.
+
 * Library Upgrades
 
   - bval-jsr 1.1.2 (from bval-jsr303 0.5)

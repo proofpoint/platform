@@ -27,16 +27,31 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 
+import static com.proofpoint.http.server.ClientInfoUtils.clientAddressFor;
 import static com.proofpoint.json.JsonCodec.jsonCodec;
-import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
+import static java.util.Objects.requireNonNull;
 
 class TraceTokenFilter
         implements Filter
 {
     private static final JsonCodec<TraceToken> TRACE_TOKEN_JSON_CODEC = jsonCodec(TraceToken.class);
+    private static final Encoder BASE64_URL_ENCODER = Base64.getUrlEncoder();
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private final String tokenPrefix;
+
+    TraceTokenFilter(InetAddress internalIp)
+    {
+        tokenPrefix = encodeAddress(requireNonNull(internalIp, "internalIp is null"));
+    }
 
     @Override
     public void init(FilterConfig filterConfig)
@@ -53,14 +68,14 @@ class TraceTokenFilter
 
         String token = request.getHeader("X-Proofpoint-TraceToken");
         if (token == null || token.isEmpty()) {
-            createAndRegisterNewRequestToken();
+            registerNewRequestToken(request);
         }
         else if (token.charAt(0) == '{') {
             try {
                 registerTraceToken(TRACE_TOKEN_JSON_CODEC.fromJson(token));
             }
             catch (RuntimeException e) {
-                createAndRegisterNewRequestToken();
+                registerNewRequestToken(request);
             }
         }
         else {
@@ -72,5 +87,39 @@ class TraceTokenFilter
     @Override
     public void destroy()
     {
+    }
+
+    private static String encodeAddress(InetAddress inetAddress)
+    {
+        byte[] address = inetAddress.getAddress();
+
+        if (address.length > 6) {
+            address = Arrays.copyOfRange(address, address.length - 6, address.length);
+        }
+        else if (address.length == 4 && address[0] == 10) {
+            address = Arrays.copyOfRange(address, 1, 4);
+        }
+
+        String encoded = BASE64_URL_ENCODER.encodeToString(address);
+        if (encoded.endsWith("==")) {
+            return encoded.replace("==", "=");
+        }
+        else if (encoded.endsWith("=")) {
+            return encoded;
+        }
+        else {
+            return encoded + "=";
+        }
+    }
+
+    private void registerNewRequestToken(HttpServletRequest request)
+            throws UnknownHostException
+    {
+        byte[] randomBytes = new byte[15];
+        SECURE_RANDOM.nextBytes(randomBytes);
+        registerRequestToken(tokenPrefix
+                + encodeAddress(InetAddress.getByName(clientAddressFor(request)))
+                + BASE64_URL_ENCODER.encodeToString(randomBytes)
+        );
     }
 }
