@@ -7,6 +7,9 @@ Platform 1.51
   deprecated TraceTokenManager.getCurrentRequestToken() in favor of the new
   TraceTokenManager.getCurrentTraceToken().
 
+  We changed the format of trace token ids created by the HTTP server so that
+  they start with an encoding of the server's and client's IPs.
+
 Platform 1.50
 
 * Deprecation removals
@@ -47,7 +50,7 @@ Platform 1.50
 
 Platform 1.49
 
-* HttpServer sets the blocking timout in order to work around a Jetty bug.
+* HttpServer sets the blocking timeout in order to work around a Jetty bug.
 
 * Library Upgrades
 

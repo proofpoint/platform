@@ -307,7 +307,7 @@ public class HttpServer
             handlers.addHandler(gzipHandler);
         }
 
-        handlers.addHandler(createServletContext(theServlet, parameters, false, filters, queryStringFilter, loginService, "http", "https"));
+        handlers.addHandler(createServletContext(theServlet, parameters, false, filters, queryStringFilter, loginService, nodeInfo, "http", "https"));
         if (logHandler != null) {
             handlers.addHandler(logHandler);
         }
@@ -322,7 +322,7 @@ public class HttpServer
 
         HandlerList rootHandlers = new HandlerList();
         if (theAdminServlet != null && config.isAdminEnabled()) {
-            rootHandlers.addHandler(createServletContext(theAdminServlet, adminParameters, true, adminFilters, queryStringFilter, loginService, "admin"));
+            rootHandlers.addHandler(createServletContext(theAdminServlet, adminParameters, true, adminFilters, queryStringFilter, loginService, nodeInfo, "admin"));
         }
         rootHandlers.addHandler(statsHandler);
         server.setHandler(rootHandlers);
@@ -339,6 +339,7 @@ public class HttpServer
             Set<Filter> filters,
             QueryStringFilter queryStringFilter,
             LoginService loginService,
+            NodeInfo nodeInfo,
             String... connectorNames)
     {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
@@ -350,7 +351,7 @@ public class HttpServer
         }
         context.addFilter(new FilterHolder(new TimingFilter()), "/*", null);
         context.addFilter(new FilterHolder(queryStringFilter), "/*", null);
-        context.addFilter(new FilterHolder(new TraceTokenFilter()), "/*", null);
+        context.addFilter(new FilterHolder(new TraceTokenFilter(nodeInfo.getInternalIp())), "/*", null);
 
         // -- gzip handler
         context.setGzipHandler(new HackGzipHandler());
