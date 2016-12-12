@@ -1,3 +1,11 @@
+Platform 1.54
+
+* Trace tokens
+
+  Since the trace token is (as of Platform 1.43) included in the thread name,
+  it was being included in the launcher.log twice. We removed it from its old
+  location.
+
 Platform 1.53
 
 * Library Upgrades
@@ -50,22 +58,6 @@ Platform 1.51
 
   We changed the format of trace token ids created by the HTTP server so that
   they start with an encoding of the server's and client's IPs.
-
-* We increased the default HttpClient connection timeout to 2 seconds.
-
-* We suppress logging the thread dump when Bootstrap is in quiet mode.
-
-* [Bug] The HttpServer.BusyThreads.Max metric leaked counts for calls
-  that threw uncaught exceptions.
-
-* Library Upgrades
-
-  - Guava to 21.0 (from 20.0)
-    - Objects.firstNonNull() and Objects.toStringHelper() removed
-      (use MoreObjects)
-    - MoreExecutors.sameThreadExecutor() removed
-      (use directExecutor() or newDirectExecutorService())
-    - MapConstraint and MapConstraints removed
 
 Platform 1.50
 
