@@ -55,7 +55,6 @@ class StaticFormatter
     public String format(LogRecord record)
     {
         ZonedDateTime timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.getMillis()), SYSTEM_ZONE);
-        String token = getCurrentRequestToken();
 
         StringWriter stringWriter = new StringWriter()
                 .append(TIMESTAMP_FORMATTER.format(timestamp))
@@ -65,12 +64,9 @@ class StaticFormatter
                 .append(Thread.currentThread().getName())
                 .append('\t')
                 .append(record.getLoggerName())
-                .append('\t');
-        if (token != null) {
-            stringWriter.append("TraceToken=")
-                    .append(token);
-        }
-        stringWriter.append('\t')
+                .append('\t')
+                // Trace token used to be here
+                .append('\t')
                 .append(record.getMessage());
 
         if (record.getThrown() != null) {
