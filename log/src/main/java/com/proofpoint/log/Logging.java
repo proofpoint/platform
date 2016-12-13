@@ -252,18 +252,19 @@ public class Logging
         rollingPolicy.setTotalSizeCap(new FileSize(maxTotalSize.toBytes()));
         rollingPolicy.setTimeBasedFileNamingAndTriggeringPolicy(triggeringPolicy);
         rollingPolicy.setParent(fileAppender);
-        rollingPolicy.start();
 
         triggeringPolicy.setContext(context);
         triggeringPolicy.setTimeBasedRollingPolicy(rollingPolicy);
-        triggeringPolicy.setMaxFileSize(Long.toString(maxFileSize.toBytes()));
-        triggeringPolicy.start();
+        triggeringPolicy.setMaxFileSize(new FileSize(maxFileSize.toBytes()));
 
         fileAppender.setContext(context);
         fileAppender.setFile(logPath);
         fileAppender.setAppend(true);
         fileAppender.setEncoder(encoder);
         fileAppender.setRollingPolicy(rollingPolicy);
+
+        rollingPolicy.start();
+        triggeringPolicy.start();
         fileAppender.start();
         return fileAppender;
     }
