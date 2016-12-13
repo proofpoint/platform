@@ -30,6 +30,7 @@ Platform 1.48
     - anyX() and any(SomeType.class) matchers now reject nulls and check type.
   - testng to 6.10 (from 6.9.6)
   - auto-value to 1.3 (from 1.1)
+  - logback to 1.1.8 (from 1.1.7)
 
 Platform 1.47
 

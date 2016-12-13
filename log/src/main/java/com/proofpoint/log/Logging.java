@@ -256,7 +256,7 @@ public class Logging
 
         triggeringPolicy.setContext(context);
         triggeringPolicy.setTimeBasedRollingPolicy(rollingPolicy);
-        triggeringPolicy.setMaxFileSize(Long.toString(maxFileSize.toBytes()));
+        triggeringPolicy.setMaxFileSize(new FileSize(maxFileSize.toBytes()));
         triggeringPolicy.start();
 
         fileAppender.setContext(context);
