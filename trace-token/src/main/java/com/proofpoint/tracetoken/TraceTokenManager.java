@@ -138,6 +138,7 @@ public final class TraceTokenManager
      */
     public static String createAndRegisterNewRequestToken(String... properties)
     {
+        checkArgument((properties.length % 2) == 0, "odd number of elements in properties");
         String newToken = UUID.randomUUID().toString();
         registerRequestToken(newToken);
         if (properties.length != 0) {

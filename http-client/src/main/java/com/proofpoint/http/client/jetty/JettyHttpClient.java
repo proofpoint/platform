@@ -1147,14 +1147,18 @@ public class JettyHttpClient
             protected ByteBuffer computeNext()
             {
                 ByteBuffer chunk = chunks.poll();
-                while (chunk == null) {
+                if (chunk == null) {
                     try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
-                        writer.write();
+                        while (chunk == null) {
+                            try {
+                                writer.write();
+                            }
+                            catch (Exception e) {
+                                throw propagate(e);
+                            }
+                            chunk = chunks.poll();
+                        }
                     }
-                    catch (Exception e) {
-                        throw propagate(e);
-                    }
-                    chunk = chunks.poll();
                 }
 
                 if (chunk == DONE) {
