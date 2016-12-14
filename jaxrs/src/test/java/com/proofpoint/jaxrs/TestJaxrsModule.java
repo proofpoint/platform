@@ -1,8 +1,11 @@
 package com.proofpoint.jaxrs;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
 import com.google.inject.Module;
+import com.proofpoint.configuration.ConfigurationFactory;
+import com.proofpoint.configuration.ConfigurationModule;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
@@ -23,9 +26,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
@@ -63,7 +69,7 @@ public class TestJaxrsModule
     public void testWadlDisabled()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(TestingResource.class));
+        createServer(binder -> jaxrsBinder(binder).bind(TestingResource.class), false);
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/application.wadl"))
@@ -77,7 +83,7 @@ public class TestJaxrsModule
     public void testOptionsDisabled()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(TestingResource.class));
+        createServer(binder -> jaxrsBinder(binder).bind(TestingResource.class), false);
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/"))
@@ -95,7 +101,7 @@ public class TestJaxrsModule
         createServer(binder -> {
             jaxrsBinder(binder).bindInstance(new InjectedResource());
             jaxrsBinder(binder).bindInjectionProvider(InjectedContextObject.class).to(InjectedContextObjectSupplier.class);
-        });
+        }, false);
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/injectedresource"))
@@ -114,7 +120,7 @@ public class TestJaxrsModule
             jaxrsBinder(binder).bindInstance(new InjectedResource2());
             jaxrsBinder(binder).bindInjectionProvider(InjectedContextObject.class).to(InjectedContextObjectSupplier.class);
             jaxrsBinder(binder).bindInjectionProvider(SecondInjectedContextObject.class).to(SecondInjectedContextObjectSupplier.class);
-        });
+        }, false);
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/injectedresource2"))
@@ -130,7 +136,7 @@ public class TestJaxrsModule
     public void testClientInfo()
         throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(ClientInfoResource.class));
+        createServer(binder -> jaxrsBinder(binder).bind(ClientInfoResource.class), false);
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/test"))
@@ -146,7 +152,7 @@ public class TestJaxrsModule
     public void testRedirectWithUnquotedSearch()
         throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(RedirectResource.class));
+        createServer(binder -> jaxrsBinder(binder).bind(RedirectResource.class), false);
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/test"))
@@ -157,7 +163,38 @@ public class TestJaxrsModule
 
     }
 
-    private void createServer(Module module)
+    @Test
+    public void testQueryParamAsFormParamEnabled()
+            throws Exception
+    {
+        createServer(binder -> jaxrsBinder(binder).bind(FormParamResource.class), true);
+
+        Request request = Request.builder()
+                            .setUri(uriBuilderFrom(server.getBaseUrl().resolve("/test")).addParameter("testParam", "foo").build())
+                            .setMethod("POST")
+                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
+                            .build();
+        StringResponse response = client.execute(request, createStringResponseHandler());
+        assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
+        assertEquals(response.getBody(), "foo");
+    }
+
+    @Test
+    public void testQueryParamAsFormParamDisabled()
+            throws Exception
+    {
+        createServer(binder -> jaxrsBinder(binder).bind(FormParamResource.class), false);
+
+        Request request = Request.builder()
+                .setUri(uriBuilderFrom(server.getBaseUrl().resolve("/test")).addParameter("testParam", "foo").build())
+                .setMethod("POST")
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
+                .build();
+        StringResponse response = client.execute(request, createStringResponseHandler());
+        assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());
+    }
+
+    private void createServer(Module module, boolean queryParamsAsFormParams)
             throws Exception
     {
         server = Guice.createInjector(
@@ -167,6 +204,7 @@ public class TestJaxrsModule
                 new JsonModule(),
                 new ReportingModule(),
                 new TestingHttpServerModule(),
+                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of("jaxrs.query-params-as-form-params", String.valueOf(queryParamsAsFormParams)))),
                 module)
                 .getInstance(TestingHttpServer.class);
         server.start();

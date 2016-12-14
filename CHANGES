@@ -21,6 +21,13 @@ Platform 1.48
   the BalancingHttpClient will call the ResponseHandler with the Request that
   was passed to the BalancingHttpClient.
 
+* JAX-RS
+
+  We disabled processing of query parameters as form parameters for resources
+  that consume application/x-www-form-urlencoded content. We added a
+  configuration option "jaxrs.query-params-as-form-params" for re-enabling
+  this behavior.
+
 * Library Upgrades
 
   - bval-jsr 1.1.2 (from bval-jsr303 0.5)

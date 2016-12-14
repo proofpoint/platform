@@ -15,9 +15,12 @@
  */
 package com.proofpoint.jaxrs;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Module;
+import com.proofpoint.configuration.ConfigurationFactory;
+import com.proofpoint.configuration.ConfigurationModule;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
@@ -224,6 +227,7 @@ public class TestOverrideMethodFilterInHttpServer
                 explicitJaxrsModule(),
                 new JsonModule(),
                 new ReportingModule(),
+                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of("jaxrs.query-params-as-form-params", "false"))),
                 new Module()
                 {
                     @Override
