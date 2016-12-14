@@ -35,9 +35,11 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.jersey.servlet.ServletProperties;
 
 import javax.servlet.Servlet;
 import javax.ws.rs.Path;
@@ -54,6 +56,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.MapBinder.newMapBinder;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 
 public class JaxrsModule
@@ -102,6 +105,8 @@ public class JaxrsModule
         jaxrsBinder(binder).bindAdmin(OverrideMethodFilter.class);
         jaxrsBinder(binder).bindAdmin(WadlResource.class);
 
+        bindConfig(binder).to(JaxrsConfig.class);
+
         newSetBinder(binder, Object.class, JaxrsResource.class).permitDuplicates();
         newSetBinder(binder, JaxrsBinding.class, JaxrsResource.class).permitDuplicates();
         newMapBinder(binder, new TypeLiteral<Class<?>>() {}, new TypeLiteral<Supplier<?>>() {}, JaxrsInjectionProvider.class);
@@ -114,13 +119,16 @@ public class JaxrsModule
     }
 
     @Provides
-    public ResourceConfig createResourceConfig(Application application, @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap, WadlResource wadlResource)
+    public ResourceConfig createResourceConfig(Application application, @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap, WadlResource wadlResource, JaxrsConfig jaxrsConfig)
     {
         ResourceConfig config = ResourceConfig.forApplication(application);
-        config.setProperties(ImmutableMap.of(
-                "jersey.config.server.wadl.disableWadl", "true",
-                "jersey.config.server.headers.location.relative.resolution.disabled", "true"
-        ));
+        config.setProperties(ImmutableMap.<String, String>builder()
+                .put(ServerProperties.WADL_FEATURE_DISABLE, "true")
+                .put(ServerProperties.LOCATION_HEADER_RELATIVE_URI_RESOLUTION_DISABLED, "true")
+                .put(ServletProperties.QUERY_PARAMS_AS_FORM_PARAMS_DISABLED,
+                        String.valueOf(!jaxrsConfig.isQueryParamsAsFormParams()))
+                .build());
+
         config.register(MultiPartFeature.class);
 
         config.register(new ContainerLifecycleListener()
