@@ -8,7 +8,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 @Path("/test")
 public class FormParamResource
@@ -18,7 +17,7 @@ public class FormParamResource
     public Response post(@FormParam("testParam") String testParam)
     {
         if (Strings.isNullOrEmpty(testParam)) {
-            return Response.status(Status.BAD_REQUEST).build();
+            return Response.ok("Empty param").build();
         }
         return Response.ok(testParam).build();
     }

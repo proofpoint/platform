@@ -191,8 +191,8 @@ public class TestJaxrsModule
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                 .build();
         StringResponse response = client.execute(request, createStringResponseHandler());
-        assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());
-    }
+        assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
+        assertEquals(response.getBody(), "Empty param");    }
 
     private void createServer(Module module, boolean queryParamsAsFormParams)
             throws Exception
