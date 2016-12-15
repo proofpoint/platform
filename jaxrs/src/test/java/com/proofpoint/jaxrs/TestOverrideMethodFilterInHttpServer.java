@@ -15,12 +15,8 @@
  */
 package com.proofpoint.jaxrs;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.Binder;
-import com.google.inject.Guice;
-import com.google.inject.Module;
-import com.proofpoint.configuration.ConfigurationFactory;
-import com.proofpoint.configuration.ConfigurationModule;
+import com.google.inject.Injector;
+import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
@@ -28,10 +24,10 @@ import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.server.testing.TestingHttpServer;
 import com.proofpoint.http.server.testing.TestingHttpServerModule;
 import com.proofpoint.json.JsonModule;
-import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.testing.Closeables;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -41,6 +37,7 @@ import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
@@ -58,33 +55,32 @@ public class TestOverrideMethodFilterInHttpServer
     private static final String PUT = "PUT";
     private static final String DELETE = "DELETE";
 
+    private final HttpClient client = new JettyHttpClient();
+
+    private LifeCycleManager lifeCycleManager;
     private TestingHttpServer server;
     private TestingResource resource;
-    private HttpClient client;
 
     @BeforeMethod
     public void setup()
             throws Exception
     {
         resource = new TestingResource();
-        server = createServer(resource);
-
-        client = new JettyHttpClient();
-
-        server.start();
+        createServer(resource);
     }
 
     @AfterMethod
     public void teardown()
             throws Exception
     {
-        try {
-            if (server != null) {
-                server.stop();
-            }
+        if (lifeCycleManager != null) {
+            lifeCycleManager.stop();
         }
-        catch (Throwable ignored) {
-        }
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void teardownClass()
+    {
         Closeables.closeQuietly(client);
     }
 
@@ -219,31 +215,20 @@ public class TestOverrideMethodFilterInHttpServer
         assertNonOverridableMethod(buildRequestWithQueryParam(PUT, GET));
     }
 
-    private static TestingHttpServer createServer(final TestingResource resource)
+    private void createServer(final TestingResource resource)
+            throws Exception
     {
-        return Guice.createInjector(
-                new ApplicationNameModule("test-application"),
-                new TestingNodeModule(),
-                explicitJaxrsModule(),
-                new JsonModule(),
-                new ReportingModule(),
-                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of("jaxrs.query-params-as-form-params", "false"))),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(MBeanServer.class).toInstance(mock(MBeanServer.class));
-                    }
-                },
-                new TestingHttpServerModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        jaxrsBinder(binder).bindInstance(resource);
-                    }
-                }).getInstance(TestingHttpServer.class);
+        Injector injector = bootstrapTest()
+                .withModules(
+                        new TestingNodeModule(),
+                        explicitJaxrsModule(),
+                        new JsonModule(),
+                        new ReportingModule(),
+                        binder -> binder.bind(MBeanServer.class).toInstance(mock(MBeanServer.class)),
+                        new TestingHttpServerModule(),
+                        binder -> jaxrsBinder(binder).bindInstance(resource))
+                .initialize();
+        lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+        server = injector.getInstance(TestingHttpServer.class);
     }
 }
