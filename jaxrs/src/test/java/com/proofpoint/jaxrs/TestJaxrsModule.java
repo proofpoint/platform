@@ -1,11 +1,9 @@
 package com.proofpoint.jaxrs;
 
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.proofpoint.configuration.ConfigurationFactory;
-import com.proofpoint.configuration.ConfigurationModule;
+import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
@@ -31,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
@@ -47,15 +46,15 @@ public class TestJaxrsModule
 
     private final JettyHttpClient client = new JettyHttpClient();
 
+    private LifeCycleManager lifeCycleManager;
     private TestingHttpServer server;
 
     @AfterMethod(alwaysRun = true)
     public void teardown()
             throws Exception
     {
-        if (server != null) {
-            server.stop();
-            server = null;
+        if (lifeCycleManager != null) {
+            lifeCycleManager.stop();
         }
     }
 
@@ -197,17 +196,19 @@ public class TestJaxrsModule
     private void createServer(Module module, boolean queryParamsAsFormParams)
             throws Exception
     {
-        server = Guice.createInjector(
-                new ApplicationNameModule("test-application"),
-                new TestingNodeModule(),
-                explicitJaxrsModule(),
-                new JsonModule(),
-                new ReportingModule(),
-                new TestingHttpServerModule(),
-                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of("jaxrs.query-params-as-form-params", String.valueOf(queryParamsAsFormParams)))),
-                module)
-                .getInstance(TestingHttpServer.class);
-        server.start();
+        Injector injector = bootstrapTest()
+                .withModules(
+                        new ApplicationNameModule("test-application"),
+                        new TestingNodeModule(),
+                        explicitJaxrsModule(),
+                        new JsonModule(),
+                        new ReportingModule(),
+                        new TestingHttpServerModule(),
+                        module)
+                .setRequiredConfigurationProperty("jaxrs.query-params-as-form-params", String.valueOf(queryParamsAsFormParams))
+                .initialize();
+        lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+        server = injector.getInstance(TestingHttpServer.class);
     }
 
     @Path("/injectedresource")

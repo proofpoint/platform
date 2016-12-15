@@ -16,12 +16,8 @@
 
 package com.proofpoint.jaxrs;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.Binder;
-import com.google.inject.Guice;
-import com.google.inject.Module;
-import com.proofpoint.configuration.ConfigurationFactory;
-import com.proofpoint.configuration.ConfigurationModule;
+import com.google.inject.Injector;
+import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
@@ -33,6 +29,7 @@ import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.testing.Closeables;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -44,6 +41,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
@@ -54,36 +52,32 @@ import static org.testng.Assert.assertEquals;
 @Test(singleThreaded = true)
 public class TestQueryParamExceptionMapper
 {
-
     private static final String GET = "GET";
 
+    private final HttpClient client = new JettyHttpClient();
+
+    private LifeCycleManager lifeCycleManager;
     private TestingHttpServer server;
-    private TestQueryParamResource resource;
-    private HttpClient client;
 
     @BeforeMethod
     public void setup()
             throws Exception
     {
-        resource = new TestQueryParamResource();
-        server = createServer(resource);
-
-        client = new JettyHttpClient();
-
-        server.start();
+        createServer(new TestQueryParamResource());
     }
 
     @AfterMethod
     public void teardown()
             throws Exception
     {
-        try {
-            if (server != null) {
-                server.stop();
-            }
+        if (lifeCycleManager != null) {
+            lifeCycleManager.stop();
         }
-        catch (Throwable ignored) {
-        }
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void teardownClass()
+    {
         Closeables.closeQuietly(client);
     }
 
@@ -108,32 +102,22 @@ public class TestQueryParamExceptionMapper
         return Request.builder().setUri(server.getBaseUrl().resolve(format("/?count=%s", override))).setMethod(type).build();
     }
 
-    private static TestingHttpServer createServer(final TestQueryParamResource resource)
+    private void createServer(final TestQueryParamResource resource)
+            throws Exception
     {
-        return Guice.createInjector(
+        Injector injector = bootstrapTest()
+                .withModules(
                 new ApplicationNameModule("test-application"),
                 new TestingNodeModule(),
                 explicitJaxrsModule(),
                 new JsonModule(),
                 new ReportingModule(),
-                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of("jaxrs.query-params-as-form-params", "false"))),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(MBeanServer.class).toInstance(mock(MBeanServer.class));
-                    }
-                },
+                binder -> binder.bind(MBeanServer.class).toInstance(mock(MBeanServer.class)),
                 new TestingHttpServerModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        jaxrsBinder(binder).bindInstance(resource);
-                    }
-                }).getInstance(TestingHttpServer.class);
+                binder -> jaxrsBinder(binder).bindInstance(resource))
+                .initialize();
+        lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+        server = injector.getInstance(TestingHttpServer.class);
     }
 
     @Path("/")
