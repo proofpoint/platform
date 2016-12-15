@@ -9,6 +9,7 @@ import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.log.Logging;
 import com.proofpoint.testing.Assertions;
 import com.proofpoint.testing.Closeables;
+import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -77,7 +78,7 @@ import static com.proofpoint.testing.Assertions.assertGreaterThan;
 import static com.proofpoint.testing.Assertions.assertLessThan;
 import static com.proofpoint.testing.Closeables.closeQuietly;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.units.Duration.nanosSince;
 import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
@@ -829,10 +830,11 @@ public abstract class AbstractHttpClientTest
     public void testDynamicBodySourceSeesTraceToken()
             throws Exception
     {
-        final String token = createAndRegisterNewRequestToken();
-        final AtomicReference<String> writeToken = new AtomicReference<>();
+        createAndRegisterNewRequestToken("somekey", "somevalue");
+        TraceToken token = getCurrentTraceToken();
+        AtomicReference<TraceToken> writeToken = new AtomicReference<>();
         CountDownLatch closeLatch = new CountDownLatch(1);
-        final AtomicReference<String> closeToken = new AtomicReference<>();
+        AtomicReference<TraceToken> closeToken = new AtomicReference<>();
         URI uri = baseURI.resolve("/road/to/nowhere");
         Request request = preparePut()
                 .setUri(uri)
@@ -840,7 +842,7 @@ public abstract class AbstractHttpClientTest
                 .addHeader("dupe", "first")
                 .addHeader("dupe", "second")
                 .setBodySource((DynamicBodySource) out -> {
-                    assertEquals(getCurrentRequestToken(), token);
+                    assertEquals(getCurrentTraceToken(), token);
                     return new TraceTokenTestWriter(out, writeToken, closeLatch, closeToken);
                 })
                 .build();
@@ -862,11 +864,11 @@ public abstract class AbstractHttpClientTest
             implements Writer, AutoCloseable
     {
         private final OutputStream out;
-        private final AtomicReference<String> writeToken;
+        private final AtomicReference<TraceToken> writeToken;
         private final CountDownLatch closeLatch;
-        private final AtomicReference<String> closeToken;
+        private final AtomicReference<TraceToken> closeToken;
 
-        TraceTokenTestWriter(OutputStream out, AtomicReference<String> writeToken, CountDownLatch closeLatch, AtomicReference<String> closeToken)
+        TraceTokenTestWriter(OutputStream out, AtomicReference<TraceToken> writeToken, CountDownLatch closeLatch, AtomicReference<TraceToken> closeToken)
         {
             this.out = out;
             this.writeToken = writeToken;
@@ -878,14 +880,14 @@ public abstract class AbstractHttpClientTest
         public void write()
                 throws Exception
         {
-            writeToken.set(getCurrentRequestToken());
+            writeToken.set(getCurrentTraceToken());
             out.close();
         }
 
         @Override
         public void close()
         {
-            closeToken.set(getCurrentRequestToken());
+            closeToken.set(getCurrentTraceToken());
             closeLatch.countDown();
         }
     }
@@ -894,7 +896,8 @@ public abstract class AbstractHttpClientTest
     public void testResponseHandlerExceptionSeesTraceToken()
             throws Exception
     {
-        final String token = createAndRegisterNewRequestToken();
+        createAndRegisterNewRequestToken("somekey", "somevalue");
+        TraceToken token = getCurrentTraceToken();
         int port = findUnusedPort();
 
         HttpClientConfig config = createClientConfig();
@@ -910,7 +913,7 @@ public abstract class AbstractHttpClientTest
             public Void handleException(Request request, Exception exception)
                     throws RuntimeException
             {
-                assertEquals(getCurrentRequestToken(), token);
+                assertEquals(getCurrentTraceToken(), token);
                 return null;
             }
 
@@ -928,7 +931,8 @@ public abstract class AbstractHttpClientTest
     public void testResponseHandlerResponseSeesTraceToken()
             throws Exception
     {
-        final String token = createAndRegisterNewRequestToken();
+        createAndRegisterNewRequestToken("somekey", "somevalue");
+        TraceToken token = getCurrentTraceToken();
         Request request = prepareGet()
                 .setUri(baseURI)
                 .build();
@@ -947,7 +951,7 @@ public abstract class AbstractHttpClientTest
             public Void handle(Request request, Response response)
                     throws RuntimeException
             {
-                assertEquals(getCurrentRequestToken(), token);
+                assertEquals(getCurrentTraceToken(), token);
                 return null;
             }
         });

@@ -15,13 +15,14 @@
  */
 package com.proofpoint.concurrent;
 
+import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.tracetoken.TraceTokenScope;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
-import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
 
 public class TraceTokenCopyingExecutor
     extends WrappingExecutorService
@@ -46,9 +47,9 @@ public class TraceTokenCopyingExecutor
     @Override
     protected <T> Callable<T> wrapTask(Callable<T> callable)
     {
-        String token = getCurrentRequestToken();
+        TraceToken token = getCurrentTraceToken();
         return () -> {
-            try (TraceTokenScope ignored = registerRequestToken(token)) {
+            try (TraceTokenScope ignored = registerTraceToken(token)) {
                 return callable.call();
             }
         };
@@ -57,9 +58,9 @@ public class TraceTokenCopyingExecutor
     @Override
     protected Runnable wrapTask(Runnable command)
     {
-        String token = getCurrentRequestToken();
+        TraceToken token = getCurrentTraceToken();
         return () -> {
-            try (TraceTokenScope ignored = registerRequestToken(token)) {
+            try (TraceTokenScope ignored = registerTraceToken(token)) {
                 command.run();
             }
         };

@@ -15,6 +15,7 @@
  */
 package com.proofpoint.concurrent;
 
+import com.proofpoint.tracetoken.TraceToken;
 import org.testng.annotations.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.proofpoint.concurrent.TraceTokenCopyingExecutor.traceTokenCopyingExecutor;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testng.Assert.assertEquals;
@@ -37,15 +38,16 @@ public class TestTraceTokenCopyingExecutor
     public void testCallableTraceTokenCopied()
             throws InterruptedException, ExecutionException
     {
-        AtomicReference<String> actualToken = new AtomicReference<>();
+        AtomicReference<TraceToken> actualToken = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
         ExecutorService innerExecutor = newSingleThreadExecutor();
         Object expectedReturn = new Object();
 
         try {
-            String token = createAndRegisterNewRequestToken();
+            createAndRegisterNewRequestToken("somekey", "somevalue");
+            TraceToken token = getCurrentTraceToken();
             Future<Object> future = traceTokenCopyingExecutor(innerExecutor).submit(() -> {
-                actualToken.set(getCurrentRequestToken());
+                actualToken.set(getCurrentTraceToken());
                 latch.countDown();
                 return expectedReturn;
             });
@@ -62,14 +64,15 @@ public class TestTraceTokenCopyingExecutor
     public void testRunnableTraceTokenCopied()
             throws InterruptedException, ExecutionException
     {
-        AtomicReference<String> actualToken = new AtomicReference<>();
+        AtomicReference<TraceToken> actualToken = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
         ExecutorService innerExecutor = newSingleThreadExecutor();
 
         try {
-            String token = createAndRegisterNewRequestToken();
+            createAndRegisterNewRequestToken("somekey", "somevalue");
+            TraceToken token = getCurrentTraceToken();
             traceTokenCopyingExecutor(innerExecutor).execute(() -> {
-                actualToken.set(getCurrentRequestToken());
+                actualToken.set(getCurrentTraceToken());
                 latch.countDown();
             });
             assertTrue(latch.await(10, SECONDS));

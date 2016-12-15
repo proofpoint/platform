@@ -21,6 +21,16 @@ Platform 1.48
   the BalancingHttpClient will call the ResponseHandler with the Request that
   was passed to the BalancingHttpClient.
 
+* Trace tokens
+
+  We extended TraceTokenManager to support adding additional properties to the
+  trace token state. To this end, we created a new TraceToken class and
+  deprecated TraceTokenManager.getCurrentRequestToken() in favor of the new
+  TraceTokenManager.getCurrentTraceToken().
+
+  We changed the format of trace token ids created by the HTTP server so that
+  they start with an encoding of the server's and client's IPs.
+
 * Library Upgrades
 
   - bval-jsr 1.1.2 (from bval-jsr303 0.5)

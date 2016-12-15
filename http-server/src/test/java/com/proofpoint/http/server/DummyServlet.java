@@ -16,12 +16,16 @@
 package com.proofpoint.http.server;
 
 import com.google.common.io.ByteStreams;
+import com.proofpoint.tracetoken.TraceToken;
+import com.proofpoint.tracetoken.TraceTokenManager;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 
 class DummyServlet
         extends HttpServlet
@@ -33,6 +37,10 @@ class DummyServlet
         resp.setStatus(HttpServletResponse.SC_OK);
         if (req.getUserPrincipal() != null) {
             resp.getOutputStream().write(req.getUserPrincipal().getName().getBytes());
+        }
+        TraceToken token = getCurrentTraceToken();
+        if (token != null) {
+            resp.addHeader("X-Trace-Token-Was", token.toString());
         }
     }
 

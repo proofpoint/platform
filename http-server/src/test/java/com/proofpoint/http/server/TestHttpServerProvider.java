@@ -55,6 +55,7 @@ import static com.proofpoint.http.client.StaticBodyGenerator.createStaticBodyGen
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.testing.Assertions.assertContains;
+import static com.proofpoint.testing.Assertions.assertNotContains;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -103,7 +104,7 @@ public class TestHttpServerProvider
         lifeCycleManager = new LifeCycleManager(ImmutableList.of(), null, new LifeCycleConfig());
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void teardown()
             throws Exception
     {
@@ -314,6 +315,81 @@ public class TestHttpServerProvider
                 .setHttpsPort(0);
         createAndStartServer();
         assertNull(server.getDaysUntilCertificateExpiration());
+    }
+
+    @Test
+    public void testCreatesTraceToken()
+            throws Exception
+    {
+        createServer();
+        lifeCycleManager.start();
+
+        try (JettyHttpClient client = new JettyHttpClient()) {
+            StatusResponse response = client.execute(prepareGet()
+                    .setUri(httpServerInfo.getHttpUri())
+                    .setHeader("X-Forwarded-For", "10.2.3.4")
+                    .build(), createStatusResponseHandler());
+
+            String token = response.getHeader("X-Trace-Token-Was");
+            assertEquals(token.length(), 32);
+            assertEquals(token.substring(0, 12), "fwAAAQ=AgME=");
+        }
+    }
+
+    @Test
+    public void testSimpleTraceToken()
+            throws Exception
+    {
+        createServer();
+        lifeCycleManager.start();
+
+        try (JettyHttpClient client = new JettyHttpClient()) {
+            StatusResponse response = client.execute(prepareGet()
+                    .setUri(httpServerInfo.getHttpUri())
+                    .setHeader("X-Proofpoint-TraceToken", "some-token-value")
+                    .build(), createStatusResponseHandler());
+
+            String token = response.getHeader("X-Trace-Token-Was");
+            assertEquals(token, "some-token-value");
+        }
+    }
+
+    @Test
+    public void testTraceTokenWithProperties()
+            throws Exception
+    {
+        createServer();
+        lifeCycleManager.start();
+
+        try (JettyHttpClient client = new JettyHttpClient()) {
+            StatusResponse response = client.execute(prepareGet()
+                    .setUri(httpServerInfo.getHttpUri())
+                    .setHeader("X-Proofpoint-TraceToken", "{\"id\":\"testBasic\",\"key-b\":\"value-b\",\"key-a\":\"value-a\",\"key-c\":\"value-c\"}")
+                    .build(), createStatusResponseHandler());
+
+            String token = response.getHeader("X-Trace-Token-Was");
+            assertEquals(token, "{id=testBasic, key-b=value-b, key-a=value-a, key-c=value-c}");
+        }
+    }
+
+    @Test
+    public void testInvalidTraceToken()
+            throws Exception
+    {
+        createServer();
+        lifeCycleManager.start();
+
+        try (JettyHttpClient client = new JettyHttpClient()) {
+            StatusResponse response = client.execute(prepareGet()
+                    .setUri(httpServerInfo.getHttpUri())
+                    .setHeader("X-Forwarded-For", "10.2.3.4")
+                    .setHeader("X-Proofpoint-TraceToken", "{\"id\":\"testBasic\"")
+                    .build(), createStatusResponseHandler());
+
+            String token = response.getHeader("X-Trace-Token-Was");
+            assertEquals(token.length(), 32);
+            assertEquals(token.substring(0, 12), "fwAAAQ=AgME=");
+        }
     }
 
     @Test(expectedExceptions = IllegalStateException.class, expectedExceptionsMessageRegExp = "Insufficient threads: .*")
