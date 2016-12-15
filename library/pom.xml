@@ -233,9 +233,7 @@
                     <version>2.19.1</version>
                     <configuration>
                         <systemPropertyVariables>
-                            <file.encoding>${project.build.sourceEncoding}</file.encoding>
                             <sun.jnu.encoding>${project.build.sourceEncoding}</sun.jnu.encoding>
-                            <user.timezone>UTC</user.timezone>
                             <java.awt.headless>true</java.awt.headless>
                         </systemPropertyVariables>
                         <forkMode>${platform.test.fork-mode}</forkMode>
@@ -243,6 +241,7 @@
                         <argLine>
                             ${argLine}
                             -Duser.timezone=UTC
+                            -Dfile.encoding=${project.build.sourceEncoding}
                             -Xmx${platform.test.jvmsize}
                             -Xms${platform.test.jvmsize}
                             -XX:OnOutOfMemoryError="kill -9 %p"
