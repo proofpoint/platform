@@ -161,7 +161,8 @@ public final class TraceTokenManager
     }
 
     /**
-     * Add properties to the current thread's trace token.
+     * Add properties to the current thread's trace token. If there is
+     * currently no trace token, does nothing.
      *
      * @param properties Properties to add or replace.
      * @return a {@link TraceTokenScope} which may be used to restore the thread's
@@ -170,7 +171,10 @@ public final class TraceTokenManager
     public static TraceTokenScope addTraceTokenProperties(String... properties)
     {
         TokenState tokenState = token.get();
-        checkState(tokenState != null, "no current trace token");
+
+        if (tokenState == null) {
+            return new TraceTokenScope(null);
+        }
 
         Map<String, String> map = new LinkedHashMap<>(tokenState.getToken());
 

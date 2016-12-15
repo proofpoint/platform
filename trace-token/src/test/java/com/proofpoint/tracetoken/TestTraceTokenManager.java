@@ -228,4 +228,20 @@ public class TestTraceTokenManager
         assertEquals(getCurrentTraceToken(), TESTING_TRACE_TOKEN);
         assertEquals(currentThread().getName(), "testing thread name {id=testing-id, key-d=value-d}");
     }
+
+    @Test
+    public void testAddTraceTokenPropertiesNoTraceToken()
+    {
+        clearRequestToken();
+
+        try (TraceTokenScope ignored = addTraceTokenProperties("key-f", "value-f", "key-a", "value-a"))
+        {
+            assertNull(getCurrentRequestToken());
+            assertNull(getCurrentTraceToken());
+            assertEquals(currentThread().getName(), "testing thread name");
+        }
+        assertNull(getCurrentRequestToken());
+        assertNull(getCurrentTraceToken());
+        assertEquals(currentThread().getName(), "testing thread name");
+    }
 }
