@@ -4,6 +4,9 @@ Platform 1.50
 
   We added the application and Platform version numbers to NodeInfo.
 
+  The ReportCollector.ServerStart and ReportCollector.NumMetrics metrics
+  now carry applicationVersion and platformVersion tags.
+
 * We added an /admin/jstack resource on the admin port to dump the thread
   stacks.
 
