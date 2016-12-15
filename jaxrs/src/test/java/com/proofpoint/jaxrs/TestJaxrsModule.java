@@ -11,7 +11,6 @@ import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.server.testing.TestingHttpServer;
 import com.proofpoint.http.server.testing.TestingHttpServerModule;
 import com.proofpoint.json.JsonModule;
-import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.testing.Closeables;
@@ -198,7 +197,6 @@ public class TestJaxrsModule
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        new ApplicationNameModule("test-application"),
                         new TestingNodeModule(),
                         explicitJaxrsModule(),
                         new JsonModule(),
