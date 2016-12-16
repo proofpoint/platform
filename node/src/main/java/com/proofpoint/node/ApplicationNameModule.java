@@ -18,6 +18,7 @@ package com.proofpoint.node;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 
+import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ApplicationNameModule implements Module
@@ -33,5 +34,11 @@ public class ApplicationNameModule implements Module
     public void configure(Binder binder)
     {
         binder.bindConstant().annotatedWith(ApplicationName.class).to(applicationName);
+        binder.bindConstant().annotatedWith(ApplicationVersion.class).to(
+                firstNonNull(System.getProperty("launcher.main.version"), "")
+        );
+        binder.bindConstant().annotatedWith(PlatformVersion.class).to(
+                firstNonNull(getClass().getPackage().getImplementationVersion(), "")
+        );
     }
 }

@@ -1,5 +1,9 @@
 Platform 1.50
 
+* Version numbers
+
+  We added the application and Platform version numbers to NodeInfo.
+
 * We added an /admin/jstack resource on the admin port to dump the thread
   stacks.
 

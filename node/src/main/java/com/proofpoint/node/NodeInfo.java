@@ -35,7 +35,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 @Singleton
 public class NodeInfo
@@ -43,6 +43,8 @@ public class NodeInfo
     private static final Pattern HOST_EXCEPTION_MESSAGE_PATTERN = Pattern.compile("([-_a-zA-Z0-9]+):.*");
 
     private final String application;
+    private final String applicationVersion;
+    private final String platformVersion;
     private final String environment;
     private final String pool;
     private final String nodeId;
@@ -59,10 +61,20 @@ public class NodeInfo
         this("test-application", new NodeConfig().setEnvironment(environment));
     }
 
+    public NodeInfo(String application, NodeConfig config)
+    {
+        this(application, "", "", config);
+    }
+
     @Inject
-    public NodeInfo(@ApplicationName String application, NodeConfig config)
+    public NodeInfo(@ApplicationName String application,
+            @ApplicationVersion String applicationVersion,
+            @PlatformVersion String platformVersion,
+            NodeConfig config)
     {
         this(application,
+                applicationVersion,
+                platformVersion,
                 config.getEnvironment(),
                 config.getPool(),
                 config.getNodeId(),
@@ -75,6 +87,8 @@ public class NodeInfo
     }
 
     public NodeInfo(String application,
+            String applicationVersion,
+            String platformVersion,
             String environment,
             String pool,
             String nodeId,
@@ -84,13 +98,17 @@ public class NodeInfo
             String externalAddress,
             String location)
     {
-        checkNotNull(application, "application is null");
-        checkNotNull(environment, "environment is null");
-        checkNotNull(pool, "pool is null");
+        requireNonNull(application, "application is null");
+        requireNonNull(applicationVersion, "applicationVersion is null");
+        requireNonNull(platformVersion, "platformVersion is null");
+        requireNonNull(environment, "environment is null");
+        requireNonNull(pool, "pool is null");
         checkArgument(environment.matches(NodeConfig.ENV_REGEXP), "environment '%s' is invalid", environment);
         checkArgument(pool.matches(NodeConfig.POOL_REGEXP), "pool '%s' is invalid", pool);
 
         this.application = application;
+        this.applicationVersion = applicationVersion;
+        this.platformVersion = platformVersion;
         this.environment = environment;
         this.pool = pool;
 
@@ -146,6 +164,24 @@ public class NodeInfo
     public String getApplication()
     {
         return application;
+    }
+
+    /**
+     * The version of this application server, or the empty string if not known
+     */
+    @Managed
+    public String getApplicationVersion()
+    {
+        return applicationVersion;
+    }
+
+    /**
+     * The version of Platform, or the empty string if not known
+     */
+    @Managed
+    public String getPlatformVersion()
+    {
+        return platformVersion;
     }
 
     /**
