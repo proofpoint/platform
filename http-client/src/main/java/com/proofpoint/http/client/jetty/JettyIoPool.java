@@ -95,7 +95,7 @@ public final class JettyIoPool
 
     @Gauge
     public int getFreeThreadCount() {
-        return executor.getMaxThreads() + executor.getIdleThreads() - executor.getThreads();
+        return (executor.getMaxThreads() - executor.getThreads()) + executor.getIdleThreads() ;
     }
 
     @Override
