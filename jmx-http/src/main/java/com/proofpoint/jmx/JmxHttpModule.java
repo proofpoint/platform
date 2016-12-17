@@ -34,7 +34,6 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.Provider;
-import com.proofpoint.configuration.Config;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement.ServiceAnnouncementBuilder;
 import com.proofpoint.http.server.HttpServerInfo;
@@ -80,6 +79,7 @@ public class JmxHttpModule implements Module
         jsonBinder(binder).addSerializerBinding(LazyCompositeData.class).to(CompositeDataSerializer.class);
 
         jaxrsBinder(binder).bindAdmin(ConfigurationResource.class);
+        jaxrsBinder(binder).bindAdmin(VersionResource.class);
         jaxrsBinder(binder).bindAdmin(StopAnnouncingResource.class);
         bindConfig(binder).to(AdminServerConfig.class);
         binder.bind(AdminServerCredentialVerifier.class).in(SINGLETON);
