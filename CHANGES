@@ -7,6 +7,9 @@ Platform 1.49
   The ReportCollector.ServerStart and ReportCollector.NumMetrics metrics
   now carry applicationVersion and platformVersion tags.
 
+  The admin port now has an /admin/version resource which returns the
+  application name, version, and Platform version.
+
 Platform 1.48
 
 * We dump the thread stacks upon shutdown.
