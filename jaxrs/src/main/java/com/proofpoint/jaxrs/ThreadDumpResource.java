@@ -30,8 +30,8 @@ import java.lang.management.ThreadMXBean;
 
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
-@Path("/admin/jstack")
-@AccessDoesNotRequireAuthentication
+//@Path("/admin/jstack")
+//@AccessDoesNotRequireAuthentication
 public class ThreadDumpResource
 {
     private static final Logger log = Logger.get(ThreadDumpResource.class);
