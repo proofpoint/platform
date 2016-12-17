@@ -17,13 +17,14 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableList;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
+import static java.util.Objects.requireNonNull;
 
 class ReportedBeanAttributeBuilder
 {
@@ -31,24 +32,30 @@ class ReportedBeanAttributeBuilder
     private String name;
     private Method concreteGetter;
     private Method annotatedGetter;
+    private final Class<? extends Annotation> annotationClass;
+
+    ReportedBeanAttributeBuilder(Class<? extends Annotation> annotationClass)
+    {
+        this.annotationClass = requireNonNull(annotationClass, "annotationClass is null");
+    }
 
     public ReportedBeanAttributeBuilder onInstance(Object target)
     {
-        checkNotNull(target, "target is null");
+        requireNonNull(target, "target is null");
         this.target = target;
         return this;
     }
 
     public ReportedBeanAttributeBuilder named(String name)
     {
-        checkNotNull(name, "name is null");
+        requireNonNull(name, "name is null");
         this.name = name;
         return this;
     }
 
     public ReportedBeanAttributeBuilder withConcreteGetter(Method concreteGetter)
     {
-        checkNotNull(concreteGetter, "concreteGetter is null");
+        requireNonNull(concreteGetter, "concreteGetter is null");
         checkArgument(isValidGetter(concreteGetter), "Method is not a valid getter: " + concreteGetter);
         this.concreteGetter = concreteGetter;
         return this;
@@ -56,7 +63,7 @@ class ReportedBeanAttributeBuilder
 
     public ReportedBeanAttributeBuilder withAnnotatedGetter(Method annotatedGetter)
     {
-        checkNotNull(annotatedGetter, "annotatedGetter is null");
+        requireNonNull(annotatedGetter, "annotatedGetter is null");
         checkArgument(isValidGetter(annotatedGetter), "Method is not a valid getter: " + annotatedGetter);
         this.annotatedGetter = annotatedGetter;
         return this;
@@ -80,7 +87,7 @@ class ReportedBeanAttributeBuilder
                 return Collections.emptySet();
             }
 
-            ReportedBean reportedBean = ReportedBean.forTarget(value);
+            ReportedBean reportedBean = ReportedBean.forTarget(value, annotationClass);
             ImmutableList.Builder<ReportedBeanAttribute> builder = ImmutableList.builder();
             for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
                 builder.add(new FlattenReportedBeanAttribute(name, concreteGetter, attribute));
@@ -101,7 +108,7 @@ class ReportedBeanAttributeBuilder
                 return Collections.emptySet();
             }
 
-            ReportedBean reportedBean = ReportedBean.forTarget(value);
+            ReportedBean reportedBean = ReportedBean.forTarget(value, annotationClass);
             ImmutableList.Builder<ReportedBeanAttribute> builder = ImmutableList.builder();
             for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
                 builder.add(new NestedReportedBeanAttribute(name, concreteGetter, attribute));

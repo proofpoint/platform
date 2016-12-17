@@ -60,7 +60,7 @@ public class ReportExporter
      */
     public void export(Object object, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
     {
-        ReportedBean reportedBean = ReportedBean.forTarget(object);
+        ReportedBean reportedBean = ReportedBean.forTarget(object, ReportedAnnotation.class);
         notifyBucketIdProvider(object, bucketIdProvider, null);
         if (!reportedBean.getAttributes().isEmpty()) {
             try {
@@ -110,7 +110,7 @@ public class ReportExporter
     @Deprecated
     public void export(ObjectName objectName, Object object)
     {
-        ReportedBean reportedBean = ReportedBean.forTarget(object);
+        ReportedBean reportedBean = ReportedBean.forTarget(object, ReportedAnnotation.class);
         notifyBucketIdProvider(object, bucketIdProvider, null);
         if (!reportedBean.getAttributes().isEmpty()) {
             try {

@@ -13,43 +13,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.proofpoint.reporting.ReportExporter.notifyBucketIdProvider;
 import static com.proofpoint.reporting.Util.getMethod;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.fail;
 
-public class TestReportedBean
+public class TestDiagnosticBean
 {
-    private final TestingBucketIdProvider bucketIdProvider = new TestingBucketIdProvider();
-    private final Map<Object, ReportedBean> reportedBeans = new HashMap<>();
+    private final Map<Object, ReportedBean> diagnosticBeans = new HashMap<>();
     private final List<Object> objects = ImmutableList.of(
-            new SimpleObject(),
-            new CustomAnnotationObject(),
-            new FlattenObject(),
-            new CustomFlattenAnnotationObject(),
-            new NestedObject(),
-            new CustomNestedAnnotationObject()
+            new SimpleDiagnosticObject(),
+            new FlattenDiagnosticObject(),
+            new NestedDiagnosticObject()
     );
 
-    public TestReportedBean()
+    public TestDiagnosticBean()
     {
         for (Object object : objects) {
-            notifyBucketIdProvider(object, bucketIdProvider, null);
-            reportedBeans.put(object, ReportedBean.forTarget(object, ReportedAnnotation.class));
+            diagnosticBeans.put(object, ReportedBean.forTarget(object, Diagnostic.class));
         }
     }
 
     private Collection<ReportedBeanAttribute> getAttributes(Object object)
     {
-        return reportedBeans.get(object).getAttributes();
+        return diagnosticBeans.get(object).getAttributes();
     }
 
     private Object getAttribute(Object object, String attributeName)
             throws AttributeNotFoundException, MBeanException, ReflectionException
     {
-        return reportedBeans.get(object).getAttribute(attributeName);
+        return diagnosticBeans.get(object).getAttribute(attributeName);
     }
 
     @Test(expectedExceptions = RuntimeException.class,
@@ -104,13 +98,13 @@ public class TestReportedBean
     }
 
     @Test
-    public void testNotReportedAttributeInfo()
+    public void testNotDiagnosticAttributeInfo()
             throws Exception
     {
 
         for (Object t : objects) {
             Collection<ReportedBeanAttribute> attributes = getAttributes(t);
-            String attributeName = toFeatureName("NotReported", t);
+            String attributeName = toFeatureName("NotDiagnostic", t);
             ReportedBeanAttribute attributeInfo = getAttributeInfo(attributes, attributeName);
             assertNull(attributeInfo, "AttributeInfo for " + attributeName);
         }
@@ -133,12 +127,11 @@ public class TestReportedBean
         String methodName = "set" + attribute.replace(".", "");
         for (Object t : objects) {
             String attributeName = toFeatureName(attribute, t);
-            SimpleInterface simpleInterface = toSimpleInterface(t);
+            SimpleDiagnosticInterface simpleInterface = toSimpleInterface(t);
             Method setter = getMethod(simpleInterface.getClass(), methodName, clazz);
 
             for (Object value : values) {
                 setter.invoke(simpleInterface, value);
-                bucketIdProvider.advance();
 
                 if (isIs && value != null) {
                     if ((Boolean) value) {
@@ -155,13 +148,13 @@ public class TestReportedBean
     }
 
     @Test
-    public void testGetFailsOnNotReported()
+    public void testGetFailsOnNotDiagnostic()
             throws Exception
     {
 
         for (Object t : objects) {
             try {
-                getAttribute(t, "NotReported");
+                getAttribute(t, "NotDiagnostic");
                 fail("Should not allow getting unreported attribute");
             }
             catch (AttributeNotFoundException e) {
@@ -216,21 +209,13 @@ public class TestReportedBean
 
                 new Object[] { "PrivateValue", false, new Object[] { Integer.MAX_VALUE, Integer.MIN_VALUE, 0 },
                         Integer.TYPE },
-
-                new Object[] { "BucketedBooleanValue", true, new Object[] { true, false }, Boolean.TYPE },
-                new Object[] { "BucketedIntegerValue", false, new Object[] { Integer.MAX_VALUE, Integer.MIN_VALUE, 0 },
-                               Integer.TYPE },
-                new Object[] { "NestedBucket.BucketedBooleanBoxedValue", true, new Object[] { true, false, null }, Boolean.class },
-                new Object[] { "NestedBucket.BucketedLongValue", false, new Object[] { Long.MAX_VALUE, Long.MIN_VALUE, 0L }, Long.TYPE },
-                new Object[] { "BucketedBooleanBoxedValue", true, new Object[] { true, false, null }, Boolean.class },
-                new Object[] { "BucketedLongValue", false, new Object[] { Long.MAX_VALUE, Long.MIN_VALUE, 0L }, Long.TYPE },
         };
     }
 
     private String toFeatureName(String attribute, Object t)
     {
         String attributeName;
-        if (t instanceof NestedObject) {
+        if (t instanceof NestedDiagnosticObject) {
             attributeName = "SimpleObject." + attribute;
         }
         else {
@@ -239,38 +224,21 @@ public class TestReportedBean
         return attributeName;
     }
 
-    private SimpleInterface toSimpleInterface(Object t)
+    private SimpleDiagnosticInterface toSimpleInterface(Object t)
     {
-        SimpleInterface simpleInterface;
-        if (t instanceof SimpleInterface) {
-            simpleInterface = (SimpleInterface) t;
+        SimpleDiagnosticInterface simpleInterface;
+        if (t instanceof SimpleDiagnosticInterface) {
+            simpleInterface = (SimpleDiagnosticInterface) t;
         }
-        else if (t instanceof FlattenObject) {
-            simpleInterface = ((FlattenObject) t).getSimpleObject();
+        else if (t instanceof FlattenDiagnosticObject) {
+            simpleInterface = ((FlattenDiagnosticObject) t).getSimpleObject();
         }
-        else if (t instanceof NestedObject) {
-            simpleInterface = ((NestedObject) t).getSimpleObject();
+        else if (t instanceof NestedDiagnosticObject) {
+            simpleInterface = ((NestedDiagnosticObject) t).getSimpleObject();
         }
         else {
-            throw new IllegalArgumentException("Expected objects implementing SimpleInterface or FlattenObject but got " + t.getClass().getName());
+            throw new IllegalArgumentException("Expected objects implementing SimpleDiagnosticInterface or FlattenDiagnosticObject but got " + t.getClass().getName());
         }
         return simpleInterface;
-    }
-
-    private static class TestingBucketIdProvider
-            implements BucketIdProvider
-    {
-        private int bucketId = 0;
-
-        @Override
-        public int get()
-        {
-            return bucketId;
-        }
-
-        public void advance()
-        {
-            ++bucketId;
-        }
     }
 }
