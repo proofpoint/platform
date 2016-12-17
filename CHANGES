@@ -1,7 +1,6 @@
 Platform 1.48
 
-* We added an /admin/jstack resource on the admin port to dump the thread
-  stacks. We also dump the thread stacks upon shutdown.
+* We dump the thread stacks upon shutdown.
 
 * We changed the BalancingHttpClient to call the ResponseHandler with the
   Request as made to the selected instance instead of the Request that was
