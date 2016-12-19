@@ -32,9 +32,14 @@ Platform 1.48
   configuration option "jaxrs.query-params-as-form-params" for re-enabling
   this behavior.
 
+* We fixed warnings caused by how the library pom was invoking the Surefire
+  plugin.
+
 * Library Upgrades
 
   - bval-jsr 1.1.2 (from bval-jsr303 0.5)
+    - Code will need to change any references to the org.apache.bval.jsr303
+      package to org.apache.bval.jsr
   - mockito to 2.2.28 (from 1.10.8)
     - Hamcrest matchers, such as Matchers.argThat(), have moved to
       MockitoHamcrest (MockitoHamcrest.argThat())
