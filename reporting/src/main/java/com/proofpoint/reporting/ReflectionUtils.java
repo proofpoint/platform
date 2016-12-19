@@ -37,7 +37,7 @@ final class ReflectionUtils
 
     private static final Pattern getterOrSetterPattern = Pattern.compile("(get|set|is)(.+)");
 
-    public static Object invoke(Object target, Method method)
+    static Object invoke(Object target, Method method)
             throws MBeanException, ReflectionException
     {
         checkNotNull(target, "target is null");
@@ -98,13 +98,13 @@ final class ReflectionUtils
         return method.getName() + "()";
     }
 
-    public static boolean isGetter(Method method)
+    static boolean isGetter(Method method)
     {
         String methodName = method.getName();
-        return (methodName.startsWith("get") || methodName.startsWith("is")) && isValidGetter(method);
+        return (methodName.startsWith("get") || methodName.startsWith("is")) && isNoArgsReturnsValue(method);
     }
 
-    public static String getAttributeName(Method method)
+    static String getAttributeName(Method method)
     {
         Matcher matcher = getterOrSetterPattern.matcher(method.getName());
         if (matcher.matches()) {
@@ -113,20 +113,20 @@ final class ReflectionUtils
         return LOWER_CAMEL.to(UPPER_CAMEL, method.getName());
     }
 
-    public static String getAttributeName(Field field)
+    static String getAttributeName(Field field)
     {
         return LOWER_CAMEL.to(UPPER_CAMEL, field.getName());
     }
 
-    public static boolean isValidGetter(Method getter)
+    static boolean isNoArgsReturnsValue(Method method)
     {
-        if (getter == null) {
-            throw new NullPointerException("getter is null");
+        if (method == null) {
+            throw new NullPointerException("method is null");
         }
-        if (getter.getParameterTypes().length != 0) {
+        if (method.getParameterTypes().length != 0) {
             return false;
         }
-        if (getter.getReturnType().equals(Void.TYPE)) {
+        if (method.getReturnType().equals(Void.TYPE)) {
             return false;
         }
         return true;

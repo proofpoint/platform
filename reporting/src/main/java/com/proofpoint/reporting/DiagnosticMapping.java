@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Proofpoint, Inc.
+ * Copyright 2016 Proofpoint, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,39 +15,38 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.inject.Key;
+
 import static java.util.Objects.requireNonNull;
 
-public class NamedReportBinder
-    extends PrefixedReportBinder
+class DiagnosticMapping
 {
-    NamedReportBinder(Mapping mapping)
+    private Key<?> key;
+    private String namePrefix;
+
+    DiagnosticMapping(Key<?> key, String namePrefix)
     {
-        super(mapping);
+        this.key = key;
+        this.namePrefix = namePrefix;
     }
 
-    /**
-     * See the EDSL description at {@link ReportBinder}.
-     */
-    public PrefixedReportBinder withApplicationPrefix()
+    Key<?> getKey()
     {
-        mapping.setApplicationPrefix(true);
-        return new PrefixedReportBinder(mapping);
+        return key;
     }
 
-    /**
-     * @deprecated No longer necessary.
-     */
-    @Deprecated
-    public void withGeneratedName()
+    void setKey(Key<?> key)
     {
+        this.key = requireNonNull(key, "key is null");
     }
 
-    /**
-     * @deprecated Use {@link #withNamePrefix} and/or {@link #withTags}.
-     */
-    @Deprecated
-    public void as(String name)
+    String getNamePrefix()
     {
-        mapping.setLegacyName(requireNonNull(name, "name is null"));
+        return namePrefix;
+    }
+
+    void setNamePrefix(String namePrefix)
+    {
+        this.namePrefix = requireNonNull(namePrefix, "namePrefix is null");
     }
 }

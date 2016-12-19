@@ -26,6 +26,7 @@ import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.ResponseTooLargeException;
 import com.proofpoint.http.client.StaticBodyGenerator;
 import com.proofpoint.log.Logger;
+import com.proofpoint.reporting.Diagnostic;
 import com.proofpoint.stats.Distribution;
 import com.proofpoint.tracetoken.TraceTokenScope;
 import com.proofpoint.units.Duration;
@@ -572,6 +573,7 @@ public class JettyHttpClient
         return currentResponseProcessTime;
     }
 
+    @Diagnostic
     @Managed
     public String dump()
     {

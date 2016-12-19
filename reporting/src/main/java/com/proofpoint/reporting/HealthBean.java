@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
+import static com.proofpoint.reporting.ReflectionUtils.isNoArgsReturnsValue;
 import static java.util.Objects.requireNonNull;
 
 @AutoValue
@@ -42,7 +42,7 @@ abstract class HealthBean
             Method concreteMethod = entry.getKey();
             Method annotatedMethod = entry.getValue();
 
-            if (!isValidGetter(concreteMethod)) {
+            if (!isNoArgsReturnsValue(concreteMethod)) {
                 throw new RuntimeException("healthcheck annotation on non-getter " + annotatedMethod.toGenericString());
             }
 

@@ -41,10 +41,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.http.client.CompositeQualifierImpl.compositeQualifier;
+import static com.proofpoint.reporting.DiagnosticBinder.diagnosticBinder;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
@@ -102,6 +105,7 @@ public class HttpClientModule
         // export stats
         if (rootBinder == binder) {
             reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
+            diagnosticBinder(binder).export(HttpClient.class).annotatedWith(annotation).withNamePrefix("HttpClient." + LOWER_HYPHEN.to(UPPER_CAMEL, name));
             newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
         }
     }

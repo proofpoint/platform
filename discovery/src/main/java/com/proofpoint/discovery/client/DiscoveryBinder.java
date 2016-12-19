@@ -40,6 +40,7 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
@@ -47,6 +48,7 @@ import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
 import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
 import static com.proofpoint.http.client.HttpClientBinder.httpClientPrivateBinder;
+import static com.proofpoint.reporting.DiagnosticBinder.diagnosticBinder;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
@@ -167,6 +169,7 @@ public class DiscoveryBinder
         privateBinder.expose(HttpClient.class).annotatedWith(serviceType);
         String serviceName = LOWER_CAMEL.to(UPPER_CAMEL, serviceType.value());
         reportBinder(binder).export(HttpClient.class).annotatedWith(serviceType).withNamePrefix("HttpClient." + serviceName);
+        diagnosticBinder(binder).export(HttpClient.class).annotatedWith(serviceType).withNamePrefix("HttpClient." + LOWER_HYPHEN.to(UPPER_CAMEL, name));
         newExporter(binder).export(HttpClient.class).annotatedWith(serviceType).as(new ObjectNameBuilder(HttpClient.class.getPackage().getName())
                 .withProperty("type", "HttpClient")
                 .withProperty("name", serviceName)
