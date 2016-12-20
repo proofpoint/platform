@@ -463,6 +463,11 @@ public class Main
                 System.exit(STATUS_GENERIC_ERROR);
             }
 
+            String mainVersion = mainClass.getPackage().getImplementationVersion();
+            if (mainVersion != null) {
+                System.setProperty("launcher.main.version", mainVersion);
+            }
+
             if (daemon) {
                 Processes.detach();
             }

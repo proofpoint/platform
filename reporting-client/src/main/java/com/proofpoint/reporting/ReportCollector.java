@@ -44,6 +44,7 @@ class ReportCollector
     private final ScheduledExecutorService collectionExecutorService;
     private final ExecutorService clientExecutorService;
     private final ReportClient reportClient;
+    private final Map<String, String> versionTags;
 
     @Inject
     ReportCollector(
@@ -60,14 +61,23 @@ class ReportCollector
         this.reportClient = requireNonNull(reportClient, "reportClient is null");
         this.collectionExecutorService = requireNonNull(collectionExecutorService, "collectionExecutorService is null");
         this.clientExecutorService = requireNonNull(clientExecutorService, "clientExecutorService is null");
+
+        ImmutableMap.Builder<String, String> versionTagsBuilder = ImmutableMap.builder();
+        if (!nodeInfo.getApplicationVersion().isEmpty()) {
+            versionTagsBuilder.put("applicationVersion", nodeInfo.getApplicationVersion());
+        }
+        if (!nodeInfo.getPlatformVersion().isEmpty()) {
+            versionTagsBuilder.put("platformVersion", nodeInfo.getPlatformVersion());
+        }
+        this.versionTags = versionTagsBuilder.build();
     }
 
     @PostConstruct
     public void start()
     {
-        collectionExecutorService.scheduleAtFixedRate((Runnable) this::collectData, 1, 1, TimeUnit.MINUTES);
+        collectionExecutorService.scheduleAtFixedRate(this::collectData, 1, 1, TimeUnit.MINUTES);
 
-        clientExecutorService.submit((Runnable) () -> reportClient.report(currentTimeMillis(), ImmutableTable.of("ReportCollector.ServerStart", ImmutableMap.of(), (Object) 1)));
+        clientExecutorService.submit(() -> reportClient.report(currentTimeMillis(), ImmutableTable.of("ReportCollector.ServerStart", versionTags, 1)));
     }
 
     private void collectData()
@@ -104,9 +114,9 @@ class ReportCollector
                 }
             }
         }
-        builder.put("ReportCollector.NumMetrics", ImmutableMap.of(), numAttributes);
+        builder.put("ReportCollector.NumMetrics", versionTags, numAttributes);
         final Table<String, Map<String, String>, Object> collectedData = builder.build();
-        clientExecutorService.submit((Runnable) () -> reportClient.report(lastSystemTimeMillis, collectedData));
+        clientExecutorService.submit(() -> reportClient.report(lastSystemTimeMillis, collectedData));
     }
 
     private static boolean isReportable(Object value)

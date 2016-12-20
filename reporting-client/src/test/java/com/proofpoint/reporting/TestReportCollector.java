@@ -25,6 +25,7 @@ import com.proofpoint.configuration.ConfigurationModule;
 import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.ApplicationNameModule;
+import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.testing.SerialScheduledExecutorService;
@@ -53,6 +54,8 @@ import static org.testng.Assert.assertEquals;
 
 public class TestReportCollector
 {
+    private static final Map<String, String> EXPECTED_VERSION_TAGS = ImmutableMap.of("applicationVersion", "1.2", "platformVersion", "platform.1");
+
     private MinuteBucketIdProvider bucketIdProvider;
     private ReportedBeanRegistry reportedBeanRegistry;
     private ReportClient reportClient;
@@ -72,7 +75,8 @@ public class TestReportCollector
         reportClient = mock(ReportClient.class);
         collectorExecutor = new SerialScheduledExecutorService();
         clientExecutor = spy(new SerialScheduledExecutorService());
-        reportCollector = new ReportCollector(new NodeInfo("testing"), bucketIdProvider, reportedBeanRegistry, reportClient, collectorExecutor, clientExecutor);
+        NodeInfo nodeInfo = new NodeInfo("test-application", "1.2", "platform.1", new NodeConfig().setEnvironment("testing"));
+        reportCollector = new ReportCollector(nodeInfo, bucketIdProvider, reportedBeanRegistry, reportClient, collectorExecutor, clientExecutor);
     }
 
     @Test
@@ -107,7 +111,7 @@ public class TestReportCollector
 
         Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
         assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
-                .put("ReportCollector.ServerStart", ImmutableMap.of(), 1)
+                .put("ReportCollector.ServerStart", EXPECTED_VERSION_TAGS, 1)
                 .build()
                 .cellSet());
 
@@ -164,7 +168,7 @@ public class TestReportCollector
         Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
         assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
                 .put(expectedMetricName, expectedTags, 1)
-                .put("ReportCollector.NumMetrics", ImmutableMap.of(), 1)
+                .put("ReportCollector.NumMetrics", EXPECTED_VERSION_TAGS, 1)
                 .build()
                 .cellSet());
 
@@ -177,7 +181,7 @@ public class TestReportCollector
         table = tableCaptor.getValue();
         assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
                 .put(expectedMetricName, expectedTags, 2)
-                .put("ReportCollector.NumMetrics", ImmutableMap.of(), 1)
+                .put("ReportCollector.NumMetrics", EXPECTED_VERSION_TAGS, 1)
                 .build()
                 .cellSet());
     }
@@ -355,7 +359,7 @@ public class TestReportCollector
                 .put("TestObject.FalseBooleanMetric", ImmutableMap.of(), 0)
                 .put("TestObject.TrueBooleanMetric", ImmutableMap.of(), 1)
                 .put("TestObject.TestingValueMetric", ImmutableMap.of(), "testing toString value")
-                .put("ReportCollector.NumMetrics", ImmutableMap.of(), 11)
+                .put("ReportCollector.NumMetrics", EXPECTED_VERSION_TAGS, 11)
                 .build()
                 .cellSet());
     }
