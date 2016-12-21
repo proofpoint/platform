@@ -87,11 +87,18 @@ class JsonEventWriter
     @SuppressWarnings("unchecked")
     private <T> JsonSerializer<T> getSerializer(T event, @Nullable String token)
     {
-        EventTypeMetadata<T> metadata = (EventTypeMetadata<T>) metadataMap.get(event.getClass());
-        if (metadata == null) {
-            return null;
+        Class<?> eventClass = event.getClass();
+        EventTypeMetadata<T> metadata = (EventTypeMetadata<T>) metadataMap.get(eventClass);
+        while (metadata == null) {
+            if (eventClass.getAnnotation(EventType.class) != null) {
+                return null;
+            }
+            eventClass = eventClass.getSuperclass();
+            if (eventClass == null) {
+                return null;
+            }
+            metadata = (EventTypeMetadata<T>) metadataMap.get(eventClass);
         }
-        return new EventJsonSerializer<>(nodeInfo, token,
-                metadata);
+        return new EventJsonSerializer<>(nodeInfo, token, metadata);
     }
 }

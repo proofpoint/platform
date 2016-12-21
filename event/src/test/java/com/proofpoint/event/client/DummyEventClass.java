@@ -15,43 +15,26 @@
  */
 package com.proofpoint.event.client;
 
+import com.google.auto.value.AutoValue;
+
 @EventType("Dummy")
-public class DummyEventClass
+@AutoValue
+public abstract class DummyEventClass
 {
-    private final double doubleValue;
-    private final int intValue;
-    private final String stringValue;
-    private final boolean boolValue;
-
-    public DummyEventClass(double doubleValue, int intValue, String stringValue, boolean boolValue)
+    public static DummyEventClass dummyEventClass(double doubleValue, int intValue, String stringValue, boolean boolValue)
     {
-        this.doubleValue = doubleValue;
-        this.intValue = intValue;
-        this.stringValue = stringValue;
-        this.boolValue = boolValue;
+        return new AutoValue_DummyEventClass(doubleValue, intValue, stringValue, boolValue);
     }
 
     @EventField
-    public double getDoubleValue()
-    {
-        return doubleValue;
-    }
+    public abstract double getDoubleValue();
 
     @EventField
-    public int getIntValue()
-    {
-        return intValue;
-    }
+    public abstract int getIntValue();
 
     @EventField
-    public String getStringValue()
-    {
-        return stringValue;
-    }
+    public abstract String getStringValue();
 
     @EventField
-    public boolean isBoolValue()
-    {
-        return boolValue;
-    }
+    public abstract boolean isBoolValue();
 }

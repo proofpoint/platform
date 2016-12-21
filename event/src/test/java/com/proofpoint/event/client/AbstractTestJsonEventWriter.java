@@ -17,21 +17,22 @@ package com.proofpoint.event.client;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
-import com.proofpoint.event.client.NestedDummyEventClass.NestedPart;
 import com.proofpoint.node.NodeInfo;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
 import static com.google.common.io.ByteStreams.nullOutputStream;
 import static com.proofpoint.event.client.ChainedCircularEventClass.ChainedPart;
+import static com.proofpoint.event.client.ChainedCircularEventClass.chainedCircularEventClass;
+import static com.proofpoint.event.client.DummyEventClass.dummyEventClass;
 import static com.proofpoint.event.client.EventTypeMetadata.getValidEventTypeMetaDataSet;
+import static com.proofpoint.event.client.NestedDummyEventClass.NestedPart.nestedPart;
 import static org.testng.Assert.assertEquals;
 
 public abstract class AbstractTestJsonEventWriter
@@ -81,8 +82,8 @@ public abstract class AbstractTestJsonEventWriter
         NestedDummyEventClass nestedEvent = new NestedDummyEventClass(
                 "localhost", new DateTime("2011-09-09T01:48:08.888Z"), UUID.fromString("6b598c2a-0a95-4f3f-9298-5a4d70ca13fc"), 9999, "nested",
                 ImmutableList.of("abc", "xyz"),
-                new NestedPart("first", new NestedPart("second", new NestedPart("third", null))),
-                ImmutableList.of(new NestedPart("listFirst", new NestedPart("listSecond", null)), new NestedPart("listThird", null))
+                nestedPart("first", nestedPart("second", nestedPart("third", null))),
+                ImmutableList.of(nestedPart("listFirst", nestedPart("listSecond", null)), nestedPart("listThird", null))
         );
 
         assertEventJson(ImmutableList.of(nestedEvent), "sample-trace-token", "nested.json");
@@ -106,7 +107,7 @@ public abstract class AbstractTestJsonEventWriter
         b.setPart(c);
         c.setPart(a);
 
-        ChainedCircularEventClass event = new ChainedCircularEventClass(a);
+        ChainedCircularEventClass event = chainedCircularEventClass(a);
 
         writeEvents(ImmutableList.of(event), null, nullOutputStream());
     }
@@ -115,8 +116,23 @@ public abstract class AbstractTestJsonEventWriter
     public void testUnregisteredEventClass()
             throws Exception
     {
-        DummyEventClass event = new DummyEventClass(1.1, 1, "foo", false);
+        DummyEventClass event = dummyEventClass(1.1, 1, "foo", false);
         writeEvents(ImmutableList.of(event), null, nullOutputStream());
+    }
+
+    @Test(expectedExceptions = InvalidEventException.class)
+    public void testUnregisteredEventSubclassOfRegisteredClass()
+            throws Exception
+    {
+        FixedDummyEventClass event = new SubclassOfFixedDummyEventClass();
+        writeEvents(ImmutableList.of(event), null, nullOutputStream());
+    }
+
+    @Test(expectedExceptions = InvalidEventException.class)
+    public void testNotAnEventClass()
+            throws Exception
+    {
+        writeEvents(ImmutableList.of("foo"), null, nullOutputStream());
     }
 
     private <T> void assertEventJson(Iterable<T> events, String token, String resource)
@@ -128,5 +144,15 @@ public abstract class AbstractTestJsonEventWriter
 
         String json = out.toString(Charsets.UTF_8.name());
         assertEquals(json, TestingUtils.getNormalizedJson(resource));
+    }
+
+    @EventType("Subclass")
+    private static class SubclassOfFixedDummyEventClass
+            extends FixedDummyEventClass
+    {
+        public SubclassOfFixedDummyEventClass()
+        {
+            super("localhost", new DateTime("2011-09-09T01:59:59.999Z"), UUID.fromString("1ea8ca34-db36-11e0-b76f-8b7d505ab1ad"), 123, null);
+        }
     }
 }

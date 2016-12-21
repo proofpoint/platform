@@ -15,11 +15,13 @@
  */
 package com.proofpoint.event.client;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -94,27 +96,19 @@ public class NestedDummyEventClass
     }
 
     @EventType
-    public static class NestedPart
+    @AutoValue
+    public static abstract class NestedPart
     {
-        private final String name;
-        private final NestedPart part;
-
-        public NestedPart(String name, NestedPart part)
+        public static NestedPart nestedPart(String name, NestedPart part)
         {
-            this.name = name;
-            this.part = part;
+            return new AutoValue_NestedDummyEventClass_NestedPart(name, part);
         }
 
         @EventField
-        public String getName()
-        {
-            return name;
-        }
+        public abstract String getName();
 
         @EventField
-        public NestedPart getPart()
-        {
-            return part;
-        }
+        @Nullable
+        public abstract NestedPart getPart();
     }
 }
