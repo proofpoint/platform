@@ -15,22 +15,20 @@
  */
 package com.proofpoint.event.client;
 
+import com.google.auto.value.AutoValue;
+
 @SuppressWarnings("UnusedDeclaration")
 @EventType("ChainedCircular")
-public class ChainedCircularEventClass
+@AutoValue
+public abstract class ChainedCircularEventClass
 {
-    private final ChainedPart part;
-
-    public ChainedCircularEventClass(ChainedPart part)
+    public static ChainedCircularEventClass chainedCircularEventClass(ChainedPart part)
     {
-        this.part = part;
+        return new AutoValue_ChainedCircularEventClass(part);
     }
 
     @EventField
-    public ChainedPart getPart()
-    {
-        return part;
-    }
+    public abstract ChainedPart getPart();
 
     @EventType
     public static class ChainedPart

@@ -8,6 +8,11 @@ Platform 1.50
   Bootstrap now sets a default uncaught exception handler that logs the
   exception.
 
+* Events
+
+  The event client now supports sending events that are implemented with
+  AutoValue (or other subclasses of the event class).
+
 Platform 1.49
 
 * HttpServer sets the blocking timout in order to work around a Jetty bug.

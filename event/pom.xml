@@ -127,5 +127,11 @@
             <artifactId>jetty-servlet</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

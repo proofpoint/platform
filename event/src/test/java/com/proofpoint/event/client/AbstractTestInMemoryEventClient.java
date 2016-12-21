@@ -19,11 +19,13 @@ import com.google.common.collect.ImmutableList;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import static com.proofpoint.event.client.DummyEventClass.dummyEventClass;
+
 public abstract class AbstractTestInMemoryEventClient
 {
-    private final DummyEventClass event1 = new DummyEventClass(1.234, 5678, "foo", true);
-    private final DummyEventClass event2 = new DummyEventClass(0.001, 1, "bar", false);
-    private final DummyEventClass event3 = new DummyEventClass(0.001, 5678, "foo", false);
+    private final DummyEventClass event1 = dummyEventClass(1.234, 5678, "foo", true);
+    private final DummyEventClass event2 = dummyEventClass(0.001, 1, "bar", false);
+    private final DummyEventClass event3 = dummyEventClass(0.001, 5678, "foo", false);
     protected InMemoryEventClient eventClient;
 
     @Test
