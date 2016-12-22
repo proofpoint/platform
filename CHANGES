@@ -2,6 +2,11 @@ Platform 1.49
 
 * HttpServer sets the blocking timout in order to work around a Jetty bug.
 
+* Library Upgrades
+
+  - Jetty to 9.3.15 (from 9.3.14)
+    - [Bug] fixes deadlocks in HttpServer
+
 Platform 1.48
 
 * We dump the thread stacks upon shutdown.
