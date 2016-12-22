@@ -12,6 +12,15 @@ Platform 1.51
 
 * We suppress logging the thread dump when Bootstrap is in quiet mode.
 
+* Library Upgrades
+
+  - Guava to 21.0 (from 20.0)
+    - Objects.firstNonNull() and Objects.toStringHelper() removed
+      (use MoreObjects)
+    - MoreExecutors.sameThreadExecutor() removed
+      (use directExecutor() or newDirectExecutorService())
+    - MapConstraint and MapConstraints removed
+
 Platform 1.50
 
 * Deprecation removals
