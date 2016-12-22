@@ -164,7 +164,7 @@ public class HttpServer
             HttpConfiguration httpConfiguration = new HttpConfiguration();
             httpConfiguration.setSendServerVersion(false);
             httpConfiguration.setSendXPoweredBy(false);
-            httpConfiguration.setBlockingTimeout(config.getNetworkMaxIdleTime().toMillis() + 500);
+            httpConfiguration.setBlockingTimeout(500);
             if (config.getMaxRequestHeaderSize() != null) {
                 httpConfiguration.setRequestHeaderSize(Ints.checkedCast(config.getMaxRequestHeaderSize().toBytes()));
             }
@@ -197,7 +197,7 @@ public class HttpServer
             HttpConfiguration httpsConfiguration = new HttpConfiguration();
             httpsConfiguration.setSendServerVersion(false);
             httpsConfiguration.setSendXPoweredBy(false);
-            httpsConfiguration.setBlockingTimeout(config.getNetworkMaxIdleTime().toMillis() + 500);
+            httpsConfiguration.setBlockingTimeout(500);
             if (config.getMaxRequestHeaderSize() != null) {
                 httpsConfiguration.setRequestHeaderSize(Ints.checkedCast(config.getMaxRequestHeaderSize().toBytes()));
             }
@@ -232,7 +232,7 @@ public class HttpServer
             HttpConfiguration adminConfiguration = new HttpConfiguration();
             adminConfiguration.setSendServerVersion(false);
             adminConfiguration.setSendXPoweredBy(false);
-            adminConfiguration.setBlockingTimeout(config.getNetworkMaxIdleTime().toMillis() + 500);
+            adminConfiguration.setBlockingTimeout(500);
             if (config.getMaxRequestHeaderSize() != null) {
                 adminConfiguration.setRequestHeaderSize(Ints.checkedCast(config.getMaxRequestHeaderSize().toBytes()));
             }
