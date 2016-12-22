@@ -1,3 +1,7 @@
+Platform 1.49
+
+* HttpServer sets the blocking timout in order to work around a Jetty bug.
+
 Platform 1.48
 
 * We dump the thread stacks upon shutdown.
