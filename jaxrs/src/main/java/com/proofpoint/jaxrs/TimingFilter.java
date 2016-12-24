@@ -15,6 +15,7 @@
  */
 package com.proofpoint.jaxrs;
 
+import com.google.common.base.Ticker;
 import com.proofpoint.units.Duration;
 
 import javax.annotation.Priority;
@@ -32,17 +33,19 @@ class TimingFilter
     private static final String START_TIME_KEY = TimingFilter.class.getName() + ".start-time";
     private final String methodName;
     private final RequestStats requestStats;
+    private final Ticker ticker;
 
-    TimingFilter(String methodName, RequestStats requestStats)
+    TimingFilter(String methodName, RequestStats requestStats, Ticker ticker)
     {
         this.methodName = checkNotNull(methodName, "methodName is null");
         this.requestStats = checkNotNull(requestStats, "requestStats is null");
+        this.ticker = checkNotNull(ticker, "ticker is null");
     }
 
     @Override
     public void filter(ContainerRequestContext request)
     {
-        request.setProperty(START_TIME_KEY, System.nanoTime());
+        request.setProperty(START_TIME_KEY, ticker.read());
     }
 
     @Override
@@ -50,6 +53,6 @@ class TimingFilter
     {
         Long startTime = (Long) request.getProperty(START_TIME_KEY);
         requestStats.requestTime(methodName, response.getStatus())
-                .add(Duration.nanosSince(startTime));
+                .add(Duration.succinctNanos(ticker.read() - startTime));
     }
 }

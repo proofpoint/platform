@@ -15,6 +15,7 @@
  */
 package com.proofpoint.jaxrs;
 
+import com.google.common.base.Ticker;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
@@ -39,6 +40,7 @@ class TimingResourceDynamicFeature
 {
     private final Set<Class<?>> applicationPrefixedClasses;
     private final ReportCollectionFactory reportCollectionFactory;
+    private final Ticker ticker;
     private final LoadingCache<Class<?>, RequestStats> requestStatsLoadingCache = newBuilder()
             .build(new CacheLoader<Class<?>, RequestStats>()
             {
@@ -55,10 +57,11 @@ class TimingResourceDynamicFeature
             });
 
     @Inject
-    public TimingResourceDynamicFeature(ReportCollectionFactory reportCollectionFactory, @JaxrsApplicationPrefixed Set<Class<?>> applicationPrefixedClasses)
+    public TimingResourceDynamicFeature(ReportCollectionFactory reportCollectionFactory, @JaxrsApplicationPrefixed Set<Class<?>> applicationPrefixedClasses, @JaxrsTicker Ticker ticker)
     {
         this.reportCollectionFactory = requireNonNull(reportCollectionFactory, "reportCollectionFactory is null");
         this.applicationPrefixedClasses = requireNonNull(applicationPrefixedClasses, "applicationPrefixedClasses is null");
+        this.ticker = requireNonNull(ticker, "ticker is null");
     }
 
     @Override
@@ -77,7 +80,7 @@ class TimingResourceDynamicFeature
 
         RequestStats requestStats = requestStatsLoadingCache.getUnchecked(resourceClass);
 
-        featureContext.register(new TimingFilter(resourceMethod.getName(), requestStats));
+        featureContext.register(new TimingFilter(resourceMethod.getName(), requestStats, ticker));
     }
 
     private static boolean isJaxRsResource(Class<?> type)

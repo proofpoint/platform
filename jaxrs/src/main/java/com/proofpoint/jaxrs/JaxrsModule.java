@@ -17,6 +17,7 @@ package com.proofpoint.jaxrs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
+import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Binder;
@@ -235,6 +236,13 @@ public class JaxrsModule
     public static Map<String, String> createTheAdminServletParams()
     {
         return new HashMap<>();
+    }
+
+    @Provides
+    @JaxrsTicker
+    public static Ticker createTicker()
+    {
+        return Ticker.systemTicker();
     }
 
     private static boolean isJaxRsType(Class<?> type)
