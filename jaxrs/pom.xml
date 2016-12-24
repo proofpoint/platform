@@ -148,6 +148,12 @@
             <artifactId>http-client</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.proofpoint.platform</groupId>
+            <artifactId>reporting-client</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
 
