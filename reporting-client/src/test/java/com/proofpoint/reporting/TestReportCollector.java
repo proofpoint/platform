@@ -18,17 +18,8 @@ package com.proofpoint.reporting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.proofpoint.configuration.ConfigurationFactory;
-import com.proofpoint.configuration.ConfigurationModule;
-import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
-import com.proofpoint.json.JsonModule;
-import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
-import com.proofpoint.node.testing.TestingNodeModule;
-import com.proofpoint.testing.SerialScheduledExecutorService;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.testng.annotations.BeforeMethod;
@@ -36,11 +27,8 @@ import org.testng.annotations.Test;
 
 import javax.management.ObjectName;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import static com.proofpoint.testing.Assertions.assertBetweenInclusive;
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
-import static java.lang.System.currentTimeMillis;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -56,7 +44,6 @@ public class TestReportCollector
     private MinuteBucketIdProvider bucketIdProvider;
     private ReportedBeanRegistry reportedBeanRegistry;
     private ReportQueue reportQueue;
-    private SerialScheduledExecutorService collectorExecutor;
     private ReportCollector reportCollector;
 
     @Captor
@@ -69,55 +56,14 @@ public class TestReportCollector
         bucketIdProvider = mock(MinuteBucketIdProvider.class);
         reportedBeanRegistry = new ReportedBeanRegistry();
         reportQueue = mock(ReportQueue.class);
-        collectorExecutor = new SerialScheduledExecutorService();
         NodeInfo nodeInfo = new NodeInfo("test-application", "1.2", "platform.1", new NodeConfig().setEnvironment("testing"));
-        reportCollector = new ReportCollector(nodeInfo, bucketIdProvider, reportedBeanRegistry, reportQueue, collectorExecutor);
-    }
-
-    @Test
-    public void testReportingModule()
-    {
-        Injector injector = Guice.createInjector(
-                new ApplicationNameModule("test-application"),
-                new TestingNodeModule(),
-                new TestingDiscoveryModule(),
-                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of())),
-                new JsonModule(),
-                new ReportingModule(),
-                new ReportingClientModule());
-        injector.getInstance(ReportCollector.class);
-    }
-
-    @Test
-    public void testReportsStartup()
-    {
-        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-
-        long lowerBound = currentTimeMillis();
-        reportCollector.start();
-        long upperBound = currentTimeMillis();
-
-        verify(reportQueue).report(longCaptor.capture(), tableCaptor.capture());
-        verifyNoMoreInteractions(reportQueue);
-
-        assertBetweenInclusive(longCaptor.getValue(), lowerBound, upperBound);
-
-        Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
-        assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
-                .put("ReportCollector.ServerStart", EXPECTED_VERSION_TAGS, 1)
-                .build()
-                .cellSet());
-
-        collectorExecutor.elapseTime(59, TimeUnit.SECONDS);
-        verifyNoMoreInteractions(reportQueue);
+        reportCollector = new ReportCollector(nodeInfo, bucketIdProvider, reportedBeanRegistry, reportQueue);
     }
 
     @Test
     public void testCollection()
             throws Exception
     {
-        testReportsStartup();
-
         Object reported = new ReportedObject();
         reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), false, "TestObject", ImmutableMap.of());
 
@@ -128,8 +74,6 @@ public class TestReportCollector
     public void testCollectionApplicationPrefix()
             throws Exception
     {
-        testReportsStartup();
-
         Object reported = new ReportedObject();
         reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), true, "TestObject", ImmutableMap.of("foo", "bar"));
 
@@ -140,18 +84,16 @@ public class TestReportCollector
     public void testCollectionLegacy()
             throws Exception
     {
-        testReportsStartup();
-
         ObjectName objectName = ObjectName.getInstance("com.proofpoint.reporting.test:name=TestObject,foo=bar");
         reportedBeanRegistry.register(ReportedBean.forTarget(new ReportedObject()), objectName);
 
         assertMetricsCollected("TestObject.Metric", ImmutableMap.of("foo", "bar"));
     }
 
-    void assertMetricsCollected(String expectedMetricName, Map<String, String> expectedTags)
+    private void assertMetricsCollected(String expectedMetricName, Map<String, String> expectedTags)
     {
         when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(12345L);
-        collectorExecutor.elapseTime(1, TimeUnit.SECONDS);
+        reportCollector.collectData();
 
         verify(reportQueue).report(eq(12345L), tableCaptor.capture());
         verifyNoMoreInteractions(reportQueue);
@@ -162,27 +104,12 @@ public class TestReportCollector
                 .put("ReportCollector.NumMetrics", EXPECTED_VERSION_TAGS, 1)
                 .build()
                 .cellSet());
-
-        when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(67890L);
-        collectorExecutor.elapseTime(1, TimeUnit.MINUTES);
-
-        verify(reportQueue).report(eq(67890L), tableCaptor.capture());
-        verifyNoMoreInteractions(reportQueue);
-
-        table = tableCaptor.getValue();
-        assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
-                .put(expectedMetricName, expectedTags, 2)
-                .put("ReportCollector.NumMetrics", EXPECTED_VERSION_TAGS, 1)
-                .build()
-                .cellSet());
     }
 
     @Test
     public void testUnreportedValues()
             throws Exception
     {
-        testReportsStartup();
-
         when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(12345L);
         Object reported = new Object()
         {
@@ -332,7 +259,7 @@ public class TestReportCollector
         };
         reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), false, "TestObject", ImmutableMap.of());
 
-        collectorExecutor.elapseTime(1, TimeUnit.MINUTES);
+        reportCollector.collectData();
 
         verify(reportQueue).report(eq(12345L), tableCaptor.capture());
         verifyNoMoreInteractions(reportQueue);
