@@ -31,12 +31,12 @@ import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.util.Objects.requireNonNull;
 
-class ReportCollector
+public class ReportCollector
 {
     private final String applicationPrefix;
     private final MinuteBucketIdProvider bucketIdProvider;
     private final ReportedBeanRegistry reportedBeanRegistry;
-    private final ReportQueue reportQueue;
+    private final ReportSink reportSink;
     private final Map<String, String> versionTags;
 
     @Inject
@@ -44,12 +44,12 @@ class ReportCollector
             NodeInfo nodeInfo,
             MinuteBucketIdProvider bucketIdProvider,
             ReportedBeanRegistry reportedBeanRegistry,
-            ReportQueue reportQueue)
+            ReportSink reportSink)
     {
         applicationPrefix = LOWER_HYPHEN.to(UPPER_CAMEL, nodeInfo.getApplication()) + ".";
         this.bucketIdProvider = requireNonNull(bucketIdProvider, "bucketIdProvider is null");
         this.reportedBeanRegistry = requireNonNull(reportedBeanRegistry, "reportedBeanRegistry is null");
-        this.reportQueue = requireNonNull(reportQueue, "reportQueue is null");
+        this.reportSink = requireNonNull(reportSink, "reportSink is null");
 
         ImmutableMap.Builder<String, String> versionTagsBuilder = ImmutableMap.builder();
         if (!nodeInfo.getApplicationVersion().isEmpty()) {
@@ -61,7 +61,7 @@ class ReportCollector
         this.versionTags = versionTagsBuilder.build();
     }
 
-    void collectData()
+    public void collectData()
     {
         final long lastSystemTimeMillis = bucketIdProvider.getLastSystemTimeMillis();
         ImmutableTable.Builder<String, Map<String, String>, Object> builder = ImmutableTable.builder();
@@ -97,7 +97,7 @@ class ReportCollector
         }
         builder.put("ReportCollector.NumMetrics", versionTags, numAttributes);
         final Table<String, Map<String, String>, Object> collectedData = builder.build();
-        reportQueue.report(lastSystemTimeMillis, collectedData);
+        reportSink.report(lastSystemTimeMillis, collectedData);
     }
 
     private static boolean isReportable(Object value)

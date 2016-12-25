@@ -25,8 +25,6 @@ import com.proofpoint.configuration.ConfigurationModule;
 import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.ApplicationNameModule;
-import com.proofpoint.node.NodeConfig;
-import com.proofpoint.node.NodeInfo;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.testing.SerialScheduledExecutorService;
 import org.mockito.ArgumentCaptor;
@@ -56,7 +54,7 @@ public class TestReportScheduler
     @Mock
     private ReportCollector reportCollector;
     @Mock
-    private ReportQueue reportQueue;
+    private ReportSink reportSink;
     private SerialScheduledExecutorService collectorExecutor;
     private ReportScheduler reportScheduler;
 
@@ -69,7 +67,7 @@ public class TestReportScheduler
         initMocks(this);
         when(reportCollector.getVersionTags()).thenReturn(EXPECTED_VERSION_TAGS);
         collectorExecutor = new SerialScheduledExecutorService();
-        reportScheduler = new ReportScheduler(reportCollector, reportQueue, collectorExecutor);
+        reportScheduler = new ReportScheduler(reportCollector, reportSink, collectorExecutor);
     }
 
     @Test
@@ -95,8 +93,8 @@ public class TestReportScheduler
         reportScheduler.start();
         long upperBound = currentTimeMillis();
 
-        verify(reportQueue).report(longCaptor.capture(), tableCaptor.capture());
-        verifyNoMoreInteractions(reportQueue);
+        verify(reportSink).report(longCaptor.capture(), tableCaptor.capture());
+        verifyNoMoreInteractions(reportSink);
 
         assertBetweenInclusive(longCaptor.getValue(), lowerBound, upperBound);
 
@@ -107,7 +105,7 @@ public class TestReportScheduler
                 .cellSet());
 
         collectorExecutor.elapseTimeNanosecondBefore(1, MINUTES);
-        verifyNoMoreInteractions(reportQueue);
+        verifyNoMoreInteractions(reportSink);
     }
 
     @Test
@@ -128,6 +126,6 @@ public class TestReportScheduler
         collectorExecutor.elapseTime(1, NANOSECONDS);
         verify(reportCollector, times(2)).collectData();
         verifyNoMoreInteractions(reportCollector);
-        verifyNoMoreInteractions(reportQueue);
+        verifyNoMoreInteractions(reportSink);
     }
 }
