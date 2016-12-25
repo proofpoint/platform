@@ -40,6 +40,7 @@ public class ReportingClientModule
     public void configure(Binder binder)
     {
         binder.bind(ReportCollector.class).in(Scopes.SINGLETON);
+        binder.bind(ReportQueue.class).in(Scopes.SINGLETON);
         binder.bind(ReportClient.class).in(Scopes.SINGLETON);
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);

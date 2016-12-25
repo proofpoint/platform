@@ -41,11 +41,8 @@ import java.util.concurrent.TimeUnit;
 import static com.proofpoint.testing.Assertions.assertBetweenInclusive;
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
 import static java.lang.System.currentTimeMillis;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -58,9 +55,8 @@ public class TestReportCollector
 
     private MinuteBucketIdProvider bucketIdProvider;
     private ReportedBeanRegistry reportedBeanRegistry;
-    private ReportClient reportClient;
+    private ReportQueue reportQueue;
     private SerialScheduledExecutorService collectorExecutor;
-    private SerialScheduledExecutorService clientExecutor;
     private ReportCollector reportCollector;
 
     @Captor
@@ -72,11 +68,10 @@ public class TestReportCollector
         initMocks(this);
         bucketIdProvider = mock(MinuteBucketIdProvider.class);
         reportedBeanRegistry = new ReportedBeanRegistry();
-        reportClient = mock(ReportClient.class);
+        reportQueue = mock(ReportQueue.class);
         collectorExecutor = new SerialScheduledExecutorService();
-        clientExecutor = spy(new SerialScheduledExecutorService());
         NodeInfo nodeInfo = new NodeInfo("test-application", "1.2", "platform.1", new NodeConfig().setEnvironment("testing"));
-        reportCollector = new ReportCollector(nodeInfo, bucketIdProvider, reportedBeanRegistry, reportClient, collectorExecutor, clientExecutor);
+        reportCollector = new ReportCollector(nodeInfo, bucketIdProvider, reportedBeanRegistry, reportQueue, collectorExecutor);
     }
 
     @Test
@@ -102,10 +97,8 @@ public class TestReportCollector
         reportCollector.start();
         long upperBound = currentTimeMillis();
 
-        verify(reportClient).report(longCaptor.capture(), tableCaptor.capture());
-        verifyNoMoreInteractions(reportClient);
-        // We don't actually care which submit method variant got called, just that it got called on the client executor
-        verify(clientExecutor).submit(any(Runnable.class));
+        verify(reportQueue).report(longCaptor.capture(), tableCaptor.capture());
+        verifyNoMoreInteractions(reportQueue);
 
         assertBetweenInclusive(longCaptor.getValue(), lowerBound, upperBound);
 
@@ -116,7 +109,7 @@ public class TestReportCollector
                 .cellSet());
 
         collectorExecutor.elapseTime(59, TimeUnit.SECONDS);
-        verifyNoMoreInteractions(reportClient);
+        verifyNoMoreInteractions(reportQueue);
     }
 
     @Test
@@ -160,10 +153,8 @@ public class TestReportCollector
         when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(12345L);
         collectorExecutor.elapseTime(1, TimeUnit.SECONDS);
 
-        verify(reportClient).report(eq(12345L), tableCaptor.capture());
-        verifyNoMoreInteractions(reportClient);
-        // We don't actually care which submit method variant got called, just that it got called on the client executor
-        verify(clientExecutor, times(2)).submit(any(Runnable.class));
+        verify(reportQueue).report(eq(12345L), tableCaptor.capture());
+        verifyNoMoreInteractions(reportQueue);
 
         Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
         assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
@@ -175,8 +166,8 @@ public class TestReportCollector
         when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(67890L);
         collectorExecutor.elapseTime(1, TimeUnit.MINUTES);
 
-        verify(reportClient).report(eq(67890L), tableCaptor.capture());
-        verifyNoMoreInteractions(reportClient);
+        verify(reportQueue).report(eq(67890L), tableCaptor.capture());
+        verifyNoMoreInteractions(reportQueue);
 
         table = tableCaptor.getValue();
         assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
@@ -343,8 +334,8 @@ public class TestReportCollector
 
         collectorExecutor.elapseTime(1, TimeUnit.MINUTES);
 
-        verify(reportClient).report(eq(12345L), tableCaptor.capture());
-        verifyNoMoreInteractions(reportClient);
+        verify(reportQueue).report(eq(12345L), tableCaptor.capture());
+        verifyNoMoreInteractions(reportQueue);
 
         Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
         assertEqualsIgnoreOrder(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
