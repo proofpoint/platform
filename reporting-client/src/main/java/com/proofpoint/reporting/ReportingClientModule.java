@@ -41,7 +41,7 @@ public class ReportingClientModule
     {
         binder.bind(ReportScheduler.class).in(SINGLETON);
         binder.bind(ReportCollector.class).in(SINGLETON);
-        binder.bind(ReportQueue.class).in(SINGLETON);
+        binder.bind(ReportSink.class).to(ReportQueue.class).in(SINGLETON);
         binder.bind(ReportClient.class).in(SINGLETON);
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);

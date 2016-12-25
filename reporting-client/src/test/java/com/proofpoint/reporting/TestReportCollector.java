@@ -43,7 +43,7 @@ public class TestReportCollector
 
     private MinuteBucketIdProvider bucketIdProvider;
     private ReportedBeanRegistry reportedBeanRegistry;
-    private ReportQueue reportQueue;
+    private ReportSink reportSink;
     private ReportCollector reportCollector;
 
     @Captor
@@ -55,9 +55,9 @@ public class TestReportCollector
         initMocks(this);
         bucketIdProvider = mock(MinuteBucketIdProvider.class);
         reportedBeanRegistry = new ReportedBeanRegistry();
-        reportQueue = mock(ReportQueue.class);
+        reportSink = mock(ReportQueue.class);
         NodeInfo nodeInfo = new NodeInfo("test-application", "1.2", "platform.1", new NodeConfig().setEnvironment("testing"));
-        reportCollector = new ReportCollector(nodeInfo, bucketIdProvider, reportedBeanRegistry, reportQueue);
+        reportCollector = new ReportCollector(nodeInfo, bucketIdProvider, reportedBeanRegistry, reportSink);
     }
 
     @Test
@@ -95,8 +95,8 @@ public class TestReportCollector
         when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(12345L);
         reportCollector.collectData();
 
-        verify(reportQueue).report(eq(12345L), tableCaptor.capture());
-        verifyNoMoreInteractions(reportQueue);
+        verify(reportSink).report(eq(12345L), tableCaptor.capture());
+        verifyNoMoreInteractions(reportSink);
 
         Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
         assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
@@ -261,8 +261,8 @@ public class TestReportCollector
 
         reportCollector.collectData();
 
-        verify(reportQueue).report(eq(12345L), tableCaptor.capture());
-        verifyNoMoreInteractions(reportQueue);
+        verify(reportSink).report(eq(12345L), tableCaptor.capture());
+        verifyNoMoreInteractions(reportSink);
 
         Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
         assertEqualsIgnoreOrder(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()

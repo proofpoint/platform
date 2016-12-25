@@ -10,6 +10,12 @@ Platform 1.51
   We changed the format of trace token ids created by the HTTP server so that
   they start with an encoding of the server's and client's IPs.
 
+* Reporting
+
+  We created TestingReportingModule for unit tests that need to test the
+  reported metrics that are generated. It provides a ReportingTester that
+  can be used to collect and return reported metrics.
+
 Platform 1.50
 
 * Deprecation removals

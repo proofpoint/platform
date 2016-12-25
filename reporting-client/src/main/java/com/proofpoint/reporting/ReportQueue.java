@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService;
 
 import static java.util.Objects.requireNonNull;
 
-class ReportQueue
+class ReportQueue implements ReportSink
 {
     private final boolean enabled;
     private final ExecutorService clientExecutorService;
@@ -37,7 +37,8 @@ class ReportQueue
         this.reportClient = reportClient;
     }
 
-    void report(long systemTimeMillis, Table<String, Map<String, String>, Object> collectedData)
+    @Override
+    public void report(long systemTimeMillis, Table<String, Map<String, String>, Object> collectedData)
     {
         if (!enabled) {
             return;

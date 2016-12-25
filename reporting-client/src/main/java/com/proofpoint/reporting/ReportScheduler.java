@@ -29,16 +29,16 @@ class ReportScheduler
 {
     private final ScheduledExecutorService collectionExecutorService;
     private final ReportCollector reportCollector;
-    private final ReportQueue reportQueue;
+    private final ReportSink reportSink;
 
     @Inject
     ReportScheduler(
             ReportCollector reportCollector,
-            ReportQueue reportQueue,
+            ReportSink reportSink,
             @ForReportCollector ScheduledExecutorService collectionExecutorService)
     {
         this.reportCollector = requireNonNull(reportCollector, "reportCollector is null");
-        this.reportQueue = requireNonNull(reportQueue, "reportQueue is null");
+        this.reportSink = requireNonNull(reportSink, "reportQueue is null");
         this.collectionExecutorService = requireNonNull(collectionExecutorService, "collectionExecutorService is null");
     }
 
@@ -47,6 +47,6 @@ class ReportScheduler
     {
         collectionExecutorService.scheduleAtFixedRate(reportCollector::collectData, 1, 1, TimeUnit.MINUTES);
 
-        reportQueue.report(currentTimeMillis(), ImmutableTable.of("ReportCollector.ServerStart", reportCollector.getVersionTags(), 1));
+        reportSink.report(currentTimeMillis(), ImmutableTable.of("ReportCollector.ServerStart", reportCollector.getVersionTags(), 1));
     }
 }
