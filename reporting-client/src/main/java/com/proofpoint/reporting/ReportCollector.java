@@ -22,17 +22,13 @@ import com.google.inject.Inject;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 
-import javax.annotation.PostConstruct;
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.requireNonNull;
 
 class ReportCollector
@@ -40,7 +36,6 @@ class ReportCollector
     private final String applicationPrefix;
     private final MinuteBucketIdProvider bucketIdProvider;
     private final ReportedBeanRegistry reportedBeanRegistry;
-    private final ScheduledExecutorService collectionExecutorService;
     private final ReportQueue reportQueue;
     private final Map<String, String> versionTags;
 
@@ -49,14 +44,12 @@ class ReportCollector
             NodeInfo nodeInfo,
             MinuteBucketIdProvider bucketIdProvider,
             ReportedBeanRegistry reportedBeanRegistry,
-            ReportQueue reportQueue,
-            @ForReportCollector ScheduledExecutorService collectionExecutorService)
+            ReportQueue reportQueue)
     {
         applicationPrefix = LOWER_HYPHEN.to(UPPER_CAMEL, nodeInfo.getApplication()) + ".";
         this.bucketIdProvider = requireNonNull(bucketIdProvider, "bucketIdProvider is null");
         this.reportedBeanRegistry = requireNonNull(reportedBeanRegistry, "reportedBeanRegistry is null");
         this.reportQueue = requireNonNull(reportQueue, "reportQueue is null");
-        this.collectionExecutorService = requireNonNull(collectionExecutorService, "collectionExecutorService is null");
 
         ImmutableMap.Builder<String, String> versionTagsBuilder = ImmutableMap.builder();
         if (!nodeInfo.getApplicationVersion().isEmpty()) {
@@ -68,15 +61,7 @@ class ReportCollector
         this.versionTags = versionTagsBuilder.build();
     }
 
-    @PostConstruct
-    public void start()
-    {
-        collectionExecutorService.scheduleAtFixedRate(this::collectData, 1, 1, TimeUnit.MINUTES);
-
-        reportQueue.report(currentTimeMillis(), ImmutableTable.of("ReportCollector.ServerStart", versionTags, 1));
-    }
-
-    private void collectData()
+    void collectData()
     {
         final long lastSystemTimeMillis = bucketIdProvider.getLastSystemTimeMillis();
         ImmutableTable.Builder<String, Map<String, String>, Object> builder = ImmutableTable.builder();
@@ -133,5 +118,10 @@ class ReportCollector
             return !(value.equals(Short.MAX_VALUE) || value.equals(Short.MIN_VALUE));
         }
         return true;
+    }
+
+    Map<String, String> getVersionTags()
+    {
+        return versionTags;
     }
 }
