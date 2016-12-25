@@ -52,7 +52,6 @@ class ReportClient
     private final Map<String, String> instanceTags;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
-    private final boolean enabled;
 
     @Inject
     ReportClient(NodeInfo nodeInfo, @ForReportClient HttpClient httpClient, ReportClientConfig reportClientConfig, ObjectMapper objectMapper)
@@ -70,15 +69,10 @@ class ReportClient
         this.instanceTags = builder.build();
 
         this.httpClient = checkNotNull(httpClient, "httpClient is null");
-        enabled = reportClientConfig.isEnabled();
     }
 
     public void report(long systemTimeMillis, Table<String, Map<String, String>, Object> collectedData)
     {
-        if (!enabled) {
-            return;
-        }
-
         Request request = preparePost()
                 .setUri(UPLOAD_URI)
                 .setHeader("Content-Type", "application/gzip")
