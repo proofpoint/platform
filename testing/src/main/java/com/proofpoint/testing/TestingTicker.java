@@ -3,18 +3,19 @@ package com.proofpoint.testing;
 import com.google.common.base.Ticker;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class TestingTicker
         extends Ticker
 {
-    private long time;
+    private final AtomicLong time = new AtomicLong();
 
     @Override
     public long read()
     {
-        return time;
+        return time.get();
     }
 
     /**
@@ -24,7 +25,7 @@ public class TestingTicker
     public void increment(long delta, TimeUnit unit)
     {
         checkArgument(delta >= 0, "delta is negative");
-        time += unit.toNanos(delta);
+        time.getAndAdd(unit.toNanos(delta));
     }
 
     /**
@@ -36,12 +37,12 @@ public class TestingTicker
     public void elapseTime(long quantum, TimeUnit timeUnit)
     {
         checkArgument(quantum >= 0, "quantum is negative");
-        time += timeUnit.toNanos(quantum);
+        time.getAndAdd(timeUnit.toNanos(quantum));
     }
 
     public void elapseTimeNanosecondBefore(long quantum, TimeUnit timeUnit)
     {
         checkArgument(quantum > 0, "quantum is non-positive");
-        time += timeUnit.toNanos(quantum) - 1;
+        time.getAndAdd(timeUnit.toNanos(quantum) - 1);
     }
 }
