@@ -190,12 +190,11 @@ public class Bootstrap
     {
         if (initializeLogging) {
             logging = Logging.initialize();
+            Thread.setDefaultUncaughtExceptionHandler((t, e) -> log.error(e, "Uncaught exception in thread %s", t.getName()));
         }
         else {
             logging = null;
         }
-
-        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> log.error(e, "Uncaught exception in thread %s", t.getName()));
 
         this.modules = ImmutableList.<Module>builder()
                 .add(checkNotNull(applicationNameModule, "applicationNameModule is null"))

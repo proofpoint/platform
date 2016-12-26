@@ -1,3 +1,10 @@
+Platform 1.50
+
+* Bootstrap
+
+  Bootstrap now sets a default uncaught exception handler that logs the
+  exception.
+
 Platform 1.49
 
 * HttpServer sets the blocking timout in order to work around a Jetty bug.
