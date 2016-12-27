@@ -3,6 +3,13 @@ Platform 1.52
 * DiscoveryBinder.bindHttpAnnouncement() will include the admin port URL in a
   new "admin" property of the service announcement.
 
+* JAX-RS
+
+  JAX-RS resource method parameters may now be annotated with
+  @com.proofpoint.reporting.Key annotations. The metrics generated
+  by such method calls will then be broken down by the toString of the
+  corresponding parameter values, similar to a report collection.
+
 * Reporting
 
   We created TestingReportingModule for unit tests that need to test the

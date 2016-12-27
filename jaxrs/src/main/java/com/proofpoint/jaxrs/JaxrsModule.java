@@ -180,7 +180,9 @@ public class JaxrsModule
         // detect jax-rs services that are bound into Guice, but not explicitly exported
         Set<Key<?>> missingBindings = new HashSet<>();
         ImmutableSet.Builder<Object> singletons = ImmutableSet.builder();
-        singletons.addAll(jaxRsSingletons);
+        jaxRsSingletons.stream()
+                .map(TimingWrapper::wrapIfAnnotatedResource)
+                .forEach(singletons::add);
         while (injector != null) {
             for (Entry<Key<?>, Binding<?>> entry : injector.getBindings().entrySet()) {
                 Key<?> key = entry.getKey();
@@ -191,7 +193,7 @@ public class JaxrsModule
                     else {
                         log.warn("Jax-rs service %s is not explicitly bound using the JaxRsBinder", key);
                         Object jaxRsSingleton = entry.getValue().getProvider().get();
-                        singletons.add(jaxRsSingleton);
+                        singletons.add(TimingWrapper.wrapIfAnnotatedResource(jaxRsSingleton));
                     }
                 }
             }
