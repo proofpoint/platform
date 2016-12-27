@@ -34,6 +34,7 @@ import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,10 +76,34 @@ class TimingResourceDynamicFeature
             return;
         }
 
+        ImmutableList.Builder<String> builder = ImmutableList.builder();
+        builder.add("method", "responseCode");
+
+        if (TimingWrapped.class.isAssignableFrom(resourceClass)) {
+            Map<String, List<String>> keyNamesMap;
+            try {
+                keyNamesMap = (Map<String, List<String>>) resourceClass.getDeclaredMethod("getKeyNames").invoke(null);
+            }
+            catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+            List<String> keyNames = keyNamesMap.get(resourceMethod.getName());
+            if (keyNames != null) {
+                builder.addAll(keyNames);
+            }
+
+            try {
+                resourceClass = resourceClass.getDeclaredField("delegate").getType();
+            }
+            catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         LoadingCache<List<Optional<String>>, SparseTimeStat> loadingCache = new CacheImplementation(
                 applicationPrefixedClasses.contains(resourceClass),
                 resourceClass.getSimpleName() + ".RequestTime",
-                ImmutableList.of("method", "responseCode")
+                builder.build()
         ).getLoadingCache();
 
         featureContext.register(new TimingFilter(resourceMethod.getName(), loadingCache, ticker));

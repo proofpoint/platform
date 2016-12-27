@@ -10,6 +10,13 @@ Platform 1.51
   We changed the format of trace token ids created by the HTTP server so that
   they start with an encoding of the server's and client's IPs.
 
+* JAX-RS
+
+  JAX-RS resource method parameters may now be annotated with
+  @com.proofpoint.reporting.Key annotations. The metrics generated
+  by such method calls will then be broken down by the toString of the
+  corresponding parameter values, similar to a report collection.
+
 * Reporting
 
   We created TestingReportingModule for unit tests that need to test the
