@@ -1,5 +1,8 @@
 Platform 1.50
 
+* We added an /admin/jstack resource on the admin port to dump the thread
+  stacks.
+
 * Bootstrap
 
   Bootstrap now sets a default uncaught exception handler that logs the
