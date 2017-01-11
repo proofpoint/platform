@@ -17,6 +17,7 @@ package com.proofpoint.jaxrs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
+import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Binder;
@@ -179,7 +180,9 @@ public class JaxrsModule
         // detect jax-rs services that are bound into Guice, but not explicitly exported
         Set<Key<?>> missingBindings = new HashSet<>();
         ImmutableSet.Builder<Object> singletons = ImmutableSet.builder();
-        singletons.addAll(jaxRsSingletons);
+        jaxRsSingletons.stream()
+                .map(TimingWrapper::wrapIfAnnotatedResource)
+                .forEach(singletons::add);
         while (injector != null) {
             for (Entry<Key<?>, Binding<?>> entry : injector.getBindings().entrySet()) {
                 Key<?> key = entry.getKey();
@@ -190,7 +193,7 @@ public class JaxrsModule
                     else {
                         log.warn("Jax-rs service %s is not explicitly bound using the JaxRsBinder", key);
                         Object jaxRsSingleton = entry.getValue().getProvider().get();
-                        singletons.add(jaxRsSingleton);
+                        singletons.add(TimingWrapper.wrapIfAnnotatedResource(jaxRsSingleton));
                     }
                 }
             }
@@ -235,6 +238,13 @@ public class JaxrsModule
     public static Map<String, String> createTheAdminServletParams()
     {
         return new HashMap<>();
+    }
+
+    @Provides
+    @JaxrsTicker
+    public static Ticker createTicker()
+    {
+        return Ticker.systemTicker();
     }
 
     private static boolean isJaxRsType(Class<?> type)

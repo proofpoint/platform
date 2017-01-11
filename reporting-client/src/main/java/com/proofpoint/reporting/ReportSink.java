@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Proofpoint, Inc.
+ * Copyright 2016 Proofpoint, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofpoint.jaxrs;
+package com.proofpoint.reporting;
 
-import com.proofpoint.reporting.Key;
-import com.proofpoint.stats.SparseTimeStat;
+import com.google.common.collect.Table;
 
-interface RequestStats
+import java.util.Map;
+
+public interface ReportSink
 {
-    SparseTimeStat requestTime(@Key("method") String method, @Key("responseCode") int responseCode);
+    void report(long systemTimeMillis, Table<String, Map<String, String>, Object> collectedData);
 }

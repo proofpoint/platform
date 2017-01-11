@@ -18,17 +18,8 @@ package com.proofpoint.reporting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.proofpoint.configuration.ConfigurationFactory;
-import com.proofpoint.configuration.ConfigurationModule;
-import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
-import com.proofpoint.json.JsonModule;
-import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
-import com.proofpoint.node.testing.TestingNodeModule;
-import com.proofpoint.testing.SerialScheduledExecutorService;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.testng.annotations.BeforeMethod;
@@ -36,16 +27,10 @@ import org.testng.annotations.Test;
 
 import javax.management.ObjectName;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import static com.proofpoint.testing.Assertions.assertBetweenInclusive;
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
-import static java.lang.System.currentTimeMillis;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -58,9 +43,7 @@ public class TestReportCollector
 
     private MinuteBucketIdProvider bucketIdProvider;
     private ReportedBeanRegistry reportedBeanRegistry;
-    private ReportClient reportClient;
-    private SerialScheduledExecutorService collectorExecutor;
-    private SerialScheduledExecutorService clientExecutor;
+    private ReportSink reportSink;
     private ReportCollector reportCollector;
 
     @Captor
@@ -72,59 +55,15 @@ public class TestReportCollector
         initMocks(this);
         bucketIdProvider = mock(MinuteBucketIdProvider.class);
         reportedBeanRegistry = new ReportedBeanRegistry();
-        reportClient = mock(ReportClient.class);
-        collectorExecutor = new SerialScheduledExecutorService();
-        clientExecutor = spy(new SerialScheduledExecutorService());
+        reportSink = mock(ReportQueue.class);
         NodeInfo nodeInfo = new NodeInfo("test-application", "1.2", "platform.1", new NodeConfig().setEnvironment("testing"));
-        reportCollector = new ReportCollector(nodeInfo, bucketIdProvider, reportedBeanRegistry, reportClient, collectorExecutor, clientExecutor);
-    }
-
-    @Test
-    public void testReportingModule()
-    {
-        Injector injector = Guice.createInjector(
-                new ApplicationNameModule("test-application"),
-                new TestingNodeModule(),
-                new TestingDiscoveryModule(),
-                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of())),
-                new JsonModule(),
-                new ReportingModule(),
-                new ReportingClientModule());
-        injector.getInstance(ReportCollector.class);
-    }
-
-    @Test
-    public void testReportsStartup()
-    {
-        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-
-        long lowerBound = currentTimeMillis();
-        reportCollector.start();
-        long upperBound = currentTimeMillis();
-
-        verify(reportClient).report(longCaptor.capture(), tableCaptor.capture());
-        verifyNoMoreInteractions(reportClient);
-        // We don't actually care which submit method variant got called, just that it got called on the client executor
-        verify(clientExecutor).submit(any(Runnable.class));
-
-        assertBetweenInclusive(longCaptor.getValue(), lowerBound, upperBound);
-
-        Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
-        assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
-                .put("ReportCollector.ServerStart", EXPECTED_VERSION_TAGS, 1)
-                .build()
-                .cellSet());
-
-        collectorExecutor.elapseTime(59, TimeUnit.SECONDS);
-        verifyNoMoreInteractions(reportClient);
+        reportCollector = new ReportCollector(nodeInfo, bucketIdProvider, reportedBeanRegistry, reportSink);
     }
 
     @Test
     public void testCollection()
             throws Exception
     {
-        testReportsStartup();
-
         Object reported = new ReportedObject();
         reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), false, "TestObject", ImmutableMap.of());
 
@@ -135,8 +74,6 @@ public class TestReportCollector
     public void testCollectionApplicationPrefix()
             throws Exception
     {
-        testReportsStartup();
-
         Object reported = new ReportedObject();
         reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), true, "TestObject", ImmutableMap.of("foo", "bar"));
 
@@ -147,40 +84,23 @@ public class TestReportCollector
     public void testCollectionLegacy()
             throws Exception
     {
-        testReportsStartup();
-
         ObjectName objectName = ObjectName.getInstance("com.proofpoint.reporting.test:name=TestObject,foo=bar");
         reportedBeanRegistry.register(ReportedBean.forTarget(new ReportedObject()), objectName);
 
         assertMetricsCollected("TestObject.Metric", ImmutableMap.of("foo", "bar"));
     }
 
-    void assertMetricsCollected(String expectedMetricName, Map<String, String> expectedTags)
+    private void assertMetricsCollected(String expectedMetricName, Map<String, String> expectedTags)
     {
         when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(12345L);
-        collectorExecutor.elapseTime(1, TimeUnit.SECONDS);
+        reportCollector.collectData();
 
-        verify(reportClient).report(eq(12345L), tableCaptor.capture());
-        verifyNoMoreInteractions(reportClient);
-        // We don't actually care which submit method variant got called, just that it got called on the client executor
-        verify(clientExecutor, times(2)).submit(any(Runnable.class));
+        verify(reportSink).report(eq(12345L), tableCaptor.capture());
+        verifyNoMoreInteractions(reportSink);
 
         Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
         assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
                 .put(expectedMetricName, expectedTags, 1)
-                .put("ReportCollector.NumMetrics", EXPECTED_VERSION_TAGS, 1)
-                .build()
-                .cellSet());
-
-        when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(67890L);
-        collectorExecutor.elapseTime(1, TimeUnit.MINUTES);
-
-        verify(reportClient).report(eq(67890L), tableCaptor.capture());
-        verifyNoMoreInteractions(reportClient);
-
-        table = tableCaptor.getValue();
-        assertEquals(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()
-                .put(expectedMetricName, expectedTags, 2)
                 .put("ReportCollector.NumMetrics", EXPECTED_VERSION_TAGS, 1)
                 .build()
                 .cellSet());
@@ -190,8 +110,6 @@ public class TestReportCollector
     public void testUnreportedValues()
             throws Exception
     {
-        testReportsStartup();
-
         when(bucketIdProvider.getLastSystemTimeMillis()).thenReturn(12345L);
         Object reported = new Object()
         {
@@ -341,10 +259,10 @@ public class TestReportCollector
         };
         reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), false, "TestObject", ImmutableMap.of());
 
-        collectorExecutor.elapseTime(1, TimeUnit.MINUTES);
+        reportCollector.collectData();
 
-        verify(reportClient).report(eq(12345L), tableCaptor.capture());
-        verifyNoMoreInteractions(reportClient);
+        verify(reportSink).report(eq(12345L), tableCaptor.capture());
+        verifyNoMoreInteractions(reportSink);
 
         Table<String, Map<String, String>, Object> table = tableCaptor.getValue();
         assertEqualsIgnoreOrder(table.cellSet(), ImmutableTable.<String, Map<String, String>, Object>builder()

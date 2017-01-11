@@ -22,28 +22,21 @@ import com.google.inject.Inject;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 
-import javax.annotation.PostConstruct;
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.requireNonNull;
 
-class ReportCollector
+public class ReportCollector
 {
     private final String applicationPrefix;
     private final MinuteBucketIdProvider bucketIdProvider;
     private final ReportedBeanRegistry reportedBeanRegistry;
-    private final ScheduledExecutorService collectionExecutorService;
-    private final ExecutorService clientExecutorService;
-    private final ReportClient reportClient;
+    private final ReportSink reportSink;
     private final Map<String, String> versionTags;
 
     @Inject
@@ -51,16 +44,12 @@ class ReportCollector
             NodeInfo nodeInfo,
             MinuteBucketIdProvider bucketIdProvider,
             ReportedBeanRegistry reportedBeanRegistry,
-            ReportClient reportClient,
-            @ForReportCollector ScheduledExecutorService collectionExecutorService,
-            @ForReportClient ExecutorService clientExecutorService)
+            ReportSink reportSink)
     {
         applicationPrefix = LOWER_HYPHEN.to(UPPER_CAMEL, nodeInfo.getApplication()) + ".";
         this.bucketIdProvider = requireNonNull(bucketIdProvider, "bucketIdProvider is null");
         this.reportedBeanRegistry = requireNonNull(reportedBeanRegistry, "reportedBeanRegistry is null");
-        this.reportClient = requireNonNull(reportClient, "reportClient is null");
-        this.collectionExecutorService = requireNonNull(collectionExecutorService, "collectionExecutorService is null");
-        this.clientExecutorService = requireNonNull(clientExecutorService, "clientExecutorService is null");
+        this.reportSink = requireNonNull(reportSink, "reportSink is null");
 
         ImmutableMap.Builder<String, String> versionTagsBuilder = ImmutableMap.builder();
         if (!nodeInfo.getApplicationVersion().isEmpty()) {
@@ -72,15 +61,7 @@ class ReportCollector
         this.versionTags = versionTagsBuilder.build();
     }
 
-    @PostConstruct
-    public void start()
-    {
-        collectionExecutorService.scheduleAtFixedRate(this::collectData, 1, 1, TimeUnit.MINUTES);
-
-        clientExecutorService.submit(() -> reportClient.report(currentTimeMillis(), ImmutableTable.of("ReportCollector.ServerStart", versionTags, 1)));
-    }
-
-    private void collectData()
+    public void collectData()
     {
         final long lastSystemTimeMillis = bucketIdProvider.getLastSystemTimeMillis();
         ImmutableTable.Builder<String, Map<String, String>, Object> builder = ImmutableTable.builder();
@@ -116,7 +97,7 @@ class ReportCollector
         }
         builder.put("ReportCollector.NumMetrics", versionTags, numAttributes);
         final Table<String, Map<String, String>, Object> collectedData = builder.build();
-        clientExecutorService.submit(() -> reportClient.report(lastSystemTimeMillis, collectedData));
+        reportSink.report(lastSystemTimeMillis, collectedData);
     }
 
     private static boolean isReportable(Object value)
@@ -137,5 +118,10 @@ class ReportCollector
             return !(value.equals(Short.MAX_VALUE) || value.equals(Short.MIN_VALUE));
         }
         return true;
+    }
+
+    Map<String, String> getVersionTags()
+    {
+        return versionTags;
     }
 }

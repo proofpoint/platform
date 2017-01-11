@@ -18,7 +18,9 @@ package com.proofpoint.node.testing;
 import com.google.common.base.Optional;
 import com.google.inject.Binder;
 import com.google.inject.Module;
+import com.google.inject.Provides;
 import com.google.inject.Scopes;
+import com.google.inject.Singleton;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
 
@@ -43,7 +45,7 @@ public class TestingNodeModule
 
     public TestingNodeModule()
     {
-        this(Optional.<String>absent());
+        this(Optional.absent());
     }
 
     public TestingNodeModule(Optional<String> environment)
@@ -53,7 +55,7 @@ public class TestingNodeModule
 
     public TestingNodeModule(String environment)
     {
-        this(environment, Optional.<String>absent());
+        this(environment, Optional.absent());
     }
 
     public TestingNodeModule(String environment, Optional<String> pool)
@@ -71,7 +73,6 @@ public class TestingNodeModule
     @Override
     public void configure(Binder binder)
     {
-        binder.bind(NodeInfo.class).in(Scopes.SINGLETON);
         NodeConfig nodeConfig = new NodeConfig()
                 .setEnvironment(environment)
                 .setNodeInternalIp(getV4Localhost())
@@ -84,6 +85,13 @@ public class TestingNodeModule
         binder.bind(NodeConfig.class).toInstance(nodeConfig);
 
         newExporter(binder).export(NodeInfo.class).withGeneratedName();
+    }
+
+    @Provides
+    @Singleton
+    NodeInfo createNodeInfo(NodeConfig config)
+    {
+        return new NodeInfo("test-application", config);
     }
 
     @SuppressWarnings("ImplicitNumericConversion")

@@ -15,6 +15,10 @@
  */
 package com.proofpoint.jaxrs;
 
+import com.google.common.base.Ticker;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
+import com.proofpoint.stats.SparseTimeStat;
 import com.proofpoint.units.Duration;
 
 import javax.annotation.Priority;
@@ -22,34 +26,52 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 @Priority(100)
 class TimingFilter
         implements ContainerRequestFilter, ContainerResponseFilter
 {
+    static final String TAGS_KEY = TimingFilter.class.getName() + ".tags";
+
     private static final String START_TIME_KEY = TimingFilter.class.getName() + ".start-time";
     private final String methodName;
-    private final RequestStats requestStats;
+    private final LoadingCache<List<Optional<String>>, SparseTimeStat> loadingCache;
+    private final Ticker ticker;
 
-    TimingFilter(String methodName, RequestStats requestStats)
+    TimingFilter(String methodName, LoadingCache<List<Optional<String>>, SparseTimeStat> loadingCache, Ticker ticker)
     {
-        this.methodName = checkNotNull(methodName, "methodName is null");
-        this.requestStats = checkNotNull(requestStats, "requestStats is null");
+        this.methodName = requireNonNull(methodName, "methodName is null");
+        this.loadingCache = requireNonNull(loadingCache, "loadingCache is null");
+        this.ticker = requireNonNull(ticker, "ticker is null");
     }
 
     @Override
     public void filter(ContainerRequestContext request)
     {
-        request.setProperty(START_TIME_KEY, System.nanoTime());
+        request.setProperty(START_TIME_KEY, ticker.read());
     }
 
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response)
     {
         Long startTime = (Long) request.getProperty(START_TIME_KEY);
-        requestStats.requestTime(methodName, response.getStatus())
-                .add(Duration.nanosSince(startTime));
+
+        ImmutableList.Builder<Optional<String>> builder = ImmutableList.builder();
+        builder.add(Optional.of(methodName), Optional.of(Integer.toString(response.getStatus())));
+
+        Collection<Optional<Object>> tags = (Collection<Optional<Object>>) request.getProperty(TAGS_KEY);
+        if (tags != null) {
+            for (Optional<Object> tag : tags) {
+                builder.add(tag.map(Object::toString));
+            }
+        }
+
+        loadingCache.getUnchecked(builder.build())
+                .add(Duration.succinctNanos(ticker.read() - startTime));
     }
 }

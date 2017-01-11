@@ -11,6 +11,51 @@
         <version>1.51-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <shadeBase>com.proofpoint.jaxrs.internal</shadeBase>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createSourcesJar>true</createSourcesJar>
+                            <shadeSourcesContent>true</shadeSourcesContent>
+                            <minimizeJar>true</minimizeJar>
+                            <artifactSet>
+                                <includes>
+                                    <include>net.bytebuddy:byte-buddy</include>
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>net.bytebuddy</pattern>
+                                    <shadedPattern>${shadeBase}.bytebuddy</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>net.bytebuddy:byte-buddy</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/maven/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
@@ -124,6 +169,12 @@
             <artifactId>jackson-dataformat-smile</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.5.10</version>
+        </dependency>
+
         <!-- for testing -->
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
@@ -146,6 +197,12 @@
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
             <artifactId>http-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.proofpoint.platform</groupId>
+            <artifactId>reporting-client</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

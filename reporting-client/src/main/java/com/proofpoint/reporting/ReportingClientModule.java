@@ -18,7 +18,6 @@ package com.proofpoint.reporting;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
-import com.google.inject.Scopes;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,6 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.inject.Scopes.SINGLETON;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
@@ -39,13 +39,15 @@ public class ReportingClientModule
     @Override
     public void configure(Binder binder)
     {
-        binder.bind(ReportCollector.class).in(Scopes.SINGLETON);
-        binder.bind(ReportClient.class).in(Scopes.SINGLETON);
+        binder.bind(ReportScheduler.class).in(SINGLETON);
+        binder.bind(ReportCollector.class).in(SINGLETON);
+        binder.bind(ReportSink.class).to(ReportQueue.class).in(SINGLETON);
+        binder.bind(ReportClient.class).in(SINGLETON);
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);
         bindConfig(binder).to(ReportClientConfig.class);
 
-        binder.bind(ShutdownMonitor.class).in(Scopes.SINGLETON);
+        binder.bind(ShutdownMonitor.class).in(SINGLETON);
         healthBinder(binder).export(ShutdownMonitor.class);
     }
 
