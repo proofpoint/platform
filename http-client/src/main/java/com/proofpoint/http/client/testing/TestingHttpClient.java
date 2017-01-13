@@ -33,7 +33,7 @@ public class TestingHttpClient
 
     public TestingHttpClient()
     {
-        this(MoreExecutors.sameThreadExecutor());
+        this(MoreExecutors.newDirectExecutorService());
     }
 
     public TestingHttpClient(ExecutorService executor)
@@ -45,7 +45,7 @@ public class TestingHttpClient
 
     public TestingHttpClient(Processor processor)
     {
-        this(processor, MoreExecutors.sameThreadExecutor());
+        this(processor, MoreExecutors.newDirectExecutorService());
     }
 
     public TestingHttpClient(Processor processor, ExecutorService executor)

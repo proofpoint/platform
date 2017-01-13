@@ -31,7 +31,7 @@ import com.proofpoint.reporting.ReportExporter;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static com.google.common.base.Objects.firstNonNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
