@@ -15,14 +15,14 @@
  */
 package com.proofpoint.event.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Resources;
+import com.google.common.collect.ImmutableMap;
 import org.joda.time.DateTime;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 class TestingUtils
@@ -36,11 +36,37 @@ class TestingUtils
         );
     }
 
-    public static String getNormalizedJson(String resource)
-            throws IOException
+    public static List<Map<String, Object>> getExpectedJson()
     {
-        String json = Resources.toString(Resources.getResource(resource), Charsets.UTF_8);
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(mapper.readValue(json, Object.class));
+        List<Map<String, Object>> expected = new ArrayList<>();
+        expected.add(new LinkedHashMap<>(ImmutableMap.<String, Object>builder()
+                .put("type", "FixedDummy")
+                .put("uuid", "8e248a16-da86-11e0-9e77-9fc96e21a396")
+                .put("host", "localhost")
+                .put("timestamp", "2011-09-09T01:35:28.333Z")
+                .put("traceToken", "sample-trace-token")
+                .put("data", ImmutableMap.of("intValue", 5678, "stringValue", "foo"))
+                .build()
+        ));
+        expected.add(new LinkedHashMap<>(ImmutableMap.<String, Object>builder()
+                .put("type", "FixedDummy")
+                .put("uuid", "94ac328a-da86-11e0-afe9-d30a5b7c4f68")
+                .put("host", "localhost")
+                .put("timestamp", "2011-09-09T01:43:18.123Z")
+                .put("traceToken", "sample-trace-token")
+                .put("data", ImmutableMap.of("intValue", 1, "stringValue", "bar"))
+                .build()
+        ));
+        expected.add(new LinkedHashMap<>(ImmutableMap.<String, Object>builder()
+                .put("type", "FixedDummy")
+                .put("uuid", "a30671a6-da86-11e0-bc43-971987242263")
+                .put("host", "localhost")
+                .put("timestamp", "2011-09-09T01:45:55.555Z")
+                .put("traceToken", "sample-trace-token")
+                .put("data", ImmutableMap.of("intValue", 1234, "stringValue", "hello"))
+                .build()
+        ));
+
+        return expected;
     }
 }
