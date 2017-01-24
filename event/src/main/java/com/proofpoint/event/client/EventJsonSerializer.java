@@ -18,27 +18,40 @@ package com.proofpoint.event.client;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.proofpoint.json.JsonCodec;
 import com.proofpoint.node.NodeInfo;
+import com.proofpoint.tracetoken.TraceToken;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.UUID;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.proofpoint.json.JsonCodec.jsonCodec;
+import static java.util.Objects.requireNonNull;
 
 class EventJsonSerializer<T>
         extends JsonSerializer<T>
 {
+    private static final JsonCodec<TraceToken> TRACE_TOKEN_JSON_CODEC = jsonCodec(TraceToken.class).withoutPretty();
 
     private final String token;
     private final EventTypeMetadata<T> eventTypeMetadata;
     private final String hostName;
 
-    public EventJsonSerializer(NodeInfo nodeInfo, @Nullable String token, EventTypeMetadata<T> eventTypeMetadata)
+    EventJsonSerializer(NodeInfo nodeInfo, @Nullable TraceToken token, EventTypeMetadata<T> eventTypeMetadata)
     {
-        this.token = token;
-        this.eventTypeMetadata = checkNotNull(eventTypeMetadata, "eventTypeMetadata is null");
+        if (token == null || eventTypeMetadata.getTraceTokenField() != null) {
+            this.token = null;
+        }
+        else if (token.size() == 1) {
+            this.token = token.get("id");
+        }
+        else {
+            this.token = TRACE_TOKEN_JSON_CODEC.toJson(token);
+        }
+
+        this.eventTypeMetadata = requireNonNull(eventTypeMetadata, "eventTypeMetadata is null");
         if (eventTypeMetadata.getHostField() == null) {
             hostName = nodeInfo.getInternalHostname();
         }

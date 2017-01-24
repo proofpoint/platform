@@ -28,6 +28,7 @@ import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.UnexpectedResponseException;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
+import com.proofpoint.tracetoken.TraceToken;
 import org.weakref.jmx.Flatten;
 
 import java.io.IOException;
@@ -37,10 +38,10 @@ import java.net.URI;
 import java.util.Arrays;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.http.client.Request.Builder.preparePost;
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 public class HttpEventClient
         implements EventClient
@@ -59,9 +60,9 @@ public class HttpEventClient
             NodeInfo nodeInfo,
             @ForEventClient HttpClient httpClient)
     {
-        this.eventWriter = checkNotNull(eventWriter, "eventWriter is null");
-        this.nodeInfo = checkNotNull(nodeInfo, "nodeInfo is null");
-        this.httpClient = checkNotNull(httpClient, "httpClient is null");
+        this.eventWriter = requireNonNull(eventWriter, "eventWriter is null");
+        this.nodeInfo = requireNonNull(nodeInfo, "nodeInfo is null");
+        this.httpClient = requireNonNull(httpClient, "httpClient is null");
     }
 
     @Flatten
@@ -75,7 +76,7 @@ public class HttpEventClient
     public final <T> ListenableFuture<Void> post(T... event)
             throws IllegalArgumentException
     {
-        checkNotNull(event, "event is null");
+        requireNonNull(event, "event is null");
         return post(Arrays.asList(event));
     }
 
@@ -83,8 +84,8 @@ public class HttpEventClient
     public <T> ListenableFuture<Void> post(final Iterable<T> events)
             throws IllegalArgumentException
     {
-        checkNotNull(events, "eventsSupplier is null");
-        final String token = getCurrentRequestToken();
+        requireNonNull(events, "eventsSupplier is null");
+        TraceToken token = getCurrentTraceToken();
 
         Request request = preparePost()
                 .setUri(URI.create("v2/event"))

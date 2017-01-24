@@ -20,16 +20,19 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
+import com.proofpoint.tracetoken.TraceToken;
+import com.proofpoint.tracetoken.TraceTokenScope;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.event.client.EventTypeMetadata.getValidEventTypeMetaDataSet;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static java.util.Objects.requireNonNull;
 
 @Beta
 public class JsonEventSerializer
@@ -40,8 +43,8 @@ public class JsonEventSerializer
     @Inject
     public JsonEventSerializer(NodeInfo nodeInfo, Set<EventTypeMetadata<?>> eventTypes)
     {
-        this.nodeinfo = checkNotNull(nodeInfo, "nodeInfo is null");
-        checkNotNull(eventTypes, "eventTypes is null");
+        this.nodeinfo = requireNonNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(eventTypes, "eventTypes is null");
 
         ImmutableMap.Builder<Class<?>, EventTypeMetadata<?>> map = ImmutableMap.builder();
         for (EventTypeMetadata<?> eventType : eventTypes) {
@@ -55,11 +58,11 @@ public class JsonEventSerializer
         this(nodeInfo, getValidEventTypeMetaDataSet(eventClasses));
     }
 
-    public <T> void serialize(T event, @Nullable String token, JsonGenerator jsonGenerator)
+    public <T> void serialize(T event, @Nullable TraceToken token, JsonGenerator jsonGenerator)
             throws IOException
     {
-        checkNotNull(event, "event is null");
-        checkNotNull(jsonGenerator, "jsonGenerator is null");
+        requireNonNull(event, "event is null");
+        requireNonNull(jsonGenerator, "jsonGenerator is null");
 
         JsonSerializer<T> serializer = getSerializer(event, token);
         if (serializer == null) {
@@ -69,8 +72,28 @@ public class JsonEventSerializer
         serializer.serialize(event, jsonGenerator, null);
     }
 
+    /**
+     * @deprecated Use {@link #serialize(Object, TraceToken, JsonGenerator)}
+     */
+    @Deprecated
+    public <T> void serialize(T event, @Nullable String token, JsonGenerator jsonGenerator)
+            throws IOException
+    {
+        requireNonNull(event, "event is null");
+        requireNonNull(jsonGenerator, "jsonGenerator is null");
+
+        TraceToken traceToken = null;
+        if (token != null) {
+            try (TraceTokenScope scope = registerRequestToken(token)) {
+                traceToken = getCurrentTraceToken();
+            }
+        }
+
+        serialize(event, traceToken, jsonGenerator);
+    }
+
     @SuppressWarnings("unchecked")
-    private <T> JsonSerializer<T> getSerializer(T event, @Nullable String token)
+    private <T> JsonSerializer<T> getSerializer(T event, @Nullable TraceToken token)
     {
         EventTypeMetadata<T> metadata = (EventTypeMetadata<T>) metadataMap.get(event.getClass());
         if (metadata == null) {

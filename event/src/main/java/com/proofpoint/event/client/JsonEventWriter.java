@@ -22,17 +22,17 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
 import com.proofpoint.node.NodeInfo;
+import com.proofpoint.tracetoken.TraceToken;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 class JsonEventWriter
 {
@@ -43,8 +43,8 @@ class JsonEventWriter
     @Inject
     JsonEventWriter(NodeInfo nodeInfo, Set<EventTypeMetadata<?>> eventTypes)
     {
-        this.nodeInfo = checkNotNull(nodeInfo, "nodeInfo is null");
-        checkNotNull(eventTypes, "eventTypes is null");
+        this.nodeInfo = requireNonNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(eventTypes, "eventTypes is null");
 
         this.jsonFactory = new JsonFactory();
 
@@ -56,13 +56,13 @@ class JsonEventWriter
         this.metadataMap = metadataBuilder.build();
     }
 
-    public <T> Writer createEventWriter(final Iterator<T> eventIterator, final String token, final OutputStream out)
+    <T> Writer createEventWriter(final Iterator<T> eventIterator, final TraceToken token, final OutputStream out)
             throws IOException
     {
-        checkNotNull(eventIterator, "eventIterator is null");
-        checkNotNull(out, "out is null");
+        requireNonNull(eventIterator, "eventIterator is null");
+        requireNonNull(out, "out is null");
 
-        final JsonGenerator jsonGenerator = jsonFactory.createGenerator(out, JsonEncoding.UTF8);
+        JsonGenerator jsonGenerator = jsonFactory.createGenerator(out, JsonEncoding.UTF8);
 
         jsonGenerator.writeStartArray();
 
@@ -85,7 +85,7 @@ class JsonEventWriter
     }
 
     @SuppressWarnings("unchecked")
-    private <T> JsonSerializer<T> getSerializer(T event, @Nullable String token)
+    private <T> JsonSerializer<T> getSerializer(T event, @Nullable TraceToken token)
     {
         Class<?> eventClass = event.getClass();
         EventTypeMetadata<T> metadata = (EventTypeMetadata<T>) metadataMap.get(eventClass);

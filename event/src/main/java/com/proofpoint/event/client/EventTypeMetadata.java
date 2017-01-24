@@ -25,6 +25,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.proofpoint.event.client.EventField.EventFieldMapping;
+import com.proofpoint.tracetoken.TraceToken;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -149,8 +150,10 @@ final class EventTypeMetadata<T>
             if (eventField.fieldMapping() != EventFieldMapping.DATA) {
                 // validate special fields
                 if (containerType != null) {
-                    addMethodError("non-DATA fieldMapping (%s) not allowed for %s", method, eventField.fieldMapping(), containerType);
-                    continue;
+                    if (eventField.fieldMapping() == EventFieldMapping.TRACE_TOKEN && !method.getReturnType().equals(TraceToken.class)) {
+                        addMethodError("non-DATA fieldMapping (%s) not allowed for %s", method, eventField.fieldMapping(), containerType);
+                        continue;
+                    }
                 }
                 if (nestedEvent) {
                     addMethodError("non-DATA fieldMapping (%s) not allowed for nested event", method, eventField.fieldMapping());
