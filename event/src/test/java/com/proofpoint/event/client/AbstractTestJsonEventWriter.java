@@ -20,12 +20,15 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
+import com.proofpoint.tracetoken.TraceToken;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,13 +40,17 @@ import static com.proofpoint.event.client.ChainedCircularEventClass.chainedCircu
 import static com.proofpoint.event.client.DummyEventClass.dummyEventClass;
 import static com.proofpoint.event.client.EventTypeMetadata.getValidEventTypeMetaDataSet;
 import static com.proofpoint.event.client.NestedDummyEventClass.NestedPart.nestedPart;
+import static com.proofpoint.tracetoken.TraceTokenManager.addTraceTokenProperties;
+import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
 import static org.testng.Assert.assertEquals;
 
 public abstract class AbstractTestJsonEventWriter
 {
     protected JsonEventWriter eventWriter;
 
-    abstract <T> void writeEvents(final Iterable<T> events, String token, OutputStream out)
+    abstract <T> void writeEvents(final Iterable<T> events, TraceToken token, OutputStream out)
             throws Exception;
 
     @BeforeMethod
@@ -51,7 +58,7 @@ public abstract class AbstractTestJsonEventWriter
             throws Exception
     {
         Set<EventTypeMetadata<?>> eventTypes = getValidEventTypeMetaDataSet(
-                FixedDummyEventClass.class, NestedDummyEventClass.class, CircularEventClass.class, ChainedCircularEventClass.class);
+                FixedDummyEventClass.class, FixedTokenEventClass.class, FixedStringTokenEventClass.class, NestedDummyEventClass.class, CircularEventClass.class, ChainedCircularEventClass.class);
         eventWriter = new JsonEventWriter(new NodeInfo("test"), eventTypes);
     }
 
@@ -59,7 +66,11 @@ public abstract class AbstractTestJsonEventWriter
     public void testEventWriter()
             throws Exception
     {
-        assertEventJson(TestingUtils.getEvents(), "sample-trace-token", TestingUtils.getExpectedJson());
+        registerRequestToken("sample-trace-token");
+        TraceToken traceToken = getCurrentTraceToken();
+        clearRequestToken();
+
+        assertEventJson(TestingUtils.getEvents(), traceToken, TestingUtils.getExpectedJson());
     }
 
     @Test
@@ -76,10 +87,31 @@ public abstract class AbstractTestJsonEventWriter
                 .build()
         );
 
+        registerRequestToken("sample-trace-token");
+        TraceToken traceToken = getCurrentTraceToken();
+        clearRequestToken();
+
         FixedDummyEventClass event = new FixedDummyEventClass(
                 "localhost", new DateTime("2011-09-09T01:59:59.999Z"), UUID.fromString("1ea8ca34-db36-11e0-b76f-8b7d505ab1ad"), 123, null);
 
-        assertEventJson(ImmutableList.of(event), "sample-trace-token", expected);
+        assertEventJson(ImmutableList.of(event), traceToken, expected);
+    }
+
+    @Test
+    public void testMapToken()
+            throws Exception
+    {
+        List<Map<String, Object>> expected = TestingUtils.getExpectedJson();
+        for (Map<String, Object> map : expected) {
+            map.put("traceToken", "{\"id\":\"sample-trace-token\",\"key\":\"value\"}");
+        }
+
+        registerRequestToken("sample-trace-token");
+        addTraceTokenProperties("key", "value");
+        TraceToken traceToken = getCurrentTraceToken();
+        clearRequestToken();
+
+        assertEventJson(TestingUtils.getEvents(), traceToken, expected);
     }
 
     @Test
@@ -91,6 +123,70 @@ public abstract class AbstractTestJsonEventWriter
             map.remove("traceToken");
         }
         assertEventJson(TestingUtils.getEvents(), null, expected);
+    }
+
+    @Test
+    public void testFixedToken()
+            throws Exception
+    {
+        registerRequestToken("other-trace-token");
+        addTraceTokenProperties("key", "value");
+        TraceToken traceToken = getCurrentTraceToken();
+        registerRequestToken("sample-trace-token");
+        TraceToken callerTraceToken = getCurrentTraceToken();
+        clearRequestToken();
+
+        FixedTokenEventClass event = new FixedTokenEventClass(
+                "localhost",
+                new DateTime("2011-09-09T01:35:28.333Z"),
+                UUID.fromString("8e248a16-da86-11e0-9e77-9fc96e21a396"),
+                traceToken,
+                5678,
+                "foo");
+        List<Map<String, Object>> expected1 = new ArrayList<>();
+        expected1.add(new LinkedHashMap<>(ImmutableMap.<String, Object>builder()
+                .put("type", "FixedDummy")
+                .put("uuid", "8e248a16-da86-11e0-9e77-9fc96e21a396")
+                .put("host", "localhost")
+                .put("timestamp", "2011-09-09T01:35:28.333Z")
+                .put("traceToken", ImmutableMap.of(
+                                                    "id", "other-trace-token",
+                                                    "key", "value"
+                                            ))
+                .put("data", ImmutableMap.of("intValue", 5678, "stringValue", "foo"))
+                .build()
+        ));
+
+        assertEventJson(ImmutableList.of(event), callerTraceToken, expected1);
+    }
+
+    @Test
+    public void testFixedStringToken()
+            throws Exception
+    {
+        registerRequestToken("sample-trace-token");
+        TraceToken traceToken = getCurrentTraceToken();
+        clearRequestToken();
+
+        FixedStringTokenEventClass event = new FixedStringTokenEventClass(
+                "localhost",
+                new DateTime("2011-09-09T01:35:28.333Z"),
+                UUID.fromString("8e248a16-da86-11e0-9e77-9fc96e21a396"),
+                "other-trace-token",
+                5678,
+                "foo");
+        List<Map<String, Object>> expected = new ArrayList<>();
+        expected.add(new LinkedHashMap<>(ImmutableMap.<String, Object>builder()
+                .put("type", "FixedDummy")
+                .put("uuid", "8e248a16-da86-11e0-9e77-9fc96e21a396")
+                .put("host", "localhost")
+                .put("timestamp", "2011-09-09T01:35:28.333Z")
+                .put("traceToken", "other-trace-token")
+                .put("data", ImmutableMap.of("intValue", 5678, "stringValue", "foo"))
+                .build()
+        ));
+
+        assertEventJson(ImmutableList.of(event), traceToken, expected);
     }
 
     @Test
@@ -132,6 +228,10 @@ public abstract class AbstractTestJsonEventWriter
                 .build()
         );
 
+        registerRequestToken("sample-trace-token");
+        TraceToken traceToken = getCurrentTraceToken();
+        clearRequestToken();
+
         NestedDummyEventClass nestedEvent = new NestedDummyEventClass(
                 "localhost", new DateTime("2011-09-09T01:48:08.888Z"), UUID.fromString("6b598c2a-0a95-4f3f-9298-5a4d70ca13fc"), 9999, "nested",
                 ImmutableList.of("abc", "xyz"),
@@ -139,7 +239,7 @@ public abstract class AbstractTestJsonEventWriter
                 ImmutableList.of(nestedPart("listFirst", nestedPart("listSecond", null)), nestedPart("listThird", null))
         );
 
-        assertEventJson(ImmutableList.of(nestedEvent), "sample-trace-token", expected);
+        assertEventJson(ImmutableList.of(nestedEvent), traceToken, expected);
     }
 
     @Test(expectedExceptions = InvalidEventException.class, expectedExceptionsMessageRegExp = "Cycle detected in event data:.*")
@@ -188,7 +288,7 @@ public abstract class AbstractTestJsonEventWriter
         writeEvents(ImmutableList.of("foo"), null, nullOutputStream());
     }
 
-    private <T> void assertEventJson(Iterable<T> events, String token, List<Map<String, Object>> expected)
+    private <T> void assertEventJson(Iterable<T> events, TraceToken token, List<Map<String, Object>> expected)
             throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

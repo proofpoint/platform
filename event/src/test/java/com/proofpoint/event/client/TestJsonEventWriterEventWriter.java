@@ -16,6 +16,7 @@
 package com.proofpoint.event.client;
 
 import com.proofpoint.http.client.DynamicBodySource;
+import com.proofpoint.tracetoken.TraceToken;
 
 import java.io.OutputStream;
 
@@ -25,7 +26,7 @@ public class TestJsonEventWriterEventWriter
         extends AbstractTestJsonEventWriter
 {
     @Override
-    <T> void writeEvents(Iterable<T> events, String token, OutputStream out)
+    <T> void writeEvents(Iterable<T> events, TraceToken token, OutputStream out)
             throws Exception
     {
         writeBodySourceTo(new EventWriterBodySource<>(events, token), out);
@@ -34,9 +35,9 @@ public class TestJsonEventWriterEventWriter
     private class EventWriterBodySource<T> implements DynamicBodySource
     {
         private final Iterable<T> events;
-        private final String token;
+        private final TraceToken token;
 
-        EventWriterBodySource(Iterable<T> events, String token)
+        EventWriterBodySource(Iterable<T> events, TraceToken token)
         {
             this.events = events;
             this.token = token;
