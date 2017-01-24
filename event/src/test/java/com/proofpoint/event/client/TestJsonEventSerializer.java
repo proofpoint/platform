@@ -18,16 +18,31 @@ package com.proofpoint.event.client;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 
 public class TestJsonEventSerializer
 {
+    private static final Map<String, Object> EXPECTED_EVENT_JSON = ImmutableMap.<String, Object>builder()
+            .put("type", "FixedDummy")
+            .put("uuid", "8e248a16-da86-11e0-9e77-9fc96e21a396")
+            .put("host", "localhost")
+            .put("timestamp", "2011-09-09T01:35:28.333Z")
+            .put("traceToken", "sample-trace-token")
+            .put("data", ImmutableMap.of(
+                    "intValue", 5678,
+                    "stringValue", "foo"
+            ))
+           .build();
+
     @Test
     public void testEventSerializer()
             throws Exception
@@ -41,7 +56,7 @@ public class TestJsonEventSerializer
         eventSerializer.serialize(event, "sample-trace-token", jsonGenerator);
 
         String json = out.toString(Charsets.UTF_8.name());
-        assertEquals(json, TestingUtils.getNormalizedJson("event.json"));
+        assertEquals(new ObjectMapper().readValue(json, Object.class), EXPECTED_EVENT_JSON, "JSON encoding " + json);
     }
 
     @Test(expectedExceptions = InvalidEventException.class)

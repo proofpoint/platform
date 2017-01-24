@@ -15,6 +15,7 @@
  */
 package com.proofpoint.event.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.CharStreams;
@@ -60,7 +61,6 @@ import java.util.concurrent.Future;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.proofpoint.event.client.EventTypeMetadata.getValidEventTypeMetaDataSet;
-import static com.proofpoint.event.client.TestingUtils.getNormalizedJson;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -132,7 +132,7 @@ public class TestHttpEventClient
         client.post(TestingUtils.getEvents()).get();
 
         assertEquals(servlet.lastPath, "/v2/event");
-        assertEquals(servlet.lastBody, getNormalizedJson("events.json"));
+        assertEquals(new ObjectMapper().readValue(servlet.lastBody, Object.class), TestingUtils.getExpectedJson(), "JSON encoding " + servlet.lastBody);
     }
 
     @Test
@@ -151,7 +151,7 @@ public class TestHttpEventClient
             System.out.println("future " + future);
         }
         assertEquals(servlet.lastPath, "/v2/event");
-        assertEquals(servlet.lastBody, getNormalizedJson("events.json"));
+        assertEquals(new ObjectMapper().readValue(servlet.lastBody, Object.class), TestingUtils.getExpectedJson(), "JSON encoding " + servlet.lastBody);
     }
 
     @BeforeMethod
