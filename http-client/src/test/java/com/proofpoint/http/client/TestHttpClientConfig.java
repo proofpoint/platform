@@ -43,7 +43,7 @@ public class TestHttpClientConfig
     public void testDefaults()
     {
         assertRecordedDefaults(recordDefaults(HttpClientConfig.class)
-                .setConnectTimeout(new Duration(1, TimeUnit.SECONDS))
+                .setConnectTimeout(new Duration(2, TimeUnit.SECONDS))
                 .setRequestTimeout(null)
                 .setIdleTimeout(new Duration(1, TimeUnit.MINUTES))
                 .setMaxConnectionsPerServer(20)

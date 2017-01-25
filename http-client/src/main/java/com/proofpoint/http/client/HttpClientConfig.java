@@ -36,7 +36,7 @@ public class HttpClientConfig
     public static final String JAVAX_NET_SSL_TRUST_STORE = "javax.net.ssl.trustStore";
     public static final String JAVAX_NET_SSL_TRUST_STORE_PASSWORD = "javax.net.ssl.trustStorePassword";
 
-    private Duration connectTimeout = new Duration(1, TimeUnit.SECONDS);
+    private Duration connectTimeout = new Duration(2, TimeUnit.SECONDS);
     private Duration requestTimeout = null;
     private Duration idleTimeout = new Duration(1, TimeUnit.MINUTES);
     private int maxConnectionsPerServer = 20;
