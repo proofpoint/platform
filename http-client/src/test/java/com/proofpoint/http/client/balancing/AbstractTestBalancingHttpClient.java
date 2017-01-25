@@ -819,7 +819,7 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
         verifyNoMoreInteractions(responseHandler);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = ".* is not a relative URI")
+    @Test(expectedExceptions = IllegalArgumentException.class)
     public void testUriWithScheme()
             throws Exception
     {
