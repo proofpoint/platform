@@ -230,8 +230,9 @@ public class Request
     private static URI validateUri(URI uri)
     {
         if (uri.getScheme() != null) {
+            checkArgument(uri.getHost() != null, "uri does not have a host: %s", uri);
             String scheme = uri.getScheme().toLowerCase();
-            checkArgument(!"http".equals(scheme) || !"https".equals(scheme), "uri scheme must be http or https: %s", uri);
+            checkArgument("http".equals(scheme) || "https".equals(scheme), "uri scheme must be http or https: %s", uri);
         }
         checkArgument(uri.getPort() != 0, "Cannot make requests to HTTP port 0");
         return uri;

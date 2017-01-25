@@ -68,6 +68,20 @@ public class TestRequest
         new Request(URI.create("http://example.com:0/"), "GET", createHeaders1(), createBodySource());
     }
 
+    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "uri does not have a host: http:///foo")
+    public void testInvalidUriMissingHost()
+            throws Exception
+    {
+        new Request(URI.create("http:///foo"), "GET", createHeaders1(), createBodySource());
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "uri scheme must be http or https: gopher://example.com")
+    public void testInvalidUriScheme()
+            throws Exception
+    {
+        new Request(URI.create("gopher://example.com"), "GET", createHeaders1(), createBodySource());
+    }
+
     private URI createUri1()
     {
         return URI.create("http://example.com");
