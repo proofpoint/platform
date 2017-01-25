@@ -10,6 +10,8 @@ Platform 1.51
   We changed the format of trace token ids created by the HTTP server so that
   they start with an encoding of the server's and client's IPs.
 
+* We increased the default HttpClient connection timeout to 2 seconds.
+
 * We suppress logging the thread dump when Bootstrap is in quiet mode.
 
 * Library Upgrades
