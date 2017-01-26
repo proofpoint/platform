@@ -23,18 +23,21 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
-import org.joda.time.format.ISODateTimeFormat;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 class DelimitedRequestLog
         implements RequestLog, LifeCycle
 {
     // Tab-separated
     // Time, ip, method, url, user, agent, response code, request length, response length, response time
+
+    private static final DateTimeFormatter ISO_FORMATTER = ISO_OFFSET_DATE_TIME.withZone(ZoneId.systemDefault());
 
     private final CurrentTimeMillisProvider currentTimeMillisProvider;
     private final Appender<HttpRequestEvent> appender;
@@ -124,12 +127,6 @@ class DelimitedRequestLog
 
     private static class EventEncoder extends EncoderBase<HttpRequestEvent>
     {
-
-        private final DateTimeFormatter isoFormatter = new DateTimeFormatterBuilder()
-                        .append(ISODateTimeFormat.dateHourMinuteSecondFraction())
-                        .appendTimeZoneOffset("Z", true, 2, 2)
-                        .toFormatter();
-
         @Override
         public byte[] headerBytes()
         {
@@ -140,7 +137,7 @@ class DelimitedRequestLog
         public byte[] encode(HttpRequestEvent event)
         {
             StringBuilder builder = new StringBuilder();
-            builder.append(isoFormatter.print(event.getTimeStamp()))
+            builder.append(ISO_FORMATTER.format(event.getTimeStamp()))
                     .append('\t')
                     .append(event.getClientAddress())
                     .append('\t')

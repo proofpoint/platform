@@ -20,9 +20,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
-import org.joda.time.DateTime;
 
 import java.security.Principal;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
@@ -55,7 +55,7 @@ class HttpRequestEvent
         }
 
         return new HttpRequestEvent(
-                new DateTime(request.getTimeStamp()),
+                Instant.ofEpochMilli(request.getTimeStamp()),
                 token,
                 clientAddressExtractor.clientAddressFor(request),
                 method,
@@ -69,7 +69,7 @@ class HttpRequestEvent
         );
     }
 
-    private final DateTime timeStamp;
+    private final Instant timeStamp;
     private final String traceToken;
     private final String clientAddress;
     private final String method;
@@ -81,7 +81,8 @@ class HttpRequestEvent
     private final int responseCode;
     private final long timeToLastByte;
 
-    private HttpRequestEvent(DateTime timeStamp,
+    private HttpRequestEvent(
+            Instant timeStamp,
             String traceToken,
             String clientAddress,
             String method,
@@ -107,7 +108,7 @@ class HttpRequestEvent
     }
 
     @JsonProperty("time")
-    public DateTime getTimeStamp()
+    public Instant getTimeStamp()
     {
         return timeStamp;
     }
