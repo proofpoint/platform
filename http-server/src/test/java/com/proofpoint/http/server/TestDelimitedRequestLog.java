@@ -15,23 +15,20 @@
  */
 package com.proofpoint.http.server;
 
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
-import org.joda.time.format.ISODateTimeFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 public class TestDelimitedRequestLog extends AbstractTestRequestLog
 {
-    private DateTimeFormatter isoFormatter;
+    private static final DateTimeFormatter ISO_FORMATTER = ISO_OFFSET_DATE_TIME.withZone(ZoneId.systemDefault());
 
     @Override
     protected void setup(HttpServerConfig httpServerConfig)
     {
-        isoFormatter = new DateTimeFormatterBuilder()
-                .append(ISODateTimeFormat.dateHourMinuteSecondFraction())
-                .appendTimeZoneOffset("Z", true, 2, 2)
-                .toFormatter();
         logger = new DelimitedRequestLog(httpServerConfig, currentTimeMillisProvider, clientAddressExtractor);
     }
 
@@ -45,16 +42,16 @@ public class TestDelimitedRequestLog extends AbstractTestRequestLog
     protected String getExpectedLogLine(long timestamp, String clientAddr, String method, String pathQuery, String user, String agent, int responseCode, long requestSize, long responseSize, long timeToLastByte)
     {
         return String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\n",
-                    isoFormatter.print(timestamp),
-                    clientAddr,
-                    method,
-                    pathQuery,
-                    user,
-                    agent,
-                    responseCode,
-                    requestSize,
-                    responseSize,
-                    timeToLastByte,
-                    getCurrentRequestToken());
+                ISO_FORMATTER.format(Instant.ofEpochMilli(timestamp)),
+                clientAddr,
+                method,
+                pathQuery,
+                user,
+                agent,
+                responseCode,
+                requestSize,
+                responseSize,
+                timeToLastByte,
+                getCurrentRequestToken());
     }
 }
