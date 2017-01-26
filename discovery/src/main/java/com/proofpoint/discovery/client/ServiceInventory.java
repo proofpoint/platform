@@ -19,7 +19,6 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Streams;
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerListenerAdapter;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.json.JsonCodec;
@@ -66,7 +65,7 @@ public class ServiceInventory
     private final DiscoveryAddressLookup discoveryAddressLookup;
     private final ServiceDescriptorsListener discoveryListener;
 
-    private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<List<ServiceDescriptor>>(ImmutableList.<ServiceDescriptor>of());
+    private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<>(ImmutableList.of());
     private final ScheduledExecutorService executorService = newSingleThreadScheduledExecutor(daemonThreadsNamed("service-inventory-%s"));
     private final AtomicBoolean serverUp = new AtomicBoolean(true);
     private ScheduledFuture<?> scheduledFuture = null;
@@ -156,17 +155,18 @@ public class ServiceInventory
         return serviceDescriptors.get();
     }
 
-    public Iterable<ServiceDescriptor> getServiceDescriptors(final String type)
+    public Iterable<ServiceDescriptor> getServiceDescriptors(String type)
     {
-        return Streams.stream(getServiceDescriptors())
+        return serviceDescriptors.get().stream()
                 .filter(serviceDescriptor -> serviceDescriptor.getType().equals(type))
                 .collect(toList());
     }
 
-    public Iterable<ServiceDescriptor> getServiceDescriptors(final String type, final String pool)
+    public Iterable<ServiceDescriptor> getServiceDescriptors(String type, String pool)
     {
-        return Streams.stream(getServiceDescriptors())
-                .filter(serviceDescriptor -> serviceDescriptor.getType().equals(type) && serviceDescriptor.getPool().equals(pool))
+        return serviceDescriptors.get().stream()
+                .filter(serviceDescriptor -> serviceDescriptor.getType().equals(type))
+                .filter(serviceDescriptor -> serviceDescriptor.getPool().equals(pool))
                 .collect(toList());
     }
 
