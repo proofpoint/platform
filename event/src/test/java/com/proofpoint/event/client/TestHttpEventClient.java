@@ -65,6 +65,7 @@ import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.event.client.EventTypeMetadata.getValidEventTypeMetaDataSet;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -253,7 +254,7 @@ public class TestHttpEventClient
                 throws ServletException, IOException
         {
             lastPath = request.getPathInfo();
-            lastBody = CharStreams.toString(new InputStreamReader(request.getInputStream(), "UTF-8"));
+            lastBody = CharStreams.toString(new InputStreamReader(request.getInputStream(), UTF_8));
             if (responseCode != 0) {
                 response.sendError(responseCode);
             }
