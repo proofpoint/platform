@@ -129,6 +129,11 @@ public final class DecayCounter
         return TimeUnit.NANOSECONDS.toSeconds(ticker.read());
     }
 
+    public double getAlpha()
+    {
+        return alpha;
+    }
+
     public DecayCounterSnapshot snapshot()
     {
         return new DecayCounterSnapshot(getCount(), getRate());
