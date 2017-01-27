@@ -15,9 +15,11 @@
  */
 package com.proofpoint.jaxrs;
 
+import com.proofpoint.bootstrap.QuietMode;
 import com.proofpoint.bootstrap.StopTraffic;
 import com.proofpoint.log.Logger;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -36,6 +38,14 @@ public class ThreadDumpResource
 {
     private static final Logger log = Logger.get(ThreadDumpResource.class);
     private static final ThreadMXBean THREAD_MX_BEAN = ManagementFactory.getThreadMXBean();
+
+    private final boolean quiet;
+
+    @Inject
+    public ThreadDumpResource(@QuietMode boolean quiet)
+    {
+        this.quiet = quiet;
+    }
 
     @GET
     @Produces(TEXT_PLAIN)
@@ -116,6 +126,8 @@ public class ThreadDumpResource
     @StopTraffic
     public void logThreadDump()
     {
-        log.info("Thread dump at shutdown:\n%s", get());
+        if (!quiet) {
+            log.info("Thread dump at shutdown:\n%s", get());
+        }
     }
 }

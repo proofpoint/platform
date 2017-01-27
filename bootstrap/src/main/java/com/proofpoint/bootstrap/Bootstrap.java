@@ -375,9 +375,8 @@ public class Bootstrap
         if (!messages.isEmpty()) {
             moduleList.add(new ValidationErrorModule(messages));
         }
-        moduleList.add(binder -> {
-            binder.bind(WarningsMonitor.class).toInstance(warningsMonitor);
-        });
+        moduleList.add(binder -> binder.bind(WarningsMonitor.class).toInstance(warningsMonitor));
+        moduleList.add(binder -> binder.bindConstant().annotatedWith(QuietMode.class).to(quiet));
 
         moduleList.add(binder -> {
             binder.disableCircularProxies();
