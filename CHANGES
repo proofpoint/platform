@@ -14,6 +14,9 @@ Platform 1.51
 
 * We suppress logging the thread dump when Bootstrap is in quiet mode.
 
+* [Bug] The HttpServer.BusyThreads.Max metric leaked counts for calls
+  that threw uncaught exceptions.
+
 * Library Upgrades
 
   - Guava to 21.0 (from 20.0)

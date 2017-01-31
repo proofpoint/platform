@@ -132,13 +132,16 @@ public class HttpServer
         requireNonNull(detailedRequestStats, "detailedRequestStats is null");
 
         QueuedThreadPool threadPool = new QueuedThreadPool(config.getMaxThreads()) {
-
             @Override
             protected void runJob(Runnable job)
             {
-                busyThreads.add(1);
-                super.runJob(job);
-                busyThreads.add(-1);
+                try {
+                    busyThreads.add(1);
+                    super.runJob(job);
+                }
+                finally {
+                    busyThreads.add(-1);
+                }
             }
         };
         threadPool.setMinThreads(config.getMinThreads());
