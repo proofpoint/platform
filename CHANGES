@@ -17,6 +17,9 @@ Platform 1.51
 * [Bug] The HttpServer.BusyThreads.Max metric leaked counts for calls
   that threw uncaught exceptions.
 
+* [Bug] Fixed the Platform-provided ExceptionMapper classes to not pick up
+  media types from the resource method annotations.
+
 * Library Upgrades
 
   - Guava to 21.0 (from 20.0)
