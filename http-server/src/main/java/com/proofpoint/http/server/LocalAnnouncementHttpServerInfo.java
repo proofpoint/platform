@@ -17,6 +17,7 @@ package com.proofpoint.http.server;
 
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.net.URI;
 
@@ -31,20 +32,29 @@ public class LocalAnnouncementHttpServerInfo implements AnnouncementHttpServerIn
     }
 
     @Override
+    @Nullable
     public URI getHttpUri()
     {
         return httpServerInfo.getHttpUri();
     }
 
     @Override
+    @Nullable
     public URI getHttpExternalUri()
     {
         return httpServerInfo.getHttpExternalUri();
     }
 
     @Override
+    @Nullable
     public URI getHttpsUri()
     {
         return httpServerInfo.getHttpsUri();
+    }
+
+    @Override
+    @Nullable
+    public URI getAdminUri() {
+        return httpServerInfo.getAdminUri();
     }
 }

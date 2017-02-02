@@ -84,6 +84,30 @@ public class TestHttpAnnouncementBinder
     }
 
     @Test
+    public void testAdminAnnouncement()
+    {
+        final StaticAnnouncementHttpServerInfoImpl httpServerInfo = new StaticAnnouncementHttpServerInfoImpl(
+                null,
+                null,
+                URI.create("https://example.com:4444"),
+                URI.create("https://example.com:5555")
+        );
+
+        Injector injector = createInjector(httpServerInfo);
+
+        ServiceAnnouncement announcement = serviceAnnouncement("apple")
+                .addProperty("https", httpServerInfo.getHttpsUri().toASCIIString())
+                .addProperty("admin", httpServerInfo.getAdminUri().toASCIIString())
+                .build();
+
+        Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
+        {
+        }));
+
+        assertAnnouncement(announcements, announcement);
+    }
+
+    @Test
     public void testHttpAnnouncementWithPool()
     {
         final StaticAnnouncementHttpServerInfoImpl httpServerInfo = new StaticAnnouncementHttpServerInfoImpl(

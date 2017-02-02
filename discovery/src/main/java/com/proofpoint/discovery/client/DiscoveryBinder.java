@@ -222,6 +222,9 @@ public class DiscoveryBinder
                 }
                 builder.addProperty("https", httpsUri.toString());
             }
+            if (httpServerInfo.getAdminUri() != null) {
+                builder.addProperty("admin", httpServerInfo.getAdminUri().toString());
+            }
             return builder.build();
         }
     }

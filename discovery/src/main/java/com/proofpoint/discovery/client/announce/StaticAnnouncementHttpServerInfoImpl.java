@@ -15,11 +15,11 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import com.google.common.base.Preconditions;
-
+import javax.annotation.Nullable;
 import java.net.URI;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class StaticAnnouncementHttpServerInfoImpl implements AnnouncementHttpServerInfo
 {
@@ -27,10 +27,16 @@ public class StaticAnnouncementHttpServerInfoImpl implements AnnouncementHttpSer
     private final URI httpExternalUri;
 
     private final URI httpsUri;
+    private final URI adminUri;
 
     public StaticAnnouncementHttpServerInfoImpl(URI httpUri, URI httpExternalUri, URI httpsUri)
     {
-        Preconditions.checkArgument(
+        this(httpUri, httpExternalUri, httpsUri, null);
+    }
+
+    public StaticAnnouncementHttpServerInfoImpl(URI httpUri, URI httpExternalUri, URI httpsUri, URI adminUri)
+    {
+        checkArgument(
                 (httpUri == null && httpExternalUri == null) ||
                 (httpUri != null && httpExternalUri != null),
                 "httpUri and httpExternalUri must both be null or both non-null");
@@ -38,24 +44,35 @@ public class StaticAnnouncementHttpServerInfoImpl implements AnnouncementHttpSer
         this.httpUri = httpUri;
         this.httpExternalUri = httpExternalUri;
         this.httpsUri = httpsUri;
+        this.adminUri = adminUri;
     }
 
     @Override
+    @Nullable
     public URI getHttpUri()
     {
         return httpUri;
     }
 
     @Override
+    @Nullable
     public URI getHttpExternalUri()
     {
         return httpExternalUri;
     }
 
     @Override
+    @Nullable
     public URI getHttpsUri()
     {
         return httpsUri;
+    }
+
+    @Nullable
+    @Override
+    public URI getAdminUri()
+    {
+        return adminUri;
     }
 
     @Override
@@ -65,6 +82,7 @@ public class StaticAnnouncementHttpServerInfoImpl implements AnnouncementHttpSer
                 .add("httpUri", httpUri)
                 .add("httpExternalUri", httpExternalUri)
                 .add("httpsUri", httpsUri)
+                .add("adminUri", adminUri)
                 .toString();
     }
 }

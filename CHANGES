@@ -1,5 +1,8 @@
 Platform 1.52
 
+* DiscoveryBinder.bindHttpAnnouncement() will include the admin port URL in a
+  new "admin" property of the service announcement.
+
 * [Bug] Fixed the Platform-provided ExceptionMapper classes to not pick up
   media types from the resource method annotations.
 
@@ -21,7 +24,6 @@ Platform 1.51
 
 * [Bug] The HttpServer.BusyThreads.Max metric leaked counts for calls
   that threw uncaught exceptions.
-
 
 * Library Upgrades
 

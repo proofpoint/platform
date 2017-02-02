@@ -15,14 +15,16 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.base.Throwables;
 import com.google.common.net.InetAddresses;
 import com.google.inject.Inject;
 import com.proofpoint.node.NodeInfo;
 
+import javax.annotation.Nullable;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 public class HttpServerInfo
 {
@@ -66,26 +68,31 @@ public class HttpServerInfo
         }
     }
 
+    @Nullable
     public URI getHttpUri()
     {
         return httpUri;
     }
 
+    @Nullable
     public URI getHttpExternalUri()
     {
         return httpExternalUri;
     }
 
+    @Nullable
     public URI getHttpsUri()
     {
         return httpsUri;
     }
 
+    @Nullable
     public URI getAdminUri()
     {
         return adminUri;
     }
 
+    @Nullable
     public URI getAdminExternalUri()
     {
         return adminExternalUri;
@@ -104,8 +111,8 @@ public class HttpServerInfo
 
             return new URI(scheme, null, host, port, null, null, null);
         }
-        catch (Exception e) {
-            throw Throwables.propagate(e);
+        catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 }
