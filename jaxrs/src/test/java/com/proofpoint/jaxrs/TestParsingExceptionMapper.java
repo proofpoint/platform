@@ -38,22 +38,22 @@ import javax.management.MBeanServer;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import static com.google.common.base.Charsets.UTF_8;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
+import static com.proofpoint.http.client.StaticBodyGenerator.createStaticBodyGenerator;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
-import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertEquals;
 
 @Test(singleThreaded = true)
-public class TestQueryParamExceptionMapper
+public class TestParsingExceptionMapper
 {
     private static final String GET = "GET";
 
@@ -66,7 +66,7 @@ public class TestQueryParamExceptionMapper
     public void setup()
             throws Exception
     {
-        createServer(new TestQueryParamResource());
+        createServer(new TestParsingResource());
     }
 
     @AfterMethod
@@ -85,28 +85,33 @@ public class TestQueryParamExceptionMapper
     }
 
     @Test
-    public void testGetWithValidQueryParamSucceeds()
+    public void testGetWithValidBodySucceeds()
             throws Exception
     {
-        StatusResponse response = client.execute(buildRequestWithQueryParam("123"), createStatusResponseHandler());
+        StatusResponse response = client.execute(buildRequestWithBody("123"), createStatusResponseHandler());
         assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
     }
 
     @Test
-    public void testGetWithInvalidQueryParamReturnsBadRequest()
+    public void testGetWithInvalidBodyBadRequest()
             throws Exception
     {
-        StringResponse response = client.execute(buildRequestWithQueryParam("string"), createStringResponseHandler());
+        StringResponse response = client.execute(buildRequestWithBody("string"), createStringResponseHandler());
         assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());
         assertEquals(response.getHeader("Content-Type"), "text/plain");
     }
 
-    private Request buildRequestWithQueryParam(String override)
+    private Request buildRequestWithBody(String override)
     {
-        return Request.builder().setUri(server.getBaseUrl().resolve(format("/?count=%s", override))).setMethod(GET).build();
+        return Request.builder()
+                .setUri(server.getBaseUrl())
+                .setHeader("Content-Type", "application/json")
+                .setBodySource(createStaticBodyGenerator(override, UTF_8))
+                .setMethod(GET)
+                .build();
     }
 
-    private void createServer(final TestQueryParamResource resource)
+    private void createServer(final TestParsingResource resource)
             throws Exception
     {
         Injector injector = bootstrapTest()
@@ -124,11 +129,11 @@ public class TestQueryParamExceptionMapper
     }
 
     @Path("/")
-    public class TestQueryParamResource
+    public class TestParsingResource
     {
         @GET
         @Produces(APPLICATION_JSON)
-        public Response get(@QueryParam("count") Integer count)
+        public Response get(Integer count)
         {
             return Response.ok().build();
         }
