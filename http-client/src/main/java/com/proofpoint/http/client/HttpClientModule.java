@@ -44,7 +44,6 @@ import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
-import static com.proofpoint.http.client.CompositeQualifierImpl.compositeQualifier;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static java.util.Objects.requireNonNull;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
@@ -71,11 +70,6 @@ public class HttpClientModule
         this.rootBinder = rootBinder;
     }
 
-    public Annotation getFilterQualifier()
-    {
-        return filterQualifier(annotation);
-    }
-
     void withPrivateIoThreadPool()
     {
         bindConfig(binder).annotatedWith(annotation).prefixedWith(name).to(JettyIoPoolConfig.class);
@@ -85,7 +79,7 @@ public class HttpClientModule
     @Override
     public final void configure(Binder binder)
     {
-        this.binder = binder;
+        this.binder = requireNonNull(binder, "binder is null");
 
         // bind the configuration
         bindConfig(binder).annotatedWith(annotation).prefixedWith(name).to(HttpClientConfig.class);
@@ -98,7 +92,7 @@ public class HttpClientModule
         this.binder.bind(HttpClient.class).annotatedWith(annotation).toProvider(new HttpClientProvider(name, annotation)).in(Scopes.SINGLETON);
 
         // kick off the binding for the filter set
-        newSetBinder(binder, HttpRequestFilter.class, filterQualifier(annotation));
+        newSetBinder(binder, HttpRequestFilter.class, annotation);
 
         // export stats
         if (rootBinder == binder) {
@@ -135,8 +129,8 @@ public class HttpClientModule
         public HttpClient get()
         {
             HttpClientConfig config = injector.getInstance(Key.get(HttpClientConfig.class, annotation));
-            Set<HttpRequestFilter> filters = new HashSet<>(injector.getInstance(filterKey(annotation)));
-            HttpClientBindOptions httpClientBindOptions = injector.getInstance(Key.get(HttpClientBindOptions.class, filterQualifier(annotation)));
+            Set<HttpRequestFilter> filters = new HashSet<>(injector.getInstance(Key.get(new TypeLiteral<Set<HttpRequestFilter>>() {}, annotation)));
+            HttpClientBindOptions httpClientBindOptions = injector.getInstance(Key.get(HttpClientBindOptions.class, annotation));
 
             JettyIoPoolManager ioPoolProvider;
             if (injector.getExistingBinding(Key.get(JettyIoPoolManager.class, annotation)) != null) {
@@ -227,15 +221,5 @@ public class HttpClientModule
     private static <T> Key<T> keyFromNullable(Class<T> type, Class<? extends Annotation> annotation)
     {
         return (annotation != null) ? Key.get(type, annotation) : Key.get(type);
-    }
-
-    private static Key<Set<HttpRequestFilter>> filterKey(Class<? extends Annotation> annotation)
-    {
-        return Key.get(new TypeLiteral<Set<HttpRequestFilter>>() {}, filterQualifier(annotation));
-    }
-
-    private static CompositeQualifier filterQualifier(Class<? extends Annotation> annotation)
-    {
-        return compositeQualifier(annotation, HttpClient.class);
     }
 }

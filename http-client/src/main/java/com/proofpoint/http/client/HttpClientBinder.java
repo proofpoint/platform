@@ -135,9 +135,11 @@ public class HttpClientBinder
      */
     public HttpClientBindingBuilder bindHttpClient(String name, Class<? extends Annotation> annotation)
     {
-        requireNonNull(name, "name is null");
-        requireNonNull(annotation, "annotation is null");
-        return createBindingBuilder(new HttpClientModule(name, annotation, rootBinder));
+        HttpClientModule module = new HttpClientModule(name, annotation, rootBinder);
+        binder.install(module);
+        HttpClientBindOptions options = new HttpClientBindOptions();
+        binder.bind(HttpClientBindOptions.class).annotatedWith(annotation).toInstance(options);
+        return new HttpClientBindingBuilder(module, newSetBinder(binder, HttpRequestFilter.class, annotation), options);
     }
 
     /**
@@ -266,16 +268,6 @@ public class HttpClientBinder
         binder.bind(ScheduledExecutorService.class).annotatedWith(ForBalancingHttpClient.class).toProvider(RetryExecutorProvider.class);
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
-    }
-
-    private HttpClientBindingBuilder createBindingBuilder(HttpClientModule module)
-    {
-        binder.install(module);
-        HttpClientBindOptions options = new HttpClientBindOptions();
-        binder.bind(HttpClientBindOptions.class).annotatedWith(module.getFilterQualifier()).toInstance(options);
-        return new HttpClientBindingBuilder(module,
-                newSetBinder(binder, HttpRequestFilter.class, module.getFilterQualifier()),
-                options);
     }
 
     public static class HttpClientBindingBuilder
