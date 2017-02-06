@@ -45,7 +45,7 @@ class EventJsonSerializer<T>
 
     EventJsonSerializer(NodeInfo nodeInfo, @Nullable TraceToken token, EventTypeMetadata<T> eventTypeMetadata)
     {
-        if (token == null) {
+        if (token == null || eventTypeMetadata.getTraceTokenField() != null) {
             this.token = null;
         }
         else if (token.size() == 1) {
