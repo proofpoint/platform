@@ -89,12 +89,7 @@ public class JsonEventSerializer
             }
         }
 
-        JsonSerializer<T> serializer = getSerializer(event, traceToken);
-        if (serializer == null) {
-            throw new InvalidEventException("Event class [%s] has not been registered as an event", event.getClass().getName());
-        }
-
-        serializer.serialize(event, jsonGenerator, null);
+        serialize(event, traceToken, jsonGenerator);
     }
 
     @SuppressWarnings("unchecked")

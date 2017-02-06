@@ -18,7 +18,10 @@ package com.proofpoint.event.client;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.proofpoint.json.ObjectMapperProvider;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
@@ -28,11 +31,14 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.UUID;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static java.util.Objects.requireNonNull;
 
 class EventJsonSerializer<T>
         extends JsonSerializer<T>
 {
+    private static final Supplier<ObjectMapper> OBJECT_MAPPER_SUPPLIER = Suppliers.memoize(() -> new ObjectMapperProvider().get());
+
     private final String token;
     private final EventTypeMetadata<T> eventTypeMetadata;
     private final String hostName;
@@ -47,7 +53,7 @@ class EventJsonSerializer<T>
         }
         else {
             try {
-                this.token = new ObjectMapperProvider().get().writeValueAsString(token);
+                this.token = OBJECT_MAPPER_SUPPLIER.get().writeValueAsString(token);
             }
             catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
