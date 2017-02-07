@@ -22,5 +22,8 @@ cache:
     - $HOME/.m2/repository/org
     - $HOME/.m2/repository/mysql
 
+before_install:
+  - rm -f ~/.m2/settings.xml
+
 script:
   - mvn test -P ci -B javadoc:javadoc
