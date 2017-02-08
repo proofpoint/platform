@@ -17,6 +17,7 @@ package com.proofpoint.jaxrs;
 
 import org.glassfish.jersey.server.ParamException.QueryParamException;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -34,6 +35,7 @@ public class QueryParamExceptionMapper implements ExceptionMapper<QueryParamExce
     public Response toResponse(QueryParamException e)
     {
         return Response.status(Response.Status.BAD_REQUEST)
+                .type(MediaType.TEXT_PLAIN_TYPE)
                 .entity(e.getMessage())
                 .build();
     }
