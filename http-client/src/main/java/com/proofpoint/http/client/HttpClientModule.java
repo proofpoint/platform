@@ -40,11 +40,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.http.client.CompositeQualifierImpl.compositeQualifier;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
+import static java.util.Objects.requireNonNull;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 @Beta
@@ -64,8 +66,8 @@ public class HttpClientModule
 
     protected HttpClientModule(String name, Class<? extends Annotation> annotation, Binder rootBinder)
     {
-        this.name = checkNotNull(name, "name is null");
-        this.annotation = checkNotNull(annotation, "annotation is null");
+        this.name = requireNonNull(name, "name is null");
+        this.annotation = requireNonNull(annotation, "annotation is null");
         this.rootBinder = rootBinder;
     }
 
@@ -166,7 +168,7 @@ public class HttpClientModule
     }
 
     @VisibleForTesting
-    public static class JettyIoPoolManager
+    static class JettyIoPoolManager
     {
         private final List<JettyHttpClient> clients = new ArrayList<>();
         private final String name;
@@ -216,14 +218,7 @@ public class HttpClientModule
                 JettyIoPoolConfig config = injector.getInstance(keyFromNullable(JettyIoPoolConfig.class, annotation));
                 ReportExporter reportExporter = injector.getInstance(ReportExporter.class);
                 pool = new JettyIoPool(name, config);
-                String annotationName;
-                if (annotation == null) {
-                    annotationName = "Shared";
-                }
-                else {
-                    annotationName = annotation.getSimpleName();
-                }
-                reportExporter.export(pool, false, "HttpClient.IoPool." + annotationName, ImmutableMap.of());
+                reportExporter.export(pool, false, "HttpClient.IoPool." + LOWER_HYPHEN.to(UPPER_CAMEL, name), ImmutableMap.of());
             }
             return pool;
         }

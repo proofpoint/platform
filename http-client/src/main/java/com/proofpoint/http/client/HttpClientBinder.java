@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.annotations.Beta;
 import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
@@ -34,13 +33,12 @@ import java.util.Collection;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
+import static java.util.Objects.requireNonNull;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
-@Beta
 public class HttpClientBinder
 {
     private final Binder binder;
@@ -48,8 +46,8 @@ public class HttpClientBinder
 
     private HttpClientBinder(Binder binder, Binder rootBinder)
     {
-        this.binder = checkNotNull(binder, "binder is null").skipSources(getClass());
-        this.rootBinder = checkNotNull(rootBinder, "rootBinder is null");
+        this.binder = requireNonNull(binder, "binder is null").skipSources(getClass());
+        this.rootBinder = requireNonNull(rootBinder, "rootBinder is null");
     }
 
     public static HttpClientBinder httpClientBinder(Binder binder)
@@ -64,16 +62,16 @@ public class HttpClientBinder
 
     public HttpClientBindingBuilder bindHttpClient(String name, Class<? extends Annotation> annotation)
     {
-        checkNotNull(name, "name is null");
-        checkNotNull(annotation, "annotation is null");
+        requireNonNull(name, "name is null");
+        requireNonNull(annotation, "annotation is null");
         return createBindingBuilder(new HttpClientModule(name, annotation, rootBinder));
     }
 
     public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Class<? extends Annotation> annotation, Set<URI> baseUris)
     {
-        checkNotNull(name, "name is null");
-        checkNotNull(annotation, "annotation is null");
-        checkNotNull(baseUris, "baseUris is null");
+        requireNonNull(name, "name is null");
+        requireNonNull(annotation, "annotation is null");
+        requireNonNull(baseUris, "baseUris is null");
         checkArgument(!baseUris.isEmpty(), "baseUris is empty");
 
         PrivateBinder privateBinder = binder.newPrivateBinder();
@@ -90,9 +88,9 @@ public class HttpClientBinder
 
     public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Class<? extends Annotation> annotation, Key<? extends HttpServiceBalancer> balancerKey)
     {
-        checkNotNull(name, "name is null");
-        checkNotNull(annotation, "annotation is null");
-        checkNotNull(balancerKey, "balancerKey is null");
+        requireNonNull(name, "name is null");
+        requireNonNull(annotation, "annotation is null");
+        requireNonNull(balancerKey, "balancerKey is null");
 
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).to(balancerKey);
