@@ -16,6 +16,14 @@ Platform 1.52
   reported metrics that are generated. It provides a ReportingTester that
   can be used to collect and return reported metrics.
 
+* HttpClient
+
+  The HttpClient.IoPool.*.FreeThreadCount metric now uses the HttpClient's
+  config prefix, with lower-hyphen converted to upper-camel, instead of the
+  qualifer as the third component in its name. This was because previously
+  multiple BalancingHttpClients would generate multiple metrics with the same
+  name, leading to exceptions.
+
 * [Bug] Fixed the Platform-provided ExceptionMapper classes to not pick up
   media types from the resource method annotations.
 
