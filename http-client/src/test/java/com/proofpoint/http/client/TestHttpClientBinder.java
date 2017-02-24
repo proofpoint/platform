@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.Module;
 import com.google.inject.PrivateBinder;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClientModule.JettyIoPoolManager;
