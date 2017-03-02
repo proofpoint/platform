@@ -29,8 +29,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import static com.google.common.base.Throwables.propagate;
-
 @Beta
 public class SmileBodyGenerator<T>
         extends StaticBodyGenerator
@@ -53,7 +51,7 @@ public class SmileBodyGenerator<T>
             jsonGenerator = new SmileFactory().createGenerator(out);
         }
         catch (IOException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
 
         Type genericType = jsonCodec.getType();
@@ -88,7 +86,7 @@ public class SmileBodyGenerator<T>
             }
         }
         catch (IOException e) {
-            throw new IllegalArgumentException(String.format("%s could not be converted to SMILE", instance.getClass().getName()), e);
+            throw new IllegalArgumentException(String.format("%s could not be converted to SMILE", instance == null ? "null" : instance.getClass().getName()), e);
         }
 
         return new SmileBodyGenerator<>(out.toByteArray());
