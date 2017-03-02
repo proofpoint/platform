@@ -430,6 +430,11 @@ public class Main
                     System.exit(STATUS_GENERIC_ERROR);
                 }
 
+                if (manifest == null) {
+                    System.err.println("Manifest missing from main jar");
+                    System.exit(STATUS_GENERIC_ERROR);
+                }
+
                 mainClassName = manifest.getMainAttributes().getValue("Main-Class");
                 if (mainClassName == null) {
                     System.err.println("Unable to get Main-Class attribute from main jar manifest");
