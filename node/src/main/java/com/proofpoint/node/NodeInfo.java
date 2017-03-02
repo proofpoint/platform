@@ -28,6 +28,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -346,7 +347,8 @@ public class NodeInfo
     {
         ImmutableList.Builder<NetworkInterface> builder = ImmutableList.builder();
         try {
-            for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            for (NetworkInterface networkInterface : interfaces != null ? Collections.list(interfaces) : ImmutableList.<NetworkInterface>of()) {
                 try {
                     if (!networkInterface.isLoopback() && networkInterface.isUp()) {
                         builder.add(networkInterface);
