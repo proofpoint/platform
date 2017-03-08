@@ -1,5 +1,9 @@
 Platform 1.53
 
+* Library Upgrades
+
+  - commons-math removed (was 2.2)
+
 * Maven plugin upgrades
 
   - rpm-maven-plugin 2.1.5 (from 2.1-alpha-4)
