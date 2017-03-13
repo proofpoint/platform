@@ -35,6 +35,7 @@ import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STOR
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE_PASSWORD;
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
 
+@SuppressWarnings("deprecation")
 public class TestHttpClientConfig
 {
     @Test
