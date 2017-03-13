@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.testing;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.proofpoint.discovery.client.DiscoveryException;
@@ -28,10 +27,9 @@ import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.proofpoint.concurrent.MoreFutures.getFutureValue;
 import static java.util.Objects.requireNonNull;
 
 public class SimpleServiceSelector implements ServiceSelector
@@ -70,29 +68,12 @@ public class SimpleServiceSelector implements ServiceSelector
     {
         try {
             ListenableFuture<ServiceDescriptors> future = lookupClient.getServices(type, pool);
-            ServiceDescriptors serviceDescriptors = getFutureResult(future, DiscoveryException.class);
+            ServiceDescriptors serviceDescriptors = getFutureValue(future, DiscoveryException.class);
             return serviceDescriptors.getServiceDescriptors();
         }
         catch (DiscoveryException e) {
             log.error(e);
             return ImmutableList.of();
-        }
-    }
-
-    // TODO: move this to a utility package
-    private static <T, X extends Throwable> T getFutureResult(Future<T> future, Class<X> type)
-            throws X
-    {
-        try {
-            return future.get();
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw Throwables.propagate(e);
-        }
-        catch (ExecutionException e) {
-            Throwables.propagateIfPossible(e.getCause(), type);
-            throw Throwables.propagate(e.getCause());
         }
     }
 }

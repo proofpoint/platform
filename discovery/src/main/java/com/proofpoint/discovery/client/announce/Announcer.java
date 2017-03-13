@@ -39,6 +39,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.proofpoint.concurrent.MoreFutures.getFutureValue;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -110,7 +111,7 @@ public class Announcer
 
         // unannounce
         try {
-            getFutureResult(announcementClient.unannounce(), DiscoveryException.class);
+            getFutureValue(announcementClient.unannounce(), DiscoveryException.class);
         }
         catch (DiscoveryException e) {
             if (e.getCause() instanceof ConnectException) {
@@ -183,22 +184,5 @@ public class Announcer
             return;
         }
         executor.schedule((Runnable) this::announce, delay.toMillis(), MILLISECONDS);
-    }
-
-    // TODO: move this to a utility package
-    private static <T, X extends Throwable> T getFutureResult(Future<T> future, Class<X> type)
-            throws X
-    {
-        try {
-            return future.get();
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw Throwables.propagate(e);
-        }
-        catch (ExecutionException e) {
-            Throwables.propagateIfPossible(e.getCause(), type);
-            throw Throwables.propagate(e.getCause());
-        }
     }
 }
