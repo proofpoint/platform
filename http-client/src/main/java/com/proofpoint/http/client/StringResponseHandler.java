@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.ByteStreams;
@@ -24,6 +23,7 @@ import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 
 import static com.google.common.io.ByteStreams.toByteArray;
@@ -72,7 +72,7 @@ public class StringResponseHandler implements ResponseHandler<StringResponse, Ru
                     new String(toByteArray(response.getInputStream()), UTF_8));
         }
         catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new UncheckedIOException(e);
         }
     }
 

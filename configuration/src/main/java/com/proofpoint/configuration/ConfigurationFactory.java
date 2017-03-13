@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Key;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
@@ -47,7 +46,6 @@ import java.util.Set;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Sets.newConcurrentHashSet;
 import static com.proofpoint.configuration.ConfigurationIdentity.configurationIdentity;
 import static com.proofpoint.configuration.ConfigurationMetadata.getConfigurationMetadata;
@@ -234,12 +232,7 @@ public final class ConfigurationFactory
     @SuppressWarnings("unchecked")
     private <T> ConfigurationMetadata<T> getMetadata(Class<T> configClass)
     {
-        try {
-            return (ConfigurationMetadata<T>) metadataCache.getUnchecked(configClass);
-        }
-        catch (UncheckedExecutionException e) {
-            throw propagate(e.getCause());
-        }
+        return (ConfigurationMetadata<T>) metadataCache.getUnchecked(configClass);
     }
 
     private static <T> T newInstance(ConfigurationMetadata<T> configurationMetadata)

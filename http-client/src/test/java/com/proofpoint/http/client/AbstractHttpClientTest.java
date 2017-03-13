@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UncheckedIOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -65,8 +66,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Throwables.getStackTraceAsString;
 import static com.google.common.base.Throwables.propagate;
-import static com.google.common.base.Throwables.propagateIfInstanceOf;
 import static com.google.common.base.Throwables.propagateIfPossible;
+import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.net.HttpHeaders.ACCEPT_ENCODING;
 import static com.proofpoint.concurrent.Threads.threadsNamed;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
@@ -116,6 +117,19 @@ public abstract class AbstractHttpClientTest
     }
 
     protected abstract HttpClientConfig createClientConfig();
+
+    private void executeExceptionRequest(HttpClientConfig config, Request request)
+            throws Exception
+    {
+        try {
+            executeRequest(config, request, new CaptureExceptionResponseHandler());
+            fail("expected exception");
+        }
+        catch (CapturedException e) {
+            propagateIfPossible(e.getCause(), Exception.class);
+            throw new RuntimeException(e.getCause());
+        }
+    }
 
     public abstract <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)
             throws Exception;
@@ -265,14 +279,7 @@ public abstract class AbstractHttpClientTest
                 .setUri(new URI(scheme, null, host, port, "/", null, null))
                 .build();
 
-        try {
-            executeRequest(config, request, new CaptureExceptionResponseHandler());
-            fail("expected exception");
-        }
-        catch (CapturedException e) {
-            propagateIfInstanceOf(e.getCause(), Exception.class);
-            propagate(e.getCause());
-        }
+        executeExceptionRequest(config, request);
     }
 
     @Test
@@ -307,14 +314,7 @@ public abstract class AbstractHttpClientTest
                 .setUri(URI.create("http://" + invalidHost))
                 .build();
 
-        try {
-            executeRequest(config, request, new CaptureExceptionResponseHandler());
-            fail("Expected exception");
-        }
-        catch (CapturedException e) {
-            propagateIfInstanceOf(e.getCause(), Exception.class);
-            propagate(e.getCause());
-        }
+        executeExceptionRequest(config, request);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
@@ -328,14 +328,7 @@ public abstract class AbstractHttpClientTest
                 .setUri(new URI(scheme, null, host, 70_000, "/", null, null))
                 .build();
 
-        try {
-            executeRequest(config, request, new CaptureExceptionResponseHandler());
-            fail("expected exception");
-        }
-        catch (CapturedException e) {
-            propagateIfInstanceOf(e.getCause(), Exception.class);
-            propagate(e.getCause());
-        }
+        executeExceptionRequest(config, request);
     }
 
     @Test
@@ -1454,7 +1447,7 @@ public abstract class AbstractHttpClientTest
                 // todo sleep here maybe
             }
             catch (IOException e) {
-                throw propagate(e);
+                throw new UncheckedIOException(e);
             }
             finally {
                 if (closeConnectionImmediately) {
@@ -1575,7 +1568,7 @@ public abstract class AbstractHttpClientTest
         @Override
         public Response handleException(Request request, Exception exception)
         {
-            throw propagate(exception);
+            throw ResponseHandlerUtils.propagate(request, exception);
         }
 
         @Override
@@ -1732,6 +1725,7 @@ public abstract class AbstractHttpClientTest
         }
 
         private boolean connect()
+                throws IOException
         {
             Socket socket = new Socket();
             clientSockets.add(socket);
@@ -1744,7 +1738,7 @@ public abstract class AbstractHttpClientTest
                 if (isConnectTimeout(e)) {
                     return false;
                 }
-                throw propagate(e);
+                throw e;
             }
         }
     }
@@ -1783,10 +1777,10 @@ public abstract class AbstractHttpClientTest
         }
         catch (InterruptedException e) {
             currentThread().interrupt();
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         catch (ExecutionException e) {
-            propagateIfPossible(e.getCause());
+            throwIfUnchecked(e.getCause());
 
             if (e.getCause() instanceof Exception) {
                 // the HTTP client and ResponseHandler interface enforces this
@@ -1794,7 +1788,7 @@ public abstract class AbstractHttpClientTest
             }
 
             // e.getCause() is some direct subclass of throwable
-            throw propagate(e.getCause());
+            throw new RuntimeException(e.getCause());
         }
     }
 }
