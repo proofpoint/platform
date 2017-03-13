@@ -15,7 +15,6 @@
  */
 package com.proofpoint.jmx;
 
-import com.google.common.base.Throwables;
 import com.google.common.net.HostAndPort;
 import com.proofpoint.log.Logger;
 import com.sun.tools.attach.AttachNotSupportedException;
@@ -71,7 +70,7 @@ class JmxAgent9
                 }
             }
             catch (AttachNotSupportedException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
 
             HostAndPort address;

@@ -21,7 +21,7 @@ import com.proofpoint.node.NodeInfo;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.io.UncheckedIOException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -100,19 +100,26 @@ public class HttpServerInfo
 
     private static URI buildUri(String scheme, String host, int port)
     {
-        try {
-            // 0 means select a random port
-            if (port == 0) {
-                try (ServerSocket socket = new ServerSocket()) {
-                    socket.bind(new InetSocketAddress(0));
-                    port = socket.getLocalPort();
-                }
-            }
+        // 0 means select a random port
+        if (port == 0) {
+            port = findUnusedPort();
+        }
 
+        try {
             return new URI(scheme, null, host, port, null, null, null);
         }
-        catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
+        catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    private static int findUnusedPort()
+    {
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 }

@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.base.Throwables;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -40,7 +39,7 @@ public class TestServiceTypes
             this.quoteServiceType = getClass().getDeclaredField("quoteServiceType").getAnnotation(ServiceType.class);
         }
         catch (NoSuchFieldException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
