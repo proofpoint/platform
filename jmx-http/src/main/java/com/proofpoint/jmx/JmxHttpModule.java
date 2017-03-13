@@ -16,14 +16,10 @@
 package com.proofpoint.jmx;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -38,7 +34,6 @@ import com.proofpoint.http.server.HttpServerInfo;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.OpenType;
@@ -72,7 +67,6 @@ public class JmxHttpModule implements Module
         jsonBinder(binder).addSerializerBinding(OpenType.class).toInstance(ToStringSerializer.instance);
         jsonBinder(binder).addSerializerBinding(CompositeData.class).to(CompositeDataSerializer.class);
         jsonBinder(binder).addSerializerBinding(TabularData.class).to(TabularDataSerializer.class);
-        jsonBinder(binder).addDeserializerBinding(ObjectName.class).to(ObjectNameDeserializer.class);
 
         jaxrsBinder(binder).bindAdmin(ConfigurationResource.class);
         jaxrsBinder(binder).bindAdmin(VersionResource.class);
@@ -82,31 +76,6 @@ public class JmxHttpModule implements Module
 
         ServiceAnnouncementBuilder serviceAnnouncementBuilder = serviceAnnouncement("jmx-http");
         discoveryBinder(binder).bindServiceAnnouncement(new JmxHttpAnnouncementProvider(serviceAnnouncementBuilder));
-    }
-
-    static class ObjectNameDeserializer
-            extends StdScalarDeserializer<ObjectName>
-    {
-        ObjectNameDeserializer()
-        {
-            super(ObjectName.class);
-        }
-
-        @Override
-        public ObjectName deserialize(JsonParser jsonParser, DeserializationContext context)
-                throws IOException
-        {
-            JsonToken token = jsonParser.getCurrentToken();
-            if (token == JsonToken.VALUE_STRING) {
-                try {
-                    return ObjectName.getInstance(jsonParser.getText());
-                }
-                catch (MalformedObjectNameException e) {
-                    throw context.instantiationException(handledType(), e);
-                }
-            }
-            throw context.mappingException(handledType());
-        }
     }
 
     static class TabularDataSerializer
