@@ -21,6 +21,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 @Beta
 public interface EventClient
 {
+    @SuppressWarnings("unchecked")
     <T> ListenableFuture<Void> post(T... event)
             throws IllegalArgumentException;
 
