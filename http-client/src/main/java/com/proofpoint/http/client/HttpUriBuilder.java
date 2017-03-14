@@ -2,7 +2,6 @@ package com.proofpoint.http.client;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Ascii;
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
@@ -18,6 +17,7 @@ import java.nio.charset.CodingErrorAction;
 import java.util.Iterator;
 import java.util.Map;
 
+import static com.google.common.base.CharMatcher.ascii;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Character.forDigit;
@@ -288,7 +288,7 @@ public class HttpUriBuilder
      */
     private static String percentDecode(String encoded)
     {
-        checkArgument(CharMatcher.ASCII.matchesAllOf(encoded), "string must be ASCII");
+        checkArgument(ascii().matchesAllOf(encoded), "string must be ASCII");
 
         ByteArrayOutputStream out = new ByteArrayOutputStream(encoded.length());
         for (int i = 0; i < encoded.length(); i++) {
