@@ -11,6 +11,8 @@ Platform 1.54
   it was being included in the launcher.log twice. We removed it from its old
   location.
 
+* [Bug] Set the blocking timeout to be more than the idle timeout.
+
 Platform 1.53
 
 * Library Upgrades
