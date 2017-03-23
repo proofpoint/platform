@@ -13,6 +13,8 @@ Platform 1.54
 
 * [Bug] Set the blocking timeout to be more than the idle timeout.
 
+* [Bug] Fix the blocking timeout to apply independently to each read call.
+
 Platform 1.53
 
 * Library Upgrades
