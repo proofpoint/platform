@@ -55,7 +55,10 @@ public class TestHttpClientConfig
                 .setKeyStorePath(System.getProperty(JAVAX_NET_SSL_KEY_STORE))
                 .setKeyStorePassword(System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD))
                 .setTrustStorePath(null)
-                .setTrustStorePassword(null));
+                .setTrustStorePassword(null)
+                .setHttp2InitialSessionReceiveWindowSize(new DataSize(16, DataSize.Unit.MEGABYTE))
+                .setHttp2InitialStreamReceiveWindowSize(new DataSize(16, DataSize.Unit.MEGABYTE)));
+        ;
     }
 
     @Test
@@ -74,6 +77,8 @@ public class TestHttpClientConfig
                 .put("http-client.key-store-password", "key-store-password")
                 .put("http-client.trust-store-path", "trust-store")
                 .put("http-client.trust-store-password", "trust-store-password")
+                .put("http-client.http2.session-receive-window-size", "7MB")
+                .put("http-client.http2.stream-receive-window-size", "7MB")
                 .build();
 
         HttpClientConfig expected = new HttpClientConfig()
@@ -88,7 +93,9 @@ public class TestHttpClientConfig
                 .setKeyStorePath("key-store")
                 .setKeyStorePassword("key-store-password")
                 .setTrustStorePath("trust-store")
-                .setTrustStorePassword("trust-store-password");
+                .setTrustStorePassword("trust-store-password")
+                .setHttp2InitialSessionReceiveWindowSize(new DataSize(7, DataSize.Unit.MEGABYTE))
+                .setHttp2InitialStreamReceiveWindowSize(new DataSize(7, DataSize.Unit.MEGABYTE));
 
         assertFullMapping(properties, expected);
     }

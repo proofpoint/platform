@@ -21,7 +21,10 @@ import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.configuration.DefunctConfig;
 import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
+import com.proofpoint.units.DataSize.Unit;
 import com.proofpoint.units.Duration;
+import com.proofpoint.units.MaxDataSize;
+import com.proofpoint.units.MinDataSize;
 import com.proofpoint.units.MinDuration;
 
 import javax.validation.constraints.Min;
@@ -51,6 +54,8 @@ public class HttpClientConfig
     private String keyStorePassword = System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD);
     private String trustStorePath;
     private String trustStorePassword;
+    private DataSize http2InitialSessionReceiveWindowSize = new DataSize(16, Unit.MEGABYTE);
+    private DataSize http2InitialStreamReceiveWindowSize = new DataSize(16, Unit.MEGABYTE);
 
     public boolean isHttp2Enabled()
     {
@@ -203,6 +208,38 @@ public class HttpClientConfig
     public HttpClientConfig setTrustStorePassword(String trustStorePassword)
     {
         this.trustStorePassword = trustStorePassword;
+        return this;
+    }
+
+    @NotNull
+    @MinDataSize("1kB")
+    @MaxDataSize("1GB")
+    public DataSize getHttp2InitialSessionReceiveWindowSize()
+    {
+        return http2InitialSessionReceiveWindowSize;
+    }
+
+    @Config("http-client.http2.session-receive-window-size")
+    @ConfigDescription("Initial size of session's flow control receive window for HTTP/2")
+    public HttpClientConfig setHttp2InitialSessionReceiveWindowSize(DataSize http2InitialSessionReceiveWindowSize)
+    {
+        this.http2InitialSessionReceiveWindowSize = http2InitialSessionReceiveWindowSize;
+        return this;
+    }
+
+    @NotNull
+    @MinDataSize("1kB")
+    @MaxDataSize("1GB")
+    public DataSize getHttp2InitialStreamReceiveWindowSize()
+    {
+        return http2InitialStreamReceiveWindowSize;
+    }
+
+    @Config("http-client.http2.stream-receive-window-size")
+    @ConfigDescription("Initial size of stream's flow control receive window for HTTP/2")
+    public HttpClientConfig setHttp2InitialStreamReceiveWindowSize(DataSize http2InitialStreamReceiveWindowSize)
+    {
+        this.http2InitialStreamReceiveWindowSize = http2InitialStreamReceiveWindowSize;
         return this;
     }
 }
