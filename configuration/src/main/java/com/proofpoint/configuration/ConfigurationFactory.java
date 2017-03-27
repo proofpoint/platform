@@ -23,31 +23,24 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.UncheckedExecutionException;
-import com.google.inject.Binding;
 import com.google.inject.ConfigurationException;
-import com.google.inject.Module;
-import com.google.inject.spi.DefaultElementVisitor;
-import com.google.inject.spi.Element;
 import com.google.inject.spi.Message;
-import com.google.inject.spi.ProviderInstanceBinding;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
 import com.proofpoint.configuration.ConfigurationMetadata.InjectionPointMetaData;
 import com.proofpoint.configuration.Problems.Monitor;
 import org.apache.bval.jsr.ApacheValidationProvider;
 
-import javax.inject.Provider;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -236,13 +229,18 @@ public final class ConfigurationFactory
         for (ConstraintViolation<?> violation : VALIDATOR.validate(instance)) {
             AttributeMetadata attributeMetadata = configurationMetadata.getAttributes()
                     .get(LOWER_CAMEL.to(UPPER_CAMEL, violation.getPropertyPath().toString()));
-            if (attributeMetadata != null && attributeMetadata.getInjectionPoint() != null) {
-                problems.addError("Invalid configuration property '%s': %s (for class %s.%s)",
-                        prefix + attributeMetadata.getInjectionPoint().getProperty(), violation.getMessage(), configClass.getName(), violation.getPropertyPath());
-            }
-            else {
+            if (attributeMetadata == null || attributeMetadata.getInjectionPoint() == null) {
                 problems.addError("Invalid configuration property with prefix '%s': %s (for class %s.%s)",
                         prefix, violation.getMessage(), configClass.getName(), violation.getPropertyPath());
+            }
+            else if (violation.getConstraintDescriptor().getAnnotation() instanceof NotNull) {
+                problems.addError("Missing required configuration property '%s' (for class %s.%s)",
+                        prefix + attributeMetadata.getInjectionPoint().getProperty(), configClass.getName(), violation.getPropertyPath());
+
+            }
+            else {
+                problems.addError("Invalid configuration property '%s': %s (for class %s.%s)",
+                        prefix + attributeMetadata.getInjectionPoint().getProperty(), violation.getMessage(), configClass.getName(), violation.getPropertyPath());
             }
         }
 

@@ -706,7 +706,7 @@ public class ConfigurationFactoryTest
             monitor.assertNumberOfErrors(2);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Invalid configuration property", "'int-value'", "must be less than or equal to 100", "BeanValidationClass");
-            monitor.assertMatchingErrorRecorded("Invalid configuration property", "'string-value'", "may not be null", "BeanValidationClass");
+            monitor.assertMatchingErrorRecorded("Missing required configuration property", "'string-value'", "BeanValidationClass");
         }
     }
 
@@ -1076,7 +1076,7 @@ public class ConfigurationFactoryTest
         properties.put("map-a.k.int-value", "5000");  // out of range
         TestMonitor monitor = new TestMonitor();
         try {
-            Injector injector = createInjector(properties, null, null, null, monitor, new Module()
+            createInjector(properties, null, null, null, monitor, new Module()
             {
                 public void configure(Binder binder)
                 {
@@ -1087,7 +1087,7 @@ public class ConfigurationFactoryTest
             monitor.assertNumberOfErrors(2);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Invalid configuration property", "'map-a.k.int-value'", "must be less than or equal to 100", "BeanValidationClass");
-            monitor.assertMatchingErrorRecorded("Invalid configuration property", "'map-a.k.string-value'", "may not be null", "BeanValidationClass");
+            monitor.assertMatchingErrorRecorded("Missing required configuration property", "'map-a.k.string-value'", "BeanValidationClass");
         }
     }
 

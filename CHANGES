@@ -1,5 +1,10 @@
 Platform 1.54
 
+* Configuration
+
+  We improved the error message when a required configuration property is
+  missing.
+
 * Trace tokens
 
   Since the trace token is (as of Platform 1.43) included in the thread name,
