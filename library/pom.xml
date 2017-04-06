@@ -76,7 +76,7 @@
         <!-- extended checks -->
         <platform.check.fail-findbugs>false</platform.check.fail-findbugs>
 
-        <dep.jetty.version>9.3.15.v20161220</dep.jetty.version>
+        <dep.jetty.version>9.3.19.v20170502</dep.jetty.version>
         <dep.guice.version>4.0</dep.guice.version>
         <dep.slf4j.version>1.7.16</dep.slf4j.version>
         <dep.logback.version>1.1.8</dep.logback.version>
