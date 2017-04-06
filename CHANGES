@@ -4,6 +4,10 @@ Platform 1.56
 
   We added Level.TRACE and Level.ALL log levels.
 
+* Library Upgrades
+
+  - Jetty to 9.3.19 (from 9.3.15)
+
 Platform 1.55
 
 * RPM packaging
