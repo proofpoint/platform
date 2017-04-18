@@ -5,6 +5,15 @@ Platform 1.55
   The rpm-maven-plugin upgrade in 1.53 created RPMs with an empty classifier.
   We restored the previous classifier of "rpm".
 
+* Library Upgrades
+
+  - Jackson to 2.7.9 (was 2.6.4)
+    - jackson-databind to 2.7.9.1 (fixes deserialization vulnerability
+      when using @JsonTypeInfo or "default typing")
+    - ObjectMapper default timezone now UTC, not GMT
+    - JsonInclude.Include.NON_EMPTY now only applies to Collection, Map,
+      array, and String (not default scalar values)
+
 Platform 1.54
 
 * Configuration

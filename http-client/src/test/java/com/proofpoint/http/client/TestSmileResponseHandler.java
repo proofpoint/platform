@@ -69,7 +69,7 @@ public class TestSmileResponseHandler
         catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), "Unable to create " + User.class + " from SMILE response");
             assertInstanceOf(e.getCause(), InvalidFormatException.class);
-            assertContains(e.getCause().getMessage(), "Can not construct instance of int from String value 'foo': not a valid Integer value");
+            assertContains(e.getCause().getMessage(), "Can not construct instance of int from String value (\"foo\"): not a valid Integer value");
         }
     }
 
