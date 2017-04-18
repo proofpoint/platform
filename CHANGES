@@ -1,3 +1,10 @@
+Platform 1.55
+
+* RPM packaging
+
+  The rpm-maven-plugin upgrade in 1.53 created RPMs with an empty classifier.
+  We restored the previous classifier of "rpm".
+
 Platform 1.54
 
 * Configuration

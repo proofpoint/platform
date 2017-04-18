@@ -1230,6 +1230,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <classifier>rpm</classifier>
                             <group>Application/Services</group>
                             <defaultDirmode>755</defaultDirmode>
                             <defaultFilemode>644</defaultFilemode>
