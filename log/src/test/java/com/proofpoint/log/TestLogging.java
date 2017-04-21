@@ -124,6 +124,14 @@ public class TestLogging
         logging.setLevel("testPropagatesLevelsHierarchical", Level.DEBUG);
         assertTrue(logger.isDebugEnabled());
         assertTrue(logger.isInfoEnabled());
+
+        logging.setLevel("testPropagatesLevelsHierarchical", Level.TRACE);
+        assertTrue(logger.isDebugEnabled());
+        assertTrue(logger.isInfoEnabled());
+
+        logging.setLevel("testPropagatesLevelsHierarchical", Level.ALL);
+        assertTrue(logger.isDebugEnabled());
+        assertTrue(logger.isInfoEnabled());
     }
 
     @Test

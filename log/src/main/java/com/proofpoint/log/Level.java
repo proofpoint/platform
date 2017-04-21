@@ -3,6 +3,8 @@ package com.proofpoint.log;
 public enum Level
 {
     OFF(java.util.logging.Level.OFF),
+    ALL(java.util.logging.Level.ALL),
+    TRACE(java.util.logging.Level.FINEST),
     DEBUG(java.util.logging.Level.FINE),
     INFO(java.util.logging.Level.INFO),
     WARN(java.util.logging.Level.WARNING),
@@ -36,6 +38,12 @@ public enum Level
         if (levelValue >= java.util.logging.Level.INFO.intValue()) {
             return INFO;
         }
-        return DEBUG;
+        if (levelValue >= java.util.logging.Level.FINE.intValue()) {
+            return DEBUG;
+        }
+        if (levelValue >= java.util.logging.Level.FINEST.intValue()) {
+            return TRACE;
+        }
+        return ALL;
     }
 }

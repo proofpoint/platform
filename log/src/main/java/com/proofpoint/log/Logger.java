@@ -22,6 +22,7 @@ import java.util.IllegalFormatException;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -57,6 +58,34 @@ public class Logger
     {
         java.util.logging.Logger logger = java.util.logging.Logger.getLogger(name);
         return new Logger(logger);
+    }
+
+    /**
+     * Logs a message at TRACE level.
+     * <p>
+     * Usage example:
+     * <pre>
+     *    logger.trace("value is %s (%d ms)", value, time);
+     * </pre>
+     * If the format string is invalid or the arguments are insufficient, an error will be logged and execution
+     * will continue.
+     *
+     * @param format a format string compatible with String.format()
+     * @param args arguments for the format string
+     */
+    public void trace(String format, Object... args)
+    {
+        if (logger.isLoggable(FINEST)) {
+            String message;
+            try {
+                message = format(format, args);
+            }
+            catch (IllegalFormatException e) {
+                logger.log(SEVERE, illegalFormatMessageFor(Level.TRACE, format, args), e);
+                message = rawMessageFor(format, args);
+            }
+            logger.finest(message);
+        }
     }
 
     /**

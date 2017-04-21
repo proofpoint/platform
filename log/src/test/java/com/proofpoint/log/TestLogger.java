@@ -60,6 +60,12 @@ public class TestLogger
     @Test
     public void testIsDebugEnabled()
     {
+        inner.setLevel(Level.ALL);
+        assertTrue(logger.isDebugEnabled());
+
+        inner.setLevel(Level.FINEST);
+        assertTrue(logger.isDebugEnabled());
+
         inner.setLevel(Level.FINE);
         assertTrue(logger.isDebugEnabled());
 
@@ -71,6 +77,15 @@ public class TestLogger
 
         inner.setLevel(Level.SEVERE);
         assertFalse(logger.isDebugEnabled());
+    }
+
+    @Test
+    public void testTraceFormat()
+    {
+        inner.setLevel(Level.FINEST);
+        logger.trace("hello, %s", "you");
+
+        assertLog(Level.FINEST, "hello, you");
     }
 
     @Test
@@ -194,6 +209,18 @@ public class TestLogger
         logger.error(e);
 
         assertTrue(handler.isEmpty());
+    }
+    
+    @Test
+    public void testInsufficientArgsLogsErrorForTrace()
+    {
+        String format = "some message: %s, %d";
+        String param = "blah";
+        logger.trace(format, param);
+
+
+        assertLogLike(Level.SEVERE, ImmutableList.of("Invalid format", "TRACE", format, param), IllegalArgumentException.class);
+        assertLog(Level.FINEST, String.format("'%s' [%s]", format, param));
     }
 
 
