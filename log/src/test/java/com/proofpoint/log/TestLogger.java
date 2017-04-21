@@ -144,6 +144,14 @@ public class TestLogger
     }
 
     @Test
+    public void testTraceShortCircuit()
+    {
+        inner.setLevel(Level.OFF);
+        logger.trace("hello");
+        assertTrue(handler.isEmpty());
+    }
+
+    @Test
     public void testDebugShortCircuit()
     {
         inner.setLevel(Level.OFF);
@@ -210,7 +218,7 @@ public class TestLogger
 
         assertTrue(handler.isEmpty());
     }
-    
+
     @Test
     public void testInsufficientArgsLogsErrorForTrace()
     {
