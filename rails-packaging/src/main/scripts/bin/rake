@@ -1,0 +1,7 @@
+#!/bin/bash
+DIR=$( cd "$( dirname "$0" )" && pwd )
+if [ "$1" == '-l' ]; then {
+  jruby_args="$1 $2"
+  shift 2
+}; fi
+$DIR/jruby $jruby_args -- $DIR/../rack/bundle/jruby/1.8/bin/rake -f $DIR/Rakefile $*

@@ -1,0 +1,5 @@
+$:.unshift File.expand_path('../bundle', __FILE__)
+Dir.chdir(File.dirname(__FILE__)) do
+  require File.expand_path('../config/application', __FILE__)
+  Rails.application.load_tasks
+end
