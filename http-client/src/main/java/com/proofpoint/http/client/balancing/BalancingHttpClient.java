@@ -249,6 +249,12 @@ public class BalancingHttpClient
         httpClient.close();
     }
 
+    @Override
+    public boolean isClosed()
+    {
+        return httpClient.isClosed();
+    }
+
     private class RetryFuture<T, E extends Exception>
             extends AbstractFuture<T>
             implements HttpResponseFuture<T>
