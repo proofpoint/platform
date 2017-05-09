@@ -189,5 +189,11 @@ public class TestBalancingHttpClient
         {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public boolean isClosed()
+        {
+            throw new UnsupportedOperationException();
+        }
     }
 }

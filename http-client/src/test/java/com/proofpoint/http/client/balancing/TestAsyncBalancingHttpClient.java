@@ -222,6 +222,12 @@ public class TestAsyncBalancingHttpClient
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public boolean isClosed()
+        {
+            throw new UnsupportedOperationException();
+        }
+
         private class ImmediateAsyncHttpFuture<T, E extends Exception>
                 extends AbstractFuture<T>
                 implements HttpResponseFuture<T>

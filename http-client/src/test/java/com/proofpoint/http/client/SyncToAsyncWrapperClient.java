@@ -70,4 +70,10 @@ public class SyncToAsyncWrapperClient
     {
         delegate.close();
     }
+
+    @Override
+    public boolean isClosed()
+    {
+        return delegate.isClosed();
+    }
 }

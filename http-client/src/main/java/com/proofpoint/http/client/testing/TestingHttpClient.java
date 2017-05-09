@@ -168,6 +168,12 @@ public class TestingHttpClient
         closed.set(true);
     }
 
+    @Override
+    public boolean isClosed()
+    {
+        return closed.get();
+    }
+
     public interface Processor
     {
         @Nonnull
