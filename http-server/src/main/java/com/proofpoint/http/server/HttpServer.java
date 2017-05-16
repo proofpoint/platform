@@ -166,7 +166,6 @@ public class HttpServer
             HttpConfiguration httpConfiguration = new HttpConfiguration();
             httpConfiguration.setSendServerVersion(false);
             httpConfiguration.setSendXPoweredBy(false);
-            httpConfiguration.setBlockingTimeout(500 + config.getNetworkMaxIdleTime().toMillis());
             if (config.getMaxRequestHeaderSize() != null) {
                 httpConfiguration.setRequestHeaderSize(Ints.checkedCast(config.getMaxRequestHeaderSize().toBytes()));
             }
@@ -179,8 +178,8 @@ public class HttpServer
 
             Integer acceptors = config.getHttpAcceptorThreads();
             Integer selectors = config.getHttpSelectorThreads();
-            HttpConnectionFactory http1 = new HackHttpConnectionFactory(httpConfiguration);
-            HTTP2CServerConnectionFactory http2c = new HackHTTP2CServerConnectionFactory(httpConfiguration);
+            HttpConnectionFactory http1 = new HttpConnectionFactory(httpConfiguration);
+            HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(httpConfiguration);
             http2c.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
             httpConnector = new ServerConnector(server, null, null, null, acceptors == null ? -1 : acceptors, selectors == null ? -1 : selectors, http1, http2c);
             httpConnector.setName("http");
@@ -199,7 +198,6 @@ public class HttpServer
             HttpConfiguration httpsConfiguration = new HttpConfiguration();
             httpsConfiguration.setSendServerVersion(false);
             httpsConfiguration.setSendXPoweredBy(false);
-            httpsConfiguration.setBlockingTimeout(500 + config.getNetworkMaxIdleTime().toMillis());
             if (config.getMaxRequestHeaderSize() != null) {
                 httpsConfiguration.setRequestHeaderSize(Ints.checkedCast(config.getMaxRequestHeaderSize().toBytes()));
             }
@@ -216,7 +214,7 @@ public class HttpServer
 
             Integer acceptors = config.getHttpsAcceptorThreads();
             Integer selectors = config.getHttpsSelectorThreads();
-            httpsConnector = new ServerConnector(server, null, null, null, acceptors == null ? -1 : acceptors, selectors == null ? -1 : selectors, sslConnectionFactory, new HackHttpConnectionFactory(httpsConfiguration));
+            httpsConnector = new ServerConnector(server, null, null, null, acceptors == null ? -1 : acceptors, selectors == null ? -1 : selectors, sslConnectionFactory, new HttpConnectionFactory(httpsConfiguration));
             httpsConnector.setName("https");
             httpsConnector.setPort(httpServerInfo.getHttpsUri().getPort());
             httpsConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
@@ -234,7 +232,6 @@ public class HttpServer
             HttpConfiguration adminConfiguration = new HttpConfiguration();
             adminConfiguration.setSendServerVersion(false);
             adminConfiguration.setSendXPoweredBy(false);
-            adminConfiguration.setBlockingTimeout(500 + config.getNetworkMaxIdleTime().toMillis());
             if (config.getMaxRequestHeaderSize() != null) {
                 adminConfiguration.setRequestHeaderSize(Ints.checkedCast(config.getMaxRequestHeaderSize().toBytes()));
             }
@@ -255,10 +252,10 @@ public class HttpServer
                 sslContextFactory.setIncludeCipherSuites(ENABLED_CIPHERS);
                 sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
                 SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
-                adminConnector = new ServerConnector(server, adminThreadPool, null, null, 0, -1, sslConnectionFactory, new HackHttpConnectionFactory(adminConfiguration));
+                adminConnector = new ServerConnector(server, adminThreadPool, null, null, 0, -1, sslConnectionFactory, new HttpConnectionFactory(adminConfiguration));
             } else {
-                HttpConnectionFactory http1 = new HackHttpConnectionFactory(adminConfiguration);
-                HTTP2CServerConnectionFactory http2c = new HackHTTP2CServerConnectionFactory(adminConfiguration);
+                HttpConnectionFactory http1 = new HttpConnectionFactory(adminConfiguration);
+                HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(adminConfiguration);
                 http2c.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
                 adminConnector = new ServerConnector(server, adminThreadPool, null, null, -1, -1, http1, http2c);
             }
