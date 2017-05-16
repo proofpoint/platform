@@ -367,10 +367,12 @@ public class JettyHttpClient
             response = listener.get(httpClient.getIdleTimeout(), MILLISECONDS);
         }
         catch (InterruptedException e) {
+            jettyRequest.abort(e);
             Thread.currentThread().interrupt();
             return responseHandler.handleException(request, e);
         }
         catch (TimeoutException e) {
+            jettyRequest.abort(e);
             return responseHandler.handleException(request, e);
         }
         catch (ExecutionException e) {

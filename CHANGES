@@ -1,5 +1,13 @@
 Platform 1.56
 
+* HttpClient and HttpServer
+
+  [Bug] In some cases the Jetty HttpClient.execute() method would leave the
+  request in progress after returning.
+
+  HttpServer no longer sets the blocking timeout. That was an ineffective
+  workaround.
+
 * Logging
 
   We added Level.TRACE and Level.ALL log levels.
