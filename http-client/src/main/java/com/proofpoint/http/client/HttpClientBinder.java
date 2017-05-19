@@ -26,11 +26,13 @@ import com.proofpoint.http.client.balancing.BalancingHttpClientBindingBuilder;
 import com.proofpoint.http.client.balancing.BalancingHttpClientConfig;
 import com.proofpoint.http.client.balancing.ForBalancingHttpClient;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
+import org.weakref.jmx.ObjectNameBuilder;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
@@ -82,6 +84,7 @@ public class HttpClientBinder
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
         reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
         newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
+        binder.bind(ScheduledExecutorService.class).annotatedWith(ForBalancingHttpClient.class).toProvider(RetryExecutorProvider.class);
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
     }
@@ -100,6 +103,30 @@ public class HttpClientBinder
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
         reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
         newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
+        binder.bind(ScheduledExecutorService.class).annotatedWith(ForBalancingHttpClient.class).toProvider(RetryExecutorProvider.class);
+
+        return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
+    }
+
+    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Annotation annotation, String serviceName, Key<? extends HttpServiceBalancer> balancerKey)
+    {
+        requireNonNull(name, "name is null");
+        requireNonNull(annotation, "annotation is null");
+        requireNonNull(balancerKey, "balancerKey is null");
+
+        PrivateBinder privateBinder = binder.newPrivateBinder();
+        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).to(balancerKey);
+        HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
+        bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
+        privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
+        privateBinder.expose(HttpClient.class).annotatedWith(annotation);
+        reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withNamePrefix("HttpClient." + serviceName);
+        newExporter(binder).export(HttpClient.class).annotatedWith(annotation).as(new ObjectNameBuilder(HttpClient.class.getPackage().getName())
+                .withProperty("type", "HttpClient")
+                .withProperty("name", serviceName)
+                .build()
+        );
+        binder.bind(ScheduledExecutorService.class).annotatedWith(ForBalancingHttpClient.class).toProvider(RetryExecutorProvider.class);
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
     }

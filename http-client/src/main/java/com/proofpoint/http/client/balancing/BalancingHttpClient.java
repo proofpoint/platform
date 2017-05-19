@@ -24,37 +24,53 @@ import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
+import com.proofpoint.tracetoken.TraceToken;
+import com.proofpoint.tracetoken.TraceTokenScope;
+import com.proofpoint.units.Duration;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.inject.Inject;
 import java.net.URI;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.cache.CacheBuilder.newBuilder;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class BalancingHttpClient
         implements HttpClient
 {
-    final HttpServiceBalancer pool;
+    private static final Duration ZERO_DURATION = new Duration(0, TimeUnit.MILLISECONDS);
+
+    private final HttpServiceBalancer pool;
     private final HttpClient httpClient;
-    final int maxAttempts;
+    private final int maxAttempts;
+    private final BackoffPolicy backoffPolicy;
+    private final ScheduledExecutorService retryExecutor;
     private final Cache<Class<? extends Exception>, Boolean> exceptionCache = newBuilder()
             .expireAfterWrite(30, TimeUnit.SECONDS)
             .build();
 
     @Inject
-    public BalancingHttpClient(@ForBalancingHttpClient HttpServiceBalancer pool, @ForBalancingHttpClient HttpClient httpClient, BalancingHttpClientConfig config)
+    public BalancingHttpClient(@ForBalancingHttpClient HttpServiceBalancer pool,
+            @ForBalancingHttpClient HttpClient httpClient,
+            BalancingHttpClientConfig config,
+            @ForBalancingHttpClient ScheduledExecutorService retryExecutor)
     {
-        this.pool = checkNotNull(pool, "pool is null");
-        this.httpClient = checkNotNull(httpClient, "httpClient is null");
-        maxAttempts = checkNotNull(config, "config is null").getMaxAttempts();
+        this.pool = requireNonNull(pool, "pool is null");
+        this.httpClient = requireNonNull(httpClient, "httpClient is null");
+        maxAttempts = requireNonNull(config, "config is null").getMaxAttempts();
+        backoffPolicy = new DecorrelatedJitteredBackoffPolicy(config.getMinBackoff(), config.getMaxBackoff());
+        this.retryExecutor = requireNonNull(retryExecutor, "retryExecutor is null");
     }
-
 
     @Override
     public <T, E extends Exception> T execute(Request request, ResponseHandler<T, E> responseHandler)
@@ -73,6 +89,8 @@ public class BalancingHttpClient
             return responseHandler.handleException(request, e);
         }
         int attemptsLeft = maxAttempts;
+        BackoffPolicy attemptBackoffPolicy = backoffPolicy;
+        Duration previousBackoff = ZERO_DURATION;
 
         RetryingResponseHandler<T, E> retryingResponseHandler = new RetryingResponseHandler<>(responseHandler, false, exceptionCache);
 
@@ -109,8 +127,19 @@ public class BalancingHttpClient
             }
             catch (RetryException e) {
                 attempt.markBad(e.getFailureCategory());
+                Duration backoff = attemptBackoffPolicy.backoff(previousBackoff);
+                long millis = backoff.roundTo(MILLISECONDS);
+                try {
+                    Thread.sleep(millis);
+                }
+                catch (InterruptedException e1) {
+                    Thread.currentThread().interrupt();
+                    return responseHandler.handleException(request, e1);
+                }
                 try {
                     attempt = attempt.next();
+                    previousBackoff = backoff;
+                    attemptBackoffPolicy = attemptBackoffPolicy.nextAttempt();
                 }
                 catch (RuntimeException e1) {
                     return responseHandler.handleException(request, e1);
@@ -190,6 +219,8 @@ public class BalancingHttpClient
     @Override
     public void close()
     {
+        retryExecutor.shutdown();
+        retryExecutor.shutdownNow();
         httpClient.close();
     }
 
@@ -203,6 +234,10 @@ public class BalancingHttpClient
         private final Object subFutureLock = new Object();
         @GuardedBy("subFutureLock")
         private HttpServiceAttempt attempt = null;
+        @GuardedBy("subFutureLock")
+        private BackoffPolicy attemptBackoffPolicy = backoffPolicy;
+        @GuardedBy("subFutureLock")
+        private Duration previousBackoff = ZERO_DURATION;
         @GuardedBy("subFutureLock")
         private URI uri = null;
         @GuardedBy("subFutureLock")
@@ -248,26 +283,40 @@ public class BalancingHttpClient
                     }
                     else if (t instanceof RetryException) {
                         attempt.markBad(((RetryException) t).getFailureCategory());
+                        TraceToken traceToken = getCurrentTraceToken();
                         synchronized (subFutureLock) {
-                            HttpServiceAttempt nextAttempt;
-                            try {
-                                nextAttempt = attempt.next();
-                            }
-                            catch (RuntimeException e1) {
-                                try {
-                                    set(responseHandler.handleException(request, e1));
+                            Duration backoff = attemptBackoffPolicy.backoff(previousBackoff);
+                            ScheduledFuture<?> scheduledFuture = retryExecutor.schedule(() -> {
+                                try (TraceTokenScope scope = registerTraceToken(traceToken)){
+                                    synchronized (subFutureLock) {
+                                        HttpServiceAttempt nextAttempt;
+                                        try {
+                                            nextAttempt = attempt.next();
+                                            previousBackoff = backoff;
+                                            attemptBackoffPolicy = attemptBackoffPolicy.nextAttempt();
+                                        }
+                                        catch (RuntimeException e1) {
+                                            try {
+                                                set(responseHandler.handleException(request, e1));
+                                            }
+                                            catch (Exception e2) {
+                                                setException(e2);
+                                            }
+                                            return;
+                                        }
+                                        try {
+                                            attemptQuery(retryFuture, request, responseHandler, nextAttempt, attemptsLeft);
+                                        }
+                                        catch (RuntimeException e1) {
+                                            setException(e1);
+                                        }
+                                    }
                                 }
-                                catch (Exception e2) {
-                                    setException(e2);
+                                catch (Exception e) {
+                                    e.printStackTrace();
                                 }
-                                return;
-                            }
-                            try {
-                                attemptQuery(retryFuture, request, responseHandler, nextAttempt, attemptsLeft);
-                            }
-                            catch (RuntimeException e1) {
-                                setException(e1);
-                            }
+                            }, backoff.roundTo(MILLISECONDS), MILLISECONDS);
+                            subFuture = new RetryDelayFuture<T>(scheduledFuture, attempt);
                         }
                     }
                 }
@@ -297,11 +346,10 @@ public class BalancingHttpClient
         }
     }
 
-    private static class ImmediateHttpResponseFuture<T, E extends Exception>
+    private static class ImmediateHttpResponseFuture<T>
             extends AbstractFuture<T>
             implements HttpResponseFuture<T>
     {
-
         private final T result;
 
         ImmediateHttpResponseFuture(T result)
@@ -321,7 +369,6 @@ public class BalancingHttpClient
             extends AbstractFuture<T>
             implements HttpResponseFuture<T>
     {
-
         private final E exception;
 
         ImmediateFailedHttpResponseFuture(E exception)
@@ -334,6 +381,32 @@ public class BalancingHttpClient
         public String getState()
         {
             return "Failed with exception " + exception;
+        }
+    }
+
+    private static class RetryDelayFuture<T>
+            extends AbstractFuture<T>
+            implements HttpResponseFuture<T>
+    {
+        private final ScheduledFuture<?> scheduledFuture;
+        private final HttpServiceAttempt attempt;
+
+        public RetryDelayFuture(ScheduledFuture<?> scheduledFuture, HttpServiceAttempt attempt)
+        {
+            this.scheduledFuture = requireNonNull(scheduledFuture, "scheduledFuture is null");
+            this.attempt = requireNonNull(attempt, "attempt is null");
+        }
+
+        @Override
+        public String getState()
+        {
+            return format("Delaying for retry after attempt %s", attempt);
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning)
+        {
+            return scheduledFuture.cancel(mayInterruptIfRunning);
         }
     }
 }
