@@ -1,17 +1,20 @@
 package com.proofpoint.http.client.balancing;
 
 import com.proofpoint.http.client.HttpClient;
+import com.proofpoint.http.client.LimitedRetryable;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
-import com.proofpoint.http.client.LimitedRetryable;
+import com.proofpoint.units.Duration;
 import org.testng.annotations.Test;
 
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.proofpoint.http.client.testing.BodySourceTester.writeBodySourceTo;
@@ -36,8 +39,13 @@ public class TestBalancingHttpClient
     @Override
     protected BalancingHttpClient createBalancingHttpClient()
     {
-        return new BalancingHttpClient(serviceBalancer, httpClient,
-                new BalancingHttpClientConfig().setMaxAttempts(3));
+        return new BalancingHttpClient(serviceBalancer,
+                httpClient,
+                new BalancingHttpClientConfig()
+                        .setMaxAttempts(3)
+                        .setMinBackoff(new Duration(1, TimeUnit.MILLISECONDS))
+                        .setMaxBackoff(new Duration(2, TimeUnit.MILLISECONDS)),
+                mock(ScheduledExecutorService.class));
     }
 
     @Override
@@ -65,9 +73,10 @@ public class TestBalancingHttpClient
     {
         RequestStats requestStats = new RequestStats();
         HttpClient mockClient = mock(HttpClient.class);
+        ScheduledExecutorService retryExecutor = mock(ScheduledExecutorService.class);
         when(mockClient.getStats()).thenReturn(requestStats);
 
-        balancingHttpClient = new BalancingHttpClient(serviceBalancer, mockClient, new BalancingHttpClientConfig());
+        balancingHttpClient = new BalancingHttpClient(serviceBalancer, mockClient, new BalancingHttpClientConfig(), retryExecutor);
         assertSame(balancingHttpClient.getStats(), requestStats);
 
         verify(mockClient).getStats();
@@ -78,9 +87,14 @@ public class TestBalancingHttpClient
     public void testClose()
     {
         HttpClient mockClient = mock(HttpClient.class);
+        ScheduledExecutorService retryExecutor = mock(ScheduledExecutorService.class);
 
-        balancingHttpClient = new BalancingHttpClient(serviceBalancer, mockClient, new BalancingHttpClientConfig());
+        balancingHttpClient = new BalancingHttpClient(serviceBalancer, mockClient, new BalancingHttpClientConfig(), retryExecutor);
         balancingHttpClient.close();
+
+        verify(retryExecutor).shutdown();
+        verify(retryExecutor).shutdownNow();
+        verifyNoMoreInteractions(retryExecutor);
 
         verify(mockClient).close();
         verifyNoMoreInteractions(mockClient, serviceBalancer);

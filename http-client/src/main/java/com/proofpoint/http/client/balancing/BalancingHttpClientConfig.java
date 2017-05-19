@@ -16,12 +16,20 @@
 package com.proofpoint.http.client.balancing;
 
 import com.proofpoint.configuration.Config;
+import com.proofpoint.configuration.ConfigDescription;
+import com.proofpoint.units.Duration;
 
+import javax.validation.constraints.AssertFalse;
 import javax.validation.constraints.Min;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BalancingHttpClientConfig
 {
     private int maxAttempts = 3;
+    private Duration minBackoff = new Duration(10, MILLISECONDS);
+    private Duration maxBackoff = new Duration(10, SECONDS);
 
     @Min(1)
     public int getMaxAttempts()
@@ -34,5 +42,37 @@ public class BalancingHttpClientConfig
     {
         this.maxAttempts = maxAttempts;
         return this;
+    }
+
+    public Duration getMinBackoff()
+    {
+        return minBackoff;
+    }
+
+    @Config("http-client.min-backoff")
+    @ConfigDescription("Minimum backoff delay before a retry")
+    public BalancingHttpClientConfig setMinBackoff(Duration minBackoff)
+    {
+        this.minBackoff = minBackoff;
+        return this;
+    }
+
+    public Duration getMaxBackoff()
+    {
+        return maxBackoff;
+    }
+
+    @Config("http-client.max-backoff")
+    @ConfigDescription("Maximum backoff delay before a retry")
+    public BalancingHttpClientConfig setMaxBackoff(Duration maxBackoff)
+    {
+        this.maxBackoff = maxBackoff;
+        return this;
+    }
+
+    @AssertFalse
+    public boolean isMaxBackoffLessThanMinBackoff()
+    {
+        return maxBackoff.compareTo(minBackoff) < 0;
     }
 }

@@ -1,5 +1,11 @@
 Platform 1.56
 
+* BalancingHttpClient
+
+  The BalancingHttpClient now implements backoff between retries using
+  decorrelated jitter. The minimum and maximum delays between attempts
+  are configurable.
+
 * Logging
 
   We added Level.TRACE and Level.ALL log levels.

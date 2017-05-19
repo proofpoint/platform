@@ -60,9 +60,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.event.client.EventTypeMetadata.getValidEventTypeMetaDataSet;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
@@ -82,7 +85,7 @@ public class TestHttpEventClient
     public void testFutureFailsWhenServiceUnavailable()
             throws InterruptedException
     {
-        client = newEventClient(ImmutableSet.<URI>of());
+        client = newEventClient(ImmutableSet.of());
 
         try {
             client.post(new FixedDummyEventClass("host", new DateTime(), UUID.randomUUID(), 1, "foo")).get();
@@ -95,7 +98,7 @@ public class TestHttpEventClient
     @Test
     public void testCallSucceedsWhenServiceUnavailable()
     {
-        client = newEventClient(ImmutableSet.<URI>of());
+        client = newEventClient(ImmutableSet.of());
 
         client.post(new FixedDummyEventClass("host", new DateTime(), UUID.randomUUID(), 1, "foo"));
 
@@ -164,7 +167,10 @@ public class TestHttpEventClient
                 new JettyHttpClient(new HttpClientConfig()
                         .setConnectTimeout(new Duration(10, SECONDS))
                         .setMaxRequestsQueuedPerDestination(100)),
-                new BalancingHttpClientConfig());
+                new BalancingHttpClientConfig()
+                        .setMinBackoff(new Duration(1, MILLISECONDS))
+                        .setMaxBackoff(new Duration(2, MILLISECONDS)),
+                newSingleThreadScheduledExecutor(daemonThreadsNamed("event-test-retry")));
         servlet = new DummyServlet();
         server = createServer(servlet);
         server.start();

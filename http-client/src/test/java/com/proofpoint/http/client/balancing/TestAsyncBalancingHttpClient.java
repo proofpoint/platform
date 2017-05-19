@@ -16,9 +16,16 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.http.client.testing.BodySourceTester.writeBodySourceTo;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -40,9 +47,15 @@ public class TestAsyncBalancingHttpClient
     @Override
     protected SyncToAsyncWrapperClient createBalancingHttpClient()
     {
+        ScheduledExecutorService realExecutor = newSingleThreadScheduledExecutor(daemonThreadsNamed("test-async-executor"));
+        ScheduledExecutorService retryExecutor = mock(ScheduledExecutorService.class);
+        when(retryExecutor.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class)))
+                .thenAnswer((invocation -> realExecutor.schedule((Runnable) invocation.getArguments()[0], 0, SECONDS)));
         return new SyncToAsyncWrapperClient(
-                new BalancingHttpClient(serviceBalancer, httpClient,
-                        new BalancingHttpClientConfig().setMaxAttempts(3)));
+                new BalancingHttpClient(serviceBalancer,
+                        httpClient,
+                        new BalancingHttpClientConfig().setMaxAttempts(3),
+                        retryExecutor));
     }
 
     @Override
@@ -71,10 +84,11 @@ public class TestAsyncBalancingHttpClient
     {
         RequestStats requestStats = new RequestStats();
         HttpClient mockClient = mock(HttpClient.class);
+        ScheduledExecutorService retryExecutor = mock(ScheduledExecutorService.class);
         when(mockClient.getStats()).thenReturn(requestStats);
 
         balancingHttpClient = new SyncToAsyncWrapperClient(
-                new BalancingHttpClient(serviceBalancer, mockClient, new BalancingHttpClientConfig()));
+                new BalancingHttpClient(serviceBalancer, mockClient, new BalancingHttpClientConfig(), retryExecutor));
         assertSame(balancingHttpClient.getStats(), requestStats);
 
         verify(mockClient).getStats();
@@ -85,10 +99,15 @@ public class TestAsyncBalancingHttpClient
     public void testClose()
     {
         HttpClient mockClient = mock(HttpClient.class);
+        ScheduledExecutorService retryExecutor = mock(ScheduledExecutorService.class);
 
         balancingHttpClient = new SyncToAsyncWrapperClient(
-                new BalancingHttpClient(serviceBalancer, mockClient, new BalancingHttpClientConfig()));
+                new BalancingHttpClient(serviceBalancer, mockClient, new BalancingHttpClientConfig(), retryExecutor));
         balancingHttpClient.close();
+
+        verify(retryExecutor).shutdown();
+        verify(retryExecutor).shutdownNow();
+        verifyNoMoreInteractions(retryExecutor);
 
         verify(mockClient).close();
         verifyNoMoreInteractions(mockClient, serviceBalancer);
