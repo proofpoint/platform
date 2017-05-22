@@ -312,9 +312,6 @@ public class BalancingHttpClient
                                         }
                                     }
                                 }
-                                catch (Exception e) {
-                                    e.printStackTrace();
-                                }
                             }, backoff.roundTo(MILLISECONDS), MILLISECONDS);
                             subFuture = new RetryDelayFuture<T>(scheduledFuture, attempt);
                         }

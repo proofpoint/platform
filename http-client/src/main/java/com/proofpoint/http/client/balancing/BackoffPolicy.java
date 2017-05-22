@@ -17,7 +17,7 @@ package com.proofpoint.http.client.balancing;
 
 import com.proofpoint.units.Duration;
 
-public interface BackoffPolicy
+interface BackoffPolicy
 {
     BackoffPolicy nextAttempt();
 

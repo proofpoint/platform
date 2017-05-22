@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class DecorrelatedJitteredBackoffPolicy
+class DecorrelatedJitteredBackoffPolicy
     implements BackoffPolicy
 {
     private final long min;
