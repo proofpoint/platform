@@ -29,6 +29,12 @@ public interface HttpServiceBalancerStats
 
     SparseTimeStat requestTime(@Key("targetUri") URI uri, @Key("status") Status status);
 
+    SparseTimeStat removal(@Key("targetUri") URI uri);
+
+    SparseCounterStat revival(@Key("targetUri") URI uri);
+
+    SparseCounterStat probe(@Key("targetUri") URI uri);
+
     enum Status {
         SUCCESS, FAILURE;
 

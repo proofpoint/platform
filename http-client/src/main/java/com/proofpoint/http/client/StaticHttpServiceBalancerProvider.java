@@ -18,8 +18,11 @@ package com.proofpoint.http.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.reporting.ReportCollectionFactory;
@@ -36,13 +39,16 @@ class StaticHttpServiceBalancerProvider implements Provider<HttpServiceBalancer>
 {
     private final String type;
     private final Set<URI> baseUris;
+    private final Key<HttpServiceBalancerConfig> balancerConfigKey;
     private ReportExporter reportExporter;
     private ReportCollectionFactory reportCollectionFactory;
+    private Injector injector;
 
-    StaticHttpServiceBalancerProvider(String type, Set<URI> baseUris)
+    StaticHttpServiceBalancerProvider(String type, Set<URI> baseUris, Key<HttpServiceBalancerConfig> balancerConfigKey)
     {
         this.type = requireNonNull(type, "type is null");
         this.baseUris = ImmutableSet.copyOf(baseUris);
+        this.balancerConfigKey = requireNonNull(balancerConfigKey, "balancerConfigKey is null");
     }
 
     @Inject
@@ -59,6 +65,13 @@ class StaticHttpServiceBalancerProvider implements Provider<HttpServiceBalancer>
         this.reportCollectionFactory = reportCollectionFactory;
     }
 
+    @Inject
+    public void setInjector(Injector injector)
+    {
+        requireNonNull(injector, "injector is null");
+        this.injector = injector;
+    }
+
     @Override
     public HttpServiceBalancer get()
     {
@@ -67,7 +80,7 @@ class StaticHttpServiceBalancerProvider implements Provider<HttpServiceBalancer>
 
         Map<String, String> tags = ImmutableMap.of("serviceType", type);
         HttpServiceBalancerStats httpServiceBalancerStats = reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags);
-        HttpServiceBalancerImpl balancer = new HttpServiceBalancerImpl(format("type=[%s], static", type), httpServiceBalancerStats);
+        HttpServiceBalancerImpl balancer = new HttpServiceBalancerImpl(format("type=[%s], static", type), httpServiceBalancerStats, injector.getInstance(balancerConfigKey));
         reportExporter.export(balancer, false, "ServiceClient", tags);
         balancer.updateHttpUris(baseUris);
         return balancer;

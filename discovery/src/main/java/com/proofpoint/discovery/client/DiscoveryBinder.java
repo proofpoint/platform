@@ -28,6 +28,7 @@ import com.proofpoint.discovery.client.announce.ServiceAnnouncement.ServiceAnnou
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerProvider;
 import com.proofpoint.http.client.balancing.BalancingHttpClientBindingBuilder;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -81,6 +82,7 @@ public class DiscoveryBinder
     {
         requireNonNull(serviceType, "serviceType is null");
         bindConfig(binder).annotatedWith(serviceType).prefixedWith("discovery." + serviceType.value()).to(ServiceSelectorConfig.class);
+        bindConfig(binder).annotatedWith(serviceType).prefixedWith("service-balancer." + serviceType.value()).to(HttpServiceBalancerConfig.class);
         binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType).toProvider(new HttpServiceBalancerProvider(serviceType.value())).in(Scopes.SINGLETON);
     }
 

@@ -1,3 +1,14 @@
+Platform 1.57
+
+* BalancingHttpClient
+
+  The HttpServiceBalancer now implements failure accrual. Destinations
+  that fail than a configurable number of times in a row will be removed from
+  consideration for a configurable backoff. This is currently disabled by
+  default and is configured with the
+  "service-balancer.SERVICE.consecutive-failures" configuration option. A
+  value of "5" is recommended.
+
 Platform 1.56
 
 * HttpClient and HttpServer

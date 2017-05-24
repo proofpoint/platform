@@ -25,6 +25,7 @@ import com.proofpoint.http.client.HttpClientConfig;
 import com.proofpoint.http.client.UnexpectedResponseException;
 import com.proofpoint.http.client.balancing.BalancingHttpClient;
 import com.proofpoint.http.client.balancing.BalancingHttpClientConfig;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.http.client.balancing.ServiceUnavailableException;
@@ -161,7 +162,11 @@ public class TestHttpEventClient
     public void setup()
             throws Exception
     {
-        balancer = new HttpServiceBalancerImpl("test collector balancer", new TestingReportCollectionFactory().createReportCollection(HttpServiceBalancerStats.class));
+        balancer = new HttpServiceBalancerImpl(
+                "test collector balancer",
+                new TestingReportCollectionFactory().createReportCollection(HttpServiceBalancerStats.class),
+                new HttpServiceBalancerConfig()
+        );
 
         httpClient = new BalancingHttpClient(balancer,
                 new JettyHttpClient(new HttpClientConfig()
