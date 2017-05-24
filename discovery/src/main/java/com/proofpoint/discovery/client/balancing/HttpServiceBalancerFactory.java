@@ -22,6 +22,7 @@ import com.proofpoint.discovery.client.ForDiscoveryClient;
 import com.proofpoint.discovery.client.ServiceDescriptorsUpdater;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.node.NodeInfo;
@@ -55,15 +56,25 @@ public final class HttpServiceBalancerFactory
         this.reportCollectionFactory = requireNonNull(reportCollectionFactory, "reportCollectionFactory is null");
     }
 
+    /**
+     * @deprecated Use {@link #createHttpServiceBalancer(String, ServiceSelectorConfig, HttpServiceBalancerConfig, NodeInfo)}.
+     */
+    @Deprecated
     public HttpServiceBalancer createHttpServiceBalancer(String type, ServiceSelectorConfig selectorConfig, NodeInfo nodeInfo)
+    {
+        return createHttpServiceBalancer(type, selectorConfig, new HttpServiceBalancerConfig(), nodeInfo);
+    }
+
+    public HttpServiceBalancer createHttpServiceBalancer(String type, ServiceSelectorConfig selectorConfig, HttpServiceBalancerConfig balancerConfig, NodeInfo nodeInfo)
     {
         requireNonNull(type, "type is null");
         requireNonNull(selectorConfig, "selectorConfig is null");
+        requireNonNull(balancerConfig, "balancerConfig is null");
 
         String pool = firstNonNull(selectorConfig.getPool(), nodeInfo.getPool());
         Map<String, String> tags = ImmutableMap.of("serviceType", type);
         HttpServiceBalancerStats httpServiceBalancerStats = reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags);
-        HttpServiceBalancerImpl balancer = new HttpServiceBalancerImpl(format("type=[%s], pool=[%s]", type, pool), httpServiceBalancerStats);
+        HttpServiceBalancerImpl balancer = new HttpServiceBalancerImpl(format("type=[%s], pool=[%s]", type, pool), httpServiceBalancerStats, balancerConfig);
         reportExporter.export(balancer, false, "ServiceClient", tags);
         ServiceDescriptorsUpdater updater = new ServiceDescriptorsUpdater(new HttpServiceBalancerListenerAdapter(balancer), type, selectorConfig, nodeInfo, lookupClient, executor);
         updater.start();

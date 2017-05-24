@@ -20,11 +20,15 @@ import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableSet;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats.Status;
 import com.proofpoint.stats.MaxGauge;
+import com.proofpoint.units.Duration;
 import org.weakref.jmx.Nested;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -32,35 +36,55 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class HttpServiceBalancerImpl
         implements HttpServiceBalancer
 {
+    private static final InstanceState INSTANCE_STATE_WORST = new InstanceState(Liveness.DEAD, Integer.MAX_VALUE);
+    private static final InstanceState INSTANCE_STATE_MISSING = new InstanceState(Liveness.ALIVE, 0);
+    private static final Duration ZERO_DURATION = new Duration(0, SECONDS);
     private final AtomicReference<Set<URI>> httpUris = new AtomicReference<>((Set<URI>) ImmutableSet.<URI>of());
-    private final Map<URI, Integer> concurrentAttempts = new HashMap<>();
+
+    @GuardedBy("uriStates")
+    private final Map<URI, InstanceState> uriStates = new HashMap<>();
     private final String description;
     private final HttpServiceBalancerStats httpServiceBalancerStats;
+    private final int consecutiveFailures;
+    private final BackoffPolicy backoffPolicy;
     private final Ticker ticker;
     private final MaxGauge concurrency = new MaxGauge();
 
-    public HttpServiceBalancerImpl(String description, HttpServiceBalancerStats httpServiceBalancerStats)
+    public HttpServiceBalancerImpl(String description, HttpServiceBalancerStats httpServiceBalancerStats, HttpServiceBalancerConfig config)
     {
-        this(description, httpServiceBalancerStats, Ticker.systemTicker());
+        this(description, httpServiceBalancerStats, config, Ticker.systemTicker());
     }
 
-    HttpServiceBalancerImpl(String description, HttpServiceBalancerStats httpServiceBalancerStats, Ticker ticker)
+    /**
+     * @deprecated Use {@link #HttpServiceBalancerImpl(String, HttpServiceBalancerStats, HttpServiceBalancerConfig)}
+     */
+    @Deprecated
+    public HttpServiceBalancerImpl(String description, HttpServiceBalancerStats httpServiceBalancerStats)
     {
-        this.description = checkNotNull(description, "description is null");
-        this.httpServiceBalancerStats = checkNotNull(httpServiceBalancerStats, "httpServiceBalancerStats is null");
-        this.ticker = checkNotNull(ticker, "ticker is null");
+        this(description, httpServiceBalancerStats, new HttpServiceBalancerConfig(), Ticker.systemTicker());
+    }
+
+    HttpServiceBalancerImpl(String description, HttpServiceBalancerStats httpServiceBalancerStats, HttpServiceBalancerConfig config, Ticker ticker)
+    {
+        this.description = requireNonNull(description, "description is null");
+        this.httpServiceBalancerStats = requireNonNull(httpServiceBalancerStats, "httpServiceBalancerStats is null");
+        consecutiveFailures = requireNonNull(config, "config is null").getConsecutiveFailures();
+        backoffPolicy = new DecorrelatedJitteredBackoffPolicy(config.getMinBackoff(), config.getMaxBackoff());
+        this.ticker = requireNonNull(ticker, "ticker is null");
     }
 
     @Override
     public HttpServiceAttempt createAttempt()
     {
-        return new HttpServiceAttemptImpl(ImmutableSet.<URI>of());
+        return new HttpServiceAttemptImpl(ImmutableSet.of());
     }
 
     @Beta
@@ -79,11 +103,11 @@ public class HttpServiceBalancerImpl
 
         HttpServiceAttemptImpl(Set<URI> attempted)
         {
-            ArrayList<URI> httpUris = new ArrayList<>(HttpServiceBalancerImpl.this.httpUris.get());
+            Set<URI> httpUris = new HashSet<>(HttpServiceBalancerImpl.this.httpUris.get());
             httpUris.removeAll(attempted);
 
             if (httpUris.isEmpty()) {
-                httpUris = new ArrayList<>(HttpServiceBalancerImpl.this.httpUris.get());
+                httpUris = HttpServiceBalancerImpl.this.httpUris.get();
                 attempted = ImmutableSet.of();
 
                 if (httpUris.isEmpty()) {
@@ -91,24 +115,43 @@ public class HttpServiceBalancerImpl
                 }
             }
 
-            int leastConcurrent = Integer.MAX_VALUE;
-            ArrayList<URI> leastUris = new ArrayList<>();
-            synchronized (concurrentAttempts) {
-                for (URI uri : httpUris) {
-                    int uriConcurrent = firstNonNull(concurrentAttempts.get(uri), 0);
-                    if (uriConcurrent < leastConcurrent) {
-                        leastConcurrent = uriConcurrent;
-                        leastUris = new ArrayList<>(ImmutableSet.of(uri));
+            InstanceState bestState = INSTANCE_STATE_WORST;
+            List<URI> leastUris = new ArrayList<>();
+            synchronized (uriStates) {
+                long now = ticker.read();
+                for (;;) {
+                    for (URI uri : httpUris) {
+                        InstanceState uriState = firstNonNull(uriStates.get(uri), INSTANCE_STATE_MISSING);
+                        if (uriState.liveness == Liveness.DEAD && uriState.deadUntil <= now) {
+                            uriState.liveness = Liveness.PROBING;
+                        }
+                        int comparison = uriState.compareTo(bestState);
+                        if (comparison < 0) {
+                            bestState = uriState;
+                            leastUris = new ArrayList<>(ImmutableSet.of(uri));
+                        }
+                        else if (comparison == 0) {
+                            leastUris.add(uri);
+                        }
                     }
-                    else if (uriConcurrent == leastConcurrent) {
-                        leastUris.add(uri);
+
+                    if (bestState.liveness != Liveness.DEAD || attempted.isEmpty()) {
+                        break;
                     }
+
+                    httpUris = HttpServiceBalancerImpl.this.httpUris.get();
+                    attempted = ImmutableSet.of();
                 }
 
                 uri = leastUris.get(ThreadLocalRandom.current().nextInt(0, leastUris.size()));
-                concurrentAttempts.put(uri, leastConcurrent + 1);
-                if (leastConcurrent == concurrency.get()) {
-                    concurrency.update(leastConcurrent + 1);
+
+                InstanceState uriState = uriStates.computeIfAbsent(uri, k -> new InstanceState(Liveness.ALIVE, 0));
+                if (uriState.liveness == Liveness.PROBING && uriState.concurrency == 0) {
+                    httpServiceBalancerStats.probe(uri).add(1);
+                }
+
+                if (uriState.concurrency++ == concurrency.get()) {
+                    concurrency.update(uriState.concurrency);
                 }
             }
 
@@ -125,14 +168,14 @@ public class HttpServiceBalancerImpl
         @Override
         public void markGood()
         {
-            decrementConcurrency();
+            decrementConcurrency(false);
             httpServiceBalancerStats.requestTime(uri, Status.SUCCESS).add(ticker.read() - startTick, TimeUnit.NANOSECONDS);
         }
 
         @Override
         public void markBad(String failureCategory)
         {
-            decrementConcurrency();
+            decrementConcurrency(true);
             httpServiceBalancerStats.requestTime(uri, Status.FAILURE).add(ticker.read() - startTick, TimeUnit.NANOSECONDS);
             httpServiceBalancerStats.failure(uri, failureCategory).add(1);
         }
@@ -140,34 +183,38 @@ public class HttpServiceBalancerImpl
         @Override
         public void markBad(String failureCategory, String handlerCategory)
         {
-            decrementConcurrency();
+            decrementConcurrency(true);
             httpServiceBalancerStats.requestTime(uri, Status.FAILURE).add(ticker.read() - startTick, TimeUnit.NANOSECONDS);
             httpServiceBalancerStats.failure(uri, failureCategory, handlerCategory).add(1);
         }
 
-        private void decrementConcurrency()
+        private void decrementConcurrency(boolean isFailure)
         {
             checkState(inProgress, "is in progress");
             inProgress = false;
-            synchronized (concurrentAttempts) {
-                Integer uriConcurrent = concurrentAttempts.get(uri);
-                if (uriConcurrent == null || uriConcurrent <= 1) {
-                    concurrentAttempts.remove(uri);
-                    if (concurrentAttempts.isEmpty()) {
+            synchronized (uriStates) {
+                InstanceState uriState = uriStates.get(uri);
+
+                uriState.liveness.mark(isFailure, uriState, this, HttpServiceBalancerImpl.this);
+                int oldConcurrency = uriState.concurrency;
+                if (oldConcurrency > 0) {
+                    --uriState.concurrency;
+                }
+
+                if (oldConcurrency == 1 && !isFailure && uriState.liveness == Liveness.ALIVE) {
+                    uriStates.remove(uri);
+                    if (uriStates.isEmpty()) {
                         concurrency.update(0);
+                        return;
                     }
                 }
-                else {
-                    concurrentAttempts.put(uri, uriConcurrent - 1);
-                    if (concurrency.get() == uriConcurrent) {
-                        for (Integer concurrent : concurrentAttempts.values()) {
-                            if (uriConcurrent.equals(concurrent)) {
-                                ++uriConcurrent;
-                                break;
-                            }
+                if (concurrency.get() == oldConcurrency) {
+                    for (InstanceState instanceState : uriStates.values()) {
+                        if (oldConcurrency == instanceState.concurrency) {
+                            return;
                         }
-                        concurrency.update(uriConcurrent - 1);
                     }
+                    concurrency.update(oldConcurrency - 1);
                 }
             }
         }
@@ -188,5 +235,96 @@ public class HttpServiceBalancerImpl
     public MaxGauge getConcurrency()
     {
         return concurrency;
+    }
+
+    private static class InstanceState
+        implements Comparable<InstanceState>
+    {
+        Liveness liveness;
+        int concurrency;
+        int numFailures = 0;
+        BackoffPolicy backoffPolicy;
+        Duration lastBackoff;
+        long deadUntil;
+
+        public InstanceState(Liveness liveness, int concurrency)
+        {
+            this.liveness = liveness;
+            this.concurrency = concurrency;
+        }
+
+        @Override
+        public int compareTo(InstanceState that)
+        {
+            if (liveness == Liveness.DEAD || (liveness == Liveness.PROBING && concurrency > 0)) {
+                if (that.liveness == Liveness.DEAD || (that.liveness == Liveness.PROBING && that.concurrency > 0)) {
+                    return Integer.compare(concurrency, that.concurrency);
+                }
+                return 1;
+            }
+            if (that.liveness == Liveness.DEAD || (that.liveness == Liveness.PROBING && that.concurrency > 0)) {
+                return -1;
+            }
+            return Integer.compare(concurrency, that.concurrency);
+        }
+    }
+
+    private enum Liveness
+    {
+        ALIVE {
+            @Override
+            public void mark(boolean isFailure, InstanceState uriState, HttpServiceAttemptImpl attempt, HttpServiceBalancerImpl balancer)
+            {
+                if (isFailure) {
+                    if (++uriState.numFailures >= balancer.consecutiveFailures) {
+                        uriState.liveness = DEAD;
+                        uriState.backoffPolicy = balancer.backoffPolicy;
+                        uriState.lastBackoff = uriState.backoffPolicy.backoff(ZERO_DURATION);
+                        uriState.deadUntil = balancer.ticker.read() + uriState.lastBackoff.roundTo(NANOSECONDS);
+                        balancer.httpServiceBalancerStats.removal(attempt.uri).add(uriState.lastBackoff);
+                    }
+                }
+                else {
+                    uriState.numFailures = 0;
+                }
+            }
+        },
+
+        DEAD {
+            @Override
+            public void mark(boolean isFailure, InstanceState uriState, HttpServiceAttemptImpl attempt, HttpServiceBalancerImpl balancer)
+            {
+                if (!isFailure) {
+                    uriState.liveness = ALIVE;
+                    uriState.numFailures = 0;
+                    uriState.backoffPolicy = null;
+                    uriState.lastBackoff = null;
+                    balancer.httpServiceBalancerStats.revival(attempt.uri).add(1);
+                }
+            }
+        },
+
+        PROBING {
+            @Override
+            public void mark(boolean isFailure, InstanceState uriState, HttpServiceAttemptImpl attempt, HttpServiceBalancerImpl balancer)
+            {
+                if (isFailure) {
+                    uriState.liveness = DEAD;
+                    uriState.backoffPolicy = uriState.backoffPolicy.nextAttempt();
+                    uriState.lastBackoff = uriState.backoffPolicy.backoff(uriState.lastBackoff);
+                    uriState.deadUntil = balancer.ticker.read() + uriState.lastBackoff.roundTo(NANOSECONDS);
+                    balancer.httpServiceBalancerStats.removal(attempt.uri).add(uriState.lastBackoff);
+                }
+                else {
+                    uriState.liveness = ALIVE;
+                    uriState.numFailures = 0;
+                    uriState.backoffPolicy = null;
+                    uriState.lastBackoff = null;
+                    balancer.httpServiceBalancerStats.revival(attempt.uri).add(1);
+                }
+            }
+        };
+
+        public abstract void mark(boolean isFailure, InstanceState uriState, HttpServiceAttemptImpl attempt, HttpServiceBalancerImpl balancer);
     }
 }

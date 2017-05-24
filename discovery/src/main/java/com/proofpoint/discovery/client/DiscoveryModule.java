@@ -30,6 +30,7 @@ import com.proofpoint.discovery.client.announce.HttpDiscoveryAnnouncementClient;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerFactory;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.reporting.ReportCollectionFactory;
@@ -66,6 +67,8 @@ public class DiscoveryModule
         binder.bind(ServiceInventory.class).asEagerSingleton();
         bindConfig(binder).to(ServiceInventoryConfig.class);
 
+        bindConfig(binder).annotatedWith(ForDiscoveryClient.class).prefixedWith("service-balancer.discovery").to(HttpServiceBalancerConfig.class);
+
         // for legacy configurations
         bindConfig(binder).to(DiscoveryClientConfig.class);
 
@@ -99,18 +102,28 @@ public class DiscoveryModule
 
     @Provides
     @ServiceType("discovery")
-    public HttpServiceBalancer createHttpServiceBalancer(ReportExporter reportExporter, ReportCollectionFactory reportCollectionFactory)
+    public HttpServiceBalancer createHttpServiceBalancer(
+            ReportExporter reportExporter,
+            ReportCollectionFactory reportCollectionFactory,
+            @ForDiscoveryClient HttpServiceBalancerConfig config)
     {
-        return getHttpServiceBalancerImpl(reportExporter, reportCollectionFactory);
+        return getHttpServiceBalancerImpl(reportExporter, reportCollectionFactory, config);
     }
 
     @ServiceType("discovery")
     @Provides
-    public synchronized HttpServiceBalancerImpl getHttpServiceBalancerImpl(ReportExporter reportExporter, ReportCollectionFactory reportCollectionFactory)
+    public synchronized HttpServiceBalancerImpl getHttpServiceBalancerImpl(
+            ReportExporter reportExporter,
+            ReportCollectionFactory reportCollectionFactory,
+            @ForDiscoveryClient HttpServiceBalancerConfig config)
     {
         if (discoveryBalancer == null) {
             Map<String, String> tags = ImmutableMap.of("serviceType", "discovery");
-            discoveryBalancer = new HttpServiceBalancerImpl("discovery", reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags));
+            discoveryBalancer = new HttpServiceBalancerImpl(
+                    "discovery",
+                    reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags),
+                    config
+            );
             reportExporter.export(discoveryBalancer, false, "ServiceClient", tags);
         }
         return discoveryBalancer;

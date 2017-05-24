@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static com.proofpoint.testing.Assertions.assertLessThan;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -50,7 +51,7 @@ public class TestHttpServiceBalancerImpl
     {
         httpServiceBalancerStats = mock(HttpServiceBalancerStats.class);
         testingTicker = new TestingTicker();
-        httpServiceBalancer = new HttpServiceBalancerImpl("type=[apple], pool=[pool]", httpServiceBalancerStats, testingTicker);
+        httpServiceBalancer = new HttpServiceBalancerImpl("type=[apple], pool=[pool]", httpServiceBalancerStats, new HttpServiceBalancerConfig().setConsecutiveFailures(5), testingTicker);
     }
 
     @Test(expectedExceptions = ServiceUnavailableException.class)
@@ -63,7 +64,7 @@ public class TestHttpServiceBalancerImpl
     public void testStartedEmpty()
             throws Exception
     {
-        httpServiceBalancer.updateHttpUris(ImmutableSet.<URI>of());
+        httpServiceBalancer.updateHttpUris(ImmutableSet.of());
 
         httpServiceBalancer.createAttempt();
     }
@@ -125,13 +126,16 @@ public class TestHttpServiceBalancerImpl
         SparseTimeStat successTimeStat = mock(SparseTimeStat.class);
         when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.SUCCESS))).thenReturn(successTimeStat);
         SparseCounterStat counterStat = mock(SparseCounterStat.class);
-        when(httpServiceBalancerStats.failure(any(URI.class), eq("testing failure"))).thenReturn(counterStat);
+        when(httpServiceBalancerStats.failure(any(URI.class), eq("testing failure"), eq("testing category"))).thenReturn(counterStat);
 
         httpServiceBalancer.updateHttpUris(ImmutableSet.of(firstUri));
 
         HttpServiceAttempt attempt = httpServiceBalancer.createAttempt();
         assertEquals(attempt.getUri(), firstUri);
-        attempt.markBad("testing failure");
+        attempt.markBad("testing failure", "testing category");
+
+        verify(httpServiceBalancerStats).requestTime(firstUri, Status.FAILURE);
+        verify(httpServiceBalancerStats).failure(firstUri, "testing failure", "testing category");
 
         httpServiceBalancer.updateHttpUris(ImmutableSet.of(firstUri, secondUri));
         attempt = attempt.next();
@@ -217,5 +221,283 @@ public class TestHttpServiceBalancerImpl
             attempt3.markGood();
             attempt4.markGood();
         }
+    }
+
+    @Test
+    public void testPersistentlyFailingInstanceRemoved()
+            throws Exception
+    {
+        URI goodUri = URI.create("http://good.example.com");
+        ImmutableSet<URI> expected = ImmutableSet.of(goodUri, URI.create("https://bad.example.com"));
+        SparseTimeStat failureTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.FAILURE))).thenReturn(failureTimeStat);
+        SparseTimeStat successTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.SUCCESS))).thenReturn(successTimeStat);
+        SparseCounterStat counterStat = mock(SparseCounterStat.class);
+        when(httpServiceBalancerStats.failure(any(URI.class), eq("testing failure"))).thenReturn(counterStat);
+        SparseTimeStat removalStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(removalStat);
+
+        httpServiceBalancer.updateHttpUris(expected);
+
+        int goodFailed = 0;
+        int badFailed = 0;
+        for (int i = 0; i < 10_000; i++) {
+            HttpServiceAttempt attempt = httpServiceBalancer.createAttempt();
+            if (attempt.getUri().equals(goodUri)) {
+                if (goodFailed == 4) {
+                    goodFailed = 0;
+                    attempt.markGood();
+                }
+                else {
+                    goodFailed++;
+                    attempt.markBad("testing failure");
+                }
+            }
+            else {
+                assertLessThan(badFailed, 5);
+                badFailed++;
+                attempt.markBad("testing failure");
+            }
+        }
+        assertEquals(badFailed, 5);
+
+        verify(removalStat).add(any());
+    }
+
+    @Test
+    public void testRemovedInstanceProbeSucceeds()
+            throws Exception
+    {
+        URI goodUri = URI.create("http://good.example.com");
+        URI badUri = URI.create("https://bad.example.com");
+        ImmutableSet<URI> expected = ImmutableSet.of(goodUri, badUri);
+        SparseTimeStat failureTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.FAILURE))).thenReturn(failureTimeStat);
+        SparseTimeStat successTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.SUCCESS))).thenReturn(successTimeStat);
+        SparseCounterStat counterStat = mock(SparseCounterStat.class);
+        when(httpServiceBalancerStats.failure(any(URI.class), eq("testing failure"))).thenReturn(counterStat);
+        SparseTimeStat removalStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(removalStat);
+        SparseCounterStat probeStat = mock(SparseCounterStat.class);
+        when(httpServiceBalancerStats.probe(URI.create("https://bad.example.com"))).thenReturn(probeStat);
+        SparseCounterStat revivalStat = mock(SparseCounterStat.class);
+        when(httpServiceBalancerStats.revival(URI.create("https://bad.example.com"))).thenReturn(revivalStat);
+
+        httpServiceBalancer.updateHttpUris(expected);
+
+        // Increase concurrency on goodUri to 1
+        HttpServiceAttempt attempt = httpServiceBalancer.createAttempt();
+        while (attempt.getUri().equals(badUri)) {
+            attempt.markGood();
+            attempt = httpServiceBalancer.createAttempt();
+        }
+
+        // Mark badUri as down
+        for (int i = 0; i < 5; i++) {
+            attempt = httpServiceBalancer.createAttempt();
+            assertEquals(attempt.getUri(), badUri);
+            attempt.markBad("testing failure");
+        }
+        verify(removalStat).add(any());
+
+        testingTicker.elapseTime(10, TimeUnit.SECONDS);
+
+        attempt = httpServiceBalancer.createAttempt();
+        assertEquals(attempt.getUri(), badUri);
+        verify(probeStat).add(1);
+        verifyNoMoreInteractions(revivalStat);
+        attempt.markGood();
+        verify(revivalStat).add(1);
+
+        for (int i = 0; i < 10_000; i++) {
+            attempt = httpServiceBalancer.createAttempt();
+            assertEquals(attempt.getUri(), badUri);
+            attempt.markGood();
+        }
+        verifyNoMoreInteractions(removalStat);
+        verifyNoMoreInteractions(probeStat);
+        verifyNoMoreInteractions(revivalStat);
+    }
+
+    @Test
+    public void testRemovedInstanceProbeFails()
+            throws Exception
+    {
+        URI goodUri = URI.create("http://good.example.com");
+        URI badUri = URI.create("https://bad.example.com");
+        ImmutableSet<URI> expected = ImmutableSet.of(goodUri, badUri);
+        SparseTimeStat failureTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.FAILURE))).thenReturn(failureTimeStat);
+        SparseTimeStat successTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.SUCCESS))).thenReturn(successTimeStat);
+        SparseCounterStat counterStat = mock(SparseCounterStat.class);
+        when(httpServiceBalancerStats.failure(any(URI.class), eq("testing failure"))).thenReturn(counterStat);
+        SparseTimeStat removalStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(removalStat);
+        SparseCounterStat probeStat = mock(SparseCounterStat.class);
+        when(httpServiceBalancerStats.probe(URI.create("https://bad.example.com"))).thenReturn(probeStat);
+        httpServiceBalancer.updateHttpUris(expected);
+
+        // Increase concurrency on goodUri to 1
+        HttpServiceAttempt attempt = httpServiceBalancer.createAttempt();
+        while (attempt.getUri().equals(badUri)) {
+            attempt.markGood();
+            attempt = httpServiceBalancer.createAttempt();
+        }
+
+        // Mark badUri as down
+        for (int i = 0; i < 5; i++) {
+            attempt = httpServiceBalancer.createAttempt();
+            assertEquals(attempt.getUri(), badUri);
+            attempt.markBad("testing failure");
+        }
+        verify(removalStat).add(any());
+
+        testingTicker.elapseTime(10, TimeUnit.SECONDS);
+
+        attempt = httpServiceBalancer.createAttempt();
+        assertEquals(attempt.getUri(), badUri);
+        verify(probeStat).add(1);
+        attempt.markBad("testing failure");
+        verify(removalStat, times(2)).add(any());
+
+        for (int i = 0; i < 10_000; i++) {
+            attempt = httpServiceBalancer.createAttempt();
+            assertEquals(attempt.getUri(), goodUri);
+            attempt.markGood();
+        }
+        verifyNoMoreInteractions(removalStat);
+        verifyNoMoreInteractions(probeStat);
+    }
+
+    @Test
+    public void testRemovedInstanceSucceeds()
+            throws Exception
+    {
+        URI goodUri = URI.create("http://good.example.com");
+        URI badUri = URI.create("https://bad.example.com");
+        ImmutableSet<URI> expected = ImmutableSet.of(goodUri, badUri);
+        SparseTimeStat failureTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.FAILURE))).thenReturn(failureTimeStat);
+        SparseTimeStat successTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.SUCCESS))).thenReturn(successTimeStat);
+        SparseCounterStat counterStat = mock(SparseCounterStat.class);
+        when(httpServiceBalancerStats.failure(any(URI.class), eq("testing failure"))).thenReturn(counterStat);
+        SparseTimeStat removalStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(removalStat);
+        SparseCounterStat revivalStat = mock(SparseCounterStat.class);
+        when(httpServiceBalancerStats.revival(URI.create("https://bad.example.com"))).thenReturn(revivalStat);
+
+        httpServiceBalancer.updateHttpUris(expected);
+
+        // Increase concurrency on goodUri to 1
+        HttpServiceAttempt attempt = httpServiceBalancer.createAttempt();
+        while (attempt.getUri().equals(badUri)) {
+            attempt.markGood();
+            attempt = httpServiceBalancer.createAttempt();
+        }
+
+        HttpServiceAttempt oldAttemptOnBad = httpServiceBalancer.createAttempt();
+        assertEquals(oldAttemptOnBad.getUri(), badUri);
+
+        // Increase concurrency on goodUri to 2
+        attempt = httpServiceBalancer.createAttempt();
+        while (attempt.getUri().equals(badUri)) {
+            attempt.markGood();
+            attempt = httpServiceBalancer.createAttempt();
+        }
+
+        // Mark badUri as down
+        for (int i = 0; i < 5; i++) {
+            attempt = httpServiceBalancer.createAttempt();
+            assertEquals(attempt.getUri(), badUri);
+            attempt.markBad("testing failure");
+        }
+        verify(removalStat).add(any());
+
+        attempt = httpServiceBalancer.createAttempt();
+        assertEquals(attempt.getUri(), goodUri);
+        attempt.markGood();
+
+        oldAttemptOnBad.markGood();
+        verify(revivalStat).add(1);
+
+        for (int i = 0; i < 10_000; i++) {
+            attempt = httpServiceBalancer.createAttempt();
+            assertEquals(attempt.getUri(), badUri);
+            attempt.markGood();
+        }
+        verifyNoMoreInteractions(removalStat);
+        verifyNoMoreInteractions(revivalStat);
+    }
+
+    @Test
+    public void testMinimizeConcurrentAvoidsRemovedInstances()
+            throws Exception
+    {
+        URI goodUri1 = URI.create("http://good1.example.com");
+        URI goodUri2 = URI.create("http://good2.example.com");
+        URI badUri = URI.create("https://bad.example.com");
+        ImmutableSet<URI> expected = ImmutableSet.of(goodUri1, goodUri2, badUri);
+        SparseTimeStat failureTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.FAILURE))).thenReturn(failureTimeStat);
+        SparseTimeStat successTimeStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.requestTime(any(URI.class), eq(Status.SUCCESS))).thenReturn(successTimeStat);
+        SparseCounterStat counterStat = mock(SparseCounterStat.class);
+        when(httpServiceBalancerStats.failure(any(URI.class), eq("testing failure"))).thenReturn(counterStat);
+        SparseTimeStat badRemovalStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(badRemovalStat);
+        SparseTimeStat good1RemovalStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.removal(URI.create("http://good1.example.com"))).thenReturn(good1RemovalStat);
+        SparseTimeStat good2RemovalStat = mock(SparseTimeStat.class);
+        when(httpServiceBalancerStats.removal(URI.create("http://good2.example.com"))).thenReturn(good2RemovalStat);
+
+        httpServiceBalancer.updateHttpUris(expected);
+        // Increase concurrency on goodUris to 1
+        HttpServiceAttempt attempt;
+        for (int i = 0; i < 2; i++) {
+            attempt = httpServiceBalancer.createAttempt();
+            while (attempt.getUri().equals(badUri)) {
+                attempt.markGood();
+                attempt = httpServiceBalancer.createAttempt();
+            }
+        }
+
+        // Mark badUri as down
+        for (int i = 0; i < 5; i++) {
+            attempt = httpServiceBalancer.createAttempt();
+            assertEquals(attempt.getUri(), badUri);
+            attempt.markBad("testing failure");
+        }
+        verify(badRemovalStat).add(any());
+
+        HttpServiceAttempt attempt1 = httpServiceBalancer.createAttempt();
+        HttpServiceAttempt attempt2 = httpServiceBalancer.createAttempt();
+        for (int i = 0; i < 5; i++) {
+            assertNotEquals(attempt1.getUri(), badUri);
+            assertNotEquals(attempt2.getUri(), badUri);
+            assertNotEquals(attempt2.getUri(), attempt1.getUri(), "concurrent attempt");
+            attempt1.markBad("testing failure");
+            attempt1 = attempt1.next();
+            attempt2.markBad("testing failure");
+            attempt2 = attempt2.next();
+        }
+        verify(good1RemovalStat).add(any());
+        verify(good2RemovalStat).add(any());
+
+        for (int i = 0; i < 5; i++) {
+            // All are marked dead, so badUri can be in the mix.
+            // The balancer can repeat URIs in this case. assertNotEquals(attempt2.getUri(), attempt1.getUri(), "concurrent attempt on " + attempt1.getUri());
+            // This test is asserting that we still give out attempts when all URIs are bad.
+            attempt1.markBad("testing failure");
+            attempt1 = attempt1.next();
+            attempt2.markBad("testing failure");
+            attempt2 = attempt2.next();
+        }
+        verifyNoMoreInteractions(badRemovalStat);
+        verifyNoMoreInteractions(good1RemovalStat);
+        verifyNoMoreInteractions(good2RemovalStat);
     }
 }

@@ -21,12 +21,13 @@ import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.node.NodeInfo;
 
 import java.util.Objects;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
+import static java.util.Objects.requireNonNull;
 
 public final class HttpServiceBalancerProvider
         implements Provider<HttpServiceBalancer>
@@ -38,41 +39,42 @@ public final class HttpServiceBalancerProvider
 
     public HttpServiceBalancerProvider(String type)
     {
-        checkNotNull(type, "type is null");
+        requireNonNull(type, "type is null");
         this.type = type;
     }
 
     @Inject
     public void setInjector(Injector injector)
     {
-        checkNotNull(injector, "injector is null");
+        requireNonNull(injector, "injector is null");
         this.injector = injector;
     }
 
     @Inject
     public void setServiceBalancerFactory(HttpServiceBalancerFactory serviceBalancerFactory)
     {
-        checkNotNull(serviceBalancerFactory, "serviceBalancerFactory is null");
+        requireNonNull(serviceBalancerFactory, "serviceBalancerFactory is null");
         this.serviceBalancerFactory = serviceBalancerFactory;
     }
 
     @Inject
     public void setNodeInfo(NodeInfo nodeInfo)
     {
-        checkNotNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
         this.nodeInfo = nodeInfo;
     }
 
     @Override
     public HttpServiceBalancer get()
     {
-        checkNotNull(serviceBalancerFactory, "serviceBalancerFactory is null");
-        checkNotNull(injector, "injector is null");
-        checkNotNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(serviceBalancerFactory, "serviceBalancerFactory is null");
+        requireNonNull(injector, "injector is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
 
         ServiceSelectorConfig selectorConfig = injector.getInstance(Key.get(ServiceSelectorConfig.class, serviceType(type)));
+        HttpServiceBalancerConfig balancerConfig = injector.getInstance(Key.get(HttpServiceBalancerConfig.class, serviceType(type)));
 
-        HttpServiceBalancer serviceBalancer = serviceBalancerFactory.createHttpServiceBalancer(type, selectorConfig, nodeInfo);
+        HttpServiceBalancer serviceBalancer = serviceBalancerFactory.createHttpServiceBalancer(type, selectorConfig, balancerConfig, nodeInfo);
         return serviceBalancer;
     }
 

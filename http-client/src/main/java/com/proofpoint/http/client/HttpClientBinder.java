@@ -26,6 +26,7 @@ import com.proofpoint.http.client.balancing.BalancingHttpClientBindingBuilder;
 import com.proofpoint.http.client.balancing.BalancingHttpClientConfig;
 import com.proofpoint.http.client.balancing.ForBalancingHttpClient;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import org.weakref.jmx.ObjectNameBuilder;
 
 import java.lang.annotation.Annotation;
@@ -157,8 +158,10 @@ public class HttpClientBinder
         requireNonNull(baseUris, "baseUris is null");
         checkArgument(!baseUris.isEmpty(), "baseUris is empty");
 
+        bindConfig(binder).annotatedWith(annotation).prefixedWith("service-client." + annotation.getSimpleName()).to(HttpServiceBalancerConfig.class);
         PrivateBinder privateBinder = binder.newPrivateBinder();
-        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).toProvider(new StaticHttpServiceBalancerProvider(annotation.getSimpleName(), baseUris));
+        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
+                .toProvider(new StaticHttpServiceBalancerProvider(annotation.getSimpleName(), baseUris, Key.get(HttpServiceBalancerConfig.class, annotation)));
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation);
     }
 
@@ -204,9 +207,11 @@ public class HttpClientBinder
      *
      * See the EDSL examples at {@link HttpClientBinder}.
      *
-     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param name The configuration prefix for the HttpClient. Should be lowercase hypen-separated.
      * @param annotation The binding annotation.
-     * @param serviceName The name of the service being balanced. Used in metrics. Ordinarily this is the value of the binding annotation.
+     * @param serviceName The name of the service being balanced.
+     * Used in metrics and in the configuration prefix for the service balancer.
+     * Ordinarily this is the value of the binding annotation.
      * @param baseUris The set of {@link URI} prefixes to balance across.
      */
     public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Annotation annotation, String serviceName, Set<URI> baseUris)
@@ -216,8 +221,10 @@ public class HttpClientBinder
         requireNonNull(baseUris, "baseUris is null");
         checkArgument(!baseUris.isEmpty(), "baseUris is empty");
 
+        bindConfig(binder).annotatedWith(annotation).prefixedWith("service-client." + serviceName).to(HttpServiceBalancerConfig.class);
         PrivateBinder privateBinder = binder.newPrivateBinder();
-        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).toProvider(new StaticHttpServiceBalancerProvider(serviceName, baseUris));
+        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
+                .toProvider(new StaticHttpServiceBalancerProvider(serviceName, baseUris, Key.get(HttpServiceBalancerConfig.class, annotation)));
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
     }
 
