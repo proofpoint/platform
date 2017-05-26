@@ -10,6 +10,11 @@ Platform 1.56
 
   We added Level.TRACE and Level.ALL log levels.
 
+* JAX-RS
+
+  We added JaxrsModule.adminOnlyJaxrsModule() for servers that want to provide
+  their own custom servlet but still have the admin port JAX-RS services.
+
 Platform 1.55
 
 * RPM packaging
