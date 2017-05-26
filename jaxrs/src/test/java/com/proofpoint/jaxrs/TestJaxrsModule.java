@@ -1,13 +1,16 @@
 package com.proofpoint.jaxrs;
 
 import com.google.common.base.Supplier;
+import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.Provides;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
+import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.http.server.testing.TestingHttpServer;
 import com.proofpoint.http.server.testing.TestingHttpServerModule;
 import com.proofpoint.json.JsonModule;
@@ -19,6 +22,8 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
 import javax.inject.Inject;
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -28,11 +33,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
+import static com.proofpoint.jaxrs.JaxrsModule.adminOnlyJaxrsModule;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
 import static com.proofpoint.testing.Assertions.assertContains;
 import static org.testng.Assert.assertEquals;
@@ -190,7 +199,40 @@ public class TestJaxrsModule
                 .build();
         StringResponse response = client.execute(request, createStringResponseHandler());
         assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
-        assertEquals(response.getBody(), "Empty param");    }
+        assertEquals(response.getBody(), "Empty param");
+    }
+
+    @Test
+    public void testAdminOnly()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        new TestingNodeModule(),
+                        adminOnlyJaxrsModule(),
+                        new JsonModule(),
+                        new ReportingModule(),
+                        new TestingHttpServerModule(),
+                        new Module()
+                        {
+                            @Override
+                            public void configure(Binder binder)
+                            {
+                                binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
+                            }
+
+                            @Provides
+                            @TheServlet
+                            public Map<String, String> createTheServletParams()
+                            {
+                                return new HashMap<>();
+                            }
+                        })
+                .initialize();
+        lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+        server = injector.getInstance(TestingHttpServer.class);
+    }
+
 
     private void createServer(Module module, boolean queryParamsAsFormParams)
             throws Exception
@@ -269,5 +311,10 @@ public class TestJaxrsModule
         {
             return String.format("%s %s", request.getServletPath(), SECOND_INJECTED_MESSSAGE);
         }
+    }
+
+    private static class DummyServlet
+        extends HttpServlet
+    {
     }
 }

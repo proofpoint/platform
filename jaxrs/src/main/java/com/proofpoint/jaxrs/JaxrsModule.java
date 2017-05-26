@@ -42,6 +42,7 @@ import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.servlet.ServletProperties;
 
+import javax.annotation.Nullable;
 import javax.servlet.Servlet;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Application;
@@ -65,8 +66,7 @@ public class JaxrsModule
 {
     private static final Logger log = Logger.get(JaxrsModule.class);
 
-    private final boolean requireExplicitBindings;
-    private final AtomicReference<ServiceLocator> locatorReference = new AtomicReference<>();
+    private CommonJaxrsModule commonJaxrsModule;
 
     /**
      * @deprecated use {@link #explicitJaxrsModule()} and explicitly bind JAX-RS resources.
@@ -79,17 +79,24 @@ public class JaxrsModule
 
     private JaxrsModule(boolean requireExplicitBindings)
     {
-        this.requireExplicitBindings = requireExplicitBindings;
+        commonJaxrsModule = new CommonJaxrsModule(requireExplicitBindings);
     }
 
     public static JaxrsModule explicitJaxrsModule() {
         return new JaxrsModule(true);
     }
 
+    public static Module adminOnlyJaxrsModule()
+    {
+        return new AdminOnlyJaxrsModule();
+    }
+
     @Override
     public void configure(Binder binder)
     {
         binder.disableCircularProxies();
+
+        binder.install(commonJaxrsModule);
 
         binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(Key.get(ServletContainer.class));
         jaxrsBinder(binder).bind(JsonMapper.class);
@@ -100,113 +107,24 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(TimingResourceDynamicFeature.class);
         jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
         jaxrsBinder(binder).bind(InRotationResource.class);
-        jaxrsBinder(binder).bindInjectionProvider(ClientInfo.class).to(ClientInfoSupplier.class);
-        jaxrsBinder(binder).bindAdmin(ParsingExceptionMapper.class);
-        jaxrsBinder(binder).bindAdmin(QueryParamExceptionMapper.class);
-        jaxrsBinder(binder).bindAdmin(OverrideMethodFilter.class);
         jaxrsBinder(binder).bindAdmin(WadlResource.class);
-        jaxrsBinder(binder).bindAdmin(ThreadDumpResource.class);
 
         bindConfig(binder).to(JaxrsConfig.class);
-
-        newSetBinder(binder, Object.class, JaxrsResource.class).permitDuplicates();
-        newSetBinder(binder, JaxrsBinding.class, JaxrsResource.class).permitDuplicates();
-        newMapBinder(binder, new TypeLiteral<Class<?>>() {}, new TypeLiteral<Supplier<?>>() {}, JaxrsInjectionProvider.class);
     }
 
     @Provides
-    public static ServletContainer createServletContainer(ResourceConfig resourceConfig)
+    ResourceConfig createResourceConfig(
+            Application application,
+            @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap,
+            WadlResource wadlResource,
+            JaxrsConfig jaxrsConfig)
     {
-        return new ServletContainer(resourceConfig);
-    }
-
-    @Provides
-    public ResourceConfig createResourceConfig(Application application, @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap, WadlResource wadlResource, JaxrsConfig jaxrsConfig)
-    {
-        ResourceConfig config = ResourceConfig.forApplication(application);
-        config.setProperties(ImmutableMap.<String, String>builder()
-                .put(ServerProperties.WADL_FEATURE_DISABLE, "true")
-                .put(ServerProperties.LOCATION_HEADER_RELATIVE_URI_RESOLUTION_DISABLED, "true")
-                .put(ServletProperties.QUERY_PARAMS_AS_FORM_PARAMS_DISABLED,
-                        String.valueOf(!jaxrsConfig.isQueryParamsAsFormParams()))
-                .build());
-
-        config.register(MultiPartFeature.class);
-
-        config.register(new ContainerLifecycleListener()
-        {
-            @Override
-            public void onStartup(Container container)
-            {
-                ServiceLocator locator = container.getApplicationHandler().getServiceLocator();
-                locatorReference.set(locator);
-                wadlResource.setLocator(locator);
-            }
-
-            @Override
-            public void onReload(Container container)
-            {
-            }
-
-            @Override
-            public void onShutdown(Container container)
-            {
-            }
-        });
-
-        config.register(new AbstractBinder()
-        {
-            @Override
-            protected void configure()
-            {
-                for (final Entry<Class<?>, Supplier<?>> entry : supplierMap.entrySet()) {
-                    bindSupplier(entry.getKey(), entry.getValue());
-                }
-            }
-
-            @SuppressWarnings("unchecked")
-            private <T> void bindSupplier(Class<T> type, Supplier<?> supplier)
-            {
-                bindFactory(new InjectionProviderFactory<>(type, (Supplier<T>) supplier, locatorReference)).to(type);
-            }
-        });
-
-        return config;
-    }
-
-    @Provides
-    public Application createJaxRsApplication(@JaxrsResource Set<Object> jaxRsSingletons, @JaxrsResource Set<JaxrsBinding> jaxrsBinding, Injector injector)
-    {
-        // detect jax-rs services that are bound into Guice, but not explicitly exported
-        Set<Key<?>> missingBindings = new HashSet<>();
-        ImmutableSet.Builder<Object> singletons = ImmutableSet.builder();
-        jaxRsSingletons.stream()
-                .map(TimingWrapper::wrapIfAnnotatedResource)
-                .forEach(singletons::add);
-        while (injector != null) {
-            for (Entry<Key<?>, Binding<?>> entry : injector.getBindings().entrySet()) {
-                Key<?> key = entry.getKey();
-                if (isJaxRsBinding(key) && !jaxrsBinding.contains(new JaxrsBinding(key))) {
-                    if (requireExplicitBindings) {
-                        missingBindings.add(key);
-                    }
-                    else {
-                        log.warn("Jax-rs service %s is not explicitly bound using the JaxRsBinder", key);
-                        Object jaxRsSingleton = entry.getValue().getProvider().get();
-                        singletons.add(TimingWrapper.wrapIfAnnotatedResource(jaxRsSingleton));
-                    }
-                }
-            }
-            injector = injector.getParent();
-        }
-        checkState(!requireExplicitBindings || missingBindings.isEmpty(), "Jax-rs services must be explicitly bound using the JaxRsBinder: ", missingBindings);
-
-        return new JaxRsApplication(singletons.build());
+        return commonJaxrsModule.createResourceConfig(application, supplierMap, wadlResource, jaxrsConfig);
     }
 
     @Provides
     @TheServlet
-    public static Map<String, String> createTheServletParams()
+    static Map<String, String> createTheServletParams()
     {
         return new HashMap<>();
     }
@@ -218,33 +136,6 @@ public class JaxrsModule
             return false;
         }
         return isJaxRsType((Class<?>) type);
-    }
-
-    @Provides
-    @TheAdminServlet
-    public static Servlet createTheAdminServlet(@AdminJaxrsResource Set<Object> adminJaxRsSingletons, ObjectMapper objectMapper) {
-        // The admin servlet needs its own JsonMapper object so that it references
-        // the admin port's UriInfo
-        ImmutableSet.Builder<Object> singletons = ImmutableSet.builder();
-        singletons.addAll(adminJaxRsSingletons);
-        singletons.add(new JsonMapper(objectMapper));
-
-        Application application = new JaxRsApplication(singletons.build());
-        return new ServletContainer(ResourceConfig.forApplication(application));
-    }
-
-    @Provides
-    @TheAdminServlet
-    public static Map<String, String> createTheAdminServletParams()
-    {
-        return new HashMap<>();
-    }
-
-    @Provides
-    @JaxrsTicker
-    public static Ticker createTicker()
-    {
-        return Ticker.systemTicker();
     }
 
     private static boolean isJaxRsType(Class<?> type)
@@ -271,48 +162,216 @@ public class JaxrsModule
         return false;
     }
 
-    private static class JaxRsApplication
-            extends Application
+    private static class AdminOnlyJaxrsModule
+            implements Module
     {
-        private final Set<Object> jaxRsSingletons;
-
-        JaxRsApplication(Set<Object> jaxRsSingletons)
-        {
-            this.jaxRsSingletons = ImmutableSet.copyOf(jaxRsSingletons);
-        }
+        private CommonJaxrsModule commonJaxrsModule = new CommonJaxrsModule(true);
 
         @Override
-        public Set<Object> getSingletons()
+        public void configure(Binder binder)
         {
-            return jaxRsSingletons;
+            binder.install(commonJaxrsModule);
+        }
+
+        @Provides
+        ResourceConfig createResourceConfig(Application application, @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap)
+        {
+            return commonJaxrsModule.createResourceConfig(application, supplierMap, null, new JaxrsConfig().setQueryParamsAsFormParams(false));
         }
     }
 
-    private static class InjectionProviderFactory<T> implements Factory<T>
+    private static class CommonJaxrsModule
+            implements Module
     {
-        private final Supplier<? extends T> supplier;
-        private final AtomicReference<ServiceLocator> locatorReference;
+        private final boolean requireExplicitBindings;
+        private final AtomicReference<ServiceLocator> locatorReference = new AtomicReference<>();
 
-        InjectionProviderFactory(Class<T> type, Supplier<? extends T> supplier, AtomicReference<ServiceLocator> locatorReference)
+        private CommonJaxrsModule(boolean requireExplicitBindings)
         {
-            this.supplier = supplier;
-            this.locatorReference = locatorReference;
+            this.requireExplicitBindings = requireExplicitBindings;
         }
 
         @Override
-        public T provide()
+        public void configure(Binder binder)
         {
-            T object = supplier.get();
-            ServiceLocator locator = locatorReference.get();
-            locator.inject(object);
-            locator.postConstruct(object);
-            return object;
+            binder.disableCircularProxies();
+
+            jaxrsBinder(binder).bindInjectionProvider(ClientInfo.class).to(ClientInfoSupplier.class);
+            jaxrsBinder(binder).bindAdmin(ParsingExceptionMapper.class);
+            jaxrsBinder(binder).bindAdmin(QueryParamExceptionMapper.class);
+            jaxrsBinder(binder).bindAdmin(OverrideMethodFilter.class);
+            jaxrsBinder(binder).bindAdmin(ThreadDumpResource.class);
+
+            newSetBinder(binder, Object.class, JaxrsResource.class).permitDuplicates();
+            newSetBinder(binder, JaxrsBinding.class, JaxrsResource.class).permitDuplicates();
+            newMapBinder(binder, new TypeLiteral<Class<?>>() {}, new TypeLiteral<Supplier<?>>() {}, JaxrsInjectionProvider.class);
         }
 
-        @Override
-        public void dispose(T o)
+        @Provides
+        static ServletContainer createServletContainer(ResourceConfig resourceConfig)
         {
-            locatorReference.get().preDestroy(o);
+            return new ServletContainer(resourceConfig);
+        }
+
+        ResourceConfig createResourceConfig(
+                Application application,
+                @JaxrsInjectionProvider Map<Class<?>, Supplier<?>> supplierMap,
+                @Nullable WadlResource wadlResource,
+                JaxrsConfig jaxrsConfig)
+        {
+            ResourceConfig config = ResourceConfig.forApplication(application);
+            config.setProperties(ImmutableMap.<String, String>builder()
+                    .put(ServerProperties.WADL_FEATURE_DISABLE, "true")
+                    .put(ServerProperties.LOCATION_HEADER_RELATIVE_URI_RESOLUTION_DISABLED, "true")
+                    .put(ServletProperties.QUERY_PARAMS_AS_FORM_PARAMS_DISABLED,
+                            String.valueOf(!jaxrsConfig.isQueryParamsAsFormParams()))
+                    .build());
+
+            config.register(MultiPartFeature.class);
+
+            config.register(new ContainerLifecycleListener()
+            {
+                @Override
+                public void onStartup(Container container)
+                {
+                    ServiceLocator locator = container.getApplicationHandler().getServiceLocator();
+                    locatorReference.set(locator);
+                    if (wadlResource != null) {
+                        wadlResource.setLocator(locator);
+                    }
+                }
+
+                @Override
+                public void onReload(Container container)
+                {
+                }
+
+                @Override
+                public void onShutdown(Container container)
+                {
+                }
+            });
+
+            config.register(new AbstractBinder()
+            {
+                @Override
+                protected void configure()
+                {
+                    for (final Entry<Class<?>, Supplier<?>> entry : supplierMap.entrySet()) {
+                        bindSupplier(entry.getKey(), entry.getValue());
+                    }
+                }
+
+                @SuppressWarnings("unchecked")
+                private <T> void bindSupplier(Class<T> type, Supplier<?> supplier)
+                {
+                    bindFactory(new InjectionProviderFactory<>(type, (Supplier<T>) supplier, locatorReference)).to(type);
+                }
+            });
+
+            return config;
+        }
+
+        @Provides
+        Application createJaxRsApplication(@JaxrsResource Set<Object> jaxRsSingletons, @JaxrsResource Set<JaxrsBinding> jaxrsBinding, Injector injector)
+        {
+            // detect jax-rs services that are bound into Guice, but not explicitly exported
+            Set<Key<?>> missingBindings = new HashSet<>();
+            ImmutableSet.Builder<Object> singletons = ImmutableSet.builder();
+            jaxRsSingletons.stream()
+                    .map(TimingWrapper::wrapIfAnnotatedResource)
+                    .forEach(singletons::add);
+            while (injector != null) {
+                for (Entry<Key<?>, Binding<?>> entry : injector.getBindings().entrySet()) {
+                    Key<?> key = entry.getKey();
+                    if (isJaxRsBinding(key) && !jaxrsBinding.contains(new JaxrsBinding(key))) {
+                        if (requireExplicitBindings) {
+                            missingBindings.add(key);
+                        }
+                        else {
+                            log.warn("Jax-rs service %s is not explicitly bound using the JaxRsBinder", key);
+                            Object jaxRsSingleton = entry.getValue().getProvider().get();
+                            singletons.add(TimingWrapper.wrapIfAnnotatedResource(jaxRsSingleton));
+                        }
+                    }
+                }
+                injector = injector.getParent();
+            }
+            checkState(!requireExplicitBindings || missingBindings.isEmpty(), "Jax-rs services must be explicitly bound using the JaxRsBinder: ", missingBindings);
+
+            return new JaxRsApplication(singletons.build());
+        }
+
+        @Provides
+        @TheAdminServlet
+        static Servlet createTheAdminServlet(@AdminJaxrsResource Set<Object> adminJaxRsSingletons, ObjectMapper objectMapper) {
+            // The admin servlet needs its own JsonMapper object so that it references
+            // the admin port's UriInfo
+            ImmutableSet.Builder<Object> singletons = ImmutableSet.builder();
+            singletons.addAll(adminJaxRsSingletons);
+            singletons.add(new JsonMapper(objectMapper));
+
+            Application application = new JaxRsApplication(singletons.build());
+            return new ServletContainer(ResourceConfig.forApplication(application));
+        }
+
+        @Provides
+        @TheAdminServlet
+        static Map<String, String> createTheAdminServletParams()
+        {
+            return new HashMap<>();
+        }
+
+        @Provides
+        @JaxrsTicker
+        static Ticker createTicker()
+        {
+            return Ticker.systemTicker();
+        }
+
+        private static class JaxRsApplication
+                extends Application
+        {
+            private final Set<Object> jaxRsSingletons;
+
+            JaxRsApplication(Set<Object> jaxRsSingletons)
+            {
+                this.jaxRsSingletons = ImmutableSet.copyOf(jaxRsSingletons);
+            }
+
+            @Override
+            public Set<Object> getSingletons()
+            {
+                return jaxRsSingletons;
+            }
+        }
+
+        private static class InjectionProviderFactory<T> implements Factory<T>
+        {
+            private final Supplier<? extends T> supplier;
+            private final AtomicReference<ServiceLocator> locatorReference;
+
+            InjectionProviderFactory(Class<T> type, Supplier<? extends T> supplier, AtomicReference<ServiceLocator> locatorReference)
+            {
+                this.supplier = supplier;
+                this.locatorReference = locatorReference;
+            }
+
+            @Override
+            public T provide()
+            {
+                T object = supplier.get();
+                ServiceLocator locator = locatorReference.get();
+                locator.inject(object);
+                locator.postConstruct(object);
+                return object;
+            }
+
+            @Override
+            public void dispose(T o)
+            {
+                locatorReference.get().preDestroy(o);
+            }
         }
     }
 }
