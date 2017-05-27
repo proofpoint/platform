@@ -57,7 +57,7 @@ public final class MoreFutures
 
     /**
      * Mirrors all results of the source Future to the destination Future.
-     *
+     * <p>
      * This also propagates cancellations from the destination Future back to the source Future.
      */
     public static <T> void mirror(ListenableFuture<? extends T> source, SettableFuture<? super T> destination, boolean mayInterruptIfRunning)
@@ -442,9 +442,13 @@ public final class MoreFutures
         return future;
     }
 
-    public static <T> void addExceptionCallback(ListenableFuture<T> result, Consumer<Throwable> exceptionCallback)
+    public static <T> void addExceptionCallback(ListenableFuture<T> future, Consumer<Throwable> exceptionCallback)
     {
-        Futures.addCallback(result, new FutureCallback<T>() {
+        requireNonNull(future, "future is null");
+        requireNonNull(exceptionCallback, "exceptionCallback is null");
+
+        Futures.addCallback(future, new FutureCallback<T>()
+        {
             @Override
             public void onSuccess(@Nullable T result)
             {
@@ -458,9 +462,13 @@ public final class MoreFutures
         });
     }
 
-    public static <T> void addExceptionCallback(ListenableFuture<T> result, Runnable exceptionCallback)
+    public static <T> void addExceptionCallback(ListenableFuture<T> future, Runnable exceptionCallback)
     {
-        Futures.addCallback(result, new FutureCallback<T>() {
+        requireNonNull(future, "future is null");
+        requireNonNull(exceptionCallback, "exceptionCallback is null");
+
+        Futures.addCallback(future, new FutureCallback<T>()
+        {
             @Override
             public void onSuccess(@Nullable T result)
             {
