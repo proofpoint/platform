@@ -6,6 +6,11 @@ Platform 1.56
   decorrelated jitter. The minimum and maximum delays between attempts
   are configurable.
 
+  We created HttpClientBinder.bindBalancingHttpClient(String, Annotation,
+  String, Set<URI>) and bindBalancingHttpClient(String, Annotation, String,
+  Key<? extends HttpServiceBalancer>) methods for binding static or custom
+  BalancingHttpClients to a parameterized Annotation.
+
 * Logging
 
   We added Level.TRACE and Level.ALL log levels.

@@ -78,15 +78,7 @@ public class HttpClientBinder
 
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).toProvider(new StaticHttpServiceBalancerProvider(annotation.getSimpleName(), baseUris));
-        HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
-        bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
-        privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
-        privateBinder.expose(HttpClient.class).annotatedWith(annotation);
-        reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
-        newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
-        binder.bind(ScheduledExecutorService.class).annotatedWith(ForBalancingHttpClient.class).toProvider(RetryExecutorProvider.class);
-
-        return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
+        return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation);
     }
 
     public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Class<? extends Annotation> annotation, Key<? extends HttpServiceBalancer> balancerKey)
@@ -97,6 +89,11 @@ public class HttpClientBinder
 
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).to(balancerKey);
+        return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation);
+    }
+
+    private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Class<? extends Annotation> annotation)
+    {
         HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
         bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
@@ -108,6 +105,18 @@ public class HttpClientBinder
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
     }
 
+    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Annotation annotation, String serviceName, Set<URI> baseUris)
+    {
+        requireNonNull(name, "name is null");
+        requireNonNull(annotation, "annotation is null");
+        requireNonNull(baseUris, "baseUris is null");
+        checkArgument(!baseUris.isEmpty(), "baseUris is empty");
+
+        PrivateBinder privateBinder = binder.newPrivateBinder();
+        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).toProvider(new StaticHttpServiceBalancerProvider(serviceName, baseUris));
+        return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
+    }
+
     public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Annotation annotation, String serviceName, Key<? extends HttpServiceBalancer> balancerKey)
     {
         requireNonNull(name, "name is null");
@@ -116,6 +125,11 @@ public class HttpClientBinder
 
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).to(balancerKey);
+        return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
+    }
+
+    private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Annotation annotation, String serviceName)
+    {
         HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
         bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
