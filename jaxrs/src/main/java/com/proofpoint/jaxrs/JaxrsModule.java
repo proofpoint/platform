@@ -99,9 +99,13 @@ public class JaxrsModule
         binder.install(commonJaxrsModule);
 
         binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(Key.get(ServletContainer.class));
+        jaxrsBinder(binder).bind(JsonMapper.class);
+        jaxrsBinder(binder).bind(SmileMapper.class);
         jaxrsBinder(binder).bind(ParsingExceptionMapper.class);
         jaxrsBinder(binder).bind(QueryParamExceptionMapper.class);
         jaxrsBinder(binder).bind(OverrideMethodFilter.class);
+        jaxrsBinder(binder).bind(TimingResourceDynamicFeature.class);
+        jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
         jaxrsBinder(binder).bind(InRotationResource.class);
         jaxrsBinder(binder).bindAdmin(WadlResource.class);
 
@@ -192,10 +196,6 @@ public class JaxrsModule
         {
             binder.disableCircularProxies();
 
-            jaxrsBinder(binder).bind(JsonMapper.class);
-            jaxrsBinder(binder).bind(SmileMapper.class);
-            jaxrsBinder(binder).bind(TimingResourceDynamicFeature.class);
-            jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
             jaxrsBinder(binder).bindInjectionProvider(ClientInfo.class).to(ClientInfoSupplier.class);
             jaxrsBinder(binder).bindAdmin(ParsingExceptionMapper.class);
             jaxrsBinder(binder).bindAdmin(QueryParamExceptionMapper.class);
