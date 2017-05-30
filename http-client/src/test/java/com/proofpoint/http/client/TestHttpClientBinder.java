@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
 
+import static com.google.inject.name.Names.named;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpClientBinder.HttpClientBindingBuilder;
 import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
@@ -335,6 +336,22 @@ public class TestHttpClientBinder
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
+
+        assertPoolsDestroyProperly(injector);
+    }
+
+    @Test
+    public void testBindBalancingHttpClientUrisParameterizedAnnotation()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", named("bar"), "baz", ImmutableSet.of(URI.create("http://nonexistent.nonexistent"))),
+                        new ReportingModule(),
+                        new TestingMBeanModule())
+                .initialize();
+
+        assertNotNull(injector.getInstance(Key.get(HttpClient.class, named("bar"))));
 
         assertPoolsDestroyProperly(injector);
     }
