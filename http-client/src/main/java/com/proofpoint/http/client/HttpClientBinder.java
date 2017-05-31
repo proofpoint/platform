@@ -41,6 +41,53 @@ import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static java.util.Objects.requireNonNull;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
+/**
+ * Binds {@link HttpClient} implementations.
+ *
+ * <h3>The HttpClient Binding EDSL</h3>
+ *
+ * <pre>
+ *     httpClientBinder(binder).bindHttpClient("foo", FooClient.class);</pre>
+ *
+ * Binds an {@link HttpClient} annotated with the {@code @FooClient}
+ * annotation to an implementation that takes absolute {@link URI}s in
+ * requests. The string {@code "foo"} specifies the prefix for configuration.
+ *
+ * <pre>
+ *     httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+ *         .withFilter(SomeFilter.class);</pre>
+ *
+ * Adds an {@link HttpRequestFilter} for modifying requests submitted to the
+ * client. Multiple filters may be added.
+ *
+ * <pre>
+ *     httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+ *         .addFilterBinding().toProvider(SomeFilterProvider.class);</pre>
+ *
+ * Adds an {@link HttpRequestFilter} using the Guice binding EDSL.
+ *
+ * <pre>
+ *     httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+ *         .withoutTracing();</pre>
+ *
+ * Suppresses the forwarding of trace tokens in the request headers.
+ *
+ * <pre>
+ *     httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+ *         .withPrivateIoThreadPool();</pre>
+ *
+ * Specifies that the {@link HttpClient} should have its own IO thread pool
+ * instead of using the shared pool. This is appropriate for clients that have
+ * a high request rate.
+ *
+ * <pre>
+ *     httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+ *         .withAlias(BarClient.class);</pre>
+ *
+ * Additionally binds the same {@link HttpClient} annotated with the
+ * {@code @BarClient} annotation.
+ *
+ */
 public class HttpClientBinder
 {
     private final Binder binder;
@@ -52,16 +99,39 @@ public class HttpClientBinder
         this.rootBinder = requireNonNull(rootBinder, "rootBinder is null");
     }
 
+    /**
+     * Creates a new {@link HttpClientBinder}. See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param binder The Guice {@link Binder} to use.
+     */
     public static HttpClientBinder httpClientBinder(Binder binder)
     {
         return new HttpClientBinder(binder, binder);
     }
 
+    /**
+     * Creates a new {@link HttpClientBinder} for making a private binding of
+     * an {@link HttpClient}. The configuration and metrics will be bound
+     * globally, as is required by those subsystems.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param privateBinder The Guice private {@link Binder} to use.
+     * @param rootBinder The Guice parent {@link Binder} to use for bindings
+     * that cannot be done privately.
+     */
     public static HttpClientBinder httpClientPrivateBinder(Binder privateBinder, Binder rootBinder)
     {
         return new HttpClientBinder(privateBinder, rootBinder);
     }
 
+    /**
+     * Binds an {@link HttpClient} to an implementation that takes absolute
+     * {@link URI}s. See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param annotation The binding annotation.
+     */
     public HttpClientBindingBuilder bindHttpClient(String name, Class<? extends Annotation> annotation)
     {
         requireNonNull(name, "name is null");
@@ -69,6 +139,17 @@ public class HttpClientBinder
         return createBindingBuilder(new HttpClientModule(name, annotation, rootBinder));
     }
 
+    /**
+     * Binds an {@link HttpClient} to an implementation that takes relative
+     * {@link URI}s. The requests are balanced against the provided static set
+     * of prefixes.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param annotation The binding annotation.
+     * @param baseUris The set of {@link URI} prefixes to balance across.
+     */
     public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Class<? extends Annotation> annotation, Set<URI> baseUris)
     {
         requireNonNull(name, "name is null");
@@ -81,6 +162,17 @@ public class HttpClientBinder
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation);
     }
 
+    /**
+     * Binds an {@link HttpClient} to an implementation that takes relative
+     * {@link URI}s. The requests are balanced against an
+     * {@link HttpServiceBalancer} obtained from Guice.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param annotation The binding annotation.
+     * @param balancerKey The {@link Key} specifying the {@link HttpServiceBalancer} to use.
+     */
     public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Class<? extends Annotation> annotation, Key<? extends HttpServiceBalancer> balancerKey)
     {
         requireNonNull(name, "name is null");
@@ -105,6 +197,18 @@ public class HttpClientBinder
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
     }
 
+    /**
+     * Binds an {@link HttpClient} to an implementation that takes relative
+     * {@link URI}s. The requests are balanced against the provided static set
+     * of prefixes.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param annotation The binding annotation.
+     * @param serviceName The name of the service being balanced. Used in metrics. Ordinarily this is the value of the binding annotation.
+     * @param baseUris The set of {@link URI} prefixes to balance across.
+     */
     public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Annotation annotation, String serviceName, Set<URI> baseUris)
     {
         requireNonNull(name, "name is null");
@@ -117,6 +221,18 @@ public class HttpClientBinder
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
     }
 
+    /**
+     * Binds an {@link HttpClient} to an implementation that takes relative
+     * {@link URI}s. The requests are balanced against an
+     * {@link HttpServiceBalancer} obtained from Guice.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param annotation The binding annotation.
+     * @param serviceName The name of the service being balanced. Used in metrics. Ordinarily this is the value of the binding annotation.
+     * @param balancerKey The {@link Key} specifying the {@link HttpServiceBalancer} to use.
+     */
     public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Annotation annotation, String serviceName, Key<? extends HttpServiceBalancer> balancerKey)
     {
         requireNonNull(name, "name is null");
@@ -168,23 +284,35 @@ public class HttpClientBinder
             this.options = options;
         }
 
+        /**
+         * See the EDSL examples at {@link HttpClientBinder}.
+         */
         public HttpClientBindingBuilder withAlias(Class<? extends Annotation> alias)
         {
             module.addAlias(alias);
             return this;
         }
 
+        /**
+         * See the EDSL examples at {@link HttpClientBinder}.
+         */
         public HttpClientBindingBuilder withAliases(Collection<Class<? extends Annotation>> aliases)
         {
             aliases.forEach(module::addAlias);
             return this;
         }
 
+        /**
+         * See the EDSL examples at {@link HttpClientBinder}.
+         */
         public LinkedBindingBuilder<HttpRequestFilter> addFilterBinding()
         {
             return multibinder.addBinding();
         }
 
+        /**
+         * See the EDSL examples at {@link HttpClientBinder}.
+         */
         public HttpClientBindingBuilder withFilter(Class<? extends HttpRequestFilter> filterClass)
         {
             multibinder.addBinding().to(filterClass);
@@ -200,12 +328,18 @@ public class HttpClientBinder
             return this;
         }
 
+        /**
+         * See the EDSL examples at {@link HttpClientBinder}.
+         */
         public HttpClientBindingBuilder withoutTracing()
         {
             options.setWithTracing(false);
             return this;
         }
 
+        /**
+         * See the EDSL examples at {@link HttpClientBinder}.
+         */
         public HttpClientBindingBuilder withPrivateIoThreadPool()
         {
             module.withPrivateIoThreadPool();
