@@ -325,7 +325,7 @@ public class HttpUriBuilder
     private static String bracketedHostString(HostAndPort hostAndPort)
     {
         // HostAndPort cannot return just the bracketed host
-        String host = hostAndPort.getHostText();
+        String host = hostAndPort.getHost();
         if (hostAndPort.toString().startsWith("[")) {
             return "[" + host + "]";
         }

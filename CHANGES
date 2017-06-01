@@ -9,6 +9,12 @@ Platform 1.57
   "service-balancer.SERVICE.consecutive-failures" configuration option. A
   value of "5" is recommended.
 
+* Library Upgrades
+
+  - Guava to 22.0 (from 21.0)
+    - [Bug] Fix LocalCache.compute() deadlock issue
+    - HostAndPort.getHostText() removed (use HostAndPort.getHost())
+
 Platform 1.56
 
 * HttpClient and HttpServer

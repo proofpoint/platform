@@ -97,7 +97,7 @@ public class JmxAgent
         }
 
         if (config.isEnabled()) {
-            this.url = new JMXServiceURL(String.format("service:jmx:rmi:///jndi/rmi://%s:%s/jmxrmi", address.getHostText(), address.getPort()));
+            this.url = new JMXServiceURL(String.format("service:jmx:rmi:///jndi/rmi://%s:%s/jmxrmi", address.getHost(), address.getPort()));
         }
         else {
             this.url = null;
