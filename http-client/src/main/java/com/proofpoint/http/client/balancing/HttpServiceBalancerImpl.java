@@ -21,9 +21,9 @@ import com.google.common.collect.ImmutableSet;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats.Status;
 import com.proofpoint.stats.MaxGauge;
 import com.proofpoint.units.Duration;
-import net.jcip.annotations.GuardedBy;
 import org.weakref.jmx.Nested;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
