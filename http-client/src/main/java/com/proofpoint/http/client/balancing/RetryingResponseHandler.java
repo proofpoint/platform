@@ -34,13 +34,13 @@ final class RetryingResponseHandler<T, E extends Exception>
     private static final Set<Integer> RETRYABLE_STATUS_CODES = ImmutableSet.of(408, 499, 500, 502, 503, 504, 598, 599);
     private static final Logger log = Logger.get(RetryingResponseHandler.class);
     private final ResponseHandler<T, E> innerHandler;
-    private final boolean finalAttempt;
+    private final RetryBudget retryBudget;
     private final Cache<Class<? extends Exception>, Boolean> exceptionCache;
 
-    RetryingResponseHandler(ResponseHandler<T, E> innerHandler, boolean finalAttempt, Cache<Class<? extends Exception>, Boolean> exceptionCache)
+    RetryingResponseHandler(ResponseHandler<T, E> innerHandler, RetryBudget retryBudget, Cache<Class<? extends Exception>, Boolean> exceptionCache)
     {
         this.innerHandler = innerHandler;
-        this.finalAttempt = finalAttempt;
+        this.retryBudget = retryBudget;
         this.exceptionCache = exceptionCache;
     }
 
@@ -66,7 +66,7 @@ final class RetryingResponseHandler<T, E extends Exception>
                     exception);
         }
 
-        if (finalAttempt || !bodySourceRetryable(request)) {
+        if (!bodySourceRetryable(request) || !retryBudget.canRetry()) {
             Object result;
             try {
                 result = innerHandler.handleException(request, exception);
@@ -89,7 +89,7 @@ final class RetryingResponseHandler<T, E extends Exception>
             String retryHeader = response.getHeader("X-Proofpoint-Retry");
             log.warn("%d response querying %s",
                     response.getStatusCode(), request.getUri().resolve("/"));
-            if (!finalAttempt && !("no".equalsIgnoreCase(retryHeader)) && bodySourceRetryable(request)) {
+            if (!("no".equalsIgnoreCase(retryHeader)) && bodySourceRetryable(request) && retryBudget.canRetry()) {
                 throw new RetryException(failureCategory);
             }
 

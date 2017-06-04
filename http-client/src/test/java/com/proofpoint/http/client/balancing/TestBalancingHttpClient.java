@@ -6,7 +6,6 @@ import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
-import com.proofpoint.units.Duration;
 import org.testng.annotations.Test;
 
 import java.io.OutputStream;
@@ -14,7 +13,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.proofpoint.http.client.testing.BodySourceTester.writeBodySourceTo;
@@ -41,11 +39,9 @@ public class TestBalancingHttpClient
     {
         return new BalancingHttpClient(serviceBalancer,
                 httpClient,
-                new BalancingHttpClientConfig()
-                        .setMaxAttempts(3)
-                        .setMinBackoff(new Duration(1, TimeUnit.MILLISECONDS))
-                        .setMaxBackoff(new Duration(2, TimeUnit.MILLISECONDS)),
-                mock(ScheduledExecutorService.class));
+                balancingHttpClientConfig,
+                mock(ScheduledExecutorService.class),
+                testingTicker);
     }
 
     @Override

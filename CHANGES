@@ -1,3 +1,22 @@
+Platform 1.58
+
+* BalancingHttpClient
+
+  The BalancingHttpClient now implements retry budgets. Over a period
+  configured from the "http-client.retry-budget.ratio-period" configuration
+  option (default 10s) the number of retries attempted will be limited to a
+  ratio (configured from "http-client.retry-budget.ratio") of requests
+  submitted. A number of retries per second (configured from
+  "http-client.retry-budget.min") will additionally be permitted.
+
+  The number of retries that are not attempted due to the budget will be
+  reported using the HttpClient.QUALIFIER.RetryBudgetExhausted.Count
+  metric.
+
+  This feature is currently effectively disabled with large configured ratios
+  and minimums. Recommended values are 0.2 for ratio and 10 for minimum.
+  This feature should only be enabled in combination with failure accrual.
+
 Platform 1.57
 
 * BalancingHttpClient
