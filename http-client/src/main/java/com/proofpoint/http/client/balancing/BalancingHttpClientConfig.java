@@ -18,9 +18,14 @@ package com.proofpoint.http.client.balancing;
 import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.units.Duration;
+import com.proofpoint.units.MaxDuration;
+import com.proofpoint.units.MinDuration;
 
 import javax.validation.constraints.AssertFalse;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+
+import java.math.BigDecimal;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -30,6 +35,9 @@ public class BalancingHttpClientConfig
     private int maxAttempts = 3;
     private Duration minBackoff = new Duration(10, MILLISECONDS);
     private Duration maxBackoff = new Duration(10, SECONDS);
+    private BigDecimal retryBudgetRatio = new BigDecimal(1000);
+    private Duration retryBudgetRatioPeriod = new Duration(10, SECONDS);
+    private int retryBudgetMinPerSecond = 1000000;
 
     @Min(1)
     public int getMaxAttempts()
@@ -67,6 +75,50 @@ public class BalancingHttpClientConfig
     public BalancingHttpClientConfig setMaxBackoff(Duration maxBackoff)
     {
         this.maxBackoff = maxBackoff;
+        return this;
+    }
+
+    @Min(0)
+    @Max(1000)
+    public BigDecimal getRetryBudgetRatio()
+    {
+        return retryBudgetRatio;
+    }
+
+    @Config("http-client.retry-budget.ratio")
+    @ConfigDescription("The ratio of permitted retries to initial requests")
+    public BalancingHttpClientConfig setRetryBudgetRatio(BigDecimal retryBudgetRatio)
+    {
+        this.retryBudgetRatio = retryBudgetRatio;
+        return this;
+    }
+
+    @MinDuration("1s")
+    @MaxDuration("60s")
+    public Duration getRetryBudgetRatioPeriod()
+    {
+        return retryBudgetRatioPeriod;
+    }
+
+    @Config("http-client.retry-budget.ratio-period")
+    @ConfigDescription("The time over which initial requests are considered when calculating retry budgets")
+    public BalancingHttpClientConfig setRetryBudgetRatioPeriod(Duration retryBudgetRatioPeriod)
+    {
+        this.retryBudgetRatioPeriod = retryBudgetRatioPeriod;
+        return this;
+    }
+
+    @Min(1)
+    public int getRetryBudgetMinPerSecond()
+    {
+        return retryBudgetMinPerSecond;
+    }
+
+    @Config("http-client.retry-budget.min-per-second")
+    @ConfigDescription("Additional number of retries permitted per second")
+    public BalancingHttpClientConfig setRetryBudgetMinPerSecond(int retryBudgetMinPerSecond)
+    {
+        this.retryBudgetMinPerSecond = retryBudgetMinPerSecond;
         return this;
     }
 

@@ -15,6 +15,8 @@
  */
 package com.proofpoint.http.client.balancing;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.FutureCallback;
@@ -53,6 +55,7 @@ public class BalancingHttpClient
     private final HttpServiceBalancer pool;
     private final HttpClient httpClient;
     private final int maxAttempts;
+    private final RetryBudget retryBudget;
     private final BackoffPolicy backoffPolicy;
     private final ScheduledExecutorService retryExecutor;
     private final Cache<Class<? extends Exception>, Boolean> exceptionCache = newBuilder()
@@ -65,9 +68,20 @@ public class BalancingHttpClient
             BalancingHttpClientConfig config,
             @ForBalancingHttpClient ScheduledExecutorService retryExecutor)
     {
+        this(pool, httpClient, config, retryExecutor, Ticker.systemTicker());
+    }
+
+    @VisibleForTesting
+    BalancingHttpClient(@ForBalancingHttpClient HttpServiceBalancer pool,
+            @ForBalancingHttpClient HttpClient httpClient,
+            BalancingHttpClientConfig config,
+            @ForBalancingHttpClient ScheduledExecutorService retryExecutor,
+            Ticker ticker)
+    {
         this.pool = requireNonNull(pool, "pool is null");
         this.httpClient = requireNonNull(httpClient, "httpClient is null");
         maxAttempts = requireNonNull(config, "config is null").getMaxAttempts();
+        retryBudget = TokenRetryBudget.tokenRetryBudget(config.getRetryBudgetRatio(), config.getRetryBudgetRatioPeriod(), config.getRetryBudgetMinPerSecond(), ticker);
         backoffPolicy = new DecorrelatedJitteredBackoffPolicy(config.getMinBackoff(), config.getMaxBackoff());
         this.retryExecutor = requireNonNull(retryExecutor, "retryExecutor is null");
     }
@@ -89,10 +103,11 @@ public class BalancingHttpClient
             return responseHandler.handleException(request, e);
         }
         int attemptsLeft = maxAttempts;
+        retryBudget.initialAttempt();
         BackoffPolicy attemptBackoffPolicy = backoffPolicy;
         Duration previousBackoff = ZERO_DURATION;
 
-        RetryingResponseHandler<T, E> retryingResponseHandler = new RetryingResponseHandler<>(responseHandler, false, exceptionCache);
+        RetryingResponseHandler<T, E> retryingResponseHandler = new RetryingResponseHandler<>(responseHandler, retryBudget, exceptionCache);
 
         for (;;) {
             URI uri = attempt.getUri();
@@ -106,7 +121,7 @@ public class BalancingHttpClient
                     .build();
 
             if (attemptsLeft <= 1) {
-                retryingResponseHandler = new RetryingResponseHandler<>(responseHandler, true, exceptionCache);
+                retryingResponseHandler = new RetryingResponseHandler<>(responseHandler, NoRetryBudget.INSTANCE, exceptionCache);
             }
 
             --attemptsLeft;
@@ -168,6 +183,7 @@ public class BalancingHttpClient
                 return new ImmediateFailedHttpResponseFuture<>((E) e1);
             }
         }
+        retryBudget.initialAttempt();
         RetryFuture<T, E> retryFuture = new RetryFuture<>(request, responseHandler);
         attemptQuery(retryFuture, request, responseHandler, attempt, maxAttempts);
         return retryFuture;
@@ -175,7 +191,11 @@ public class BalancingHttpClient
 
     private <T, E extends Exception> void attemptQuery(RetryFuture<T, E> retryFuture, Request request, ResponseHandler<T, E> responseHandler, HttpServiceAttempt attempt, int attemptsLeft)
     {
-        RetryingResponseHandler<T, E> retryingResponseHandler = new RetryingResponseHandler<>(responseHandler, attemptsLeft <= 1, exceptionCache);
+        RetryingResponseHandler<T, E> retryingResponseHandler = new RetryingResponseHandler<>(
+                responseHandler,
+                (attemptsLeft <= 1) ? NoRetryBudget.INSTANCE :  retryBudget,
+                exceptionCache
+        );
 
         URI uri = attempt.getUri();
         if (!uri.toString().endsWith("/")) {
@@ -197,6 +217,11 @@ public class BalancingHttpClient
     public RequestStats getStats()
     {
         return httpClient.getStats();
+    }
+
+    @Flatten
+    RetryBudget getRetryBudget() {
+        return retryBudget;
     }
 
     @Managed

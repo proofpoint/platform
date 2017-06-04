@@ -22,16 +22,22 @@ import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.StaticBodyGenerator;
+import com.proofpoint.testing.TestingTicker;
+import com.proofpoint.units.Duration;
 import org.mockito.ArgumentCaptor;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.proofpoint.http.client.Request.Builder.preparePut;
+import static java.math.BigDecimal.ZERO;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.atLeastOnce;
@@ -42,14 +48,17 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertSame;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
 {
+    protected TestingTicker testingTicker;
     protected HttpServiceBalancer serviceBalancer;
     protected HttpServiceAttempt serviceAttempt1;
     protected HttpServiceAttempt serviceAttempt2;
     protected HttpServiceAttempt serviceAttempt3;
+    protected BalancingHttpClientConfig balancingHttpClientConfig;
     protected T balancingHttpClient;
     protected BodySource bodySource;
     protected Request request;
@@ -58,7 +67,7 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
     protected Response response;
 
     protected interface TestingClient
-        extends HttpClient
+            extends HttpClient
     {
         TestingClient expectCall(String uri, Response response);
 
@@ -83,6 +92,7 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
     protected void setUp()
             throws Exception
     {
+        testingTicker = new TestingTicker();
         serviceBalancer = mock(HttpServiceBalancer.class);
         serviceAttempt1 = mock(HttpServiceAttempt.class);
         serviceAttempt2 = mock(HttpServiceAttempt.class);
@@ -95,6 +105,10 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
         when(serviceAttempt3.getUri()).thenReturn(URI.create("http://s1.example.com"));
         when(serviceAttempt3.next()).thenThrow(new AssertionError("Unexpected call to serviceAttempt3.next()"));
         httpClient = createTestingClient();
+        balancingHttpClientConfig = new BalancingHttpClientConfig()
+                .setMaxAttempts(3)
+                .setMinBackoff(new Duration(1, TimeUnit.MILLISECONDS))
+                .setMaxBackoff(new Duration(2, TimeUnit.MILLISECONDS));
         balancingHttpClient = createBalancingHttpClient();
         bodySource = mock(BodySource.class);
         request = preparePut().setUri(URI.create("v1/service")).setBodySource(bodySource).build();
@@ -279,14 +293,14 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
     public Object[][] getRetryStatus()
     {
         return new Object[][] {
-                new Object[] { 408 },
-                new Object[] { 499 },
-                new Object[] { 500 },
-                new Object[] { 502 },
-                new Object[] { 503 },
-                new Object[] { 504 },
-                new Object[] { 598 },
-                new Object[] { 599 },
+                new Object[] {408},
+                new Object[] {499},
+                new Object[] {500},
+                new Object[] {502},
+                new Object[] {503},
+                new Object[] {504},
+                new Object[] {598},
+                new Object[] {599},
         };
     }
 
@@ -378,6 +392,213 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
         verify(responseHandler).handleException(requestArgumentCaptor.capture(), same(connectException));
         assertEquals(requestArgumentCaptor.getValue().getUri().toString(), "http://s2.example.com/v1/service");
         verifyNoMoreInteractions(serviceAttempt1, serviceAttempt2, serviceAttempt3, responseHandler);
+    }
+
+    @Test
+    public void testOnlyOneMaxAttempt()
+            throws Exception
+    {
+        balancingHttpClientConfig.setMaxAttempts(1);
+        balancingHttpClient = createBalancingHttpClient();
+
+        assertNoRetry();
+    }
+
+    private void assertNoRetry()
+            throws Exception
+    {
+        Response response500 = mock(Response.class);
+        when(response500.getStatusCode()).thenReturn(500);
+
+        httpClient.expectCall("http://s1.example.com/v1/service", response500);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        when(responseHandler.handle(any(Request.class), same(response500))).thenReturn("test response");
+
+        String returnValue = balancingHttpClient.execute(request, responseHandler);
+        assertEquals(returnValue, "test response", "return value from .execute()");
+
+        httpClient.assertDone();
+
+        verify(responseHandler).handle(requestArgumentCaptor.capture(), same(response500));
+        assertEquals(requestArgumentCaptor.getValue().getUri().toString(), "http://s1.example.com/v1/service");
+    }
+
+    private void assertOneRetry()
+            throws Exception
+    {
+        Response response500 = mock(Response.class);
+        when(response500.getStatusCode()).thenReturn(500);
+
+        httpClient.expectCall("http://s1.example.com/v1/service", response500);
+        httpClient.expectCall("http://s2.example.com/v1/service", response500);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        when(responseHandler.handle(any(Request.class), same(response500))).thenReturn("test response");
+
+        String returnValue = balancingHttpClient.execute(request, responseHandler);
+        assertEquals(returnValue, "test response", "return value from .execute()");
+
+        httpClient.assertDone();
+
+        verify(responseHandler).handle(requestArgumentCaptor.capture(), same(response500));
+        assertEquals(requestArgumentCaptor.getValue().getUri().toString(), "http://s2.example.com/v1/service");
+    }
+
+    private void assertTwoRetries()
+            throws Exception
+    {
+        Response response500 = mock(Response.class);
+        when(response500.getStatusCode()).thenReturn(500);
+
+        httpClient.expectCall("http://s1.example.com/v1/service", response500);
+        httpClient.expectCall("http://s2.example.com/v1/service", response500);
+        httpClient.expectCall("http://s1.example.com/v1/service", response500);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        when(responseHandler.handle(any(Request.class), same(response500))).thenReturn("test response");
+
+        String returnValue = balancingHttpClient.execute(request, responseHandler);
+        assertEquals(returnValue, "test response", "return value from .execute()");
+
+        httpClient.assertDone();
+
+        verify(responseHandler).handle(requestArgumentCaptor.capture(), same(response500));
+        assertEquals(requestArgumentCaptor.getValue().getUri().toString(), "http://s1.example.com/v1/service");
+    }
+
+    private void successfulCall()
+            throws Exception
+    {
+        httpClient.expectCall("http://s1.example.com/v1/service", response);
+
+        ResponseHandler<String, Exception> responseHandler = mock(ResponseHandler.class);
+        when(responseHandler.handle(any(Request.class), same(response))).thenReturn("test response");
+
+        String returnValue = balancingHttpClient.execute(request, responseHandler);
+        assertEquals(returnValue, "test response", "return value from .execute()");
+
+        httpClient.assertDone();
+
+        verify(responseHandler).handle(requestArgumentCaptor.capture(), same(response));
+        assertEquals(requestArgumentCaptor.getValue().getUri().toString(), "http://s1.example.com/v1/service");
+    }
+
+    @Test
+    public void testNoRetryBudget()
+            throws Exception
+    {
+        balancingHttpClientConfig.setRetryBudgetRatio(ZERO).setRetryBudgetMinPerSecond(0);
+        balancingHttpClient = createBalancingHttpClient();
+
+        assertNoRetry();
+    }
+
+    @Test
+    public void testRatioRetryBudget()
+            throws Exception
+    {
+        balancingHttpClientConfig
+                .setMinBackoff(new Duration(0, SECONDS))
+                .setMaxBackoff(new Duration(0, SECONDS))
+                .setMaxAttempts(3)
+                .setRetryBudgetRatioPeriod(new Duration(10, SECONDS))
+                .setRetryBudgetRatio(BigDecimal.valueOf(0.5))
+                .setRetryBudgetMinPerSecond(0);
+        balancingHttpClient = createBalancingHttpClient();
+
+        for (int i = 0; i < 100; ++i) {
+            assertNoRetry();
+            assertOneRetry();
+        }
+    }
+
+    @Test
+    public void testRatioRetryBudgetExpires()
+            throws Exception
+    {
+        balancingHttpClientConfig
+                .setMinBackoff(new Duration(0, SECONDS))
+                .setMaxBackoff(new Duration(0, SECONDS))
+                .setMaxAttempts(3)
+                .setRetryBudgetRatioPeriod(new Duration(10, SECONDS))
+                .setRetryBudgetRatio(BigDecimal.valueOf(0.5))
+                .setRetryBudgetMinPerSecond(0);
+        balancingHttpClient = createBalancingHttpClient();
+
+        for (int i = 0; i < 100; ++i) {
+            successfulCall();
+        }
+
+        for (int i = 0; i < 5; ++i) {
+            assertTwoRetries();
+        }
+
+        testingTicker.elapseTime(10, SECONDS);
+        for (int i = 0; i < 100; ++i) {
+            assertNoRetry();
+            assertOneRetry();
+        }
+    }
+
+    @Test
+    public void testMinRetryBudget()
+            throws Exception
+    {
+        balancingHttpClientConfig
+                .setMinBackoff(new Duration(0, SECONDS))
+                .setMaxBackoff(new Duration(0, SECONDS))
+                .setMaxAttempts(2)
+                .setRetryBudgetRatioPeriod(new Duration(10, SECONDS))
+                .setRetryBudgetRatio(ZERO)
+                .setRetryBudgetMinPerSecond(1);
+        balancingHttpClient = createBalancingHttpClient();
+
+        // Starts out with ten tokens, one for each second in the period.
+        for (int i = 0; i < 10; ++i) {
+            testingTicker.elapseTime(1, SECONDS);
+            assertOneRetry();
+        }
+
+        for (int i = 0; i < 100; ++i) {
+            assertNoRetry();
+            assertNoRetry();
+            assertNoRetry();
+            testingTicker.elapseTime(1, SECONDS);
+            assertOneRetry();
+        }
+    }
+
+    @Test
+    public void testBothMinAndRatioRetryBudget()
+            throws Exception
+    {
+        balancingHttpClientConfig
+                .setMinBackoff(new Duration(0, SECONDS))
+                .setMaxBackoff(new Duration(0, SECONDS))
+                .setMaxAttempts(2)
+                .setRetryBudgetRatioPeriod(new Duration(10, SECONDS))
+                .setRetryBudgetRatio(BigDecimal.valueOf(0.5))
+                .setRetryBudgetMinPerSecond(1);
+        balancingHttpClient = createBalancingHttpClient();
+
+        // Starts out with ten tokens, one for each second in the period.
+        // Each second we send two requests, which adds another token.
+        for (int i = 0; i < 10; ++i) {
+            testingTicker.elapseTime(1, SECONDS);
+            assertOneRetry();
+            assertOneRetry();
+        }
+
+        for (int i = 0; i < 100; ++i) {
+            assertNoRetry();
+            assertOneRetry();
+            assertNoRetry();
+            assertOneRetry();
+            testingTicker.elapseTime(1, SECONDS);
+            assertOneRetry();
+            assertOneRetry();
+        }
     }
 
     @Test

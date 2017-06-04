@@ -54,8 +54,9 @@ public class TestAsyncBalancingHttpClient
         return new SyncToAsyncWrapperClient(
                 new BalancingHttpClient(serviceBalancer,
                         httpClient,
-                        new BalancingHttpClientConfig().setMaxAttempts(3),
-                        retryExecutor));
+                        balancingHttpClientConfig,
+                        retryExecutor,
+                        testingTicker));
     }
 
     @Override
