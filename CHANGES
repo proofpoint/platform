@@ -9,6 +9,16 @@ Platform 1.57
   "service-balancer.SERVICE.consecutive-failures" configuration option. A
   value of "5" is recommended.
 
+* Configuration
+
+  Warnings from config objects built by a ConfigurationAwareProvider are now
+  reported.
+
+  We removed ConfigurationAwareProvider.setWarningsMonitor() and deprecated
+  the ConfigurationValidator(ConfigurationFactory, WarningsMonitor)
+  constructor in favor of the new ConfigurationValidator(ConfigurationFactory)
+  constructor.
+
 * Library Upgrades
 
   - Guava to 22.0 (from 21.0)

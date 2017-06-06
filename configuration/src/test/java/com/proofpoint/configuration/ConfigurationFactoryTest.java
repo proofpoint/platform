@@ -1175,7 +1175,7 @@ public class ConfigurationFactoryTest
                 Collections.<String>emptySet(),
                 ImmutableList.<String>of(),
                 monitor);
-        List<Message> messages = new ConfigurationValidator(configurationFactory, null).validate(module);
+        List<Message> messages = new ConfigurationValidator(configurationFactory).validate(module);
         return Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
     }
 

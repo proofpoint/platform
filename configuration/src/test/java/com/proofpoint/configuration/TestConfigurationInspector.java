@@ -59,14 +59,14 @@ public class TestConfigurationInspector
     {
         ConfigurationFactory configurationFactory = new ConfigurationFactory(
                 properties,
-                firstNonNull(applicationDefaults, ImmutableMap.<String, String>of()),
-                firstNonNull(moduleDefaults, ImmutableMap.<String, String>of()),
-                firstNonNull(moduleDefaultSource, ImmutableMap.<String, ConfigurationDefaultingModule>of()),
+                firstNonNull(applicationDefaults, ImmutableMap.of()),
+                firstNonNull(moduleDefaults, ImmutableMap.of()),
+                firstNonNull(moduleDefaultSource, ImmutableMap.of()),
                 properties.keySet(),
-                ImmutableList.<String>of(),
+                ImmutableList.of(),
                 Problems.NULL_MONITOR
         );
-        List<Message> messages = new ConfigurationValidator(configurationFactory, null).validate(module);
+        List<Message> messages = new ConfigurationValidator(configurationFactory).validate(module);
         Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
         return new InspectionVerifier(new ConfigurationInspector().inspect(configurationFactory));
     }

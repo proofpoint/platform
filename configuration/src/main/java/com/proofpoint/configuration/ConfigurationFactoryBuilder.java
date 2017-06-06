@@ -16,6 +16,7 @@
 package com.proofpoint.configuration;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.spi.Message;
 import com.proofpoint.configuration.Problems.Monitor;
 
 import javax.annotation.Nullable;
@@ -110,6 +111,24 @@ public final class ConfigurationFactoryBuilder
     public ConfigurationFactoryBuilder withMonitor(Monitor monitor)
     {
         this.monitor = monitor;
+        return this;
+    }
+
+    public ConfigurationFactoryBuilder withWarningsMonitor(WarningsMonitor warningsMonitor)
+    {
+        this.monitor = new Monitor()
+        {
+            @Override
+            public void onError(Message errorMessage)
+            {
+            }
+
+            @Override
+            public void onWarning(Message warningMessage)
+            {
+                warningsMonitor.onWarning(warningMessage.getMessage());
+            }
+        };
         return this;
     }
 

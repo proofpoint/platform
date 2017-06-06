@@ -26,7 +26,11 @@ import com.google.inject.ProvisionException;
 import com.proofpoint.bootstrap.Bootstrap.UnitTestBootstrap;
 import com.proofpoint.configuration.AbstractConfigurationAwareModule;
 import com.proofpoint.configuration.Config;
+import com.proofpoint.configuration.ConfigurationAwareProvider;
 import com.proofpoint.configuration.ConfigurationDefaultingModule;
+import com.proofpoint.configuration.ConfigurationFactory;
+import com.proofpoint.log.Level;
+import com.proofpoint.log.Logging;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.node.NodeModule;
 import org.testng.annotations.BeforeMethod;
@@ -366,7 +370,7 @@ public class TestBootstrap
                     @Override
                     public void setup(Binder binder)
                     {
-                         simpleConfig.set(buildConfigObject(SimpleConfig.class));
+                        simpleConfig.set(buildConfigObject(SimpleConfig.class));
                     }
                 })
                 .setRequiredConfigurationProperty("property", "required value")
@@ -406,6 +410,136 @@ public class TestBootstrap
         injector.getInstance(SimpleConfig.class).setProperty("changed");
         SimpleConfig simpleConfig = injector.getInstance(SimpleConfig.class);
         assertNull(simpleConfig.getProperty());
+    }
+
+    @Test
+    public void testConfigWarnings()
+            throws Exception
+    {
+        Logging.initialize();
+        AtomicBoolean sawWarning = new AtomicBoolean();
+
+        try {
+            Logging.addLogTester("Bootstrap", (level, message, thrown) -> {
+                if (level == Level.WARN && "Warning: Configuration property 'property' is deprecated and should not be used".equals(message)) {
+                    assertFalse(sawWarning.get());
+                    sawWarning.set(true);
+                }
+            });
+
+            Injector injector = bootstrapTest()
+                    .withModules((Module) binder -> {
+                        bindConfig(binder).to(ContainsDeprecatedConfig.class);
+                        binder.bind(UsesDeprecatedConfig2.class);
+                    })
+                    .setRequiredConfigurationProperty("property", "value")
+                    .initialize();
+        }
+        finally {
+            Logging.resetLogTesters();
+        }
+        assertTrue(sawWarning.get());
+    }
+
+    @Test
+    public void testConfigWarningsConfigAwareModule()
+            throws Exception
+    {
+        Logging.initialize();
+        AtomicBoolean sawWarning = new AtomicBoolean();
+
+        try {
+            Logging.addLogTester("Bootstrap", (level, message, thrown) -> {
+                if (level == Level.WARN && "Warning: Configuration property 'property' is deprecated and should not be used".equals(message)) {
+                    assertFalse(sawWarning.get());
+                    sawWarning.set(true);
+                }
+            });
+
+            Injector injector = bootstrapTest()
+                    .withModules(new AbstractConfigurationAwareModule()
+                    {
+                        @Override
+                        protected void setup(Binder binder)
+                        {
+                            buildConfigObject(ContainsDeprecatedConfig.class);
+                        }
+                    }, new AbstractConfigurationAwareModule()
+                    {
+                        @Override
+                        protected void setup(Binder binder)
+                        {
+                            buildConfigObject(ContainsDeprecatedConfig.class);
+                        }
+                    })
+                    .setRequiredConfigurationProperty("property", "value")
+                    .initialize();
+        }
+        finally {
+            Logging.resetLogTesters();
+        }
+        assertTrue(sawWarning.get());
+    }
+
+    @Test
+    public void testConfigWarningsConfigAwareProvider()
+            throws Exception
+    {
+        Logging.initialize();
+        AtomicBoolean sawWarning = new AtomicBoolean();
+
+        try {
+            Logging.addLogTester("Bootstrap", (level, message, thrown) -> {
+                if (level == Level.WARN && "Warning: Configuration property 'property' is deprecated and should not be used".equals(message)) {
+                    assertFalse(sawWarning.get());
+                    sawWarning.set(true);
+                }
+            });
+
+            Injector injector = bootstrapTest()
+                    .withModules(binder -> {
+                        binder.bind(Integer.class).toProvider(new ConfigurationAwareProvider<Integer>()
+                        {
+                            private ConfigurationFactory configurationFactory;
+
+                            @Override
+                            public void setConfigurationFactory(ConfigurationFactory configurationFactory)
+                            {
+                                this.configurationFactory = configurationFactory;
+                            }
+
+                            @Override
+                            public Integer get()
+                            {
+                                configurationFactory.build(ContainsDeprecatedConfig.class);
+                                return 3;
+                            }
+                        });
+                        binder.bind(Long.class).toProvider(new ConfigurationAwareProvider<Long>()
+                        {
+                            private ConfigurationFactory configurationFactory;
+
+                            @Override
+                            public void setConfigurationFactory(ConfigurationFactory configurationFactory)
+                            {
+                                this.configurationFactory = configurationFactory;
+                            }
+
+                            @Override
+                            public Long get()
+                            {
+                                configurationFactory.build(ContainsDeprecatedConfig.class);
+                                return 3L;
+                            }
+                        });
+                    })
+                    .setRequiredConfigurationProperty("property", "value")
+                    .initialize();
+        }
+        finally {
+            Logging.resetLogTesters();
+        }
+        assertTrue(sawWarning.get());
     }
 
     @Test
@@ -519,6 +653,41 @@ public class TestBootstrap
         {
             this.otherProperty = otherProperty;
             return this;
+        }
+    }
+
+    private static class ContainsDeprecatedConfig
+    {
+        private String property = null;
+
+        @Deprecated
+        public String getProperty()
+        {
+            return property;
+        }
+
+        @Config("property")
+        @Deprecated
+        public ContainsDeprecatedConfig setProperty(String property)
+        {
+            this.property = property;
+            return this;
+        }
+    }
+
+    private static class UsesDeprecatedConfig1
+    {
+        @Inject
+        UsesDeprecatedConfig1(ContainsDeprecatedConfig config)
+        {
+        }
+    }
+
+    private static class UsesDeprecatedConfig2
+    {
+        @Inject
+        UsesDeprecatedConfig2(ContainsDeprecatedConfig config)
+        {
         }
     }
 

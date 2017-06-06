@@ -31,16 +31,25 @@ import java.util.List;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 
 public class ConfigurationValidator
 {
     private final ConfigurationFactory configurationFactory;
-    private final WarningsMonitor warningsMonitor;
 
+    /**
+     * @deprecated Use {@link #ConfigurationValidator(ConfigurationFactory)}.
+     */
+    @Deprecated
     public ConfigurationValidator(ConfigurationFactory configurationFactory, WarningsMonitor warningsMonitor)
     {
+        this(configurationFactory);
+    }
+
+    public ConfigurationValidator(ConfigurationFactory configurationFactory)
+    {
+        requireNonNull(configurationFactory, "configurationFactory is null");
         this.configurationFactory = configurationFactory;
-        this.warningsMonitor = warningsMonitor;
     }
 
     public List<Message> validate(Module... modules)
@@ -74,7 +83,6 @@ public class ConfigurationValidator
                             ConfigurationAwareProvider<?> configurationProvider = (ConfigurationAwareProvider<?>) provider;
                             // give the provider the configuration factory
                             configurationProvider.setConfigurationFactory(configurationFactory);
-                            configurationProvider.setWarningsMonitor(warningsMonitor);
                             try {
                                 // call the getter which will cause object creation
                                 configurationProvider.get();

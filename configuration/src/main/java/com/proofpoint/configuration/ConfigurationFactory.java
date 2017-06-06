@@ -15,6 +15,7 @@
  */
 package com.proofpoint.configuration;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.annotations.Beta;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -31,6 +32,7 @@ import com.proofpoint.configuration.ConfigurationMetadata.InjectionPointMetaData
 import com.proofpoint.configuration.Problems.Monitor;
 import org.apache.bval.jsr.ApacheValidationProvider;
 
+import javax.annotation.Nullable;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -48,6 +50,7 @@ import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Sets.newConcurrentHashSet;
+import static com.proofpoint.configuration.ConfigurationFactory.ConfigurationIdentity.configurationIdentity;
 import static com.proofpoint.configuration.ConfigurationMetadata.getConfigurationMetadata;
 import static com.proofpoint.configuration.ConfigurationMetadata.isConfigClass;
 import static com.proofpoint.configuration.Problems.exceptionFor;
@@ -65,6 +68,7 @@ public final class ConfigurationFactory
     private final Problems.Monitor monitor;
     private final Set<String> unusedProperties = newConcurrentHashSet();
     private final Collection<String> initialErrors;
+    private final Set<ConfigurationIdentity> registeredConfigs = newConcurrentHashSet();
     private final Set<ConfigurationProvider<?>> registeredProviders = newConcurrentHashSet();
     private final LoadingCache<Class<?>, ConfigurationMetadata<?>> metadataCache = CacheBuilder.newBuilder()
             .build(new CacheLoader<Class<?>, ConfigurationMetadata<?>>()
@@ -78,7 +82,7 @@ public final class ConfigurationFactory
 
     public ConfigurationFactory(Map<String, String> properties)
     {
-        this(properties, ImmutableMap.<String, String>of(), ImmutableMap.<String, String>of(), ImmutableMap.<String, ConfigurationDefaultingModule>of(), properties.keySet(), ImmutableList.<String>of(), Problems.NULL_MONITOR);
+        this(properties, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of(), properties.keySet(), ImmutableList.of(), Problems.NULL_MONITOR);
     }
 
     ConfigurationFactory(Map<String, String> properties, Map<String, String> applicationDefaults, Map<String, String> moduleDefaults, Map<String, ConfigurationDefaultingModule> moduleDefaultSource, Set<String> expectToUse, Collection<String> errors, final Monitor monitor)
@@ -130,33 +134,18 @@ public final class ConfigurationFactory
 
     public <T> T build(Class<T> configClass)
     {
-        return build(configClass, null, true).instance;
-    }
-
-    public <T> T build(Class<T> configClass, String prefix)
-    {
-        return build(configClass, prefix, true).instance;
+        return build(configClass, null);
     }
 
     /**
      * This is used by the configuration provider
      */
-    <T> T build(ConfigurationProvider<T> configurationProvider, WarningsMonitor warningsMonitor)
+    <T> T build(ConfigurationProvider<T> configurationProvider)
     {
         requireNonNull(configurationProvider, "configurationProvider is null");
-        boolean firstBuild = registeredProviders.add(configurationProvider);
+        registeredProviders.add(configurationProvider);
 
-        ConfigurationHolder<T> holder = build(configurationProvider.getConfigClass(), configurationProvider.getPrefix(), firstBuild);
-        T instance = holder.instance;
-
-        // inform caller about warnings if this is the first time we've built from the provider
-        if (warningsMonitor != null && firstBuild) {
-            for (Message message : holder.problems.getWarnings()) {
-                warningsMonitor.onWarning(message.toString());
-            }
-        }
-
-        return instance;
+        return build(configurationProvider.getConfigClass(), configurationProvider.getPrefix());
     }
 
     <T> T buildDefaults(ConfigurationProvider<T> configurationProvider)
@@ -164,10 +153,10 @@ public final class ConfigurationFactory
         return build(configurationProvider.getConfigClass(), configurationProvider.getPrefix(), true, new Problems());
     }
 
-    private <T> ConfigurationHolder<T> build(Class<T> configClass, String prefix, boolean reportToMonitor)
+    public <T> T build(Class<T> configClass, @Nullable String prefix)
     {
         Problems problems;
-        if (reportToMonitor) {
+        if (registeredConfigs.add(configurationIdentity(configClass, prefix))) {
             problems = new Problems(monitor);
         }
         else {
@@ -178,7 +167,7 @@ public final class ConfigurationFactory
 
         problems.throwIfHasErrors();
 
-        return new ConfigurationHolder<>(instance, problems);
+        return instance;
     }
 
     private <T> T build(Class<T> configClass, String prefix, boolean isDefault, Problems problems)
@@ -627,15 +616,17 @@ public final class ConfigurationFactory
         return null;
     }
 
-    private static class ConfigurationHolder<T>
+    @AutoValue
+    abstract static class ConfigurationIdentity
     {
-        private final T instance;
-        private final Problems problems;
-
-        private ConfigurationHolder(T instance, Problems problems)
+        static ConfigurationIdentity configurationIdentity(Class<?> clazz, @Nullable String prefix)
         {
-            this.instance = instance;
-            this.problems = problems;
+            return new AutoValue_ConfigurationFactory_ConfigurationIdentity(clazz, prefix);
         }
+
+        abstract Class<?> getClazz();
+
+        @Nullable
+        abstract String getPrefix();
     }
 }

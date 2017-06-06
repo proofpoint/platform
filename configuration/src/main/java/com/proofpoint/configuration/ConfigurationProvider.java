@@ -27,7 +27,6 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
     private final Class<T> configClass;
     private final String prefix;
     private ConfigurationFactory configurationFactory;
-    private WarningsMonitor warningsMonitor;
 
     public ConfigurationProvider(Key<T> key, Class<T> configClass, String prefix)
     {
@@ -44,13 +43,6 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
     public void setConfigurationFactory(ConfigurationFactory configurationFactory)
     {
         this.configurationFactory = configurationFactory;
-    }
-
-    @Override
-    @Inject(optional = true)
-    public void setWarningsMonitor(WarningsMonitor warningsMonitor)
-    {
-        this.warningsMonitor = warningsMonitor;
     }
 
     public Key<T> getKey()
@@ -77,7 +69,7 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
     {
         Preconditions.checkNotNull(configurationFactory, "configurationFactory");
 
-        return configurationFactory.build(this, warningsMonitor);
+        return configurationFactory.build(this);
     }
 
     T getDefaults()
