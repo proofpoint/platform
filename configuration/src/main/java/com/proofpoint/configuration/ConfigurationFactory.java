@@ -15,7 +15,6 @@
  */
 package com.proofpoint.configuration;
 
-import com.google.auto.value.AutoValue;
 import com.google.common.annotations.Beta;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -26,7 +25,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.inject.ConfigurationException;
-import com.google.inject.spi.Message;
+import com.google.inject.Key;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
 import com.proofpoint.configuration.ConfigurationMetadata.InjectionPointMetaData;
 import com.proofpoint.configuration.Problems.Monitor;
@@ -50,7 +49,7 @@ import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Sets.newConcurrentHashSet;
-import static com.proofpoint.configuration.ConfigurationFactory.ConfigurationIdentity.configurationIdentity;
+import static com.proofpoint.configuration.ConfigurationIdentity.configurationIdentity;
 import static com.proofpoint.configuration.ConfigurationMetadata.getConfigurationMetadata;
 import static com.proofpoint.configuration.ConfigurationMetadata.isConfigClass;
 import static com.proofpoint.configuration.Problems.exceptionFor;
@@ -68,8 +67,7 @@ public final class ConfigurationFactory
     private final Problems.Monitor monitor;
     private final Set<String> unusedProperties = newConcurrentHashSet();
     private final Collection<String> initialErrors;
-    private final Set<ConfigurationIdentity> registeredConfigs = newConcurrentHashSet();
-    private final Set<ConfigurationProvider<?>> registeredProviders = newConcurrentHashSet();
+    private final Set<ConfigurationIdentity<?>> registeredConfigs = newConcurrentHashSet();
     private final LoadingCache<Class<?>, ConfigurationMetadata<?>> metadataCache = CacheBuilder.newBuilder()
             .build(new CacheLoader<Class<?>, ConfigurationMetadata<?>>()
             {
@@ -127,36 +125,28 @@ public final class ConfigurationFactory
         return initialErrors;
     }
 
-    Iterable<ConfigurationProvider<?>> getConfigurationProviders()
+    Iterable<ConfigurationIdentity<?>> getRegisteredConfigs()
     {
-        return ImmutableList.copyOf(registeredProviders);
+        return ImmutableList.copyOf(registeredConfigs);
     }
 
     public <T> T build(Class<T> configClass)
     {
-        return build(configClass, null);
+        return build(configClass, null, null);
+    }
+
+    public <T> T build(Class<T> configClass, @Nullable String prefix)
+    {
+        return build(configClass, prefix, null);
     }
 
     /**
      * This is used by the configuration provider
      */
-    <T> T build(ConfigurationProvider<T> configurationProvider)
-    {
-        requireNonNull(configurationProvider, "configurationProvider is null");
-        registeredProviders.add(configurationProvider);
-
-        return build(configurationProvider.getConfigClass(), configurationProvider.getPrefix());
-    }
-
-    <T> T buildDefaults(ConfigurationProvider<T> configurationProvider)
-    {
-        return build(configurationProvider.getConfigClass(), configurationProvider.getPrefix(), true, new Problems());
-    }
-
-    public <T> T build(Class<T> configClass, @Nullable String prefix)
-    {
+    <T> T build(Class<T> configClass, @Nullable String prefix, Key<T> key)
+        {
         Problems problems;
-        if (registeredConfigs.add(configurationIdentity(configClass, prefix))) {
+        if (registeredConfigs.add(configurationIdentity(configClass, prefix, key))) {
             problems = new Problems(monitor);
         }
         else {
@@ -168,6 +158,11 @@ public final class ConfigurationFactory
         problems.throwIfHasErrors();
 
         return instance;
+    }
+
+    <T> T buildDefaults(Class<T> configClass, @Nullable String prefix)
+    {
+        return build(configClass, prefix, true, new Problems());
     }
 
     private <T> T build(Class<T> configClass, String prefix, boolean isDefault, Problems problems)
@@ -614,19 +609,5 @@ public final class ConfigurationFactory
         }
 
         return null;
-    }
-
-    @AutoValue
-    abstract static class ConfigurationIdentity
-    {
-        static ConfigurationIdentity configurationIdentity(Class<?> clazz, @Nullable String prefix)
-        {
-            return new AutoValue_ConfigurationFactory_ConfigurationIdentity(clazz, prefix);
-        }
-
-        abstract Class<?> getClazz();
-
-        @Nullable
-        abstract String getPrefix();
     }
 }

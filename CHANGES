@@ -12,12 +12,22 @@ Platform 1.57
 * Configuration
 
   Warnings from config objects built by a ConfigurationAwareProvider are now
-  reported.
+  reported. Such objects are also enumerated by ConfigurationInspector and
+  thus the corresponding configuration is logged upon startup.
 
-  We removed ConfigurationAwareProvider.setWarningsMonitor() and deprecated
-  the ConfigurationValidator(ConfigurationFactory, WarningsMonitor)
-  constructor in favor of the new ConfigurationValidator(ConfigurationFactory)
-  constructor.
+  We removed ConfigurationAwareProvider.setWarningsMonitor().
+
+  We deprecated the
+  ConfigurationValidator(ConfigurationFactory, WarningsMonitor) constructor.
+  Use the new ConfigurationValidator(ConfigurationFactory) constructor.
+
+  We deprecated the ConfigRecord.createConfigRecord(ConfigurationFactory)
+  static factory method. Callers should not be creating their own ConfigRecord
+  objects.
+
+  ConfigRecord.getKey() can now return null and
+  ConfigRecord.getComponentName() can now return the empty string
+  (both if the config object was built by a ConfigurationAwareProvider).
 
 * Library Upgrades
 

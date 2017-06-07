@@ -15,11 +15,12 @@
  */
 package com.proofpoint.configuration;
 
-import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 
 import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
 {
@@ -30,8 +31,8 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
 
     public ConfigurationProvider(Key<T> key, Class<T> configClass, String prefix)
     {
-        Preconditions.checkNotNull(key, "key");
-        Preconditions.checkNotNull(configClass, "configClass");
+        requireNonNull(key, "key is null");
+        requireNonNull(configClass, "configClass is null");
 
         this.key = key;
         this.configClass = configClass;
@@ -43,6 +44,11 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
     public void setConfigurationFactory(ConfigurationFactory configurationFactory)
     {
         this.configurationFactory = configurationFactory;
+    }
+
+    ConfigurationFactory getConfigurationFactory()
+    {
+        return configurationFactory;
     }
 
     public Key<T> getKey()
@@ -67,16 +73,9 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
     @Override
     public T get()
     {
-        Preconditions.checkNotNull(configurationFactory, "configurationFactory");
+        requireNonNull(configurationFactory, "configurationFactory is null");
 
-        return configurationFactory.build(this);
-    }
-
-    T getDefaults()
-    {
-        Preconditions.checkNotNull(configurationFactory, "configurationFactory");
-
-        return configurationFactory.buildDefaults(this);
+        return configurationFactory.build(configClass, prefix, key);
     }
 
     @Override
