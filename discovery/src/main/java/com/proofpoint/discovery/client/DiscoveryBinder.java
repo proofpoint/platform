@@ -81,7 +81,6 @@ public class DiscoveryBinder
     public void bindHttpBalancer(ServiceType serviceType)
     {
         requireNonNull(serviceType, "serviceType is null");
-        bindConfig(binder).annotatedWith(serviceType).prefixedWith("discovery." + serviceType.value()).to(ServiceSelectorConfig.class);
         bindConfig(binder).annotatedWith(serviceType).prefixedWith("service-balancer." + serviceType.value()).to(HttpServiceBalancerConfig.class);
         binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType).toProvider(new HttpServiceBalancerProvider(serviceType.value())).in(Scopes.SINGLETON);
     }

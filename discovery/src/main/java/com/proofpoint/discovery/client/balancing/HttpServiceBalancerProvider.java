@@ -15,26 +15,47 @@
  */
 package com.proofpoint.discovery.client.balancing;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.Sets;
+import com.google.inject.Binding;
+import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.Provider;
+import com.google.inject.Module;
+import com.google.inject.spi.DefaultElementVisitor;
+import com.google.inject.spi.Element;
+import com.google.inject.spi.Elements;
+import com.google.inject.spi.Message;
+import com.proofpoint.configuration.ConfigurationAwareProvider;
+import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.node.NodeInfo;
 
+import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 
-import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
 
 public final class HttpServiceBalancerProvider
-        implements Provider<HttpServiceBalancer>
+        implements ConfigurationAwareProvider<HttpServiceBalancer>
 {
+    private static final Key<?> STATIC_HTTP_SERVICE_BALANCER_FACTORY_KEY = Key.get(StaticHttpServiceBalancerFactory.class);
+    private static final Key<?> HTTP_SERVICE_BALANCER_FACTORY_KEY = Key.get(HttpServiceBalancerFactory.class);
+    private static final Set<Key<?>> BALANCER_FACTORY_KEYS = ImmutableSet.of(
+            STATIC_HTTP_SERVICE_BALANCER_FACTORY_KEY,
+            HTTP_SERVICE_BALANCER_FACTORY_KEY
+    );
+
     private final String type;
+    private ConfigurationFactory configurationFactory;
+    private StaticHttpServiceBalancerFactory staticServiceBalancerFactory;
     private HttpServiceBalancerFactory serviceBalancerFactory;
-    private Injector injector;
     private NodeInfo nodeInfo;
 
     public HttpServiceBalancerProvider(String type)
@@ -43,57 +64,98 @@ public final class HttpServiceBalancerProvider
         this.type = type;
     }
 
+    @Override
     @Inject
-    public void setInjector(Injector injector)
+    public void setConfigurationFactory(ConfigurationFactory configurationFactory)
     {
-        requireNonNull(injector, "injector is null");
-        this.injector = injector;
+        this.configurationFactory = configurationFactory;
     }
 
-    @Inject
-    public void setServiceBalancerFactory(HttpServiceBalancerFactory serviceBalancerFactory)
+    @Override
+    public void buildConfigObjects(Iterable<? extends Module> modules)
+    {
+        Builder<Key<?>> builder = ImmutableSet.builder();
+        for (Element element : Elements.getElements(modules)) {
+            Collection<Key<?>> factoryKey = element.acceptVisitor(new DefaultElementVisitor<Collection<Key<?>>>()
+            {
+                @Override
+                public <T> Collection<Key<?>> visit(Binding<T> binding)
+                {
+                    Key<T> key = binding.getKey();
+                    return Sets.filter(BALANCER_FACTORY_KEYS, k -> k.equals(key));
+                }
+            });
+            builder.addAll(firstNonNull(factoryKey, ImmutableList.of()));
+        }
+        Set<Key<?>> factoryKeys = builder.build();
+
+        configurationFactory.build(HttpServiceBalancerConfig.class, "service-balancer." + type);
+
+        if (factoryKeys.size() > 1) {
+            throw new ConfigurationException(ImmutableSet.of(new Message("Multiple HttpServiceBalancer factories bound: " + factoryKeys)));
+        }
+
+        if (factoryKeys.contains(STATIC_HTTP_SERVICE_BALANCER_FACTORY_KEY)) {
+            configurationFactory.build(StaticHttpServiceConfig.class, "service-balancer." + type);
+        }
+        else if (factoryKeys.contains(HTTP_SERVICE_BALANCER_FACTORY_KEY)) {
+            configurationFactory.build(ServiceSelectorConfig.class, "discovery." + type);
+        }
+        else {
+            throw new ConfigurationException(ImmutableSet.of(new Message("Could not find a factory for HttpServiceBalancer")));
+        }
+    }
+
+    @Inject(optional = true)
+    public void setStaticServiceBalancerFactory(StaticHttpServiceBalancerFactory staticServiceBalancerFactory)
+    {
+        requireNonNull(staticServiceBalancerFactory, "staticServiceBalancerFactory is null");
+        this.staticServiceBalancerFactory = staticServiceBalancerFactory;
+    }
+
+    @Inject(optional = true)
+    public void setServiceBalancerFactory(HttpServiceBalancerFactory serviceBalancerFactory, NodeInfo nodeInfo)
     {
         requireNonNull(serviceBalancerFactory, "serviceBalancerFactory is null");
-        this.serviceBalancerFactory = serviceBalancerFactory;
-    }
-
-    @Inject
-    public void setNodeInfo(NodeInfo nodeInfo)
-    {
         requireNonNull(nodeInfo, "nodeInfo is null");
+        this.serviceBalancerFactory = serviceBalancerFactory;
         this.nodeInfo = nodeInfo;
     }
 
     @Override
     public HttpServiceBalancer get()
     {
+        HttpServiceBalancerConfig balancerConfig = configurationFactory.build(HttpServiceBalancerConfig.class, "service-balancer." + type);
+
+        if (staticServiceBalancerFactory != null) {
+            StaticHttpServiceConfig staticHttpServiceConfig = configurationFactory.build(StaticHttpServiceConfig.class, "service-balancer." + type);
+            return staticServiceBalancerFactory.createHttpServiceBalancer(type, staticHttpServiceConfig, balancerConfig);
+        }
+
         requireNonNull(serviceBalancerFactory, "serviceBalancerFactory is null");
-        requireNonNull(injector, "injector is null");
         requireNonNull(nodeInfo, "nodeInfo is null");
 
-        ServiceSelectorConfig selectorConfig = injector.getInstance(Key.get(ServiceSelectorConfig.class, serviceType(type)));
-        HttpServiceBalancerConfig balancerConfig = injector.getInstance(Key.get(HttpServiceBalancerConfig.class, serviceType(type)));
+        ServiceSelectorConfig selectorConfig = configurationFactory.build(ServiceSelectorConfig.class, "discovery." + type);
 
-        HttpServiceBalancer serviceBalancer = serviceBalancerFactory.createHttpServiceBalancer(type, selectorConfig, balancerConfig, nodeInfo);
-        return serviceBalancer;
+        return serviceBalancerFactory.createHttpServiceBalancer(type, selectorConfig, balancerConfig, nodeInfo);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        HttpServiceBalancerProvider that = (HttpServiceBalancerProvider) o;
+        return Objects.equals(type, that.type);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(type, serviceBalancerFactory, injector, nodeInfo);
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        final HttpServiceBalancerProvider other = (HttpServiceBalancerProvider) obj;
-        return Objects.equals(this.type, other.type) && Objects.equals(this.serviceBalancerFactory, other.serviceBalancerFactory) && Objects.equals(this.injector, other.injector) && Objects.equals(this.nodeInfo, other.nodeInfo);
+        return Objects.hash(type);
     }
 }

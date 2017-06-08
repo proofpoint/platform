@@ -16,31 +16,25 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.ConfigurationException;
+import com.google.inject.CreationException;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.discovery.client.announce.Announcer;
-import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
-import com.proofpoint.json.JsonModule;
-import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.weakref.jmx.testing.TestingMBeanModule;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
-public class TestDiscoveryModule
+public class TestStaticDiscoveryModule
 {
     private Injector injector;
 
@@ -59,8 +53,8 @@ public class TestDiscoveryModule
             LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
             lifeCycleManager.stop();
         }
-        catch (Exception ignored)
-        {}
+        catch (Exception ignored) {
+        }
     }
 
     @Test
@@ -69,19 +63,18 @@ public class TestDiscoveryModule
     {
         injector = bootstrapTest()
                 .withModules(
-                        new JsonModule(),
-                        new TestingNodeModule(),
                         new ReportingModule(),
-                        new DiscoveryModule()
+                        new StaticDiscoveryModule()
                 )
-                .setRequiredConfigurationProperties(ImmutableMap.of("testing.discovery.uri", "fake://server"))
                 .initialize();
 
-        // should produce a discovery announcement client and a lookup client
-        assertNotNull(injector.getInstance(DiscoveryAnnouncementClient.class));
-        assertNotNull(injector.getInstance(DiscoveryLookupClient.class));
-        // should produce an Announcer
-        assertNotNull(injector.getInstance(Announcer.class));
+        try {
+            // should not produce an Announcer
+            injector.getInstance(Announcer.class);
+            fail("expected ConfigurationException");
+        }
+        catch (ConfigurationException ignored)
+        {}
     }
 
     @Test
@@ -90,39 +83,31 @@ public class TestDiscoveryModule
     {
         injector = bootstrapTest()
                 .withModules(
-                        new JsonModule(),
-                        new TestingNodeModule(),
                         new ReportingModule(),
-                        new DiscoveryModule(),
+                        new StaticDiscoveryModule(),
                         binder -> discoveryBinder(binder).bindHttpBalancer("foo"),
                         binder -> discoveryBinder(binder).bindHttpBalancer("bar")
                 )
-                .setRequiredConfigurationProperties(ImmutableMap.of("testing.discovery.uri", "fake://server"))
+                .setRequiredConfigurationProperties(ImmutableMap.of(
+                        "service-balancer.foo.uri", "fake://server",
+                        "service-balancer.bar.uri", "fake://server")
+                )
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("foo"))));
         assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("bar"))));
     }
 
-    @Test
-    public void testExecutorShutdown()
+    @Test(expectedExceptions = CreationException.class)
+    public void testBindAnnouncementFails()
             throws Exception
     {
         injector = bootstrapTest()
                 .withModules(
-                        new JsonModule(),
-                        new TestingNodeModule(),
-                        new DiscoveryModule(),
                         new ReportingModule(),
-                        new TestingMBeanModule()
+                        new StaticDiscoveryModule(),
+                        binder -> discoveryBinder(binder).bindHttpAnnouncement("foo")
                 )
                 .initialize();
-
-        ExecutorService executor = injector.getInstance(Key.get(ScheduledExecutorService.class, ForDiscoveryClient.class));
-        LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
-
-        assertFalse(executor.isShutdown());
-        lifeCycleManager.stop();
-        assertTrue(executor.isShutdown());
     }
 }
