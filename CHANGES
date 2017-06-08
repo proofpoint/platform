@@ -9,6 +9,12 @@ Platform 1.57
   "service-balancer.SERVICE.consecutive-failures" configuration option. A
   value of "5" is recommended.
 
+* Discovery
+
+  We created a StaticDiscoveryModule which does not talk to the discovery
+  service. It instead obtains service location from configuration, using
+  the "service-balancer.SERVICETYPE.uri" config option.
+
 * Configuration
 
   Warnings from config objects built by a ConfigurationAwareProvider are now
