@@ -15,6 +15,9 @@ Platform 1.57
   reported. Such objects are also enumerated by ConfigurationInspector and
   thus the corresponding configuration is logged upon startup.
 
+  In order to permit a ConfigurationAwareProvider to inspect the application
+  modules, we added a buildConfigObjects(Iterable<? extends Module>) method.
+
   We removed ConfigurationAwareProvider.setWarningsMonitor().
 
   We deprecated the

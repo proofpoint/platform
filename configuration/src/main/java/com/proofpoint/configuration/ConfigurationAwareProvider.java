@@ -1,5 +1,7 @@
 package com.proofpoint.configuration;
 
+import com.google.inject.ConfigurationException;
+import com.google.inject.Module;
 import com.google.inject.Provider;
 
 /**
@@ -19,4 +21,19 @@ public interface ConfigurationAwareProvider<T> extends Provider<T>
      * @param configurationFactory The Platform configuration factory.
      */
     void setConfigurationFactory(ConfigurationFactory configurationFactory);
+
+    /**
+     * Called during configuration validation. Must use the
+     * {@link ConfigurationFactory} previously set to build all config
+     * objects that this provider will need
+     *
+     * @param modules The application modules. The provider may inspect these
+     * in order to determine which config objects to build.
+     * @throws ConfigurationException when a programming error prevents
+     * this building.
+     */
+    default void buildConfigObjects(Iterable<? extends Module> modules)
+    {
+        get();
+    }
 }
