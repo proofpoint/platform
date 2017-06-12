@@ -52,6 +52,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -333,6 +334,8 @@ public class Bootstrap
         else {
             builder = builder.withRequiredProperties(requiredConfigurationProperties);
         }
+        WarningLoggingMonitor warningsMonitor = new WarningLoggingMonitor();
+        builder = builder.withWarningsMonitor(warningsMonitor);
         ConfigurationFactory configurationFactory = builder.build();
 
         if (logging != null) {
@@ -342,12 +345,7 @@ public class Bootstrap
             logging.configure(configuration);
         }
 
-        // create warning logger now that we have logging initialized
-        final List<String> warnings = new ArrayList<>();
-        final WarningsMonitor warningsMonitor = message -> {
-            log.warn(message);
-            warnings.add(message);
-        };
+        warningsMonitor.loggingInitialized();
 
         // initialize configuration factory
         for (Module module : modules) {
@@ -358,7 +356,7 @@ public class Bootstrap
         }
 
         // Validate configuration
-        ConfigurationValidator configurationValidator = new ConfigurationValidator(configurationFactory, warningsMonitor);
+        ConfigurationValidator configurationValidator = new ConfigurationValidator(configurationFactory);
         List<Message> messages = configurationValidator.validate(modules);
 
         // Log effective configuration
@@ -633,6 +631,34 @@ public class Bootstrap
                 throws Exception
         {
             return bootstrap.initialize();
+        }
+    }
+
+    private class WarningLoggingMonitor
+            implements WarningsMonitor
+    {
+        private final AtomicBoolean loggingInitialized = new AtomicBoolean();
+        private final List<String> warnings = new ArrayList<>();
+
+        @Override
+        public void onWarning(String message)
+        {
+            if (loggingInitialized.get()) {
+                log.warn(message);
+            }
+            else {
+                warnings.add(message);
+            }
+
+        }
+
+        public void loggingInitialized()
+        {
+            loggingInitialized.set(true);
+            for (String warning : warnings) {
+                onWarning(warning);
+            }
+            warnings.clear();
         }
     }
 }

@@ -9,6 +9,35 @@ Platform 1.57
   "service-balancer.SERVICE.consecutive-failures" configuration option. A
   value of "5" is recommended.
 
+* Discovery
+
+  We created a StaticDiscoveryModule which does not talk to the discovery
+  service. It instead obtains service location from configuration, using
+  the "service-balancer.SERVICETYPE.uri" config option.
+
+* Configuration
+
+  Warnings from config objects built by a ConfigurationAwareProvider are now
+  reported. Such objects are also enumerated by ConfigurationInspector and
+  thus the corresponding configuration is logged upon startup.
+
+  In order to permit a ConfigurationAwareProvider to inspect the application
+  modules, we added a buildConfigObjects(Iterable<? extends Module>) method.
+
+  We removed ConfigurationAwareProvider.setWarningsMonitor().
+
+  We deprecated the
+  ConfigurationValidator(ConfigurationFactory, WarningsMonitor) constructor.
+  Use the new ConfigurationValidator(ConfigurationFactory) constructor.
+
+  We deprecated the ConfigRecord.createConfigRecord(ConfigurationFactory)
+  static factory method. Callers should not be creating their own ConfigRecord
+  objects.
+
+  ConfigRecord.getKey() can now return null and
+  ConfigRecord.getComponentName() can now return the empty string
+  (both if the config object was built by a ConfigurationAwareProvider).
+
 * Library Upgrades
 
   - Guava to 22.0 (from 21.0)

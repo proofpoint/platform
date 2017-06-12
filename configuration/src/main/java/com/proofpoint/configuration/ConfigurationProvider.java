@@ -15,11 +15,12 @@
  */
 package com.proofpoint.configuration;
 
-import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 
 import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
 {
@@ -27,12 +28,11 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
     private final Class<T> configClass;
     private final String prefix;
     private ConfigurationFactory configurationFactory;
-    private WarningsMonitor warningsMonitor;
 
     public ConfigurationProvider(Key<T> key, Class<T> configClass, String prefix)
     {
-        Preconditions.checkNotNull(key, "key");
-        Preconditions.checkNotNull(configClass, "configClass");
+        requireNonNull(key, "key is null");
+        requireNonNull(configClass, "configClass is null");
 
         this.key = key;
         this.configClass = configClass;
@@ -46,11 +46,9 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
         this.configurationFactory = configurationFactory;
     }
 
-    @Override
-    @Inject(optional = true)
-    public void setWarningsMonitor(WarningsMonitor warningsMonitor)
+    ConfigurationFactory getConfigurationFactory()
     {
-        this.warningsMonitor = warningsMonitor;
+        return configurationFactory;
     }
 
     public Key<T> getKey()
@@ -75,16 +73,9 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
     @Override
     public T get()
     {
-        Preconditions.checkNotNull(configurationFactory, "configurationFactory");
+        requireNonNull(configurationFactory, "configurationFactory is null");
 
-        return configurationFactory.build(this, warningsMonitor);
-    }
-
-    T getDefaults()
-    {
-        Preconditions.checkNotNull(configurationFactory, "configurationFactory");
-
-        return configurationFactory.buildDefaults(this);
+        return configurationFactory.build(configClass, prefix, key);
     }
 
     @Override

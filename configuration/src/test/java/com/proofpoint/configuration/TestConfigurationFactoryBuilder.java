@@ -84,7 +84,7 @@ public class TestConfigurationFactoryBuilder
 
     private static Injector createInjector(ConfigurationFactory configurationFactory, Module module)
     {
-        List<Message> messages = new ConfigurationValidator(configurationFactory, null).validate(module);
+        List<Message> messages = new ConfigurationValidator(configurationFactory).validate(module);
         return Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
     }
 

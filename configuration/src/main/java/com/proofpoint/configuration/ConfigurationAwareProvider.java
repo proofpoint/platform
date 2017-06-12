@@ -1,12 +1,14 @@
 package com.proofpoint.configuration;
 
+import com.google.inject.ConfigurationException;
+import com.google.inject.Module;
 import com.google.inject.Provider;
 
 /**
  * A provider with access to the Platform {@link ConfigurationFactory}.
  *
  * Implementing this interface ensures that the provider gets access to the
- * {@link ConfigurationFactory} and {@link WarningsMonitor} before the first
+ * {@link ConfigurationFactory} before the first
  * call to {@link Provider#get()}.
  *
  * @param <T> Element type that is returned by this provider.
@@ -21,10 +23,17 @@ public interface ConfigurationAwareProvider<T> extends Provider<T>
     void setConfigurationFactory(ConfigurationFactory configurationFactory);
 
     /**
-     * May be called by the Platform framework before the first call to get.
-     * This is an optional call.
+     * Called during configuration validation. Must use the
+     * {@link ConfigurationFactory} previously set to build all config
+     * objects that this provider will need
      *
-     * @param warningsMonitor A Platform {@link WarningsMonitor}.
+     * @param modules The application modules. The provider may inspect these
+     * in order to determine which config objects to build.
+     * @throws ConfigurationException when a programming error prevents
+     * this building.
      */
-    void setWarningsMonitor(WarningsMonitor warningsMonitor);
+    default void buildConfigObjects(Iterable<? extends Module> modules)
+    {
+        get();
+    }
 }

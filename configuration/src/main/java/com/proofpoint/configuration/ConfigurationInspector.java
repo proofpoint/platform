@@ -15,7 +15,6 @@
  */
 package com.proofpoint.configuration;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ImmutableSortedSet.Builder;
@@ -23,6 +22,7 @@ import com.google.common.collect.Ordering;
 import com.google.inject.Key;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,15 +31,17 @@ import java.util.SortedSet;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.proofpoint.configuration.ConfigurationMetadata.getConfigurationMetadata;
 import static com.proofpoint.configuration.ConfigurationMetadata.isConfigClass;
+import static java.util.Objects.requireNonNull;
 
 public class ConfigurationInspector
 {
     public SortedSet<ConfigRecord<?>> inspect(ConfigurationFactory configurationFactory)
     {
         ImmutableSortedSet.Builder<ConfigRecord<?>> builder = ImmutableSortedSet.naturalOrder();
-        for (ConfigurationProvider<?> configurationProvider : configurationFactory.getConfigurationProviders()) {
-            builder.add(ConfigRecord.createConfigRecord(configurationProvider));
+        for (ConfigurationIdentity<?> configurationIdentity : configurationFactory.getRegisteredConfigs()) {
+            builder.add(ConfigRecord.createConfigRecord(configurationFactory, configurationIdentity));
         }
 
         return builder.build();
@@ -80,24 +82,28 @@ public class ConfigurationInspector
         private final String prefix;
         private final SortedSet<ConfigAttribute> attributes;
 
+        @Deprecated
         public static <T> ConfigRecord<T> createConfigRecord(ConfigurationProvider<T> configurationProvider)
         {
-            return new ConfigRecord<>(configurationProvider);
+            return new ConfigRecord<>(configurationProvider.getConfigurationFactory(), configurationProvider.getConfigClass(), configurationProvider.getPrefix(), configurationProvider.getKey());
         }
 
-        private ConfigRecord(ConfigurationProvider<T> configurationProvider)
+        static <T> ConfigRecord<T> createConfigRecord(ConfigurationFactory configurationFactory, ConfigurationIdentity<T> configurationIdentity)
         {
-            Preconditions.checkNotNull(configurationProvider, "configurationProvider");
+            return new ConfigRecord<>(configurationFactory, configurationIdentity.getConfigClass(), configurationIdentity.getPrefix(), configurationIdentity.getKey());
+        }
 
-            key = configurationProvider.getKey();
-            configClass = configurationProvider.getConfigClass();
-            prefix = configurationProvider.getPrefix();
+        private ConfigRecord(ConfigurationFactory configurationFactory, Class<T> configClass, @Nullable String prefix, @Nullable Key<T> key)
+        {
+            this.configClass = requireNonNull(configClass, "configClass is null");
+            this.prefix = prefix;
+            this.key = key;
 
-            ConfigurationMetadata<T> metadata = configurationProvider.getConfigurationMetadata();
+            ConfigurationMetadata<T> metadata = getConfigurationMetadata(configClass);
 
             T instance = null;
             try {
-                instance = configurationProvider.get();
+                instance = configurationFactory.build(configClass, prefix);
             }
             catch (Throwable ignored) {
                 // provider could blow up for any reason, which is fine for this code
@@ -106,12 +112,11 @@ public class ConfigurationInspector
 
             T defaults = null;
             try {
-                defaults = configurationProvider.getDefaults();
+                defaults = configurationFactory.buildDefaults(configClass, prefix);
             }
             catch (Throwable ignored) {
             }
 
-            String prefix = configurationProvider.getPrefix();
             prefix = prefix == null ? "" : (prefix + ".");
 
             ImmutableSortedSet.Builder<ConfigAttribute> builder = ImmutableSortedSet.naturalOrder();
@@ -167,9 +172,9 @@ public class ConfigurationInspector
             }
             for (Entry<K, V> entry : map.entrySet()) {
                 if (valueConfigClass != null) {
-                    enumerateConfig(ConfigurationMetadata.getConfigurationMetadata(valueConfigClass),
+                    enumerateConfig(getConfigurationMetadata(valueConfigClass),
                             entry.getValue(),
-                            newDefaultInstance(ConfigurationMetadata.getConfigurationMetadata(valueConfigClass)),
+                            newDefaultInstance(getConfigurationMetadata(valueConfigClass)),
                             propertyName + "." + entry.getKey().toString() + ".",
                             builder,
                             attributeName + "[" + entry.getKey().toString() + "]");
@@ -185,6 +190,9 @@ public class ConfigurationInspector
         public String getComponentName()
         {
             Key<?> key = getKey();
+            if (key == null) {
+                return "";
+            }
             String componentName = "";
             if (key.getAnnotationType() != null) {
                 componentName = "@" + key.getAnnotationType().getSimpleName() + " ";
@@ -193,6 +201,7 @@ public class ConfigurationInspector
             return componentName;
         }
 
+        @Nullable
         public Key<T> getKey()
         {
             return key;
@@ -254,11 +263,11 @@ public class ConfigurationInspector
 
         private ConfigAttribute(String attributeName, String propertyName, String defaultValue, String currentValue, String description, boolean securitySensitive)
         {
-            Preconditions.checkNotNull(attributeName, "attributeName");
-            Preconditions.checkNotNull(propertyName, "propertyName");
-            Preconditions.checkNotNull(defaultValue, "defaultValue");
-            Preconditions.checkNotNull(currentValue, "currentValue");
-            Preconditions.checkNotNull(description, "description");
+            requireNonNull(attributeName, "attributeName is null");
+            requireNonNull(propertyName, "propertyName is null");
+            requireNonNull(defaultValue, "defaultValue is null");
+            requireNonNull(currentValue, "currentValue is null");
+            requireNonNull(description, "description is null");
 
             this.attributeName = attributeName;
             this.propertyName = propertyName;

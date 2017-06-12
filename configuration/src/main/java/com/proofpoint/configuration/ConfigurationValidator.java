@@ -20,27 +20,36 @@ import com.google.common.collect.Lists;
 import com.google.inject.Binding;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Module;
-import com.google.inject.Provider;
 import com.google.inject.spi.DefaultElementVisitor;
 import com.google.inject.spi.Element;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.PrivateElements;
 import com.google.inject.spi.ProviderInstanceBinding;
 
+import javax.inject.Provider;
 import java.util.List;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 
 public class ConfigurationValidator
 {
     private final ConfigurationFactory configurationFactory;
-    private final WarningsMonitor warningsMonitor;
 
+    /**
+     * @deprecated Use {@link #ConfigurationValidator(ConfigurationFactory)}.
+     */
+    @Deprecated
     public ConfigurationValidator(ConfigurationFactory configurationFactory, WarningsMonitor warningsMonitor)
     {
+        this(configurationFactory);
+    }
+
+    public ConfigurationValidator(ConfigurationFactory configurationFactory)
+    {
+        requireNonNull(configurationFactory, "configurationFactory is null");
         this.configurationFactory = configurationFactory;
-        this.warningsMonitor = warningsMonitor;
     }
 
     public List<Message> validate(Module... modules)
@@ -59,25 +68,22 @@ public class ConfigurationValidator
             configurationFactory.getMonitor().onError(message);
         }
 
-        ElementsIterator elementsIterator = new ElementsIterator(modules);
-        for (final Element element : elementsIterator) {
+        for (final Element element : new ElementsIterator(modules)) {
             element.acceptVisitor(new DefaultElementVisitor<Void>()
             {
                 @Override
                 public <T> Void visit(Binding<T> binding)
                 {
-                    // look for ConfigurationProviders...
+                    // look for ConfigurationAwareProviders...
                     if (binding instanceof ProviderInstanceBinding) {
                         ProviderInstanceBinding<?> providerInstanceBinding = (ProviderInstanceBinding<?>) binding;
-                        Provider<?> provider = providerInstanceBinding.getProviderInstance();
+                        Provider<?> provider = providerInstanceBinding.getUserSuppliedProvider();
                         if (provider instanceof ConfigurationAwareProvider) {
                             ConfigurationAwareProvider<?> configurationProvider = (ConfigurationAwareProvider<?>) provider;
                             // give the provider the configuration factory
                             configurationProvider.setConfigurationFactory(configurationFactory);
-                            configurationProvider.setWarningsMonitor(warningsMonitor);
                             try {
-                                // call the getter which will cause object creation
-                                configurationProvider.get();
+                                configurationProvider.buildConfigObjects(modules);
                             } catch (ConfigurationException e) {
                                 // if we got errors, add them to the errors list
                                 for (Message message : e.getErrorMessages()) {
@@ -85,7 +91,6 @@ public class ConfigurationValidator
                                 }
                             }
                         }
-
                     }
 
                     return null;
