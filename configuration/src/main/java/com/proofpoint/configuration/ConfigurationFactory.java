@@ -268,7 +268,7 @@ public final class ConfigurationFactory
             if (e instanceof InvocationTargetException && e.getCause() != null) {
                 e = e.getCause();
             }
-            throw new InvalidConfigurationException(e, "Error invoking configuration method [%s]", injectionPoint.getSetter().toGenericString());
+            throw new InvalidConfigurationException(e, format("Error invoking configuration method [%s]", injectionPoint.getSetter().toGenericString()));
         }
     }
 
