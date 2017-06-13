@@ -75,10 +75,11 @@ public class ConfigurationFactoryTest
             createInjector(properties, null, null, null, monitor, binder -> bindConfig(binder).to(AnnotatedGetter.class));
 
             fail("Expected an exception in object creation due to conflicting configuration");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(2);
-            assertContainsAllOf(e.getMessage(), "not a valid setter", "getStringValue") ;
-            assertContainsAllOf(e.getMessage(), "not a valid setter", "isBooleanValue") ;
+            assertContainsAllOf(e.getMessage(), "not a valid setter", "getStringValue");
+            assertContainsAllOf(e.getMessage(), "not a valid setter", "isBooleanValue");
         }
     }
 
@@ -343,11 +344,12 @@ public class ConfigurationFactoryTest
             createInjector(properties, null, null, null, monitor, binder -> bindConfig(binder).to(LegacyConfigPresent.class));
 
             fail("Expected an exception in object creation due to conflicting configuration");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(1);
             monitor.assertMatchingWarningRecorded("string-value", "replaced", "Use 'string-a'");
-            assertContainsAllOf(e.getMessage(), "string-value", "conflicts with property", "string-a") ;
+            assertContainsAllOf(e.getMessage(), "string-value", "conflicts with property", "string-a");
         }
     }
 
@@ -367,10 +369,11 @@ public class ConfigurationFactoryTest
             createInjector(ImmutableMap.<String, String>of(), null, moduleDefaults, moduleDefaultSource, monitor, binder -> bindConfig(binder).to(LegacyConfigPresent.class));
 
             fail("Expected an exception in object creation due to conflicting configuration");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
-            assertContainsAllOf(e.getMessage(), "Module default property", "string-value", "(from testing module) has been replaced", "string-a") ;
+            assertContainsAllOf(e.getMessage(), "Module default property", "string-value", "(from testing module) has been replaced", "string-a");
         }
     }
 
@@ -386,10 +389,11 @@ public class ConfigurationFactoryTest
             createInjector(ImmutableMap.<String, String>of(), applicationDefaults, null, null, monitor, binder -> bindConfig(binder).to(LegacyConfigPresent.class));
 
             fail("Expected an exception in object creation due to conflicting configuration");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
-            assertContainsAllOf(e.getMessage(), "Application default property", "string-value", "has been replaced", "string-a") ;
+            assertContainsAllOf(e.getMessage(), "Application default property", "string-value", "has been replaced", "string-a");
         }
     }
 
@@ -474,7 +478,8 @@ public class ConfigurationFactoryTest
             createInjector(properties, null, null, null, monitor, binder -> bindConfig(binder).to(DefunctConfigPresent.class));
 
             fail("Expected an exception in object creation due to use of defunct config");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Defunct property", "'defunct-value", "cannot be configured");
@@ -497,7 +502,8 @@ public class ConfigurationFactoryTest
             createInjector(ImmutableMap.<String, String>of(), null, moduleDefaults, moduleDefaultSource, monitor, binder -> bindConfig(binder).to(DefunctConfigPresent.class));
 
             fail("Expected an exception in object creation due to use of defunct config");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Defunct property", "'defunct-value", "cannot have a module default (from testing module)");
@@ -516,7 +522,8 @@ public class ConfigurationFactoryTest
             createInjector(ImmutableMap.<String, String>of(), applicationDefaults, null, null, monitor, binder -> bindConfig(binder).to(DefunctConfigPresent.class));
 
             fail("Expected an exception in object creation due to use of defunct config");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Defunct property", "'defunct-value", "cannot have an application default");
@@ -534,7 +541,8 @@ public class ConfigurationFactoryTest
             createInjector(properties, null, null, null, monitor, binder -> bindConfig(binder).to(BeanValidationClass.class));
 
             fail("Expected an exception in object creation due to coercion failure");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Could not coerce value 'not a number' to int", "'int-value'", "in order to call", "BeanValidationClass.setIntValue(int)");
@@ -552,7 +560,8 @@ public class ConfigurationFactoryTest
             createInjector(properties, null, null, null, monitor, binder -> bindConfig(binder).to(AnnotatedSetter.class));
 
             fail("Expected an exception in object creation due to coercion failure");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Could not coerce value 'not a boolean' to boolean", "'boolean-value'", "in order to call", "AnnotatedSetter.setBooleanValue(boolean)");
@@ -587,7 +596,8 @@ public class ConfigurationFactoryTest
             createInjector(properties, null, null, null, monitor, binder -> bindConfig(binder).to(BeanValidationClass.class));
 
             fail("Expected an exception in object creation due to bean validation failure");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(2);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Invalid configuration property", "'int-value'", "must be less than or equal to 100", "BeanValidationClass");
@@ -599,7 +609,7 @@ public class ConfigurationFactoryTest
     public void testMapModuleDefaultsThrows()
     {
         Map<String, String> moduleDefaults = ImmutableMap.of(
-            "map-a.k3", "this is a"
+                "map-a.k3", "this is a"
         );
         Map<String, ConfigurationDefaultingModule> moduleDefaultSource = ImmutableMap.of(
                 "map-a.k3", TEST_DEFAULTING_MODULE
@@ -621,7 +631,7 @@ public class ConfigurationFactoryTest
     public void testMapValueModuleDefaultsThrows()
     {
         Map<String, String> moduleDefaults = ImmutableMap.of(
-            "map-b.k3.string-value", "this is a"
+                "map-b.k3.string-value", "this is a"
         );
         Map<String, ConfigurationDefaultingModule> moduleDefaultSource = ImmutableMap.of(
                 "map-b.k3.string-value", TEST_DEFAULTING_MODULE
@@ -643,7 +653,7 @@ public class ConfigurationFactoryTest
     public void testMapApplicationDefaultsThrows()
     {
         Map<String, String> applicationDefaults = ImmutableMap.of(
-            "map-a.k3", "this is a"
+                "map-a.k3", "this is a"
         );
         TestMonitor monitor = new TestMonitor();
         try {
@@ -662,7 +672,7 @@ public class ConfigurationFactoryTest
     public void testMapValueApplicationDefaultsThrows()
     {
         Map<String, String> applicationDefaults = ImmutableMap.of(
-            "map-b.k3.string-value", "this is a"
+                "map-b.k3.string-value", "this is a"
         );
         TestMonitor monitor = new TestMonitor();
         try {
@@ -738,7 +748,6 @@ public class ConfigurationFactoryTest
         }
     }
 
-
     @Test
     public void testConfigurationThroughDeprecatedMapConfig()
     {
@@ -755,7 +764,6 @@ public class ConfigurationFactoryTest
         assertEquals(deprecatedMapConfigPresent.getMapA(), ImmutableMap.<String, String>of("k1", "this is a"));
         assertEquals(deprecatedMapConfigPresent.getMapB(), ImmutableMap.<String, String>of("k2", "this is b"));
     }
-
 
     @Test
     public void testConfigurationThroughLegacyMapValueConfig()
@@ -834,7 +842,6 @@ public class ConfigurationFactoryTest
         assertEquals(deprecatedMapValueConfigPresent.getMapA().get("k").getStringB(), "this is b");
     }
 
-
     @Test
     public void testDefunctPropertyInMapValueConfigThrows()
     {
@@ -846,7 +853,8 @@ public class ConfigurationFactoryTest
             createInjector(properties, null, null, null, monitor, binder -> bindConfig(binder).to(DefunctMapValueConfigPresent.class));
 
             fail("Expected an exception in object creation due to use of defunct config");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Defunct property", "'map-a.k.defunct-value", "cannot be configured");
@@ -878,7 +886,8 @@ public class ConfigurationFactoryTest
         TestMonitor monitor = new TestMonitor();
         try {
             createInjector(properties, null, null, null, monitor, binder -> bindConfig(binder).to(MapValueBeanValidationClass.class));
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(2);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Invalid configuration property", "'map-a.k.int-value'", "must be less than or equal to 100", "BeanValidationClass");
@@ -956,8 +965,8 @@ public class ConfigurationFactoryTest
         return Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
     }
 
-
-    public static class AnnotatedGetter {
+    public static class AnnotatedGetter
+    {
         private String stringValue;
         private boolean booleanValue;
 
@@ -983,8 +992,9 @@ public class ConfigurationFactoryTest
             this.booleanValue = booleanValue;
         }
     }
-    
-    static class AnnotatedSetter {
+
+    static class AnnotatedSetter
+    {
         private String stringValue;
         private boolean booleanValue;
 
