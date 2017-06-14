@@ -184,7 +184,7 @@ public final class ConfigurationFactory
                 setConfigProperty(instance, attribute, prefix, isDefault, problems);
             }
             catch (InvalidConfigurationException e) {
-                problems.addError(e.getCause(), e.getMessage());
+                problems.addError(e.getCause(), "%s", e.getMessage());
             }
         }
 
