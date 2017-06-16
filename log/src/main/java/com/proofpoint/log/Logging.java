@@ -361,7 +361,7 @@ public class Logging
             throws IOException
     {
         if (config.getLogPath() == null && !config.isConsoleEnabled()) {
-            throw new IllegalArgumentException("No log file is configured (log.output-file) and logging to console is disabled (log.enable-console)");
+            throw new IllegalArgumentException("No log file is configured (log.path) and logging to console is disabled (log.enable-console)");
         }
 
         if (config.getLogPath() != null) {
