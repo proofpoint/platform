@@ -69,6 +69,7 @@ public class LoggingConfiguration
     }
 
     @LegacyConfig(value = "log.max-size-in-bytes", replacedBy = "log.max-size")
+    @Deprecated
     public LoggingConfiguration setMaxSegmentSizeInBytes(long maxSegmentSizeInBytes)
     {
         this.maxSegmentSize = new DataSize(maxSegmentSizeInBytes, Unit.BYTE);
