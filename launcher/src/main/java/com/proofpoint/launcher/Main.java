@@ -327,6 +327,7 @@ public class Main
             }
             if (new File(logLevelsPath).exists()) {
                 javaArgs.add("-Dlog.levels-file=" + logLevelsPath);
+                javaArgs.add("-Dlog.enable-console=false");
             }
             javaArgs.add("-jar");
             javaArgs.add(installPath + "/lib/launcher.jar");
