@@ -323,10 +323,11 @@ public class Main
             }
             javaArgs.add("-Dconfig=" + configPath);
             if (daemon) {
-                javaArgs.add("-Dlog.output-file=" + logPath);
+                javaArgs.add("-Dlog.path=" + logPath);
             }
             if (new File(logLevelsPath).exists()) {
                 javaArgs.add("-Dlog.levels-file=" + logLevelsPath);
+                javaArgs.add("-Dlog.enable-console=false");
             }
             javaArgs.add("-jar");
             javaArgs.add(installPath + "/lib/launcher.jar");
