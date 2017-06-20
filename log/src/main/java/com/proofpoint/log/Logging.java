@@ -19,8 +19,7 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.rolling.RollingFileAppender;
-import ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP;
-import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
+import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
 import ch.qos.logback.core.util.FileSize;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
@@ -243,19 +242,14 @@ public class Logging
         recoverTempFiles(logPath);
 
         RollingFileAppender<T> fileAppender = new RollingFileAppender<>();
-        TimeBasedRollingPolicy<T> rollingPolicy = new TimeBasedRollingPolicy<>();
-        SizeAndTimeBasedFNATP<T> triggeringPolicy = new SizeAndTimeBasedFNATP<>();
+        SizeAndTimeBasedRollingPolicy<T> rollingPolicy = new SizeAndTimeBasedRollingPolicy<>();
 
         rollingPolicy.setContext(context);
         rollingPolicy.setFileNamePattern(logPath + "-%d{yyyy-MM-dd}.%i.log.gz");
         rollingPolicy.setMaxHistory(maxHistory);
         rollingPolicy.setTotalSizeCap(new FileSize(maxTotalSize.toBytes()));
-        rollingPolicy.setTimeBasedFileNamingAndTriggeringPolicy(triggeringPolicy);
         rollingPolicy.setParent(fileAppender);
-
-        triggeringPolicy.setContext(context);
-        triggeringPolicy.setTimeBasedRollingPolicy(rollingPolicy);
-        triggeringPolicy.setMaxFileSize(new FileSize(maxFileSize.toBytes()));
+        rollingPolicy.setMaxFileSize(new FileSize(maxFileSize.toBytes()));
 
         fileAppender.setContext(context);
         fileAppender.setFile(logPath);
@@ -264,7 +258,6 @@ public class Logging
         fileAppender.setRollingPolicy(rollingPolicy);
 
         rollingPolicy.start();
-        triggeringPolicy.start();
         fileAppender.start();
         return fileAppender;
     }
