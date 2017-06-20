@@ -17,8 +17,8 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Table;
 import com.google.inject.Inject;
+import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 
@@ -33,6 +33,7 @@ import static java.util.Objects.requireNonNull;
 
 public class ReportCollector
 {
+    private static final Logger log = Logger.get(ReportCollector.class);
     private final String applicationPrefix;
     private final MinuteBucketIdProvider bucketIdProvider;
     private final ReportedBeanRegistry reportedBeanRegistry;
@@ -63,41 +64,45 @@ public class ReportCollector
 
     public void collectData()
     {
-        final long lastSystemTimeMillis = bucketIdProvider.getLastSystemTimeMillis();
-        ImmutableTable.Builder<String, Map<String, String>, Object> builder = ImmutableTable.builder();
-        int numAttributes = 0;
-        for (RegistrationInfo registrationInfo : reportedBeanRegistry.getReportedBeans()) {
-            for (ReportedBeanAttribute attribute : registrationInfo.getReportedBean().getAttributes()) {
-                Object value = null;
+        try {
+            long lastSystemTimeMillis = bucketIdProvider.getLastSystemTimeMillis();
+            ImmutableTable.Builder<String, Map<String, String>, Object> builder = ImmutableTable.builder();
+            int numAttributes = 0;
+            for (RegistrationInfo registrationInfo : reportedBeanRegistry.getReportedBeans()) {
+                for (ReportedBeanAttribute attribute : registrationInfo.getReportedBean().getAttributes()) {
+                    Object value = null;
 
-                try {
-                    value = attribute.getValue(null);
-                }
-                catch (AttributeNotFoundException | MBeanException | ReflectionException ignored) {
-                }
-
-                if (value != null && isReportable(value)) {
-                    if (!(value instanceof Number)) {
-                        value = value.toString();
+                    try {
+                        value = attribute.getValue(null);
+                    }
+                    catch (AttributeNotFoundException | MBeanException | ReflectionException ignored) {
                     }
 
-                    ++numAttributes;
-                    StringBuilder stringBuilder = new StringBuilder();
-                    if (registrationInfo.isApplicationPrefix()) {
-                        stringBuilder.append(applicationPrefix);
+                    if (value != null && isReportable(value)) {
+                        if (!(value instanceof Number)) {
+                            value = value.toString();
+                        }
+
+                        ++numAttributes;
+                        StringBuilder stringBuilder = new StringBuilder();
+                        if (registrationInfo.isApplicationPrefix()) {
+                            stringBuilder.append(applicationPrefix);
+                        }
+                        String name = stringBuilder
+                                .append(registrationInfo.getNamePrefix())
+                                .append('.')
+                                .append(attribute.getName())
+                                .toString();
+                        builder.put(name, registrationInfo.getTags(), value);
                     }
-                    String name = stringBuilder
-                            .append(registrationInfo.getNamePrefix())
-                            .append('.')
-                            .append(attribute.getName())
-                            .toString();
-                    builder.put(name, registrationInfo.getTags(), value);
                 }
             }
+            builder.put("ReportCollector.NumMetrics", versionTags, numAttributes);
+            reportSink.report(lastSystemTimeMillis, builder.build());
         }
-        builder.put("ReportCollector.NumMetrics", versionTags, numAttributes);
-        final Table<String, Map<String, String>, Object> collectedData = builder.build();
-        reportSink.report(lastSystemTimeMillis, collectedData);
+        catch (Throwable e) {
+            log.error(e, "Unexpected exception from report collection");
+        }
     }
 
     private static boolean isReportable(Object value)

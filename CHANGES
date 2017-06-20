@@ -17,6 +17,9 @@ Platform 1.58
   and minimums. Recommended values are 0.2 for ratio and 10 for minimum.
   This feature should only be enabled in combination with failure accrual.
 
+* [Bug] The reporting client catches and logs exceptions thrown while
+  collecting metrics.
+
 Platform 1.57
 
 * BalancingHttpClient
