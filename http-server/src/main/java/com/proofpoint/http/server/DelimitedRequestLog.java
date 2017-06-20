@@ -30,6 +30,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import java.io.IOException;
 
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 class DelimitedRequestLog
         implements RequestLog, LifeCycle
@@ -133,8 +134,13 @@ class DelimitedRequestLog
                         .toFormatter();
 
         @Override
-        public void doEncode(HttpRequestEvent event)
-                throws IOException
+        public byte[] headerBytes()
+        {
+            return null;
+        }
+
+        @Override
+        public byte[] encode(HttpRequestEvent event)
         {
             StringBuilder builder = new StringBuilder();
             builder.append(isoFormatter.print(event.getTimeStamp()))
@@ -159,15 +165,13 @@ class DelimitedRequestLog
                     .append('\t')
                     .append(event.getTraceToken())
                     .append('\n');
-
-            outputStream.write(builder.toString().getBytes("UTF-8"));
-            outputStream.flush();
+            return builder.toString().getBytes(UTF_8);
         }
 
         @Override
-        public void close()
-                throws IOException
+        public byte[] footerBytes()
         {
+            return null;
         }
     }
 }

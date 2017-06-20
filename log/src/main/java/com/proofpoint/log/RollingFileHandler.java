@@ -74,19 +74,21 @@ final class RollingFileHandler
             extends EncoderBase<String>
     {
         @Override
-        public void doEncode(String event)
-                throws IOException
+        public byte[] headerBytes()
         {
-            outputStream.write(event.getBytes(UTF_8));
-            // necessary if output stream is buffered
-            outputStream.flush();
+            return null;
         }
 
         @Override
-        public void close()
-                throws IOException
+        public byte[] encode(String event)
         {
-            outputStream.flush();
+            return event.getBytes(UTF_8);
+        }
+
+        @Override
+        public byte[] footerBytes()
+        {
+            return null;
         }
     }
 }
