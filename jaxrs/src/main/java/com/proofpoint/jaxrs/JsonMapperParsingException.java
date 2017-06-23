@@ -15,6 +15,11 @@
  */
 package com.proofpoint.jaxrs;
 
+import com.fasterxml.jackson.core.JsonLocation;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonMappingException.Reference;
+
 /**
  * Wraps JsonProcessingExceptions to provide more information about parsing errors.
  */
@@ -22,11 +27,61 @@ public class JsonMapperParsingException extends ParsingException
 {
     private final Class<?> type;
 
+    /**
+     * @deprecated Will no longer be public
+     */
+    @Deprecated
     public JsonMapperParsingException(Class<?> type, Throwable cause)
     {
-        super(String.format("Invalid json for Java type %s", type), cause);
+        this(type, "Invalid json", cause);
+    }
 
+    private JsonMapperParsingException(Class<?> type, String message, Throwable cause)
+    {
+        super(message, cause);
         this.type = type;
+    }
+
+    static JsonMapperParsingException jsonMapperParsingException(Class<?> type, Throwable cause)
+    {
+        StringBuilder sb = new StringBuilder("Invalid json");
+        JsonLocation location = null;
+        if (cause instanceof JsonProcessingException) {
+            location = ((JsonProcessingException) cause).getLocation();
+        }
+        if (location != null) {
+            sb.append(" line ")
+                    .append(location.getLineNr())
+                    .append(" column ")
+                    .append(location.getColumnNr());
+        }
+
+        if (cause instanceof JsonMappingException) {
+            sb.append(" field ");
+            boolean appendDot = false;
+            for (Reference reference : ((JsonMappingException) cause).getPath()) {
+                if (appendDot) {
+                    sb.append('.');
+                }
+                appendDot = true;
+                if (reference.getIndex() >= 0) {
+                    sb.append('[');
+                    sb.append(reference.getIndex());
+                    sb.append(']');
+                }
+                else if (reference.getFieldName() != null) {
+                    sb.append(reference.getFieldName());
+                }
+                else {
+                    sb.append('?');
+                }
+            }
+            if (!appendDot) {
+                sb.append('?');
+            }
+        }
+
+        return new JsonMapperParsingException(type, sb.toString(), cause);
     }
 
     /**

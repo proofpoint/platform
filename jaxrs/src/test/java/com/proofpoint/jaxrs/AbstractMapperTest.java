@@ -18,6 +18,7 @@ package com.proofpoint.jaxrs;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
@@ -44,6 +45,7 @@ import java.util.zip.ZipException;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.fail;
 
@@ -106,7 +108,7 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
             fail("Should have thrown a JsonMapperParsingException");
         }
         catch (JsonMapperParsingException e) {
-            Assert.assertTrue((e.getMessage()).startsWith("Invalid json for Java type"));
+            assertEquals(e.getMessage(), "Invalid json");
         }
     }
 
@@ -141,7 +143,7 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
             fail("Should have thrown a JsonMapperParsingException");
         }
         catch (JsonMapperParsingException e) {
-            Assert.assertTrue((e.getMessage()).startsWith("Invalid json for Java type"));
+            assertEquals(e.getMessage(), "Invalid json");
         }
     }
 

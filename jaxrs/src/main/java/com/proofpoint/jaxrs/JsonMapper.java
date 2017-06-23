@@ -49,6 +49,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.proofpoint.jaxrs.JsonMapperParsingException.jsonMapperParsingException;
 import static com.proofpoint.jaxrs.ValidationUtils.validateObject;
 
 // This code is based on JacksonJsonProvider
@@ -153,7 +154,7 @@ public class JsonMapper
             log.debug(e, "Invalid json for Java type %s", type);
 
             // Invalid json request. Throwing exception so the response code can be overridden using a mapper.
-            throw new JsonMapperParsingException(type, e);
+            throw jsonMapperParsingException(type, e);
         }
 
         // validate object using the bean validation framework
