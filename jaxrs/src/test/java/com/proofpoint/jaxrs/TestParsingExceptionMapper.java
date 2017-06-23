@@ -34,12 +34,13 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.management.MBeanServer;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
@@ -48,8 +49,8 @@ import static com.proofpoint.http.client.StatusResponseHandler.createStatusRespo
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
+import static com.proofpoint.testing.Assertions.assertContains;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertEquals;
 
 @Test(singleThreaded = true)
@@ -66,7 +67,18 @@ public class TestParsingExceptionMapper
     public void setup()
             throws Exception
     {
-        createServer(new TestParsingResource());
+        Injector injector = bootstrapTest()
+                .withModules(
+                        new TestingNodeModule(),
+                        explicitJaxrsModule(),
+                        new JsonModule(),
+                        new ReportingModule(),
+                        new TestingHttpServerModule(),
+                        binder -> jaxrsBinder(binder).bind(TestParsingResource.class)
+                )
+                .initialize();
+        lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+        server = injector.getInstance(TestingHttpServer.class);
     }
 
     @AfterMethod
@@ -88,54 +100,72 @@ public class TestParsingExceptionMapper
     public void testGetWithValidBodySucceeds()
             throws Exception
     {
-        StatusResponse response = client.execute(buildRequestWithBody("123"), createStatusResponseHandler());
-        assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
+        StatusResponse response = client.execute(buildRequestWithBody("/integer", "123"), createStatusResponseHandler());
+        assertEquals(response.getStatusCode(), Status.NO_CONTENT.getStatusCode());
     }
 
     @Test
     public void testGetWithInvalidBodyBadRequest()
             throws Exception
     {
-        StringResponse response = client.execute(buildRequestWithBody("string"), createStringResponseHandler());
+        StringResponse response = client.execute(buildRequestWithBody("/integer", "string"), createStringResponseHandler());
         assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());
         assertEquals(response.getHeader("Content-Type"), "text/plain");
+        assertContains(response.getBody(), "Invalid json line 1 column"); // Column number is inaccurate
     }
 
-    private Request buildRequestWithBody(String override)
+    @Test
+    public void testGetWithInvalidListBadRequest()
+            throws Exception
+    {
+        StringResponse response = client.execute(buildRequestWithBody("/list", "{}"), createStringResponseHandler());
+        assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());
+        assertEquals(response.getHeader("Content-Type"), "text/plain");
+        assertEquals(response.getBody(), "Invalid json line 1 column 1 field ?");
+    }
+
+    @Test
+    public void testGetWithInvalidNestedBadRequest()
+            throws Exception
+    {
+        StringResponse response = client.execute(buildRequestWithBody("/nested", "{\"foo\": [\"bar\", \"baz\" }"), createStringResponseHandler());
+        assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());
+        assertEquals(response.getHeader("Content-Type"), "text/plain");
+        assertEquals(response.getBody(), "Invalid json line 1 column 23 field foo.[2]");
+    }
+
+    private Request buildRequestWithBody(String resource, String body)
     {
         return Request.builder()
-                .setUri(server.getBaseUrl())
+                .setUri(server.getBaseUrl().resolve(resource))
                 .setHeader("Content-Type", "application/json")
-                .setBodySource(createStaticBodyGenerator(override, UTF_8))
+                .setBodySource(createStaticBodyGenerator(body, UTF_8))
                 .setMethod(GET)
                 .build();
     }
 
-    private void createServer(final TestParsingResource resource)
-            throws Exception
-    {
-        Injector injector = bootstrapTest()
-                .withModules(
-                new TestingNodeModule(),
-                explicitJaxrsModule(),
-                new JsonModule(),
-                new ReportingModule(),
-                binder -> binder.bind(MBeanServer.class).toInstance(mock(MBeanServer.class)),
-                new TestingHttpServerModule(),
-                binder -> jaxrsBinder(binder).bindInstance(resource))
-                .initialize();
-        lifeCycleManager = injector.getInstance(LifeCycleManager.class);
-        server = injector.getInstance(TestingHttpServer.class);
-    }
-
     @Path("/")
-    public class TestParsingResource
+    public static class TestParsingResource
     {
         @GET
+        @Path("/integer")
         @Produces(APPLICATION_JSON)
-        public Response get(Integer count)
+        public void getInteger(Integer count)
         {
-            return Response.ok().build();
+        }
+
+        @GET
+        @Path("/list")
+        @Produces(APPLICATION_JSON)
+        public void getList(List<Object> list)
+        {
+        }
+
+        @GET
+        @Path("/nested")
+        @Produces(APPLICATION_JSON)
+        public void getList(Map<String, List<String>> nested)
+        {
         }
     }
 
