@@ -57,11 +57,14 @@ import static com.proofpoint.http.client.StatusResponseHandler.createStatusRespo
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.log.Logging.resetLogTesters;
 import static com.proofpoint.testing.Assertions.assertContains;
+import static com.proofpoint.testing.Assertions.assertNotEquals;
+import static com.proofpoint.testing.Closeables.closeQuietly;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
@@ -95,6 +98,7 @@ public class TestHttpServerProvider
         tempDir = Files.createTempDir().getCanonicalFile(); // getCanonicalFile needed to get around Issue 365 (http://code.google.com/p/guava-libraries/issues/detail?id=365)
         config = new HttpServerConfig()
                 .setHttpPort(0)
+                .setHttpsPort(0)
                 .setLogPath(new File(tempDir, "http-request.log").getAbsolutePath());
         nodeInfo = new NodeInfo("test-application", new NodeConfig()
                 .setEnvironment("test")
@@ -117,6 +121,7 @@ public class TestHttpServerProvider
     public void teardown()
             throws Exception
     {
+        closeChannels(httpServerInfo);
         resetLogTesters();
         if (originalTrustStore != null) {
             System.setProperty(JAVAX_NET_SSL_TRUST_STORE, originalTrustStore);
@@ -133,6 +138,113 @@ public class TestHttpServerProvider
         finally {
             deleteRecursively(tempDir.toPath(), ALLOW_INSECURE);
         }
+    }
+
+    @Test
+    public void testConnectorDefaults()
+    {
+        assertTrue(config.isHttpEnabled());
+        assertNotNull(httpServerInfo.getHttpUri());
+        assertNotNull(httpServerInfo.getHttpExternalUri());
+        assertNotNull(httpServerInfo.getHttpChannel());
+        assertEquals(httpServerInfo.getHttpUri().getScheme(), httpServerInfo.getHttpExternalUri().getScheme());
+        assertEquals(httpServerInfo.getHttpUri().getPort(), httpServerInfo.getHttpExternalUri().getPort());
+        assertEquals(httpServerInfo.getHttpUri().getScheme(), "http");
+
+        assertFalse(config.isHttpsEnabled());
+        assertNull(httpServerInfo.getHttpsUri());
+        assertNull(httpServerInfo.getHttpsChannel());
+
+        assertTrue(config.isAdminEnabled());
+        assertNotNull(httpServerInfo.getAdminUri());
+        assertNotNull(httpServerInfo.getAdminExternalUri());
+        assertNotNull(httpServerInfo.getAdminChannel());
+        assertEquals(httpServerInfo.getAdminUri().getScheme(), httpServerInfo.getAdminExternalUri().getScheme());
+        assertEquals(httpServerInfo.getAdminUri().getPort(), httpServerInfo.getAdminExternalUri().getPort());
+        assertEquals(httpServerInfo.getAdminUri().getScheme(), "http");
+
+        assertNotEquals(httpServerInfo.getHttpUri().getPort(), httpServerInfo.getAdminUri().getPort());
+    }
+
+    @Test
+    public void testHttpDisabled()
+            throws Exception
+    {
+        closeChannels(httpServerInfo);
+
+        config.setHttpEnabled(false);
+        httpServerInfo = new HttpServerInfo(config, nodeInfo);
+
+        assertNull(httpServerInfo.getHttpUri());
+        assertNull(httpServerInfo.getHttpExternalUri());
+        assertNull(httpServerInfo.getHttpChannel());
+
+        assertNull(httpServerInfo.getHttpsUri());
+        assertNull(httpServerInfo.getHttpsChannel());
+
+        assertNotNull(httpServerInfo.getAdminUri());
+        assertNotNull(httpServerInfo.getAdminExternalUri());
+        assertNotNull(httpServerInfo.getAdminChannel());
+        assertEquals(httpServerInfo.getAdminUri().getScheme(), httpServerInfo.getAdminExternalUri().getScheme());
+        assertEquals(httpServerInfo.getAdminUri().getPort(), httpServerInfo.getAdminExternalUri().getPort());
+        assertEquals(httpServerInfo.getAdminUri().getScheme(), "http");
+    }
+
+    @Test
+    public void testAdminDisabled()
+            throws Exception
+    {
+        closeChannels(httpServerInfo);
+
+        config.setAdminEnabled(false);
+        httpServerInfo = new HttpServerInfo(config, nodeInfo);
+
+        assertNotNull(httpServerInfo.getHttpUri());
+        assertNotNull(httpServerInfo.getHttpExternalUri());
+        assertNotNull(httpServerInfo.getHttpChannel());
+        assertEquals(httpServerInfo.getHttpUri().getScheme(), httpServerInfo.getHttpExternalUri().getScheme());
+        assertEquals(httpServerInfo.getHttpUri().getPort(), httpServerInfo.getHttpExternalUri().getPort());
+        assertEquals(httpServerInfo.getHttpUri().getScheme(), "http");
+
+        assertNull(httpServerInfo.getHttpsUri());
+        assertNull(httpServerInfo.getHttpsChannel());
+
+        assertNull(httpServerInfo.getAdminUri());
+        assertNull(httpServerInfo.getAdminExternalUri());
+        assertNull(httpServerInfo.getAdminChannel());
+    }
+
+    @Test
+    public void testHttpsEnabled()
+            throws Exception
+    {
+        closeChannels(httpServerInfo);
+
+        config.setHttpsEnabled(true);
+        httpServerInfo = new HttpServerInfo(config, nodeInfo);
+
+        assertNotNull(httpServerInfo.getHttpUri());
+        assertNotNull(httpServerInfo.getHttpExternalUri());
+        assertNotNull(httpServerInfo.getHttpChannel());
+        assertEquals(httpServerInfo.getHttpUri().getScheme(), httpServerInfo.getHttpExternalUri().getScheme());
+        assertEquals(httpServerInfo.getHttpUri().getPort(), httpServerInfo.getHttpExternalUri().getPort());
+        assertEquals(httpServerInfo.getHttpUri().getScheme(), "http");
+
+        assertNotNull(httpServerInfo.getHttpsUri());
+        assertNotNull(httpServerInfo.getHttpsChannel());
+        assertEquals(httpServerInfo.getHttpsUri().getScheme(), httpServerInfo.getHttpsUri().getScheme());
+        assertEquals(httpServerInfo.getHttpsUri().getPort(), httpServerInfo.getHttpsUri().getPort());
+        assertEquals(httpServerInfo.getHttpsUri().getScheme(), "https");
+
+        assertNotNull(httpServerInfo.getAdminUri());
+        assertNull(httpServerInfo.getAdminExternalUri());
+        assertNotNull(httpServerInfo.getAdminChannel());
+        assertEquals(httpServerInfo.getAdminUri().getScheme(), httpServerInfo.getAdminUri().getScheme());
+        assertEquals(httpServerInfo.getAdminUri().getPort(), httpServerInfo.getAdminUri().getPort());
+        assertEquals(httpServerInfo.getAdminUri().getScheme(), "https");
+
+        assertNotEquals(httpServerInfo.getHttpUri().getPort(), httpServerInfo.getHttpsUri().getPort());
+        assertNotEquals(httpServerInfo.getHttpUri().getPort(), httpServerInfo.getAdminUri().getPort());
     }
 
     @Test
@@ -231,27 +343,6 @@ public class TestHttpServerProvider
 
             assertEquals(response.getStatusCode(), HttpServletResponse.SC_OK);
             assertEquals(response.getBody(), "expected");
-        }
-    }
-
-    @Test
-    public void testHttpIsDisabled()
-            throws Exception
-    {
-        config.setHttpEnabled(false);
-
-        createServer();
-        lifeCycleManager.start();
-
-        try (HttpClient client = new JettyHttpClient(new HttpClientConfig().setConnectTimeout(new Duration(2.0, TimeUnit.SECONDS)))) {
-            StatusResponse response = client.execute(prepareGet().setUri(httpServerInfo.getHttpUri().resolve("/")).build(), createStatusResponseHandler());
-
-            if (response != null) { // TODO: this is a workaround for a bug in AHC (some race condition)
-                fail("Expected connection refused, got response code: " + response.getStatusCode());
-            }
-        }
-        catch (RuntimeException e) {
-            assertTrue(e.getCause() instanceof ConnectException, e.getCause().getClass() + " instanceof ConnectException");
         }
     }
 
@@ -450,6 +541,7 @@ public class TestHttpServerProvider
     private void createAndStartServer()
             throws Exception
     {
+        closeChannels(httpServerInfo);
         httpServerInfo = new HttpServerInfo(config, nodeInfo);
         createServer();
         server.start();
@@ -486,5 +578,10 @@ public class TestHttpServerProvider
         };
         serverProvider.setLoginService(loginServiceProvider.get());
         server = serverProvider.get();
+    }
+
+    static void closeChannels(HttpServerInfo info)
+    {
+        closeQuietly(info.getHttpChannel(), info.getHttpsChannel(), info.getAdminChannel());
     }
 }
