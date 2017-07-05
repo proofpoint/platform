@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +50,7 @@ public class TestingAdminHttpServer extends HttpServer
             HttpServerConfig config,
             Servlet adminServlet,
             Map<String, String> initParameters)
+            throws IOException
     {
         this(httpServerInfo,
                 nodeInfo,
@@ -71,6 +73,7 @@ public class TestingAdminHttpServer extends HttpServer
             Map<String, String> initParameters,
             Set<Filter> filters,
             QueryStringFilter queryStringFilter)
+            throws IOException
     {
         this(httpServerInfo,
                 nodeInfo,
@@ -93,6 +96,7 @@ public class TestingAdminHttpServer extends HttpServer
             @TheAdminServlet Set<Filter> filters,
             QueryStringFilter queryStringFilter,
             ClientAddressExtractor clientAddressExtractor)
+            throws IOException
     {
         super(httpServerInfo,
                 nodeInfo,

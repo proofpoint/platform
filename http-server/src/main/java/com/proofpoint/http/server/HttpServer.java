@@ -31,6 +31,7 @@ import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -60,7 +61,9 @@ import javax.management.MBeanServer;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.ServerSocketChannel;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
@@ -72,6 +75,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Math.toIntExact;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -127,6 +131,7 @@ public class HttpServer
             RequestStats stats,
             DetailedRequestStats detailedRequestStats,
             @Nullable RequestLogHandler logHandler)
+            throws IOException
     {
         this(httpServerInfo, nodeInfo, config, theServlet, parameters, filters, resources, theAdminServlet,
                 adminParameters, adminFilters, mbeanServer, loginService, queryStringFilter, stats,
@@ -151,6 +156,7 @@ public class HttpServer
             DetailedRequestStats detailedRequestStats,
             @Nullable RequestLogHandler logHandler,
             ClientAddressExtractor clientAddressExtractor)
+            throws IOException
     {
         requireNonNull(httpServerInfo, "httpServerInfo is null");
         requireNonNull(nodeInfo, "nodeInfo is null");
@@ -214,7 +220,14 @@ public class HttpServer
             http2c.setInitialStreamRecvWindow(toIntExact(config.getHttp2InitialStreamReceiveWindowSize().toBytes()));
             http2c.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
             http2c.setInputBufferSize(toIntExact(config.getHttp2InputBufferSize().toBytes()));
-            httpConnector = new ServerConnector(server, null, null, null, acceptors == null ? -1 : acceptors, selectors == null ? -1 : selectors, http1, http2c);
+            httpConnector = createServerConnector(
+                    httpServerInfo.getHttpChannel(),
+                    server,
+                    null,
+                    firstNonNull(acceptors, -1),
+                    firstNonNull(selectors, -1),
+                    http1,
+                    http2c);
             httpConnector.setName("http");
             httpConnector.setPort(httpServerInfo.getHttpUri().getPort());
             httpConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
@@ -248,7 +261,14 @@ public class HttpServer
 
             Integer acceptors = config.getHttpsAcceptorThreads();
             Integer selectors = config.getHttpsSelectorThreads();
-            httpsConnector = new ServerConnector(server, null, null, null, acceptors == null ? -1 : acceptors, selectors == null ? -1 : selectors, sslConnectionFactory, new HttpConnectionFactory(httpsConfiguration));
+            httpsConnector = createServerConnector(
+                    httpServerInfo.getHttpsChannel(),
+                    server,
+                    null,
+                    firstNonNull(acceptors, -1),
+                    firstNonNull(selectors, -1),
+                    sslConnectionFactory,
+                    new HttpConnectionFactory(httpsConfiguration));
             httpsConnector.setName("https");
             httpsConnector.setPort(httpServerInfo.getHttpsUri().getPort());
             httpsConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
@@ -287,13 +307,27 @@ public class HttpServer
                 sslContextFactory.setIncludeCipherSuites(ENABLED_CIPHERS);
                 sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
                 SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
-                adminConnector = new ServerConnector(server, adminThreadPool, null, null, 0, -1, sslConnectionFactory, new HttpConnectionFactory(adminConfiguration));
+                adminConnector = createServerConnector(
+                        httpServerInfo.getAdminChannel(),
+                        server,
+                        adminThreadPool,
+                        0,
+                        -1,
+                        sslConnectionFactory,
+                        new HttpConnectionFactory(adminConfiguration));
             }
             else {
                 HttpConnectionFactory http1 = new HttpConnectionFactory(adminConfiguration);
                 HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(adminConfiguration);
                 http2c.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
-                adminConnector = new ServerConnector(server, adminThreadPool, null, null, -1, -1, http1, http2c);
+                adminConnector = createServerConnector(
+                        httpServerInfo.getAdminChannel(),
+                        server,
+                        adminThreadPool,
+                        -1,
+                        -1,
+                        http1,
+                        http2c);
             }
 
             adminConnector.setName("admin");
@@ -522,5 +556,19 @@ public class HttpServer
             }
         }
         return certificates.build();
+    }
+
+    private static ServerConnector createServerConnector(
+            ServerSocketChannel channel,
+            Server server,
+            Executor executor,
+            int acceptors,
+            int selectors,
+            ConnectionFactory... factories)
+            throws IOException
+    {
+        ServerConnector connector = new ServerConnector(server, executor, null, null, acceptors, selectors, factories);
+        connector.open(channel);
+        return connector;
     }
 }
