@@ -21,7 +21,8 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.net.URI;
 
-public class LocalAnnouncementHttpServerInfo implements AnnouncementHttpServerInfo
+public class LocalAnnouncementHttpServerInfo
+        implements AnnouncementHttpServerInfo
 {
     private final HttpServerInfo httpServerInfo;
 
@@ -54,7 +55,8 @@ public class LocalAnnouncementHttpServerInfo implements AnnouncementHttpServerIn
 
     @Override
     @Nullable
-    public URI getAdminUri() {
+    public URI getAdminUri()
+    {
         return httpServerInfo.getAdminUri();
     }
 }

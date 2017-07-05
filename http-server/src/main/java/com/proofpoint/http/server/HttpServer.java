@@ -163,7 +163,8 @@ public class HttpServer
         requireNonNull(detailedRequestStats, "detailedRequestStats is null");
         this.clientAddressExtractor = requireNonNull(clientAddressExtractor, "clientAddressExtractor is null");
 
-        QueuedThreadPool threadPool = new QueuedThreadPool(config.getMaxThreads()) {
+        QueuedThreadPool threadPool = new QueuedThreadPool(config.getMaxThreads())
+        {
             @Override
             protected void runJob(Runnable job)
             {
@@ -220,7 +221,8 @@ public class HttpServer
             httpConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
 
             server.addConnector(httpConnector);
-        } else {
+        }
+        else {
             httpConnector = null;
         }
 
@@ -254,7 +256,8 @@ public class HttpServer
 
 
             server.addConnector(httpsConnector);
-        } else {
+        }
+        else {
             httpsConnector = null;
         }
 
@@ -284,7 +287,8 @@ public class HttpServer
                 sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
                 SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
                 adminConnector = new ServerConnector(server, adminThreadPool, null, null, 0, -1, sslConnectionFactory, new HttpConnectionFactory(adminConfiguration));
-            } else {
+            }
+            else {
                 HttpConnectionFactory http1 = new HttpConnectionFactory(adminConfiguration);
                 HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(adminConfiguration);
                 http2c.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
@@ -299,11 +303,12 @@ public class HttpServer
 
 
             server.addConnector(adminConnector);
-        } else {
+        }
+        else {
             adminConnector = null;
         }
 
-        /**
+        /*
          * structure is:
          *
          * server
@@ -471,7 +476,8 @@ public class HttpServer
     }
 
     @Nested
-    public MaxGauge getBusyThreads() {
+    public MaxGauge getBusyThreads()
+    {
         return busyThreads;
     }
 

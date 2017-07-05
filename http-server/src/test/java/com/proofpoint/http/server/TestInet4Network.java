@@ -47,7 +47,7 @@ public class TestInet4Network
     @DataProvider(name = "invalidCidr")
     public Object[][] invalidCidrProvider()
     {
-        return new Object[][]{
+        return new Object[][] {
                 {" 0.0.0.0/0"},
                 {"0.0.0.0/0 "},
                 {"x.0.0.0/0"},

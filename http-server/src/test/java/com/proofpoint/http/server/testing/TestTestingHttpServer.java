@@ -173,6 +173,7 @@ public class TestTestingHttpServer
             lifeCycleManager.stop();
         }
     }
+
     @Test
     public void testGuiceInjectionWithFilters()
             throws Exception
