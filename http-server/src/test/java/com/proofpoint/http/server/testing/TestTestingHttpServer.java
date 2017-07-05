@@ -267,6 +267,7 @@ public class TestTestingHttpServer
     }
 
     private static TestingHttpServer createTestingHttpServer(DummyServlet servlet, Map<String, String> params)
+            throws IOException
     {
         NodeInfo nodeInfo = new NodeInfo("test");
         HttpServerConfig config = new HttpServerConfig().setHttpPort(0);
@@ -275,6 +276,7 @@ public class TestTestingHttpServer
     }
 
     private static TestingHttpServer createTestingHttpServerWithFilter(DummyServlet servlet, Map<String, String> params, DummyFilter filter)
+            throws IOException
     {
         NodeInfo nodeInfo = new NodeInfo("test");
         HttpServerConfig config = new HttpServerConfig().setHttpPort(0);

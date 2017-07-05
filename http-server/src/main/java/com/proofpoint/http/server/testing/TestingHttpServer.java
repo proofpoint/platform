@@ -31,6 +31,7 @@ import com.proofpoint.stats.SparseTimeStat;
 import javax.inject.Inject;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +50,7 @@ public class TestingHttpServer extends HttpServer
             HttpServerConfig config,
             Servlet servlet,
             Map<String, String> initParameters)
+            throws IOException
     {
         this(httpServerInfo,
                 nodeInfo,
@@ -74,7 +76,9 @@ public class TestingHttpServer extends HttpServer
             Map<String, String> initParameters,
             Set<Filter> filters,
             Set<HttpResourceBinding> resources,
-            QueryStringFilter queryStringFilter) {
+            QueryStringFilter queryStringFilter)
+            throws IOException
+    {
         this(httpServerInfo,
                 nodeInfo,
                 config,
@@ -96,6 +100,7 @@ public class TestingHttpServer extends HttpServer
             @TheServlet Set<HttpResourceBinding> resources,
             QueryStringFilter queryStringFilter,
             ClientAddressExtractor clientAddressExtractor)
+            throws IOException
     {
         super(httpServerInfo,
                 nodeInfo,
