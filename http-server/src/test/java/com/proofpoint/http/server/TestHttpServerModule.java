@@ -235,7 +235,8 @@ public class TestHttpServerModule
         assertEquals(data.getBody().trim(), contents);
     }
 
-    private static final class EchoServlet extends HttpServlet
+    private static final class EchoServlet
+            extends HttpServlet
     {
         private int responseStatusCode = 300;
         private final ListMultimap<String, String> responseHeaders = ArrayListMultimap.create();

@@ -22,7 +22,8 @@ import java.time.format.DateTimeFormatter;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
-public class TestDelimitedRequestLog extends AbstractTestRequestLog
+public class TestDelimitedRequestLog
+        extends AbstractTestRequestLog
 {
     private static final DateTimeFormatter ISO_FORMATTER = ISO_OFFSET_DATE_TIME.withZone(ZoneId.systemDefault());
 
