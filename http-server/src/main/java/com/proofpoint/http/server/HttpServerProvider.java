@@ -22,6 +22,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
+import com.proofpoint.http.server.HttpServerConfig.LogFormat;
 import com.proofpoint.node.NodeInfo;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.RequestLog;
@@ -175,6 +176,11 @@ public class HttpServerProvider
             throw new IOException(format("Cannot create %s and path does not already exist", logPath.getAbsolutePath()));
         }
 
-        return new DelimitedRequestLog(config, new SystemCurrentTimeMillisProvider());
+        if (config.getLogFormat() == LogFormat.TSV) {
+            return new DelimitedRequestLog(config, new SystemCurrentTimeMillisProvider());
+        }
+        else {
+            return new JsonRequestLog(config, new SystemCurrentTimeMillisProvider());
+        }
     }
 }

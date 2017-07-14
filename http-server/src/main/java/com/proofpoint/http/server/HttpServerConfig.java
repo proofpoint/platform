@@ -58,6 +58,7 @@ public class HttpServerConfig
 
     private String logPath = "var/log/http-request.log";
     private boolean logEnabled = true;
+    private LogFormat logFormat = LogFormat.JSON;
     private DataSize logMaxSegmentSize = new DataSize(100, Unit.MEGABYTE);
     private int logMaxHistory = 30;
     private DataSize logMaxTotalSize = new DataSize(1, Unit.GIGABYTE);
@@ -190,6 +191,18 @@ public class HttpServerConfig
     public HttpServerConfig setLogEnabled(boolean logEnabled)
     {
         this.logEnabled = logEnabled;
+        return this;
+    }
+
+    public LogFormat getLogFormat()
+    {
+        return logFormat;
+    }
+
+    @Config("http-server.log.format")
+    public HttpServerConfig setLogFormat(LogFormat logFormat)
+    {
+        this.logFormat = logFormat;
         return this;
     }
 
@@ -442,5 +455,11 @@ public class HttpServerConfig
     {
         this.showStackTrace = showStackTrace;
         return this;
+    }
+
+    public enum LogFormat
+    {
+        TSV,
+        JSON,
     }
 }

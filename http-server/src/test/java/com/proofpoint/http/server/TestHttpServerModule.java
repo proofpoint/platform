@@ -24,16 +24,10 @@ import com.google.common.io.Files;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.MediaType;
-import com.google.inject.Binder;
-import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 import com.proofpoint.bootstrap.LifeCycleManager;
-import com.proofpoint.bootstrap.LifeCycleModule;
-import com.proofpoint.configuration.ConfigurationFactory;
-import com.proofpoint.configuration.ConfigurationModule;
 import com.proofpoint.event.client.NullEventModule;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.HttpStatus;
@@ -42,7 +36,6 @@ import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.log.Logging;
-import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
@@ -66,6 +59,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
@@ -78,6 +72,7 @@ import static org.testng.Assert.assertTrue;
 
 public class TestHttpServerModule
 {
+    private Injector injector;
     private File tempDir;
 
     @BeforeSuite
@@ -90,6 +85,7 @@ public class TestHttpServerModule
     public void setup()
             throws IOException
     {
+        injector = null;
         tempDir = Files.createTempDir().getCanonicalFile(); // getCanonicalFile needed to get around Issue 365 (http://code.google.com/p/guava-libraries/issues/detail?id=365)
     }
 
@@ -97,6 +93,13 @@ public class TestHttpServerModule
     public void tearDown()
             throws IOException
     {
+        try {
+            LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+            lifeCycleManager.stop();
+        }
+        catch (Exception ignored) {
+        }
+
         FileUtils.deleteRecursively(tempDir);
     }
 
@@ -109,24 +112,18 @@ public class TestHttpServerModule
                 .put("http-server.log.path", new File(tempDir, "http-request.log").getAbsolutePath())
                 .build();
 
-        ConfigurationFactory configFactory = new ConfigurationFactory(properties);
-        Injector injector = Guice.createInjector(new HttpServerModule(),
-                new ApplicationNameModule("test-application"),
-                new LifeCycleModule(),
-                new TestingNodeModule(),
-                new ConfigurationModule(configFactory),
-                new NullEventModule(),
-                new TestingMBeanModule(),
-                new ReportingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
-                        binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
-                    }
-                });
+        Injector injector = bootstrapTest()
+                .withModules(new HttpServerModule(),
+                        new TestingNodeModule(),
+                        new NullEventModule(),
+                        new TestingMBeanModule(),
+                        new ReportingModule(),
+                        binder -> {
+                            binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
+                            binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
+                        })
+                .setRequiredConfigurationProperties(properties)
+                .initialize();
 
         HttpServer server = injector.getInstance(HttpServer.class);
         assertNotNull(server);
@@ -141,24 +138,18 @@ public class TestHttpServerModule
                 .put("http-server.log.path", new File(tempDir, "http-request.log").getAbsolutePath())
                 .build();
 
-        ConfigurationFactory configFactory = new ConfigurationFactory(properties);
-        Injector injector = Guice.createInjector(new HttpServerModule(),
-                new ApplicationNameModule("test-application"),
-                new LifeCycleModule(),
-                new TestingNodeModule(),
-                new ConfigurationModule(configFactory),
-                new NullEventModule(),
-                new TestingMBeanModule(),
-                new ReportingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
-                        binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
-                    }
-                });
+        Injector injector = bootstrapTest()
+                .withModules(new HttpServerModule(),
+                        new TestingNodeModule(),
+                        new NullEventModule(),
+                        new TestingMBeanModule(),
+                        new ReportingModule(),
+                        binder -> {
+                            binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
+                            binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
+                        })
+                .setRequiredConfigurationProperties(properties)
+                .initialize();
 
         NodeInfo nodeInfo = injector.getInstance(NodeInfo.class);
         HttpServer server = injector.getInstance(HttpServer.class);
@@ -186,34 +177,25 @@ public class TestHttpServerModule
                 .put("http-server.log.path", new File(tempDir, "http-request.log").getAbsolutePath())
                 .build();
 
-        ConfigurationFactory configFactory = new ConfigurationFactory(properties);
-        Injector injector = Guice.createInjector(new HttpServerModule(),
-                new ApplicationNameModule("test-application"),
-                new LifeCycleModule(),
-                new TestingNodeModule(),
-                new ConfigurationModule(configFactory),
-                new NullEventModule(),
-                new TestingMBeanModule(),
-                new ReportingModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
-                        binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
-                        Multibinder.newSetBinder(binder, Filter.class, TheServlet.class).addBinding().to(DummyFilter.class).in(Scopes.SINGLETON);
-                        httpServerBinder(binder).bindResource("/", "webapp/user").withWelcomeFile("user-welcome.txt");
-                        httpServerBinder(binder).bindResource("/", "webapp/user2");
-                        httpServerBinder(binder).bindResource("path", "webapp/user").withWelcomeFile("user-welcome.txt");
-                        httpServerBinder(binder).bindResource("path", "webapp/user2");
-                    }
-                });
+        Injector injector = bootstrapTest()
+                .withModules(new HttpServerModule(),
+                        new TestingNodeModule(),
+                        new NullEventModule(),
+                        new TestingMBeanModule(),
+                        new ReportingModule(),
+                        binder -> {
+                            binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
+                            binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
+                            Multibinder.newSetBinder(binder, Filter.class, TheServlet.class).addBinding().to(DummyFilter.class).in(Scopes.SINGLETON);
+                            httpServerBinder(binder).bindResource("/", "webapp/user").withWelcomeFile("user-welcome.txt");
+                            httpServerBinder(binder).bindResource("/", "webapp/user2");
+                            httpServerBinder(binder).bindResource("path", "webapp/user").withWelcomeFile("user-welcome.txt");
+                            httpServerBinder(binder).bindResource("path", "webapp/user2");
+                        })
+                .setRequiredConfigurationProperties(properties)
+                .initialize();
 
         HttpServerInfo httpServerInfo = injector.getInstance(HttpServerInfo.class);
-
-        LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
-        lifeCycleManager.start();
 
         try (HttpClient client = new JettyHttpClient()) {
 
@@ -239,9 +221,6 @@ public class TestHttpServerModule
             assertResource(httpUri, client, "path/user-welcome.txt", "welcome user!");
             assertResource(httpUri, client, "path/user.txt", "user");
             assertResource(httpUri, client, "path/user2.txt", "user2");
-        }
-        finally {
-            lifeCycleManager.stop();
         }
     }
 
