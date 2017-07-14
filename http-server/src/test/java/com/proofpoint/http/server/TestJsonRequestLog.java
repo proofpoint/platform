@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 
-public class TestDelimitedRequestLog extends AbstractTestRequestLog
+public class TestJsonRequestLog extends AbstractTestRequestLog
 {
     private DateTimeFormatter isoFormatter;
 
@@ -34,31 +34,34 @@ public class TestDelimitedRequestLog extends AbstractTestRequestLog
         isoFormatter = new DateTimeFormatterBuilder()
                 .append(ISODateTimeFormat.dateHourMinuteSecondFraction())
                 .appendTimeZoneOffset("Z", true, 2, 2)
-                .toFormatter();
-        logger = new DelimitedRequestLog(httpServerConfig, currentTimeMillisProvider);
+                .toFormatter()
+        .withZoneUTC();
+        logger = new JsonRequestLog(httpServerConfig, currentTimeMillisProvider);
     }
 
     @Override
     protected void stopLogger()
             throws Exception
     {
-        ((DelimitedRequestLog)logger).stop();
+        ((JsonRequestLog)logger).stop();
     }
 
     @Override
     protected String getExpectedLogLine(long timestamp, String clientAddr, String method, String pathQuery, String user, String agent, int responseCode, long requestSize, long responseSize, long timeToLastByte)
     {
-        return String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\n",
-                    isoFormatter.print(timestamp),
-                    clientAddr,
-                    method,
-                    pathQuery,
-                    user,
-                    agent,
-                    responseCode,
-                    requestSize,
-                    responseSize,
-                    timeToLastByte,
-                    getCurrentRequestToken());
+        return String.format("{\"time\":\"%s\",\"traceToken\":\"%s\",\"sourceIp\":\"%s\"," +
+                        "\"method\":\"%s\",\"requestUri\":\"%s\",\"username\":\"%s\",\"userAgent\":\"%s\"," +
+                        "\"responseCode\":%d,\"requestSize\":%d,\"responseSize\":%d,\"timeToLastByte\":\"%d.00ms\"}\n",
+                isoFormatter.print(timestamp),
+                getCurrentRequestToken(),
+                clientAddr,
+                method,
+                pathQuery,
+                user,
+                agent,
+                responseCode,
+                requestSize,
+                responseSize,
+                timeToLastByte);
     }
 }

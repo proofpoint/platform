@@ -17,6 +17,7 @@ package com.proofpoint.http.server;
 
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.testing.ConfigAssertions;
+import com.proofpoint.http.server.HttpServerConfig.LogFormat;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 import com.proofpoint.units.Duration;
@@ -46,6 +47,7 @@ public class TestHttpServerConfig
                 .setKeystorePassword("keystore")
                 .setLogPath("var/log/http-request.log")
                 .setLogEnabled(true)
+                .setLogFormat(LogFormat.JSON)
                 .setLogMaxSegmentSize(new DataSize(100, Unit.MEGABYTE))
                 .setLogMaxHistory(30)
                 .setLogMaxTotalSize(new DataSize(1, Unit.GIGABYTE))
@@ -82,6 +84,7 @@ public class TestHttpServerConfig
                 .put("http-server.https.keystore.key", "keystore password")
                 .put("http-server.log.path", "/log")
                 .put("http-server.log.enabled", "false")
+                .put("http-server.log.format", "TSV")
                 .put("http-server.log.max-size", "1GB")
                 .put("http-server.log.max-history", "25")
                 .put("http-server.log.max-total-size", "5GB")
@@ -114,6 +117,7 @@ public class TestHttpServerConfig
                 .setKeystorePassword("keystore password")
                 .setLogPath("/log")
                 .setLogEnabled(false)
+                .setLogFormat(LogFormat.TSV)
                 .setLogMaxSegmentSize(new DataSize(1, Unit.GIGABYTE))
                 .setLogMaxHistory(25)
                 .setLogMaxTotalSize(new DataSize(5, Unit.GIGABYTE))
@@ -141,6 +145,6 @@ public class TestHttpServerConfig
     @Test
     public void testLegacyProperties()
     {
-        assertLegacyEquivalence(HttpServerConfig.class, ImmutableMap.<String, String>of());
+        assertLegacyEquivalence(HttpServerConfig.class, ImmutableMap.of());
     }
 }

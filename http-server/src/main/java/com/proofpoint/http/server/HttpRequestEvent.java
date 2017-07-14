@@ -15,13 +15,17 @@
  */
 package com.proofpoint.http.server;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.proofpoint.event.client.EventField;
 import com.proofpoint.event.client.EventType;
+import com.proofpoint.units.Duration;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.joda.time.DateTime;
 
 import java.security.Principal;
+import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.event.client.EventField.EventFieldMapping.TIMESTAMP;
 import static com.proofpoint.http.server.ClientInfoUtils.clientAddressFor;
@@ -32,6 +36,8 @@ import static java.lang.Math.max;
  * @deprecated Will no longer be public.
  */
 @EventType("HttpRequest")
+@JsonPropertyOrder({ "time", "traceToken", "sourceIp", "method", "requestUri", "username", "userAgent",
+        "responseCode", "requestSize", "responseSize", "timeToLastByte"})
 @Deprecated
 public class HttpRequestEvent
 {
@@ -159,18 +165,21 @@ public class HttpRequestEvent
         this.timeToLastByte = timeToLastByte;
     }
 
+    @JsonProperty("time")
     @EventField(fieldMapping = TIMESTAMP)
     public DateTime getTimeStamp()
     {
         return timeStamp;
     }
 
+    @JsonProperty
     @EventField
     public String getTraceToken()
     {
         return traceToken;
     }
 
+    @JsonProperty("sourceIp")
     @EventField
     public String getClientAddress()
     {
@@ -183,24 +192,28 @@ public class HttpRequestEvent
         return protocol;
     }
 
+    @JsonProperty
     @EventField
     public String getMethod()
     {
         return method;
     }
 
+    @JsonProperty
     @EventField
     public String getRequestUri()
     {
         return requestUri;
     }
 
+    @JsonProperty("username")
     @EventField
     public String getUser()
     {
         return user;
     }
 
+    @JsonProperty("userAgent")
     @EventField
     public String getAgent()
     {
@@ -213,6 +226,7 @@ public class HttpRequestEvent
         return referrer;
     }
 
+    @JsonProperty
     @EventField
     public long getRequestSize()
     {
@@ -225,12 +239,14 @@ public class HttpRequestEvent
         return requestContentType;
     }
 
+    @JsonProperty
     @EventField
     public long getResponseSize()
     {
         return responseSize;
     }
 
+    @JsonProperty
     @EventField
     public int getResponseCode()
     {
@@ -259,5 +275,10 @@ public class HttpRequestEvent
     public long getTimeToLastByte()
     {
         return timeToLastByte;
+    }
+
+    @JsonProperty("timeToLastByte")
+    public Duration getTimeToLastByteDuration() {
+        return new Duration(timeToLastByte, TimeUnit.MILLISECONDS);
     }
 }
