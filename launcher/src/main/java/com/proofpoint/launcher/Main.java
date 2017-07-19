@@ -109,6 +109,9 @@ public class Main
         @Option(type = OptionType.GLOBAL, name = "--log-levels-file", description = "Path to log config file. Defaults to INSTALL_PATH/etc/log.properties")
         public String logLevelsPath = null;
 
+        @Option(type = OptionType.GLOBAL, name = "--audit-log-file", description = "Path to audit log file. Defaults to DATA_DIR/var/log/audit.log")
+        public String auditLogPath = null;
+
         @Option(type = OptionType.GLOBAL, name = "-D", description = "Set a Java System property")
         public final List<String> property = new LinkedList<>();
 
@@ -221,6 +224,13 @@ public class Main
                 launcherArgs.add("--log-file");
                 launcherArgs.add(new File(logPath).getAbsolutePath());
             }
+            if (auditLogPath == null) {
+                auditLogPath = dataDir + "/var/log/audit.log";
+            }
+            else {
+                launcherArgs.add("--audit-log-file");
+                launcherArgs.add(new File(auditLogPath).getAbsolutePath());
+            }
 
             String stopTimeoutString = systemProperties.getProperty("launcher.stop-timeout-seconds");
             if (stopTimeoutString != null) {
@@ -329,6 +339,7 @@ public class Main
                 javaArgs.add("-Dlog.levels-file=" + logLevelsPath);
                 javaArgs.add("-Dlog.enable-console=false");
             }
+            javaArgs.add("-Daudit.log.path=" + auditLogPath);
             javaArgs.add("-jar");
             javaArgs.add(installPath + "/lib/launcher.jar");
             javaArgs.addAll(launcherArgs);
