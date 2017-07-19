@@ -17,6 +17,7 @@ package com.proofpoint.platform.skeleton;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
+import com.proofpoint.audit.AuditLogModule;
 import com.proofpoint.discovery.client.DiscoveryModule;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.http.server.HttpServerModule;
@@ -52,6 +53,7 @@ public class Main
                             new JmxModule(),
                             new JmxHttpModule(),
                             new LogJmxModule(),
+                            new AuditLogModule(),
                             new ReportingModule(),
                             new ReportingClientModule(),
                             new MainModule()
