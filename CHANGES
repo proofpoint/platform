@@ -2,6 +2,10 @@ Platform 1.59
 
 * We improved the error responses generated when parsing JSON fails.
 
+* Library Upgrades
+
+  - Jetty to 9.3.20 (was 9.3.19)
+
 Platform 1.58
 
 * BalancingHttpClient
