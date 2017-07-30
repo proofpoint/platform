@@ -76,7 +76,7 @@ public class TestFullSmileResponseHandler
                 "Unable to create " + User.class + " from SMILE response");
         assertInstanceOf(response.getException().getCause(), InvalidFormatException.class);
         assertContains(response.getException().getCause().getMessage(),
-                "Can not construct instance of int from String value (\"foo\"): not a valid Integer value");
+                "Can not deserialize value of type int from String \"foo\": not a valid Integer value");
     }
 
     @Test
