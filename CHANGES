@@ -5,6 +5,7 @@ Platform 1.59
 * Library Upgrades
 
   - Jetty to 9.3.20 (was 9.3.19)
+  - Jackson to 2.8.9 (was 2.7.9 and jackson-databind 2.7.9.1)
 
 Platform 1.58
 
