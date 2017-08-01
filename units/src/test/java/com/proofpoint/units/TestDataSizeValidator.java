@@ -13,7 +13,6 @@
  */
 package com.proofpoint.units;
 
-import com.google.common.base.Throwables;
 import org.apache.bval.jsr.ApacheValidationProvider;
 import org.testng.annotations.Test;
 
@@ -24,6 +23,7 @@ import javax.validation.ValidationException;
 import javax.validation.Validator;
 import java.util.Set;
 
+import static com.google.common.base.Throwables.getRootCause;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static com.proofpoint.units.DataSize.Unit.GIGABYTE;
 import static com.proofpoint.units.DataSize.Unit.KILOBYTE;
@@ -86,7 +86,7 @@ public class TestDataSizeValidator
             fail("expected a ValidationException caused by an IllegalArgumentException");
         }
         catch (ValidationException e) {
-            assertInstanceOf(Throwables.getRootCause(e), IllegalArgumentException.class);
+            assertInstanceOf(getRootCause(e), IllegalArgumentException.class);
         }
     }
 
@@ -98,7 +98,7 @@ public class TestDataSizeValidator
             fail("expected a ValidationException caused by an IllegalArgumentException");
         }
         catch (ValidationException e) {
-            assertInstanceOf(Throwables.getRootCause(e), IllegalArgumentException.class);
+            assertInstanceOf(getRootCause(e), IllegalArgumentException.class);
         }
     }
 

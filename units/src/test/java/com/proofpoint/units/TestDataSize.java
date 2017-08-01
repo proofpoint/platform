@@ -17,11 +17,9 @@ package com.proofpoint.units;
 
 import com.google.common.collect.ImmutableList;
 import com.proofpoint.json.JsonCodec;
-import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.Locale;
 
 import static com.proofpoint.testing.EquivalenceTester.comparisonTester;
@@ -80,7 +78,7 @@ public class TestDataSize
                 .check();
     }
 
-    private Iterable<DataSize> group(double bytes)
+    private static Iterable<DataSize> group(double bytes)
     {
         return ImmutableList.of(
                 new DataSize(bytes, BYTE),
@@ -146,30 +144,35 @@ public class TestDataSize
         DataSize.valueOf("1.2x4 B");
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "size is negative")
     public void testConstructorRejectsNegativeSize()
     {
         new DataSize(-1, BYTE);
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "size is infinite")
     public void testConstructorRejectsInfiniteSize()
     {
         new DataSize(Double.POSITIVE_INFINITY, BYTE);
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "size is infinite")
     public void testConstructorRejectsInfiniteSize2()
     {
         new DataSize(Double.NEGATIVE_INFINITY, BYTE);
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "size is not a number")
     public void testConstructorRejectsNaN()
     {
         new DataSize(Double.NaN, BYTE);
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = NullPointerException.class, expectedExceptionsMessageRegExp = "unit is null")
     public void testConstructorRejectsNullUnit()
     {
@@ -247,14 +250,13 @@ public class TestDataSize
 
     }
 
-    private void assertJsonRoundTrip(DataSize dataSize)
-            throws IOException
+    private static void assertJsonRoundTrip(DataSize dataSize)
     {
         JsonCodec<DataSize> dataSizeCodec = JsonCodec.jsonCodec(DataSize.class);
         String json = dataSizeCodec.toJson(dataSize);
         DataSize dataSizeCopy = dataSizeCodec.fromJson(json);
         double delta = dataSize.toBytes() * 0.01;
-        Assert.assertEquals(dataSize.toBytes(), dataSizeCopy.toBytes(), delta);
+        assertEquals(dataSize.toBytes(), dataSizeCopy.toBytes(), delta);
     }
 
 

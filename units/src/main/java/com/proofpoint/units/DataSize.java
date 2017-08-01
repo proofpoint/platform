@@ -115,6 +115,7 @@ public class DataSize
     }
 
     @JsonValue
+    @Override
     public String toString()
     {
         //noinspection FloatingPointEquality
