@@ -20,8 +20,8 @@ import com.proofpoint.testing.EquivalenceTester;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -88,9 +88,7 @@ public class TestDuration
         Duration actual = duration.convertToMostSuccinctTimeUnit();
         assertEquals(actual.getValue(toTimeUnit), factor, factor * 0.001);
         assertEquals(actual.getValue(unit), 1.0, 0.001);
-        if (actual.getUnit() != unit) {
-            assertEquals(actual.getUnit(), unit);
-        }
+        assertEquals(actual.getUnit(), unit);
     }
 
     @Test
@@ -104,7 +102,7 @@ public class TestDuration
                 .check();
     }
 
-    private ArrayList<Duration> generateTimeBucket(double seconds)
+    private static List<Duration> generateTimeBucket(double seconds)
     {
         ArrayList<Duration> bucket = new ArrayList<>();
         bucket.add(new Duration(seconds * 1000 * 1000 * 1000, NANOSECONDS));
@@ -175,30 +173,35 @@ public class TestDuration
         Duration.valueOf("1.2x4 s");
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "value is negative")
     public void testConstructorRejectsNegativeValue()
     {
         new Duration(-1, SECONDS);
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "value is infinite")
     public void testConstructorRejectsInfiniteValue()
     {
         new Duration(Double.POSITIVE_INFINITY, SECONDS);
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "value is infinite")
     public void testConstructorRejectsInfiniteValue2()
     {
         new Duration(Double.NEGATIVE_INFINITY, SECONDS);
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "value is not a number")
     public void testConstructorRejectsNaN()
     {
         new Duration(Double.NaN, SECONDS);
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expectedExceptions = NullPointerException.class, expectedExceptionsMessageRegExp = "unit is null")
     public void testConstructorRejectsNullUnit()
     {
@@ -263,7 +266,6 @@ public class TestDuration
 
     @Test
     public void testJsonRoundTrip()
-            throws Exception
     {
         assertJsonRoundTrip(new Duration(1.234, MILLISECONDS));
         assertJsonRoundTrip(new Duration(1.234, SECONDS));
@@ -272,8 +274,7 @@ public class TestDuration
         assertJsonRoundTrip(new Duration(1.234, DAYS));
     }
 
-    private void assertJsonRoundTrip(Duration duration)
-            throws IOException
+    private static void assertJsonRoundTrip(Duration duration)
     {
         JsonCodec<Duration> durationCodec = JsonCodec.jsonCodec(Duration.class);
         String json = durationCodec.toJson(duration);
@@ -282,7 +283,8 @@ public class TestDuration
         assertEquals(duration.getValue(MILLISECONDS), durationCopy.getValue(MILLISECONDS), delta);
     }
 
-    private void failDurationConstruction(double value, TimeUnit timeUnit)
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    private static void failDurationConstruction(double value, TimeUnit timeUnit)
     {
         try {
             new Duration(value, timeUnit);
