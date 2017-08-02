@@ -34,6 +34,9 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
+import static org.assertj.core.data.Percentage.withPercentage;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.fail;
@@ -57,28 +60,28 @@ public class TestDuration
     {
         double millis = 12346789.0d;
         Duration duration = new Duration(millis, MILLISECONDS);
-        assertEquals(duration.getValue(MILLISECONDS), millis);
-        assertEquals(duration.getValue(SECONDS), millis / 1000, 0.001);
-        assertEquals(duration.getValue(MINUTES), millis / 1000 / 60, 0.001);
-        assertEquals(duration.getValue(HOURS), millis / 1000 / 60 / 60, 0.001);
-        assertEquals(duration.getValue(DAYS), millis / 1000 / 60 / 60 / 24, 0.001);
+        assertThat(duration.getValue(MILLISECONDS)).isEqualTo(millis);
+        assertThat(duration.getValue(SECONDS)).isCloseTo(millis / 1000, offset(0.001));
+        assertThat(duration.getValue(MINUTES)).isCloseTo(millis / 1000 / 60, offset(0.001));
+        assertThat(duration.getValue(HOURS)).isCloseTo(millis / 1000 / 60 / 60, offset(0.001));
+        assertThat(duration.getValue(DAYS)).isCloseTo(millis / 1000 / 60 / 60 / 24, offset(0.001));
 
         double days = 3.0;
         duration = new Duration(days, DAYS);
-        assertEquals(duration.getValue(DAYS), days);
-        assertEquals(duration.getValue(HOURS), days * 24, 0.001);
-        assertEquals(duration.getValue(MINUTES), days * 24 * 60, 0.001);
-        assertEquals(duration.getValue(SECONDS), days * 24 * 60 * 60, 0.001);
-        assertEquals(duration.getValue(MILLISECONDS), days * 24 * 60 * 60 * 1000, 0.001);
+        assertThat(duration.getValue(DAYS)).isEqualTo(days);
+        assertThat(duration.getValue(HOURS)).isCloseTo(days * 24, offset(0.001));
+        assertThat(duration.getValue(MINUTES)).isCloseTo(days * 24 * 60, offset(0.001));
+        assertThat(duration.getValue(SECONDS)).isCloseTo(days * 24 * 60 * 60, offset(0.001));
+        assertThat(duration.getValue(MILLISECONDS)).isCloseTo(days * 24 * 60 * 60 * 1000, offset(0.001));
     }
 
 //    @Test(dataProvider = "conversions")
 //    public void testConversions(TimeUnit unit, TimeUnit toTimeUnit, double factor)
 //    {
-//        Duration duration = new Duration(1, unit).getValue(toTimeUnit);
-//        assertEquals(duration.getUnit(), toTimeUnit);
-//        assertEquals(duration.getValue(), factor, factor * 0.001);
-//        assertEquals(duration.getValue(toTimeUnit), factor, factor * 0.001);
+//        Duration duration = new Duration(1, unit).convertTo(toTimeUnit);
+//        assertThat(duration.getUnit()).isEqualTo(toTimeUnit);
+//        assertThat(duration.getValue()).isCloseTo(factor, withPercentage(0.1));
+//        assertThat(duration.getValue(toTimeUnit)).isCloseTo(factor, withPercentage(0.1));
 //    }
 
     @Test(dataProvider = "conversions")
@@ -86,9 +89,9 @@ public class TestDuration
     {
         Duration duration = new Duration(factor, toTimeUnit);
         Duration actual = duration.convertToMostSuccinctTimeUnit();
-        assertEquals(actual.getValue(toTimeUnit), factor, factor * 0.001);
-        assertEquals(actual.getValue(unit), 1.0, 0.001);
-        assertEquals(actual.getUnit(), unit);
+        assertThat(actual.getValue(toTimeUnit)).isCloseTo(factor, withPercentage(0.1));
+        assertThat(actual.getValue(unit)).isCloseTo(1.0, offset(0.001));
+        assertThat(actual.getUnit()).isEqualTo(unit);
     }
 
     @Test
@@ -227,14 +230,13 @@ public class TestDuration
     {
         double nanos = 1.0d;
         Duration duration = new Duration(nanos, NANOSECONDS);
-        assertEquals(duration.getValue(), nanos);
-        assertEquals(duration.getValue(NANOSECONDS), nanos);
-        assertEquals(duration.getValue(MILLISECONDS), nanos / 1000000);
-        assertEquals(duration.getValue(SECONDS), nanos / 1000000 / 1000);
-        assertEquals(duration.getValue(MINUTES), nanos / 1000000 / 1000 / 60, 1.0E10);
-        assertEquals(duration.getValue(HOURS), nanos / 1000000 / 1000 / 60 / 60, 1.0E10);
-        assertEquals(duration.getValue(DAYS), nanos / 1000000 / 1000 / 60 / 60 / 24, 1.0E10);
-
+        assertThat(duration.getValue()).isEqualTo(nanos);
+        assertThat(duration.getValue(NANOSECONDS)).isEqualTo(nanos);
+        assertThat(duration.getValue(MILLISECONDS)).isEqualTo(nanos / 1000000);
+        assertThat(duration.getValue(SECONDS)).isEqualTo(nanos / 1000000 / 1000);
+        assertThat(duration.getValue(MINUTES)).isCloseTo(nanos / 1000000 / 1000 / 60, offset(1.0E10));
+        assertThat(duration.getValue(HOURS)).isCloseTo(nanos / 1000000 / 1000 / 60 / 60, offset(1.0E10));
+        assertThat(duration.getValue(DAYS)).isCloseTo(nanos / 1000000 / 1000 / 60 / 60 / 24, offset(1.0E10));
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -279,8 +281,9 @@ public class TestDuration
         JsonCodec<Duration> durationCodec = JsonCodec.jsonCodec(Duration.class);
         String json = durationCodec.toJson(duration);
         Duration durationCopy = durationCodec.fromJson(json);
-        double delta = duration.getValue(MILLISECONDS) * 0.01;
-        assertEquals(duration.getValue(MILLISECONDS), durationCopy.getValue(MILLISECONDS), delta);
+
+        assertThat(durationCopy.getValue(MILLISECONDS))
+                .isCloseTo(duration.getValue(MILLISECONDS), withPercentage(1));
     }
 
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
