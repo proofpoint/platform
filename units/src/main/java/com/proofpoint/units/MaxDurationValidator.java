@@ -34,4 +34,10 @@ public class MaxDurationValidator
     {
         return duration == null || duration.compareTo(max) <= 0;
     }
+
+    @Override
+    public String toString()
+    {
+        return "max:" + max;
+    }
 }

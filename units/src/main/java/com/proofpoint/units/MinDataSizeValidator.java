@@ -32,4 +32,10 @@ public class MinDataSizeValidator
     {
         return (dataSize == null) || (dataSize.compareTo(min) >= 0);
     }
+
+    @Override
+    public String toString()
+    {
+        return "min:" + min;
+    }
 }
