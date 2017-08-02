@@ -31,6 +31,9 @@ import static com.proofpoint.units.DataSize.Unit.PETABYTE;
 import static com.proofpoint.units.DataSize.Unit.TERABYTE;
 import static com.proofpoint.units.DataSize.succinctBytes;
 import static com.proofpoint.units.DataSize.succinctDataSize;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
+import static org.assertj.core.data.Percentage.withPercentage;
 import static org.testng.Assert.assertEquals;
 
 public class TestDataSize
@@ -62,9 +65,9 @@ public class TestDataSize
     {
         DataSize size = new DataSize(factor, toUnit);
         DataSize actual = size.convertToMostSuccinctDataSize();
-        assertEquals(actual, new DataSize(1, unit));
-        assertEquals(actual.getValue(unit), 1.0, 0.001);
-        assertEquals(actual.getUnit(), unit);
+        assertThat(actual).isEqualTo(new DataSize(1, unit));
+        assertThat(actual.getValue(unit)).isCloseTo(1.0, offset(0.001));
+        assertThat(actual.getUnit()).isEqualTo(unit);
     }
 
     @Test
@@ -255,8 +258,9 @@ public class TestDataSize
         JsonCodec<DataSize> dataSizeCodec = JsonCodec.jsonCodec(DataSize.class);
         String json = dataSizeCodec.toJson(dataSize);
         DataSize dataSizeCopy = dataSizeCodec.fromJson(json);
-        double delta = dataSize.toBytes() * 0.01;
-        assertEquals(dataSize.toBytes(), dataSizeCopy.toBytes(), delta);
+
+        assertThat(dataSizeCopy.getValue(BYTE))
+                .isCloseTo(dataSize.getValue(BYTE), withPercentage(1));
     }
 
 
