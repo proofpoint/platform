@@ -32,4 +32,10 @@ public class MaxDataSizeValidator
     {
         return (dataSize == null) || (dataSize.compareTo(max) <= 0);
     }
+
+    @Override
+    public String toString()
+    {
+        return "max:" + max;
+    }
 }

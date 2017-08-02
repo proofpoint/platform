@@ -34,4 +34,10 @@ public class MinDurationValidator
     {
         return duration == null || duration.compareTo(min) >= 0;
     }
+
+    @Override
+    public String toString()
+    {
+        return "min:" + min;
+    }
 }
