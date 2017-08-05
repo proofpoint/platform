@@ -33,6 +33,7 @@ import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STOR
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE_PASSWORD;
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
 import static com.proofpoint.testing.ValidationAssertions.assertValidates;
+import static com.proofpoint.units.DataSize.Unit.KILOBYTE;
 import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -57,7 +58,8 @@ public class TestHttpClientConfig
                 .setTrustStorePath(null)
                 .setTrustStorePassword(null)
                 .setHttp2InitialSessionReceiveWindowSize(new DataSize(16, MEGABYTE))
-                .setHttp2InitialStreamReceiveWindowSize(new DataSize(16, MEGABYTE)));
+                .setHttp2InitialStreamReceiveWindowSize(new DataSize(16, MEGABYTE))
+                .setHttp2InputBufferSize(new DataSize(8, KILOBYTE)));
         ;
     }
 
@@ -79,6 +81,7 @@ public class TestHttpClientConfig
                 .put("http-client.trust-store-password", "trust-store-password")
                 .put("http-client.http2.session-receive-window-size", "7MB")
                 .put("http-client.http2.stream-receive-window-size", "7MB")
+                .put("http-client.http2.input-buffer-size", "1MB")
                 .build();
 
         HttpClientConfig expected = new HttpClientConfig()
@@ -95,7 +98,8 @@ public class TestHttpClientConfig
                 .setTrustStorePath("trust-store")
                 .setTrustStorePassword("trust-store-password")
                 .setHttp2InitialSessionReceiveWindowSize(new DataSize(7, MEGABYTE))
-                .setHttp2InitialStreamReceiveWindowSize(new DataSize(7, MEGABYTE));
+                .setHttp2InitialStreamReceiveWindowSize(new DataSize(7, MEGABYTE))
+                .setHttp2InputBufferSize(new DataSize(1, MEGABYTE));
 
         assertFullMapping(properties, expected);
     }

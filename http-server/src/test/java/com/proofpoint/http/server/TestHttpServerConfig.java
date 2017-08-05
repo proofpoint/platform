@@ -28,6 +28,7 @@ import static com.proofpoint.configuration.testing.ConfigAssertions.assertFullMa
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertLegacyEquivalence;
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertRecordedDefaults;
 import static com.proofpoint.units.DataSize.Unit.GIGABYTE;
+import static com.proofpoint.units.DataSize.Unit.KILOBYTE;
 import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -70,6 +71,7 @@ public class TestHttpServerConfig
                 .setHttp2MaxConcurrentStreams(16384)
                 .setShowStackTrace(false)
                 .setHttp2InitialSessionReceiveWindowSize(new DataSize(16, MEGABYTE))
+                .setHttp2InputBufferSize(new DataSize(8, KILOBYTE))
                 .setHttp2InitialStreamReceiveWindowSize(new DataSize(16, MEGABYTE))
         );
     }
@@ -110,6 +112,7 @@ public class TestHttpServerConfig
                 .put("http-server.show-stack-trace", "true")
                 .put("http-server.http2.session-receive-window-size", "4MB")
                 .put("http-server.http2.stream-receive-window-size", "4MB")
+                .put("http-server.http2.input-buffer-size", "4MB")
                 .build();
 
         HttpServerConfig expected = new HttpServerConfig()
@@ -134,7 +137,7 @@ public class TestHttpServerConfig
                 .setMaxThreads(500)
                 .setThreadMaxIdleTime(new Duration(10, MINUTES))
                 .setNetworkMaxIdleTime(new Duration(20, MINUTES))
-                .setMaxRequestHeaderSize(new DataSize(32, DataSize.Unit.KILOBYTE))
+                .setMaxRequestHeaderSize(new DataSize(32, KILOBYTE))
                 .setUserAuthFile("/auth")
                 .setAdminEnabled(false)
                 .setAdminPort(3)
@@ -144,7 +147,8 @@ public class TestHttpServerConfig
                 .setHttp2MaxConcurrentStreams(1234)
                 .setShowStackTrace(true)
                 .setHttp2InitialSessionReceiveWindowSize(new DataSize(4, MEGABYTE))
-                .setHttp2InitialStreamReceiveWindowSize(new DataSize(4, MEGABYTE));
+                .setHttp2InitialStreamReceiveWindowSize(new DataSize(4, MEGABYTE))
+                .setHttp2InputBufferSize(new DataSize(4, MEGABYTE));
 
         assertFullMapping(properties, expected);
     }
