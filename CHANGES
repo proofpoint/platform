@@ -2,6 +2,9 @@ Platform 1.59
 
 * We improved the error responses generated when parsing JSON fails.
 
+* RPM packages now invoke /usr/bin/systemctl instead of /bin/systemctl
+  in order to support CentOS 7.3 and later.
+
 Platform 1.58
 
 * BalancingHttpClient
