@@ -1341,7 +1341,7 @@
                                 <script>/sbin/service ${project.artifactId} stop</script>
                             </preremoveScriptlet>
                             <postinstallScriptlet>
-                                <script>if [ -f /bin/systemctl ] ; then /bin/systemctl daemon-reload ; fi</script>
+                                <script>if [ -f /usr/bin/systemctl ] ; then /usr/bin/systemctl daemon-reload ; fi</script>
                             </postinstallScriptlet>
                         </configuration>
                     </plugin>
