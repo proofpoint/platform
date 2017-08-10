@@ -15,7 +15,11 @@
  */
 package com.proofpoint.audit;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.value.AutoValue;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.proofpoint.audit.TestFileAuditLogger.TestingRecord;
 import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.json.JsonModule;
@@ -23,6 +27,8 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+
+import static com.proofpoint.audit.AuditLoggerBinder.auditLoggerBinder;
 
 public class TestAuditLogModule
 {
@@ -32,11 +38,12 @@ public class TestAuditLogModule
     {
         Injector injector = Bootstrap.bootstrapTest()
                 .withModules(
-                        new AuditLogModule()
+                        new AuditLogModule(),
+                        binder -> auditLoggerBinder(binder).bind(TestingRecord.class)
                 )
                 .initialize();
-        AuditLoggerFactory auditLoggerFactory = injector.getInstance(AuditLoggerFactory.class);
-        auditLoggerFactory.create(TestingRecord.class);
+        AuditLogger<TestingRecord> auditLogger = injector.getInstance(Key.get(new TypeLiteral<AuditLogger<TestingRecord>>() {}));
+        auditLogger.audit(new TestingRecord());
     }
 
     @Test
@@ -49,17 +56,27 @@ public class TestAuditLogModule
             Injector injector = Bootstrap.bootstrapTest()
                     .withModules(
                             new AuditLogModule(),
-                            new JsonModule()
+                            new JsonModule(),
+                            binder -> auditLoggerBinder(binder).bind(TestingRecord.class)
                     )
                     .setRequiredConfigurationProperty("audit.log.path", file.getAbsolutePath())
                     .initialize();
-            AuditLoggerFactory auditLoggerFactory = injector.getInstance(AuditLoggerFactory.class);
-            auditLoggerFactory.create(TestingRecord.class);
+            AuditLogger<TestingRecord> auditLogger = injector.getInstance(Key.get(new TypeLiteral<AuditLogger<TestingRecord>>() {}));
+            auditLogger.audit(new TestingRecord());
         }
         finally {
             if (!file.delete()) {
                 throw new IOException("Error deleting " + file.getAbsolutePath());
             }
+        }
+    }
+
+    static class TestingRecord
+    {
+        @JsonProperty
+        public String getFoo()
+        {
+            return "fooValue";
         }
     }
 }
