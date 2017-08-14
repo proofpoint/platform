@@ -4,6 +4,22 @@ Platform 1.59
   may (for now) be retained by setting the configuration property
   "http-server.log.format" to "TSV".
 
+* Audit Logging
+
+  We created a new facility for logging auditable events in a new
+  JSON-format log named "audit.log".
+
+  An audit record is any Jackson-annotated class without top-level
+  JSON properties named "time", type", or "traceToken".
+
+  To log records, include AuditLogModule in the application's modules and
+  use AuditLoggerBinder to Guice-bind an AuditLogger implementation for the
+  particular record class. Then use the Guice-injected AuditLogger<T> to log
+  records of that type.
+
+  We also supply a TestingAuditLogModule which permits unit tests to retrieve
+  representations of the logged records from a TestingAuditLog.
+
 * We improved the error responses generated when parsing JSON fails.
   We also log JSON parse errors at info level.
 
