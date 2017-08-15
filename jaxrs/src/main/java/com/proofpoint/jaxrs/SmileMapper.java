@@ -132,9 +132,7 @@ public class SmileMapper
                 throw (IOException) e;
             }
 
-            // log the exception at debug so it can be viewed during development
-            // Note: we are not logging at a higher level because this could cause a denial of service
-            log.debug(e, "Invalid json for Java type %s", type);
+            log.info("Invalid json for Java type %s: %s", type, e.getMessage());
 
             // Invalid json request. Throwing exception so the response code can be overridden using a mapper.
             throw jsonMapperParsingException(type, e);
