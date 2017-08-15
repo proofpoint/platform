@@ -1,6 +1,7 @@
 Platform 1.59
 
 * We improved the error responses generated when parsing JSON fails.
+  We also log JSON parse errors at info level.
 
 Platform 1.58
 
