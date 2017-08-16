@@ -69,8 +69,8 @@ public class TestHttpServerConfig
                 .setMaxRequestHeaderSize(null)
                 .setHttp2MaxConcurrentStreams(16384)
                 .setShowStackTrace(false)
-                .setHttp2InitialSessionReceiveWindowSize(new DataSize(16, DataSize.Unit.MEGABYTE))
-                .setHttp2InitialStreamReceiveWindowSize(new DataSize(16, DataSize.Unit.MEGABYTE))
+                .setHttp2InitialSessionReceiveWindowSize(new DataSize(16, MEGABYTE))
+                .setHttp2InitialStreamReceiveWindowSize(new DataSize(16, MEGABYTE))
         );
     }
  
@@ -143,8 +143,8 @@ public class TestHttpServerConfig
                 .setStopTimeout(new Duration(1500, MILLISECONDS))
                 .setHttp2MaxConcurrentStreams(1234)
                 .setShowStackTrace(true)
-                .setHttp2InitialSessionReceiveWindowSize(new DataSize(4, DataSize.Unit.MEGABYTE))
-                .setHttp2InitialStreamReceiveWindowSize(new DataSize(4, DataSize.Unit.MEGABYTE));
+                .setHttp2InitialSessionReceiveWindowSize(new DataSize(4, MEGABYTE))
+                .setHttp2InitialStreamReceiveWindowSize(new DataSize(4, MEGABYTE));
 
         assertFullMapping(properties, expected);
     }
