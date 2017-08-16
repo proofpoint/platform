@@ -19,17 +19,18 @@ import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.testing.ConfigAssertions;
 import com.proofpoint.http.server.HttpServerConfig.LogFormat;
 import com.proofpoint.units.DataSize;
-import com.proofpoint.units.DataSize.Unit;
 import com.proofpoint.units.Duration;
 import org.testng.annotations.Test;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertFullMapping;
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertLegacyEquivalence;
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertRecordedDefaults;
+import static com.proofpoint.units.DataSize.Unit.GIGABYTE;
+import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class TestHttpServerConfig
@@ -48,16 +49,16 @@ public class TestHttpServerConfig
                 .setLogPath("var/log/http-request.log")
                 .setLogEnabled(true)
                 .setLogFormat(LogFormat.JSON)
-                .setLogMaxSegmentSize(new DataSize(100, Unit.MEGABYTE))
+                .setLogMaxSegmentSize(new DataSize(100, MEGABYTE))
                 .setLogMaxHistory(30)
-                .setLogMaxTotalSize(new DataSize(1, Unit.GIGABYTE))
+                .setLogMaxTotalSize(new DataSize(1, GIGABYTE))
                 .setHttpAcceptorThreads(null)
                 .setHttpSelectorThreads(null)
                 .setHttpsAcceptorThreads(null)
                 .setHttpsSelectorThreads(null)
                 .setMinThreads(2)
                 .setMaxThreads(200)
-                .setThreadMaxIdleTime(new Duration(1, TimeUnit.MINUTES))
+                .setThreadMaxIdleTime(new Duration(1, MINUTES))
                 .setNetworkMaxIdleTime(new Duration(200, SECONDS))
                 .setUserAuthFile(null)
                 .setAdminEnabled(true)
@@ -118,17 +119,17 @@ public class TestHttpServerConfig
                 .setLogPath("/log")
                 .setLogEnabled(false)
                 .setLogFormat(LogFormat.TSV)
-                .setLogMaxSegmentSize(new DataSize(1, Unit.GIGABYTE))
+                .setLogMaxSegmentSize(new DataSize(1, GIGABYTE))
                 .setLogMaxHistory(25)
-                .setLogMaxTotalSize(new DataSize(5, Unit.GIGABYTE))
+                .setLogMaxTotalSize(new DataSize(5, GIGABYTE))
                 .setHttpAcceptorThreads(10)
                 .setHttpSelectorThreads(11)
                 .setHttpsAcceptorThreads(12)
                 .setHttpsSelectorThreads(13)
                 .setMinThreads(100)
                 .setMaxThreads(500)
-                .setThreadMaxIdleTime(new Duration(10, TimeUnit.MINUTES))
-                .setNetworkMaxIdleTime(new Duration(20, TimeUnit.MINUTES))
+                .setThreadMaxIdleTime(new Duration(10, MINUTES))
+                .setNetworkMaxIdleTime(new Duration(20, MINUTES))
                 .setMaxRequestHeaderSize(new DataSize(32, DataSize.Unit.KILOBYTE))
                 .setUserAuthFile("/auth")
                 .setAdminEnabled(false)

@@ -20,12 +20,13 @@ import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.configuration.ConfigSecuritySensitive;
 import com.proofpoint.configuration.DefunctConfig;
 import com.proofpoint.units.DataSize;
-import com.proofpoint.units.DataSize.Unit;
 import com.proofpoint.units.Duration;
 
 import javax.validation.constraints.Min;
-import java.util.concurrent.TimeUnit;
 
+import static com.proofpoint.units.DataSize.Unit.GIGABYTE;
+import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 @DefunctConfig({
@@ -66,9 +67,9 @@ public class HttpServerConfig
     private String logPath = "var/log/http-request.log";
     private boolean logEnabled = true;
     private LogFormat logFormat = LogFormat.JSON;
-    private DataSize logMaxSegmentSize = new DataSize(100, Unit.MEGABYTE);
+    private DataSize logMaxSegmentSize = new DataSize(100, MEGABYTE);
     private int logMaxHistory = 30;
-    private DataSize logMaxTotalSize = new DataSize(1, Unit.GIGABYTE);
+    private DataSize logMaxTotalSize = new DataSize(1, GIGABYTE);
 
     private Integer httpAcceptorThreads;
     private Integer httpSelectorThreads;
@@ -77,7 +78,7 @@ public class HttpServerConfig
 
     private int minThreads = 2;
     private int maxThreads = 200;
-    private Duration threadMaxIdleTime = new Duration(1, TimeUnit.MINUTES);
+    private Duration threadMaxIdleTime = new Duration(1, MINUTES);
     private Duration networkMaxIdleTime = new Duration(200, SECONDS);
     private Duration stopTimeout = new Duration(30, SECONDS);
     private DataSize maxRequestHeaderSize;
