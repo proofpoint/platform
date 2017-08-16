@@ -18,14 +18,12 @@ package com.proofpoint.http.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 import com.proofpoint.units.DataSize;
-import com.proofpoint.units.DataSize.Unit;
 import com.proofpoint.units.Duration;
 import org.testng.annotations.Test;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertFullMapping;
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertLegacyEquivalence;
@@ -34,6 +32,9 @@ import static com.proofpoint.configuration.testing.ConfigAssertions.recordDefaul
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE;
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE_PASSWORD;
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
+import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 @SuppressWarnings("deprecation")
 public class TestHttpClientConfig
@@ -42,12 +43,12 @@ public class TestHttpClientConfig
     public void testDefaults()
     {
         assertRecordedDefaults(recordDefaults(HttpClientConfig.class)
-                .setConnectTimeout(new Duration(2, TimeUnit.SECONDS))
+                .setConnectTimeout(new Duration(2, SECONDS))
                 .setRequestTimeout(null)
-                .setIdleTimeout(new Duration(1, TimeUnit.MINUTES))
+                .setIdleTimeout(new Duration(1, MINUTES))
                 .setMaxConnectionsPerServer(20)
                 .setMaxRequestsQueuedPerDestination(20)
-                .setMaxContentLength(new DataSize(16, Unit.MEGABYTE))
+                .setMaxContentLength(new DataSize(16, MEGABYTE))
                 .setSocksProxy(null)
                 .setKeyStorePath(System.getProperty(JAVAX_NET_SSL_KEY_STORE))
                 .setKeyStorePassword(System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD))
@@ -73,12 +74,12 @@ public class TestHttpClientConfig
                 .build();
 
         HttpClientConfig expected = new HttpClientConfig()
-                .setConnectTimeout(new Duration(4, TimeUnit.SECONDS))
-                .setRequestTimeout(new Duration(15, TimeUnit.SECONDS))
-                .setIdleTimeout(new Duration(5, TimeUnit.SECONDS))
+                .setConnectTimeout(new Duration(4, SECONDS))
+                .setRequestTimeout(new Duration(15, SECONDS))
+                .setIdleTimeout(new Duration(5, SECONDS))
                 .setMaxConnectionsPerServer(3)
                 .setMaxRequestsQueuedPerDestination(10)
-                .setMaxContentLength(new DataSize(1, Unit.MEGABYTE))
+                .setMaxContentLength(new DataSize(1, MEGABYTE))
                 .setSocksProxy(HostAndPort.fromParts("localhost", 1080))
                 .setKeyStorePath("key-store")
                 .setKeyStorePassword("key-store-password")

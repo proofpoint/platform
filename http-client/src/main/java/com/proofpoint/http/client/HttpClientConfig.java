@@ -20,13 +20,15 @@ import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.DefunctConfig;
 import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
-import com.proofpoint.units.DataSize.Unit;
 import com.proofpoint.units.Duration;
 import com.proofpoint.units.MinDuration;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.concurrent.TimeUnit;
+
+import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 @DefunctConfig({"http-client.max-connections", "http-client.keep-alive-interval"})
 public class HttpClientConfig
@@ -36,12 +38,12 @@ public class HttpClientConfig
     public static final String JAVAX_NET_SSL_TRUST_STORE = "javax.net.ssl.trustStore";
     public static final String JAVAX_NET_SSL_TRUST_STORE_PASSWORD = "javax.net.ssl.trustStorePassword";
 
-    private Duration connectTimeout = new Duration(2, TimeUnit.SECONDS);
+    private Duration connectTimeout = new Duration(2, SECONDS);
     private Duration requestTimeout = null;
-    private Duration idleTimeout = new Duration(1, TimeUnit.MINUTES);
+    private Duration idleTimeout = new Duration(1, MINUTES);
     private int maxConnectionsPerServer = 20;
     private int maxRequestsQueuedPerDestination = 20;
-    private DataSize maxContentLength = new DataSize(16, Unit.MEGABYTE);
+    private DataSize maxContentLength = new DataSize(16, MEGABYTE);
     private HostAndPort socksProxy;
     private String keyStorePath = System.getProperty(JAVAX_NET_SSL_KEY_STORE);
     private String keyStorePassword = System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD);
