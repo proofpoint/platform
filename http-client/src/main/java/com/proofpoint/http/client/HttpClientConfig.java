@@ -21,7 +21,6 @@ import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.configuration.DefunctConfig;
 import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
-import com.proofpoint.units.DataSize.Unit;
 import com.proofpoint.units.Duration;
 import com.proofpoint.units.MaxDataSize;
 import com.proofpoint.units.MinDataSize;
@@ -54,8 +53,8 @@ public class HttpClientConfig
     private String keyStorePassword = System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD);
     private String trustStorePath;
     private String trustStorePassword;
-    private DataSize http2InitialSessionReceiveWindowSize = new DataSize(16, Unit.MEGABYTE);
-    private DataSize http2InitialStreamReceiveWindowSize = new DataSize(16, Unit.MEGABYTE);
+    private DataSize http2InitialSessionReceiveWindowSize = new DataSize(16, MEGABYTE);
+    private DataSize http2InitialStreamReceiveWindowSize = new DataSize(16, MEGABYTE);
 
     public boolean isHttp2Enabled()
     {

@@ -86,8 +86,8 @@ public class HttpServerConfig
     private Duration stopTimeout = new Duration(30, SECONDS);
     private DataSize maxRequestHeaderSize;
     private int http2MaxConcurrentStreams = 16384;
-    private DataSize http2InitialSessionReceiveWindowSize = new DataSize(16, DataSize.Unit.MEGABYTE);
-    private DataSize http2InitialStreamReceiveWindowSize = new DataSize(16, DataSize.Unit.MEGABYTE);
+    private DataSize http2InitialSessionReceiveWindowSize = new DataSize(16, MEGABYTE);
+    private DataSize http2InitialStreamReceiveWindowSize = new DataSize(16, MEGABYTE);
 
     private String userAuthFile;
 

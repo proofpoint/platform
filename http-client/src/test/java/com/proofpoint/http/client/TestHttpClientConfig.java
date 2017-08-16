@@ -56,8 +56,8 @@ public class TestHttpClientConfig
                 .setKeyStorePassword(System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD))
                 .setTrustStorePath(null)
                 .setTrustStorePassword(null)
-                .setHttp2InitialSessionReceiveWindowSize(new DataSize(16, DataSize.Unit.MEGABYTE))
-                .setHttp2InitialStreamReceiveWindowSize(new DataSize(16, DataSize.Unit.MEGABYTE)));
+                .setHttp2InitialSessionReceiveWindowSize(new DataSize(16, MEGABYTE))
+                .setHttp2InitialStreamReceiveWindowSize(new DataSize(16, MEGABYTE)));
         ;
     }
 
@@ -94,8 +94,8 @@ public class TestHttpClientConfig
                 .setKeyStorePassword("key-store-password")
                 .setTrustStorePath("trust-store")
                 .setTrustStorePassword("trust-store-password")
-                .setHttp2InitialSessionReceiveWindowSize(new DataSize(7, DataSize.Unit.MEGABYTE))
-                .setHttp2InitialStreamReceiveWindowSize(new DataSize(7, DataSize.Unit.MEGABYTE));
+                .setHttp2InitialSessionReceiveWindowSize(new DataSize(7, MEGABYTE))
+                .setHttp2InitialStreamReceiveWindowSize(new DataSize(7, MEGABYTE));
 
         assertFullMapping(properties, expected);
     }
