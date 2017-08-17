@@ -534,6 +534,12 @@
         <dependencies>
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
+                <artifactId>audit</artifactId>
+                <version>1.59-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.proofpoint.platform</groupId>
                 <artifactId>bootstrap</artifactId>
                 <version>1.59-SNAPSHOT</version>
             </dependency>
