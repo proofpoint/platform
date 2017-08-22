@@ -27,7 +27,6 @@ import com.google.inject.Injector;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 import com.proofpoint.bootstrap.LifeCycleManager;
-import com.proofpoint.event.client.NullEventModule;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.HttpStatus;
 import com.proofpoint.http.client.HttpUriBuilder;
@@ -116,7 +115,6 @@ public class TestHttpServerModule
         Injector injector = bootstrapTest()
                 .withModules(new HttpServerModule(),
                         new TestingNodeModule(),
-                        new NullEventModule(),
                         new TestingMBeanModule(),
                         new ReportingModule(),
                         binder -> {
@@ -142,7 +140,6 @@ public class TestHttpServerModule
         Injector injector = bootstrapTest()
                 .withModules(new HttpServerModule(),
                         new TestingNodeModule(),
-                        new NullEventModule(),
                         new TestingMBeanModule(),
                         new ReportingModule(),
                         binder -> {
@@ -181,7 +178,6 @@ public class TestHttpServerModule
         Injector injector = bootstrapTest()
                 .withModules(new HttpServerModule(),
                         new TestingNodeModule(),
-                        new NullEventModule(),
                         new TestingMBeanModule(),
                         new ReportingModule(),
                         binder -> {
