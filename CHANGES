@@ -1,3 +1,9 @@
+Platform 1.60
+
+* Library Upgrades
+
+  - Guava to 23.0 (was 22.0)
+
 Platform 1.59
 
 * We changed the format of the http-request.log to JSON. The old behavior
