@@ -14,6 +14,13 @@
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
             <artifactId>discovery</artifactId>
+            <exclusions>
+                <!-- only the binder is used, not the client -->
+                <exclusion>
+                    <groupId>com.proofpoint.platform</groupId>
+                    <artifactId>http-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -69,14 +76,20 @@
 
         <!-- for testing -->
         <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
+            <groupId>com.proofpoint.platform</groupId>
+            <artifactId>http-client</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
             <artifactId>testing</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
 
