@@ -1,5 +1,9 @@
 Platform 1.60
 
+* Launcher
+
+  [Bug] Disable console logging only in daemon mode
+
 * Library Upgrades
 
   - Guava to 23.0 (was 22.0)
