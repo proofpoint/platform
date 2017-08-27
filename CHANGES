@@ -1,3 +1,9 @@
+Platform 1.60
+
+* Launcher
+
+  [Bug] Disable console logging only in daemon mode
+
 Platform 1.59
 
 * We changed the format of the http-request.log to JSON. The old behavior

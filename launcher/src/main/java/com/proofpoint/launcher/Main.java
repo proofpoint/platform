@@ -334,10 +334,10 @@ public class Main
             javaArgs.add("-Dconfig=" + configPath);
             if (daemon) {
                 javaArgs.add("-Dlog.path=" + logPath);
+                javaArgs.add("-Dlog.enable-console=false");
             }
             if (new File(logLevelsPath).exists()) {
                 javaArgs.add("-Dlog.levels-file=" + logLevelsPath);
-                javaArgs.add("-Dlog.enable-console=false");
             }
             javaArgs.add("-Daudit.log.path=" + auditLogPath);
             javaArgs.add("-jar");
