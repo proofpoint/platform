@@ -2,6 +2,9 @@ Platform 1.60
 
 * Launcher
 
+  The launcher now issues a warning if the java.library.path property is
+  set to a value that is not likely to work.
+
   [Bug] Disable console logging only in daemon mode
 
 * Library Upgrades

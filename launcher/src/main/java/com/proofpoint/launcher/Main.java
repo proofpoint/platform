@@ -344,6 +344,7 @@ public class Main
             javaArgs.add(installPath + "/lib/launcher.jar");
             javaArgs.addAll(launcherArgs);
             if (daemon) {
+                checkLibraryPath(javaArgs);
                 javaArgs.add("start-client");
             }
             else {
@@ -409,6 +410,26 @@ public class Main
 
             System.out.println("Started as " + pidStatus.pid);
             System.exit(0);
+        }
+
+        private void checkLibraryPath(List<String> javaArgs)
+        {
+            String pathArg = javaArgs.stream()
+                    .filter((arg) -> arg.startsWith("-Djava.library.path="))
+                    .reduce((a, b) -> b)
+                    .orElse(null);
+            if (pathArg == null) {
+                return;
+            }
+
+            String defaultPath = System.getProperty("java.library.path", "");
+            if (pathArg.contains(defaultPath)) {
+                return;
+            }
+
+            System.out.printf("WARNING: The java.library.path property is being set to a value that does not%n" +
+                    "contain the default library path. This is likely to cause a failure to start.%n" +
+                    "The default path is %s%n", defaultPath);
         }
 
         @SuppressFBWarnings(value = "OS_OPEN_STREAM", justification = "false positive")
