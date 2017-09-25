@@ -1,5 +1,9 @@
 Platform 1.61
 
+* Library Upgrades
+
+  - bval-jsr to 1.1.1 (was 1.1.2, downgraded due to Java 9 issue)
+
 * Maven plugin upgrades
 
   - jacoco-maven-plugin to 0.7.9 (was 0.7.6.201602180812)
