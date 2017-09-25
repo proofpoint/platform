@@ -1,3 +1,9 @@
+Platform 1.61
+
+* Maven plugin upgrades
+
+  - jacoco-maven-plugin to 0.7.9 (was 0.7.6.201602180812)
+
 Platform 1.60
 
 * Launcher
