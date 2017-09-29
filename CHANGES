@@ -2,6 +2,7 @@ Platform 1.61
 
 * Library Upgrades
 
+  - Guava to 23.1-jre (was 23.0)
   - Jersey to 2.25.1 (was 2.23.1)
   - auto-value to 1.5 (was 1.3)
 
