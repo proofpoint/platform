@@ -53,7 +53,6 @@ import java.util.logging.LogRecord;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
 import static com.proofpoint.log.Level.fromJulLevel;
 import static com.proofpoint.units.DataSize.Unit.BYTE;
@@ -366,7 +365,6 @@ public class Logging
 
         if (config.getLogPath() != null) {
             logToFile(config.getLogPath(), config.getMaxHistory(), config.getMaxSegmentSize(), config.getMaxTotalSize());
-            setupBootstrapLog(config);
         }
 
         if (!config.isConsoleEnabled()) {
@@ -376,18 +374,18 @@ public class Logging
         if (config.getLevelsFile() != null) {
             setLevels(new File(config.getLevelsFile()));
         }
+
+        if (config.getBootstrapLogPath() != null) {
+            setupBootstrapLog(config.getBootstrapLogPath());
+        }
     }
 
-    private static void setupBootstrapLog(LoggingConfiguration config)
+    private static void setupBootstrapLog(String logPath)
             throws IOException
     {
-        Path parent = Paths.get(config.getLogPath()).getParent();
-        if (parent == null) {
-            return;
-        }
-
-        Path logPath = parent.resolve("bootstrap.log");
-        BufferedWriter writer = Files.newBufferedWriter(logPath, WRITE, CREATE, TRUNCATE_EXISTING);
+        Path path = Paths.get(logPath);
+        Files.createDirectories(path.getParent());
+        BufferedWriter writer = Files.newBufferedWriter(path, WRITE, CREATE, TRUNCATE_EXISTING);
         BOOTSTRAP_LOGGER.addHandler(new Handler()
         {
             @Override
@@ -399,7 +397,7 @@ public class Logging
                     writer.flush();
                 }
                 catch (IOException e) {
-                    throw propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -410,7 +408,7 @@ public class Logging
                     writer.flush();
                 }
                 catch (IOException e) {
-                    throw propagate(e);
+                    throw new RuntimeException(e);
                 }
             }
 
