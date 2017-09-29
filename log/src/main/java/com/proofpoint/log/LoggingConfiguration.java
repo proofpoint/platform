@@ -21,10 +21,13 @@ import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 
+import java.nio.file.Path;
+
 public class LoggingConfiguration
 {
     private boolean consoleEnabled = true;
     private String logPath = null;
+    private String bootstrapLogPath = null;
     private DataSize maxSegmentSize = new DataSize(100, Unit.MEGABYTE);
     private int maxHistory = 30;
     private String levelsFile = null;
@@ -52,6 +55,18 @@ public class LoggingConfiguration
     public LoggingConfiguration setLogPath(String logPath)
     {
         this.logPath = logPath;
+        return this;
+    }
+
+    public String getBootstrapLogPath()
+    {
+        return bootstrapLogPath;
+    }
+
+    @Config("log.bootstrap.path")
+    public LoggingConfiguration setBootstrapLogPath(String bootstrapLogPath)
+    {
+        this.bootstrapLogPath = bootstrapLogPath;
         return this;
     }
 
