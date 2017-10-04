@@ -39,6 +39,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -275,29 +277,12 @@ public class Main
                 System.exit(0);
             }
 
-            List<String> javaArgs = new LinkedList<>();
-            javaArgs.add("java");
-            javaArgs.add("-server");
-            javaArgs.add("-XX:+UseConcMarkSweepGC");
-            javaArgs.add("-XX:+ExplicitGCInvokesConcurrent");
-            javaArgs.add("-XX:+HeapDumpOnOutOfMemoryError");
-            javaArgs.add("-XX:HeapDumpPath=var");
-            javaArgs.add("-XX:+AggressiveOpts");
-            javaArgs.add("-XX:+DoEscapeAnalysis");
-            javaArgs.add("-XX:+UseCompressedOops");
-            if (System.getProperty("os.name").startsWith("Windows")) {
-                javaArgs.add("-XX:OnOutOfMemoryError=taskkill /f /pid %p");
-            }
-            else {
-                javaArgs.add("-XX:OnOutOfMemoryError=kill -9 %p");
-            }
-            javaArgs.add("-Djava.util.logging.manager=com.proofpoint.log.ShutdownWaitingLogManager");
-
             if (!new File(configPath).exists()) {
                 System.err.println("Config file is missing: " + configPath);
                 System.exit(STATUS_CONFIG_MISSING);
             }
 
+            Collection<String> jvmConfigArgs = new ArrayList<>();
             try (BufferedReader jvmReader = new BufferedReader(new InputStreamReader(new FileInputStream(jvmConfigPath), Charsets.UTF_8))) {
                 String line;
                 boolean allowSpaces = false;
@@ -312,7 +297,7 @@ public class Main
                             System.exit(STATUS_GENERIC_ERROR);
                         }
 
-                        javaArgs.add(line);
+                        jvmConfigArgs.add(line);
                     }
                     else if (line.matches("(?i)\\s*#\\s*allow\\s+spaces\\s*")) {
                         allowSpaces = true;
@@ -327,6 +312,33 @@ public class Main
                 System.err.println("Error reading JVM config file: " + e);
                 System.exit(STATUS_CONFIG_MISSING);
             }
+
+            boolean gcSpecified = jvmConfigArgs.stream()
+                    .anyMatch(arg -> arg.equals("-XX:+UseG1GC")
+                            || arg.equals("-XX:+UseParallelGC")
+                            || arg.equals("-XX:+UseConcMarkSweepGC"));
+
+            List<String> javaArgs = new LinkedList<>();
+            javaArgs.add("java");
+            javaArgs.add("-server");
+            if (!gcSpecified) {
+                javaArgs.add("-XX:+UseConcMarkSweepGC");
+                javaArgs.add("-XX:+ExplicitGCInvokesConcurrent");
+            }
+            javaArgs.add("-XX:+HeapDumpOnOutOfMemoryError");
+            javaArgs.add("-XX:HeapDumpPath=var");
+            javaArgs.add("-XX:+AggressiveOpts");
+            javaArgs.add("-XX:+DoEscapeAnalysis");
+            javaArgs.add("-XX:+UseCompressedOops");
+            if (System.getProperty("os.name").startsWith("Windows")) {
+                javaArgs.add("-XX:OnOutOfMemoryError=taskkill /f /pid %p");
+            }
+            else {
+                javaArgs.add("-XX:OnOutOfMemoryError=kill -9 %p");
+            }
+            javaArgs.add("-Djava.util.logging.manager=com.proofpoint.log.ShutdownWaitingLogManager");
+
+            javaArgs.addAll(jvmConfigArgs);
 
             for (String key : systemProperties.stringPropertyNames()) {
                 javaArgs.add("-D" + key + "=" + systemProperties.getProperty(key));
