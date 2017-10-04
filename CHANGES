@@ -1,5 +1,8 @@
 Platform 1.61
 
+* The launcher now works when specifying a GC other than the ConcMarkSweep
+  in jvm.config.
+
 * Library Upgrades
 
   - Guava to 23.1-jre (was 23.0)
