@@ -17,7 +17,9 @@ public class TestJettyIoPoolConfig
     {
         assertRecordedDefaults(recordDefaults(JettyIoPoolConfig.class)
                 .setMaxThreads(200)
-                .setMinThreads(8));
+                .setMinThreads(8)
+                .setTimeoutConcurrency(16)
+                .setTimeoutThreads(32));
     }
 
     @Test
@@ -26,11 +28,15 @@ public class TestJettyIoPoolConfig
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
                 .put("http-client.max-threads", "33")
                 .put("http-client.min-threads", "11")
+                .put("http-client.timeout-concurrency", "33")
+                .put("http-client.timeout-threads", "44")
                 .build();
 
         JettyIoPoolConfig expected = new JettyIoPoolConfig()
                 .setMaxThreads(33)
-                .setMinThreads(11);
+                .setMinThreads(11)
+                .setTimeoutConcurrency(33)
+                .setTimeoutThreads(44);
 
         assertFullMapping(properties, expected);
     }
