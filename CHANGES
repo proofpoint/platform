@@ -4,6 +4,11 @@ Platform 1.93
 
   We enabled compiled metadata for reflection on method parameters.
 
+* Discovery
+
+  We decreased the timeout for the initial discovery service query from 30
+  seconds to 1 second.
+
 * Library upgrades
 
  - cglib to 3.2.8 (was 3.1)
