@@ -16,12 +16,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Throwables.throwIfUnchecked;
+import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static java.lang.Math.max;
 import static java.lang.Thread.currentThread;
 import static java.util.Objects.requireNonNull;
@@ -133,7 +135,7 @@ public final class JettyIoPool
     {
         private final int threadsPerScheduler;
         private final ScheduledExecutorService[] schedulers;
-        private final String threadBaseName;
+        private final ThreadFactory threadFactory;
 
         public ConcurrentScheduler(int schedulerCount, int threadsPerScheduler, String threadBaseName)
         {
@@ -141,7 +143,8 @@ public final class JettyIoPool
             this.schedulers = new ScheduledThreadPoolExecutor[schedulerCount];
             checkArgument(threadsPerScheduler > 0, "threadsPerScheduler must be at least one");
             this.threadsPerScheduler = threadsPerScheduler;
-            this.threadBaseName = requireNonNull(threadBaseName, "threadBaseName is null");
+            requireNonNull(threadBaseName, "threadBaseName is null");
+            threadFactory = daemonThreadsNamed(threadBaseName + "-timeout-%s");
         }
 
         @Override
@@ -149,7 +152,9 @@ public final class JettyIoPool
                 throws Exception
         {
             for (int i = 0; i < schedulers.length; i++) {
-                schedulers[i] = Executors.newScheduledThreadPool(threadsPerScheduler, Threads.daemonThreadsNamed(threadBaseName + "-timeout-%s" + i));
+                ScheduledThreadPoolExecutor scheduledExecutorService = new ScheduledThreadPoolExecutor(threadsPerScheduler, threadFactory);
+                scheduledExecutorService.setRemoveOnCancelPolicy(true);
+                schedulers[i] = scheduledExecutorService;
             }
         }
 
