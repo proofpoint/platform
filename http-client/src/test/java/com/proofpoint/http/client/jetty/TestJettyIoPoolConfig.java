@@ -18,8 +18,8 @@ public class TestJettyIoPoolConfig
         assertRecordedDefaults(recordDefaults(JettyIoPoolConfig.class)
                 .setMaxThreads(200)
                 .setMinThreads(8)
-                .setTimeoutConcurrency(16)
-                .setTimeoutThreads(32));
+                .setTimeoutConcurrency(1)
+                .setTimeoutThreads(1));
     }
 
     @Test
