@@ -14,6 +14,11 @@ Platform 1.62
   The image installs the service under the "/service" directory and runs the
   service as the user "service".
 
+* Discovery
+
+  If neither "service-inventory.uri" or "testing.discovery.uri" are configured
+  then the discovery client will query Kubernetes for the discovery service.
+
 * The bootstrap.log is now configured independently of the launcher.log
   and will be written on a "launcher run".
 
