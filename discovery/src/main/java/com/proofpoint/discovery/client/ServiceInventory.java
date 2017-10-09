@@ -17,6 +17,7 @@ package com.proofpoint.discovery.client;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import com.google.inject.Inject;
@@ -32,14 +33,17 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
@@ -47,6 +51,8 @@ import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static java.nio.file.Files.readAllBytes;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
 
 public class ServiceInventory
 {
@@ -57,6 +63,7 @@ public class ServiceInventory
     private final URI discoveryServiceURI;
     private final Duration updateInterval;
     private final JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec;
+    private final DiscoveryAddressLookup discoveryAddressLookup;
     private final ServiceDescriptorsListener discoveryListener;
 
     private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<List<ServiceDescriptor>>(ImmutableList.<ServiceDescriptor>of());
@@ -64,44 +71,65 @@ public class ServiceInventory
     private final AtomicBoolean serverUp = new AtomicBoolean(true);
     private ScheduledFuture<?> scheduledFuture = null;
 
-    @Inject
     public ServiceInventory(ServiceInventoryConfig serviceInventoryConfig,
             DiscoveryClientConfig discoveryClientConfig,
             NodeInfo nodeInfo,
             JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec,
             @ServiceType("discovery") HttpServiceBalancerImpl discoveryBalancer)
     {
+        this(serviceInventoryConfig,
+                discoveryClientConfig,
+                nodeInfo,
+                serviceDescriptorsCodec,
+                discoveryBalancer,
+                new DiscoveryAddressLookup());
+    }
+
+    @Inject
+    ServiceInventory(ServiceInventoryConfig serviceInventoryConfig,
+            DiscoveryClientConfig discoveryClientConfig,
+            NodeInfo nodeInfo,
+            JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec,
+            @ServiceType("discovery") HttpServiceBalancerImpl discoveryBalancer,
+            DiscoveryAddressLookup discoveryAddressLookup)
+    {
         requireNonNull(serviceInventoryConfig, "serviceInventoryConfig is null");
         requireNonNull(discoveryClientConfig, "discoveryClientConfig is null");
         requireNonNull(nodeInfo, "nodeInfo is null");
         requireNonNull(serviceDescriptorsCodec, "serviceDescriptorsCodec is null");
         requireNonNull(discoveryBalancer, "discoveryBalancer is null");
+        requireNonNull(discoveryAddressLookup, "discoveryAddressLookup is null");
 
         environment = nodeInfo.getEnvironment();
         serviceInventoryUri = serviceInventoryConfig.getServiceInventoryUri();
-        discoveryServiceURI = discoveryClientConfig.getDiscoveryServiceURI();
-        updateInterval = serviceInventoryConfig.getUpdateInterval();
-        this.serviceDescriptorsCodec = serviceDescriptorsCodec;
-        discoveryListener = new HttpServiceBalancerListenerAdapter(discoveryBalancer);
-
-        if (serviceInventoryUri != null) {
+        if (serviceInventoryUri == null) {
+            discoveryServiceURI = discoveryClientConfig.getDiscoveryServiceURI();
+        } else {
+            discoveryServiceURI = null;
             String scheme = serviceInventoryUri.getScheme().toLowerCase();
             checkArgument(scheme.equals("file"), "Service inventory uri must have a file scheme");
+        }
+        updateInterval = serviceInventoryConfig.getUpdateInterval();
+        this.serviceDescriptorsCodec = serviceDescriptorsCodec;
+        this.discoveryAddressLookup = discoveryAddressLookup;
+        discoveryListener = new HttpServiceBalancerListenerAdapter(discoveryBalancer);
 
+        if (discoveryServiceURI != null) {
+            discoveryBalancer.updateHttpUris(ImmutableSet.of(discoveryServiceURI));
+        }
+        else {
             try {
                 updateServiceInventory();
             }
             catch (Exception ignored) {
             }
-        } else if (discoveryServiceURI != null) {
-            discoveryBalancer.updateHttpUris(ImmutableSet.of(discoveryServiceURI));
         }
     }
 
     @PostConstruct
     public synchronized void start()
     {
-        if (serviceInventoryUri == null || scheduledFuture != null) {
+        if (discoveryServiceURI != null || scheduledFuture != null) {
             return;
         }
         scheduledFuture = executorService.scheduleAtFixedRate(() -> {
@@ -132,43 +160,74 @@ public class ServiceInventory
     {
         return Streams.stream(getServiceDescriptors())
                 .filter(serviceDescriptor -> serviceDescriptor.getType().equals(type))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public Iterable<ServiceDescriptor> getServiceDescriptors(final String type, final String pool)
     {
         return Streams.stream(getServiceDescriptors())
                 .filter(serviceDescriptor -> serviceDescriptor.getType().equals(type) && serviceDescriptor.getPool().equals(pool))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Managed
     public final void updateServiceInventory()
     {
-        if (serviceInventoryUri == null) {
+        if (discoveryServiceURI != null) {
             return;
         }
 
-        try {
-            ServiceDescriptorsRepresentation serviceDescriptorsRepresentation;
-            File file = new File(serviceInventoryUri);
-            serviceDescriptorsRepresentation = serviceDescriptorsCodec.fromJson(readAllBytes(file.toPath()));
+        List<ServiceDescriptor> descriptors;
+        if (serviceInventoryUri != null) {
+            try {
+                ServiceDescriptorsRepresentation serviceDescriptorsRepresentation;
+                File file = new File(serviceInventoryUri);
+                serviceDescriptorsRepresentation = serviceDescriptorsCodec.fromJson(readAllBytes(file.toPath()));
 
-            if (!environment.equals(serviceDescriptorsRepresentation.getEnvironment())) {
-                logServerError("Expected environment to be %s, but was %s", environment, serviceDescriptorsRepresentation.getEnvironment());
+                if (!environment.equals(serviceDescriptorsRepresentation.getEnvironment())) {
+                    logServerError("Expected environment to be %s, but was %s", environment, serviceDescriptorsRepresentation.getEnvironment());
+                }
+
+                descriptors = newArrayList(serviceDescriptorsRepresentation.getServiceDescriptors());
             }
-
-            List<ServiceDescriptor> descriptors = newArrayList(serviceDescriptorsRepresentation.getServiceDescriptors());
-            Collections.shuffle(descriptors);
-            serviceDescriptors.set(ImmutableList.copyOf(descriptors));
-            discoveryListener.updateServiceDescriptors(Collections2.filter(descriptors, input -> "discovery".equals(input.getType())));
-
-            if (serverUp.compareAndSet(false, true)) {
-                log.info("ServiceInventory connect succeeded");
+            catch (Exception e) {
+                logServerError(e, "Error loading service inventory from %s", serviceInventoryUri.toASCIIString());
+                return;
             }
         }
-        catch (Exception e) {
-            logServerError(e, "Error loading service inventory from %s", serviceInventoryUri.toASCIIString());
+        else {
+            try {
+                descriptors = discoveryAddressLookup.get().stream()
+                        .map(inetAddress -> {
+                            try {
+                                return new ServiceDescriptor(
+                                        UUID.nameUUIDFromBytes(inetAddress.getAddress()),
+                                        null,
+                                        "discovery",
+                                        "general",
+                                        null,
+                                        ServiceState.RUNNING,
+                                        ImmutableMap.of("http", new URI("http", null, inetAddress.getHostAddress(), 4111, null, null, null).toASCIIString()));
+                            }
+                            catch (URISyntaxException e) {
+                                log.error(e, "Invalid discovery server address %s", inetAddress);
+                                return null;
+                            }
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(toCollection(ArrayList::new));
+            }
+            catch (Exception e) {
+                logServerError(e, "Error looking up discovery in DNS");
+                return;
+            }
+        }
+        Collections.shuffle(descriptors);
+        serviceDescriptors.set(ImmutableList.copyOf(descriptors));
+        discoveryListener.updateServiceDescriptors(Collections2.filter(descriptors, input -> "discovery".equals(input.getType())));
+
+        if (serverUp.compareAndSet(false, true)) {
+            log.info("ServiceInventory update succeeded");
         }
     }
 
@@ -184,5 +243,4 @@ public class ServiceInventory
             log.error(e, message, args);
         }
     }
-
 }

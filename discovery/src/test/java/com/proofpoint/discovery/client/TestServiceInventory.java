@@ -15,6 +15,7 @@
  */
 package com.proofpoint.discovery.client;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
@@ -22,9 +23,14 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.node.NodeInfo;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.Set;
 
 import static org.mockito.Matchers.any;
@@ -32,20 +38,37 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 import static org.testng.Assert.assertEquals;
 
 @SuppressWarnings({"unchecked", "deprecation"})
 public class TestServiceInventory
 {
+    private ServiceInventoryConfig serviceInventoryConfig;
+    private DiscoveryClientConfig discoveryClientConfig;
+    @Mock
+    private HttpServiceBalancerImpl balancer;
+    @Mock
+    private DiscoveryAddressLookup discoveryAddressLookup;
+    @Captor
+    private ArgumentCaptor<Set<URI>> uriSetCaptor;
+
+    @BeforeMethod
+    public void setup()
+            throws Exception
+    {
+        initMocks(this);
+        serviceInventoryConfig = new ServiceInventoryConfig();
+        discoveryClientConfig = new DiscoveryClientConfig();
+        when(discoveryAddressLookup.get()).thenThrow(new UnknownHostException("discovery"));
+    }
+
     @Test
     public void testNullServiceInventory()
             throws Exception
     {
-        HttpServiceBalancerImpl balancer = mock(HttpServiceBalancerImpl.class);
-        ServiceInventory serviceInventory = new ServiceInventory(new ServiceInventoryConfig(),
-                new DiscoveryClientConfig(), new NodeInfo("test"),
-                JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
-                balancer);
+        ServiceInventory serviceInventory = createServiceInventory();
 
         assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
         serviceInventory.updateServiceInventory();
@@ -58,18 +81,13 @@ public class TestServiceInventory
     public void testDeprecatedServiceInventory()
             throws Exception
     {
-        HttpServiceBalancerImpl balancer = mock(HttpServiceBalancerImpl.class);
-        ServiceInventory serviceInventory = new ServiceInventory(new ServiceInventoryConfig(),
-                new DiscoveryClientConfig().setDiscoveryServiceURI(URI.create("https://example.com:4111")),
-                new NodeInfo("test"),
-                JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
-                balancer);
+        discoveryClientConfig.setDiscoveryServiceURI(URI.create("https://example.com:4111"));
+        ServiceInventory serviceInventory = createServiceInventory();
 
-        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
-        verify(balancer).updateHttpUris(captor.capture());
-        assertEquals(Iterables.size(captor.getValue()), 1);
+        verify(balancer).updateHttpUris(uriSetCaptor.capture());
+        assertEquals(Iterables.size(uriSetCaptor.getValue()), 1);
 
-        URI uri = (URI) Iterables.getOnlyElement(captor.getValue());
+        URI uri = Iterables.getOnlyElement(uriSetCaptor.getValue());
         assertEquals(uri, URI.create("https://example.com:4111"));
 
         assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);
@@ -81,31 +99,68 @@ public class TestServiceInventory
     public void testFileServiceInventory()
             throws Exception
     {
-        HttpServiceBalancerImpl balancer = mock(HttpServiceBalancerImpl.class);
-        ServiceInventoryConfig serviceInventoryConfig = new ServiceInventoryConfig()
-                .setServiceInventoryUri(Resources.getResource("service-inventory.json").toURI());
+        serviceInventoryConfig.setServiceInventoryUri(Resources.getResource("service-inventory.json").toURI());
+        discoveryClientConfig.setDiscoveryServiceURI(URI.create("http://example.com:4111"));
 
-        ServiceInventory serviceInventory = new ServiceInventory(serviceInventoryConfig,
-                new DiscoveryClientConfig().setDiscoveryServiceURI(URI.create("http://example.com:4111")),
-                new NodeInfo("test"),
-                JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
-                balancer);
+        ServiceInventory serviceInventory = createServiceInventory();
 
         assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 3);
         assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
         assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
 
-        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
-        verify(balancer).updateHttpUris(captor.capture());
+        verify(balancer).updateHttpUris(uriSetCaptor.capture());
         ImmutableSet<URI> expectedUris = ImmutableSet.of(URI.create("http://localhost:8411"), URI.create("http://localhost:8412"));
-        assertEquals(captor.getValue(), expectedUris);
+        assertEquals(uriSetCaptor.getValue(), expectedUris);
 
         serviceInventory.updateServiceInventory();
         assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 3);
         assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
         assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
 
-        verify(balancer, times(2)).updateHttpUris(captor.capture());
-        assertEquals(captor.getValue(), expectedUris);
+        verify(balancer, times(2)).updateHttpUris(uriSetCaptor.capture());
+        assertEquals(uriSetCaptor.getValue(), expectedUris);
+    }
+
+    @Test
+    public void testDnsServiceInventory()
+            throws Exception
+    {
+        discoveryAddressLookup = mock(DiscoveryAddressLookup.class);
+        when(discoveryAddressLookup.get()).thenReturn(ImmutableList.of(
+                InetAddress.getByName("1.2.3.4"),
+                InetAddress.getByName("1:2:3:4:5:6:7:8")
+        ));
+
+        ServiceInventory serviceInventory = createServiceInventory();
+
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
+
+        verify(balancer).updateHttpUris(uriSetCaptor.capture());
+        ImmutableSet<URI> expectedUris = ImmutableSet.of(URI.create("http://1.2.3.4:4111"), URI.create("http://[1:2:3:4:5:6:7:8]:4111"));
+        assertEquals(uriSetCaptor.getValue(), expectedUris);
+
+        when(discoveryAddressLookup.get()).thenReturn(ImmutableList.of(
+                InetAddress.getByName("5.6.7.8"),
+                InetAddress.getByName("1:2:3:4:5:6:7:8")
+        ));
+        serviceInventory.updateServiceInventory();
+
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 2);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery")), 2);
+        assertEquals(Iterables.size(serviceInventory.getServiceDescriptors("discovery", "general")), 2);
+
+        verify(balancer, times(2)).updateHttpUris(uriSetCaptor.capture());
+        expectedUris = ImmutableSet.of(URI.create("http://5.6.7.8:4111"), URI.create("http://[1:2:3:4:5:6:7:8]:4111"));
+        assertEquals(uriSetCaptor.getValue(), expectedUris);
+    }
+
+    private ServiceInventory createServiceInventory()
+    {
+        return new ServiceInventory(serviceInventoryConfig,
+                discoveryClientConfig, new NodeInfo("test"),
+                JsonCodec.jsonCodec(ServiceDescriptorsRepresentation.class),
+                balancer, discoveryAddressLookup);
     }
 }
