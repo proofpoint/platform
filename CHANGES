@@ -17,7 +17,8 @@ Platform 1.62
 * Discovery
 
   If neither "service-inventory.uri" or "testing.discovery.uri" are configured
-  then the discovery client will query Kubernetes for the discovery service.
+  then the discovery client will query Kubernetes for the discovery service by
+  doing a DNS lookup on "discovery".
 
 * The bootstrap.log is now configured independently of the launcher.log
   and will be written on a "launcher run".
