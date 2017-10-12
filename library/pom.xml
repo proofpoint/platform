@@ -38,7 +38,7 @@
         <project.rpm.username>${project.artifactId}</project.rpm.username>
         <project.docker.project>dev-docker-local</project.docker.project>
         <project.docker.name>%a</project.docker.name>
-        <project.docker.from>openjdk:8u141-jdk</project.docker.from>
+        <project.docker.from>docker.io/openjdk:8u141-jdk</project.docker.from>
         <project.docker.verbose>false</project.docker.verbose>
 
         <!-- Default jvm size for compiler, tests etc. -->
