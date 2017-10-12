@@ -1477,6 +1477,13 @@
                                                         <includes>
                                                             <include>com.proofpoint.platform:launcher</include>
                                                         </includes>
+                                                        <unpackOptions>
+                                                            <excludes>
+                                                                <exclude>bin/init.redhat</exclude>
+                                                                <exclude>bin/launcher.rb</exclude>
+                                                                <exclude>bin/platform.service</exclude>
+                                                            </excludes>
+                                                        </unpackOptions>
                                                     </dependencySet>
                                                 </dependencySets>
                                             </inline>
