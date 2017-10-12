@@ -66,6 +66,7 @@ public class DiscoveryModule
         // bind service inventory
         binder.bind(ServiceInventory.class).asEagerSingleton();
         bindConfig(binder).to(ServiceInventoryConfig.class);
+        binder.bind(DiscoveryAddressLookup.class).in(Scopes.SINGLETON);
 
         bindConfig(binder).annotatedWith(ForDiscoveryClient.class).prefixedWith("service-balancer.discovery").to(HttpServiceBalancerConfig.class);
 
