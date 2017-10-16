@@ -1,3 +1,10 @@
+Platform 1.64
+
+* Docker
+
+  The uid of the "service" user may be specified by setting the
+  project.docker.uid Maven property.
+
 Platform 1.63
 
 * Docker
