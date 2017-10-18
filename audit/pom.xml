@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>audit</artifactId>
     <packaging>jar</packaging>
-    <name>log</name>
+    <name>audit</name>
 
     <parent>
         <groupId>com.proofpoint.platform</groupId>
