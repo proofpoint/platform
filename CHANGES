@@ -5,6 +5,15 @@ Platform 1.64
   The uid of the "service" user may be specified by setting the
   project.docker.uid Maven property.
 
+* Java 9
+
+  We fixed some issues which prevented running Platform applications on Java
+  9. To run under Java 9, the following options must be present in jvm.config:
+
+  --add-modules
+  java.xml.bind
+  -Djdk.attach.allowAttachSelf=true
+
 * Library Upgrades
 
   - Jetty to 9.3.22 (was 9.3.20)

@@ -66,6 +66,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.Arrays;
@@ -1167,7 +1168,7 @@ public class JettyHttpClient
                     return endOfData();
                 }
                 bytesWritten.addAndGet(chunk.position());
-                chunk.flip();
+                ((Buffer)chunk).flip();
                 return chunk;
             }
 
