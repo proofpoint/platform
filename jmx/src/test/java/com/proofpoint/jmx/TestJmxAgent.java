@@ -36,4 +36,12 @@ public class TestJmxAgent
         JMXConnector connector = JMXConnectorFactory.connect(url);
         connector.connect();
     }
+
+    @Test
+    public void testDisabled()
+            throws Exception
+    {
+        JmxAgent agent = new JmxAgent8(new JmxConfig().setEnabled(false));
+        assertNull(agent.getUrl(), "agent url");
+    }
 }
