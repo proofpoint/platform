@@ -29,11 +29,15 @@ public class TestServiceTypes
     @ServiceType("banana")
     private final ServiceType bananaServiceType;
 
+    @ServiceType("qu\"ote")
+    private final ServiceType quoteServiceType;
+
     public TestServiceTypes()
     {
         try {
             this.appleServiceType = getClass().getDeclaredField("appleServiceType").getAnnotation(ServiceType.class);
             this.bananaServiceType = getClass().getDeclaredField("bananaServiceType").getAnnotation(ServiceType.class);
+            this.quoteServiceType = getClass().getDeclaredField("quoteServiceType").getAnnotation(ServiceType.class);
         }
         catch (NoSuchFieldException e) {
             throw Throwables.propagate(e);
@@ -50,6 +54,9 @@ public class TestServiceTypes
     @Test
     public void testToString()
     {
+        if (!System.getProperty("java.version").startsWith("1.")) {
+            Assert.assertEquals(ServiceTypes.serviceType("qu\"ote").toString(), quoteServiceType.toString());
+        }
         Assert.assertEquals(ServiceTypes.serviceType("apple").toString(), appleServiceType.toString());
     }
 
