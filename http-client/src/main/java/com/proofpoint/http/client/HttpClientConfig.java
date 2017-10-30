@@ -58,6 +58,7 @@ public class HttpClientConfig
     private DataSize http2InitialSessionReceiveWindowSize = new DataSize(16, MEGABYTE);
     private DataSize http2InitialStreamReceiveWindowSize = new DataSize(16, MEGABYTE);
     private DataSize http2InputBufferSize = new DataSize(8, KILOBYTE);
+    private int selectorThreads = 2;
 
     public boolean isHttp2Enabled()
     {
@@ -258,6 +259,19 @@ public class HttpClientConfig
     public HttpClientConfig setHttp2InputBufferSize(DataSize http2InputBufferSize)
     {
         this.http2InputBufferSize = http2InputBufferSize;
+        return this;
+    }
+
+    @Min(1)
+    public int getSelectorThreads()
+    {
+        return selectorThreads;
+    }
+
+    @Config("http-client.selector-thread-count")
+    public HttpClientConfig setSelectorThreads(int selectorThreads)
+    {
+        this.selectorThreads = selectorThreads;
         return this;
     }
 }
