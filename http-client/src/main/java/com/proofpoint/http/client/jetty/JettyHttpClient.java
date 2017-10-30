@@ -127,7 +127,6 @@ public class JettyHttpClient
     private static final AtomicLong nameCounter = new AtomicLong();
     private static final String PLATFORM_STATS_KEY = "platform_stats";
     private static final long SWEEP_PERIOD_MILLIS = 5000;
-    private static final int CLIENT_TRANSPORT_SELECTORS = 2;
 
     private final JettyIoPool anonymousPool;
     private final HttpClient httpClient;
@@ -210,11 +209,11 @@ public class JettyHttpClient
             client.setInitialSessionRecvWindow(toIntExact(config.getHttp2InitialSessionReceiveWindowSize().toBytes()));
             client.setInitialStreamRecvWindow(toIntExact(config.getHttp2InitialStreamReceiveWindowSize().toBytes()));
             client.setInputBufferSize(toIntExact(config.getHttp2InputBufferSize().toBytes()));
-            client.setSelectors(CLIENT_TRANSPORT_SELECTORS);
+            client.setSelectors(config.getSelectorThreads());
             transport = new HttpClientTransportOverHTTP2(client);
         }
         else {
-            transport = new HttpClientTransportOverHTTP(CLIENT_TRANSPORT_SELECTORS);
+            transport = new HttpClientTransportOverHTTP(config.getSelectorThreads());
         }
 
         httpClient = new HttpClient(transport, sslContextFactory);
