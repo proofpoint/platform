@@ -48,4 +48,11 @@ public class ShutdownWaitingLogManager
             shutdownHooksToWaitFor.add(shutdownHook);
         }
     }
+
+    public void removeWaitForShutdownHook(Thread shutdownHook)
+    {
+        synchronized (shutdownHooksToWaitFor) {
+            shutdownHooksToWaitFor.remove(shutdownHook);
+        }
+    }
 }

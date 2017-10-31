@@ -422,4 +422,12 @@ public class Logging
                     ShutdownWaitingLogManager.class.getTypeName());
         }
     }
+
+    public static void removeShutdownHookToWaitFor(Thread shutdownHook)
+    {
+        LogManager logManager = LogManager.getLogManager();
+        if (logManager instanceof ShutdownWaitingLogManager) {
+            ((ShutdownWaitingLogManager) logManager).removeWaitForShutdownHook(shutdownHook);
+        }
+    }
 }
