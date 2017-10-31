@@ -50,6 +50,7 @@ public final class LifeCycleManager
     private final ConcurrentLinkedQueue<Object> stopTrafficInstances = new ConcurrentLinkedQueue<>();
     private final LifeCycleMethodsMap methodsMap;
     private final LifeCycleConfig config;
+    private final AtomicReference<Thread> shutdownHook = new AtomicReference<>();
 
     private enum State
     {
@@ -115,7 +116,7 @@ public final class LifeCycleManager
             }
         }
 
-        Thread shutdownHook = new Thread(() -> {
+        Thread thread = new Thread(() -> {
             try {
                 LifeCycleManager.this.stop();
             }
@@ -123,8 +124,9 @@ public final class LifeCycleManager
                 log.error(e, "Trying to shut down");
             }
         });
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
-        Logging.addShutdownHookToWaitFor(shutdownHook);
+        shutdownHook.set(thread);
+        Runtime.getRuntime().addShutdownHook(thread);
+        Logging.addShutdownHookToWaitFor(thread);
 
         state.set(State.STARTED);
         log.info("Life cycle startup complete. System ready.");
@@ -146,6 +148,16 @@ public final class LifeCycleManager
     {
         if (!state.compareAndSet(State.STARTED, State.STOPPING)) {
             return;
+        }
+
+        Thread thread = shutdownHook.getAndSet(null);
+        if (thread != null) {
+            try {
+                Runtime.getRuntime().removeShutdownHook(thread);
+            }
+            catch (IllegalStateException ignored) {
+            }
+            Logging.removeShutdownHookToWaitFor(thread);
         }
 
         log.info("Life cycle stopping...");
