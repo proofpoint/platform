@@ -68,7 +68,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -401,7 +401,7 @@ public class HttpServer
         certificateExpiration = loadAllX509Certificates(config).stream()
                 .map(X509Certificate::getNotAfter)
                 .min(naturalOrder())
-                .map(date -> ZonedDateTime.ofInstant(date.toInstant(), ZoneOffset.systemDefault()));
+                .map(date -> ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
     }
 
     private ServletContextHandler createServletContext(Servlet theServlet,

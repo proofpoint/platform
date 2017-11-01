@@ -555,7 +555,8 @@ public class TestHttpServerProvider
     private void createServer(HttpServlet servlet)
     {
         HashLoginServiceProvider loginServiceProvider = new HashLoginServiceProvider(config);
-        HttpServerProvider serverProvider = new HttpServerProvider(httpServerInfo,
+        HttpServerProvider serverProvider = new HttpServerProvider(
+                httpServerInfo,
                 nodeInfo,
                 config,
                 servlet,

@@ -146,7 +146,7 @@ public class TestTestingHttpServer
     public void testGuiceInjectionWithoutFilters()
             throws Exception
     {
-        final DummyServlet servlet = new DummyServlet();
+        DummyServlet servlet = new DummyServlet();
 
         Injector injector = bootstrapTest()
                 .withModules(
@@ -178,8 +178,8 @@ public class TestTestingHttpServer
     public void testGuiceInjectionWithFilters()
             throws Exception
     {
-        final DummyServlet servlet = new DummyServlet();
-        final DummyFilter filter = new DummyFilter();
+        DummyServlet servlet = new DummyServlet();
+        DummyFilter filter = new DummyFilter();
 
         Injector injector = bootstrapTest()
                 .withModules(
@@ -214,7 +214,7 @@ public class TestTestingHttpServer
     public void testGuiceInjectionWithResources()
             throws Exception
     {
-        final DummyServlet servlet = new DummyServlet();
+        DummyServlet servlet = new DummyServlet();
 
         Injector injector = bootstrapTest()
                 .withModules(

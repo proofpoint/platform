@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
-import com.google.common.net.HttpHeaders;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.MediaType;
 import com.google.inject.Injector;
@@ -57,6 +56,7 @@ import java.util.Map.Entry;
 
 import static com.google.common.io.MoreFiles.deleteRecursively;
 import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
+import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
@@ -226,7 +226,7 @@ public class TestHttpServerModule
         HttpUriBuilder uriBuilder = uriBuilderFrom(baseUri);
         StringResponse data = client.execute(prepareGet().setUri(uriBuilder.appendPath(path).build()).build(), createStringResponseHandler());
         assertEquals(data.getStatusCode(), HttpStatus.OK.code());
-        MediaType contentType = MediaType.parse(data.getHeader(HttpHeaders.CONTENT_TYPE));
+        MediaType contentType = MediaType.parse(data.getHeader(CONTENT_TYPE));
         assertTrue(PLAIN_TEXT_UTF_8.is(contentType), "Expected text/plain but got " + contentType);
         assertEquals(data.getBody().trim(), contents);
     }

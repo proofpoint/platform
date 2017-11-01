@@ -46,7 +46,7 @@ final class Inet4Network
     }
 
     @Override
-    @SuppressWarnings({"RedundantIfStatement"})
+    @SuppressWarnings("RedundantIfStatement")
     public boolean equals(Object o)
     {
         if (this == o) {
