@@ -250,7 +250,8 @@ public class HttpServer
             }
             httpsConfiguration.addCustomizer(new SecureRequestCustomizer());
 
-            SslContextFactory sslContextFactory = new SslContextFactory(config.getKeystorePath());
+            SslContextFactory sslContextFactory = new SslContextFactory();
+            sslContextFactory.setKeyStorePath(config.getKeystorePath());
             sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
             sslContextFactory.setExcludeProtocols();
             sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);
@@ -299,7 +300,8 @@ public class HttpServer
             if (config.isHttpsEnabled()) {
                 adminConfiguration.addCustomizer(new SecureRequestCustomizer());
 
-                SslContextFactory sslContextFactory = new SslContextFactory(config.getKeystorePath());
+                SslContextFactory sslContextFactory = new SslContextFactory();
+                sslContextFactory.setKeyStorePath(config.getKeystorePath());
                 sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
                 sslContextFactory.setExcludeProtocols();
                 sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);
