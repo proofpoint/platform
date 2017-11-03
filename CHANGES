@@ -5,6 +5,10 @@ Platform 1.64
   The uid of the "service" user may be specified by setting the
   project.docker.uid Maven property.
 
+* Library Upgrades
+
+  - Jetty to 9.3.22 (was 9.3.20)
+
 Platform 1.63
 
 * Docker
