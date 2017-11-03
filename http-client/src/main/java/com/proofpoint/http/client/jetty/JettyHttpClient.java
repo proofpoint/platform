@@ -255,6 +255,8 @@ public class JettyHttpClient
         this.httpClient.setByteBufferPool(pool.getByteBufferPool());
         this.httpClient.setScheduler(pool.getScheduler());
 
+        httpClient.setSocketAddressResolver(new JettyAsyncSocketAddressResolver(pool.getExecutor(), pool.getScheduler(), config.getConnectTimeout().toMillis()));
+
         // Jetty client connections can sometimes get stuck while closing which reduces
         // the available connections.  The Jetty Sweeper periodically scans the active
         // connection pool looking for connections in the closed state, and if a connection
