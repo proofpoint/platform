@@ -329,6 +329,7 @@ public class Bootstrap
             log.info("Loading configuration");
             builder = builder
                     .withFile(System.getProperty("config"))
+                    .withFile(System.getProperty("secret-config"))
                     .withSystemProperties();
         }
         else {
