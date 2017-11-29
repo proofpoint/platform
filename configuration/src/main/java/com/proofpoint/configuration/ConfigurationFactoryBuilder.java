@@ -46,35 +46,6 @@ public final class ConfigurationFactoryBuilder
     private Map<String, ConfigurationDefaultingModule> moduleDefaultSource = ImmutableMap.of();
 
     /**
-     * Loads properties from the given file
-     *
-     * @param path file path
-     * @return self
-     * @throws java.io.IOException errors
-     */
-    public Properties fromFile(@Nullable final String path)
-            throws IOException
-    {
-        final Properties properties = new Properties() {
-            @SuppressWarnings("UseOfPropertiesAsHashtable")
-            @Override
-            public synchronized Object put(Object key, Object value) {
-                final Object old = super.put(key, value);
-                if (old != null) {
-                    errors.add(format("Duplicate configuration property '%s' in file %s", key, path));
-                }
-                return old;
-            }
-        };
-
-        try (Reader reader = new InputStreamReader(new FileInputStream(path), UTF_8)) {
-            properties.load(reader);
-        }
-
-        return properties;
-    }
-
-    /**
      * Loads properties from list of comma separated files
      *
      * @param files comma separated list of config files to be loaded
@@ -174,5 +145,34 @@ public final class ConfigurationFactoryBuilder
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             this.properties.put(entry.getKey().toString(), entry.getValue().toString());
         }
+    }
+
+    /**
+     * Loads properties from the given file
+     *
+     * @param path file path
+     * @return {@link Properties}
+     * @throws java.io.IOException errors
+     */
+    private Properties fromFile(@Nullable final String path)
+            throws IOException
+    {
+        final Properties properties = new Properties() {
+            @SuppressWarnings("UseOfPropertiesAsHashtable")
+            @Override
+            public synchronized Object put(Object key, Object value) {
+                final Object old = super.put(key, value);
+                if (old != null) {
+                    errors.add(format("Duplicate configuration property '%s' in file %s", key, path));
+                }
+                return old;
+            }
+        };
+
+        try (Reader reader = new InputStreamReader(new FileInputStream(path), UTF_8)) {
+            properties.load(reader);
+        }
+
+        return properties;
     }
 }
