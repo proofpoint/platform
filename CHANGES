@@ -6,6 +6,10 @@ Platform 1.65
   properties from it.  In a future version, it will be mandatory to use
   @ConfigSecuritySensitive annotation on configs used from this file.
 
+* Docker
+
+  - Default base image upgraded to openjdk:8u151-jdk
+
 Platform 1.64
 
 * Docker
