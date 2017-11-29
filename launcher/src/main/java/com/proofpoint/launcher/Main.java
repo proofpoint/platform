@@ -173,8 +173,16 @@ public class Main
                 configPath = installPath + "/etc/config.properties";
             }
             else {
+                //put validation here
                 launcherArgs.add("--config");
-                launcherArgs.add(new File(configPath).getAbsolutePath());
+                StringBuilder builder = new StringBuilder();
+                for (String file:configPath.split(",")) {
+                    builder.append(new File(file).getAbsolutePath());
+                    builder.append(",");
+                }
+
+                configPath = builder.toString().replace(",$", "");
+                launcherArgs.add(configPath);
             }
             if (dataDir == null) {
                 dataDir = installPath;
@@ -287,10 +295,13 @@ public class Main
                 System.exit(0);
             }
 
-            if (!new File(configPath).exists()) {
-                System.err.println("Config file is missing: " + configPath);
-                System.exit(STATUS_CONFIG_MISSING);
+            for (String file:configPath.split(",")) {
+                if (!new File(file).exists()) {
+                    System.err.println("Config file is missing: " + file);
+                    System.exit(STATUS_CONFIG_MISSING);
+                }
             }
+
 
             Collection<String> jvmConfigArgs = new ArrayList<>();
             try (BufferedReader jvmReader = new BufferedReader(new InputStreamReader(new FileInputStream(jvmConfigPath), Charsets.UTF_8))) {

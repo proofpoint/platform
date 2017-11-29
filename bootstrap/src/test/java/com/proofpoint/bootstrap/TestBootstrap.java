@@ -126,6 +126,84 @@ public class TestBootstrap
     }
 
     @Test
+    public void testMultipleConfigFiles()
+            throws Exception
+    {
+        String propertyFiles = new StringBuilder()
+                .append(Resources.getResource("simple-config.properties").getFile())
+                .append(",")
+                .append(Resources.getResource("second-config.properties").getFile())
+                .toString();
+
+        System.setProperty("config", propertyFiles);
+        Injector injector = bootstrapApplication("test-application")
+                .doNotInitializeLogging()
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .quiet()
+                .initialize();
+
+        SimpleConfig simpleConfig = injector.getInstance(SimpleConfig.class);
+        assertEquals(simpleConfig.getProperty(), "value");
+        assertEquals(simpleConfig.getOtherProperty(), "other-property-value");
+    }
+
+    @Test
+    public void testMultipleConfigFilesDuplicateValue()
+            throws Exception
+    {
+        String propertyFiles = new StringBuilder()
+                .append(Resources.getResource("simple-config.properties").getFile())
+                .append(",")
+                .append(Resources.getResource("second-config.properties").getFile())
+                .append(",")
+                .append(Resources.getResource("duplicate-config.properties").getFile())
+                .toString();
+
+        System.setProperty("config", propertyFiles);
+
+        try {
+            Injector injector = bootstrapApplication("test-application")
+                    .doNotInitializeLogging()
+                    .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                    .quiet()
+                    .initialize();
+            injector.getInstance(SimpleConfig.class);
+            fail("should not allow duplicate property in any file");
+        }
+        catch (CreationException e) {
+            assertContains(e.getErrorMessages().toString(), "property 'other-property' already defined in file");
+        }
+    }
+
+    @Test
+    public void testMultipleConfigFilesDuplicateFiles()
+            throws Exception
+    {
+        String propertyFiles = new StringBuilder()
+                .append(Resources.getResource("simple-config.properties").getFile())
+                .append(",")
+                .append(Resources.getResource("second-config.properties").getFile())
+                .append(",")
+                .append(Resources.getResource("second-config.properties").getFile())
+                .toString();
+
+        System.setProperty("config", propertyFiles);
+
+        try {
+            Injector injector = bootstrapApplication("test-application")
+                    .doNotInitializeLogging()
+                    .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                    .quiet()
+                    .initialize();
+            injector.getInstance(SimpleConfig.class);
+            fail("should not allow duplicate config files");
+        }
+        catch (CreationException e) {
+            assertContains(e.getErrorMessages().toString(), "Duplicate config file");
+        }
+    }
+
+    @Test
     public void testConfigSystemProperties()
             throws Exception
     {

@@ -328,7 +328,7 @@ public class Bootstrap
         if (requiredConfigurationProperties == null) {
             log.info("Loading configuration");
             builder = builder
-                    .withFile(System.getProperty("config"))
+                    .withFiles(System.getProperty("config"))
                     .withSystemProperties();
         }
         else {

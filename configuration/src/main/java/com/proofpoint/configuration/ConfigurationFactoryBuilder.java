@@ -52,13 +52,9 @@ public final class ConfigurationFactoryBuilder
      * @return self
      * @throws java.io.IOException errors
      */
-    public ConfigurationFactoryBuilder withFile(@Nullable final String path)
+    public Properties fromFile(@Nullable final String path)
             throws IOException
     {
-        if (path == null) {
-            return this;
-        }
-
         final Properties properties = new Properties() {
             @SuppressWarnings("UseOfPropertiesAsHashtable")
             @Override
@@ -75,8 +71,44 @@ public final class ConfigurationFactoryBuilder
             properties.load(reader);
         }
 
-        mergeProperties(properties);
-        expectToUse.addAll(properties.stringPropertyNames());
+        return properties;
+    }
+
+    /**
+     * Loads properties from list of comma separated files
+     *
+     * @param files comma separated list of config files to be loaded
+     * @return self
+     * @throws java.io.IOException errors
+     */
+    public ConfigurationFactoryBuilder withFiles(@Nullable final String files)
+            throws IOException
+    {
+        if (files == null) {
+            return this;
+        }
+
+        Set<String> fileNames = new HashSet<>();
+        Map<String, String> propertyMap = new HashMap<>();
+
+        for(String file: files.split(",")) {
+            if (!fileNames.add(file)) {
+                errors.add(format("Duplicate config file '%s'", file));
+                continue;
+            }
+
+            Properties properties = this.fromFile(file);
+            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+                if (propertyMap.containsKey(entry.getKey().toString())) {
+                    errors.add(format("property '%s' already defined in file '%s'",
+                            entry.getKey().toString(), propertyMap.get(entry.getKey().toString())));
+                }
+                propertyMap.put(entry.getKey().toString(), file);
+            }
+            mergeProperties(properties);
+            expectToUse.addAll(properties.stringPropertyNames());
+        }
+
         return this;
     }
 

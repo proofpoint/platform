@@ -116,7 +116,7 @@ public class TestConfigurationFactoryBuilder
         System.setProperty("config", file.getAbsolutePath());
 
         final Map<String, String> properties = new ConfigurationFactoryBuilder()
-                .withFile(System.getProperty("config"))
+                .withFiles(System.getProperty("config"))
                 .withSystemProperties()
                 .build()
                 .getProperties();
@@ -141,7 +141,7 @@ public class TestConfigurationFactoryBuilder
         System.setProperty("key1", "overridden");
 
         final Map<String, String> properties = new ConfigurationFactoryBuilder()
-                .withFile(System.getProperty("config"))
+                .withFiles(System.getProperty("config"))
                 .withSystemProperties()
                 .build()
                 .getProperties();
@@ -167,7 +167,7 @@ public class TestConfigurationFactoryBuilder
         TestMonitor monitor = new TestMonitor();
         final ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
                 .withMonitor(monitor)
-                .withFile(System.getProperty("config"))
+                .withFiles(System.getProperty("config"))
                 .withSystemProperties()
                 .build();
 
@@ -204,7 +204,7 @@ public class TestConfigurationFactoryBuilder
         final ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
                 .withMonitor(monitor)
                 .withModuleDefaults(ImmutableMap.of("unused", "foo"), ImmutableMap.of("unused", TEST_DEFAULTING_MODULE))
-                .withFile(System.getProperty("config"))
+                .withFiles(System.getProperty("config"))
                 .withSystemProperties()
                 .build();
 
@@ -241,7 +241,7 @@ public class TestConfigurationFactoryBuilder
         final ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
                 .withMonitor(monitor)
                 .withApplicationDefaults(ImmutableMap.of("unused", "foo"))
-                .withFile(System.getProperty("config"))
+                .withFiles(System.getProperty("config"))
                 .withSystemProperties()
                 .build();
 
@@ -281,7 +281,7 @@ public class TestConfigurationFactoryBuilder
         TestMonitor monitor = new TestMonitor();
         final ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
                 .withMonitor(monitor)
-                .withFile(System.getProperty("config"))
+                .withFiles(System.getProperty("config"))
                 .withSystemProperties()
                 .build();
 
