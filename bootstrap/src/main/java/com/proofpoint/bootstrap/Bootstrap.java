@@ -44,14 +44,8 @@ import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.NodeInfo;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -327,8 +321,14 @@ public class Bootstrap
         }
         if (requiredConfigurationProperties == null) {
             log.info("Loading configuration");
+            String config = System.getProperty("config");
+            if (config == null) {
+                config = "";
+            }
+
+            List<String> files = Arrays.asList(config.split(","));
             builder = builder
-                    .withFiles(System.getProperty("config"))
+                    .withFiles(files)
                     .withSystemProperties();
         }
         else {

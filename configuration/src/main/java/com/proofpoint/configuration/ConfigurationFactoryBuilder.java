@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Collection;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static java.lang.String.format;
@@ -46,23 +47,58 @@ public final class ConfigurationFactoryBuilder
     private Map<String, ConfigurationDefaultingModule> moduleDefaultSource = ImmutableMap.of();
 
     /**
+     * Loads properties from the given file
+     *
+     * @param path file path
+     * @return self
+     * @throws java.io.IOException errors
+     */
+    public ConfigurationFactoryBuilder withFile(@Nullable final String path)
+            throws IOException
+    {
+        if (path == null) {
+            return this;
+        }
+
+        final Properties properties = new Properties() {
+            @SuppressWarnings("UseOfPropertiesAsHashtable")
+            @Override
+            public synchronized Object put(Object key, Object value) {
+                final Object old = super.put(key, value);
+                if (old != null) {
+                    errors.add(format("Duplicate configuration property '%s' in file %s", key, path));
+                }
+                return old;
+            }
+        };
+
+        try (Reader reader = new InputStreamReader(new FileInputStream(path), UTF_8)) {
+            properties.load(reader);
+        }
+
+        mergeProperties(properties);
+        expectToUse.addAll(properties.stringPropertyNames());
+        return this;
+    }
+
+    /**
      * Loads properties from list of comma separated files
      *
      * @param files comma separated list of config files to be loaded
      * @return self
      * @throws java.io.IOException errors
      */
-    public ConfigurationFactoryBuilder withFiles(@Nullable final String files)
+    public ConfigurationFactoryBuilder withFiles(final Collection<String> files)
             throws IOException
     {
-        if (files == null) {
+        if (files.isEmpty()) {
             return this;
         }
 
         Set<String> fileNames = new HashSet<>();
         Map<String, String> propertyMap = new HashMap<>();
 
-        for(String file: files.split(",")) {
+        for(String file: files) {
             if (!fileNames.add(file)) {
                 errors.add(format("Duplicate config file '%s'", file));
                 continue;
