@@ -1,3 +1,9 @@
+Platform 1.65
+
+* Docker
+
+  - Default base image upgraded to openjdk:8u151-jdk
+
 Platform 1.64
 
 * Docker
