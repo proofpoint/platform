@@ -173,15 +173,19 @@ public class Main
                 configPath = installPath + "/etc/config.properties";
             }
             else {
-                //put validation here
                 launcherArgs.add("--config");
+
                 StringBuilder builder = new StringBuilder();
-                for (String file:configPath.split(",")) {
+                for (String file : configPath.split(",")) {
+                    if (file == "") {
+                        continue;
+                    }
+
                     builder.append(new File(file).getAbsolutePath());
                     builder.append(",");
                 }
 
-                configPath = builder.toString().replace(",$", "");
+                configPath = builder.toString().replace("(.*),$", "$1");
                 launcherArgs.add(configPath);
             }
             if (dataDir == null) {
@@ -293,6 +297,11 @@ public class Main
                 }
                 System.err.println(msg);
                 System.exit(0);
+            }
+
+            if (configPath == null || configPath == "") {
+                System.err.println("Config file is missing: " + configPath);
+                System.exit(STATUS_CONFIG_MISSING);
             }
 
             for (String file:configPath.split(",")) {
