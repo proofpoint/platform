@@ -179,11 +179,11 @@ public class Main
             }
             else {
                 launcherArgs.add("--config");
-                launcherArgs.add(configPath);
+                launcherArgs.add(new File(configPath).getAbsolutePath());
             }
             if (secretConfigPath != null) {
                 launcherArgs.add("--secret-config");
-                launcherArgs.add(secretConfigPath);
+                launcherArgs.add(new File(secretConfigPath).getAbsolutePath());
             }
             if (dataDir == null) {
                 dataDir = installPath;
@@ -300,8 +300,7 @@ public class Main
                 System.err.println(msg);
                 System.exit(0);
             }
-
-
+            
             if (!new File(configPath).exists()) {
                 System.err.println("Config file is missing: " + configPath);
                 System.exit(STATUS_CONFIG_MISSING);

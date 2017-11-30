@@ -60,6 +60,7 @@ public class TestBootstrap
     public void setup()
     {
         System.clearProperty("config");
+        System.clearProperty("secret-config");
         System.clearProperty("property");
     }
 

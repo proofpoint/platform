@@ -327,12 +327,10 @@ public class Bootstrap
         }
         if (requiredConfigurationProperties == null) {
             log.info("Loading configuration");
-            String config = System.getProperty("config");
-            String secretConfig = System.getProperty("secret-config");
 
             builder = builder
-                    .withFile(config)
-                    .withFile(secretConfig)
+                    .withFile(System.getProperty("config"))
+                    .withFile(System.getProperty("secret-config"))
                     .withSystemProperties();
         }
         else {
