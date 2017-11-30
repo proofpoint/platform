@@ -297,7 +297,7 @@ public class Main
                 System.exit(STATUS_CONFIG_MISSING);
             }
 
-            for (String file:configPath.split(",")) {
+            for (String file : configPath.split(",")) {
                 if (!new File(file).exists()) {
                     System.err.println("Config file is missing: " + file);
                     System.exit(STATUS_CONFIG_MISSING);
