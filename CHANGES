@@ -1,3 +1,9 @@
+Platform 1.65
+
+* Configuration
+
+  - Supports reading configs from multiple files. Multiple files can be provided using comma separated names
+
 Platform 1.64
 
 * Docker
