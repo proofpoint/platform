@@ -39,11 +39,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import java.util.concurrent.locks.LockSupport;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -174,19 +176,9 @@ public class Main
             }
             else {
                 launcherArgs.add("--config");
-
-                StringBuilder builder = new StringBuilder();
-                for (String file : configPath.split(",")) {
-                    if (file == "") {
-                        continue;
-                    }
-
-                    builder.append(new File(file).getAbsolutePath());
-                    builder.append(",");
-                }
-
-                configPath = builder.toString().replace("(.*),$", "$1");
-                launcherArgs.add(configPath);
+                configPath = Arrays.stream(configPath.split(","))
+                        .map(path -> new File(path).getAbsolutePath())
+                        .collect(Collectors.joining(","));
             }
             if (dataDir == null) {
                 dataDir = installPath;
@@ -310,7 +302,6 @@ public class Main
                     System.exit(STATUS_CONFIG_MISSING);
                 }
             }
-
 
             Collection<String> jvmConfigArgs = new ArrayList<>();
             try (BufferedReader jvmReader = new BufferedReader(new InputStreamReader(new FileInputStream(jvmConfigPath), Charsets.UTF_8))) {
