@@ -60,6 +60,7 @@ public class TestBootstrap
     public void setup()
     {
         System.clearProperty("config");
+        System.clearProperty("secret-config");
         System.clearProperty("property");
     }
 
@@ -123,6 +124,24 @@ public class TestBootstrap
 
         SimpleConfig simpleConfig = injector.getInstance(SimpleConfig.class);
         assertEquals(simpleConfig.getProperty(), "value");
+    }
+
+    @Test
+    public void testSecretConfig()
+            throws Exception
+    {
+        System.setProperty("config", Resources.getResource("simple-config.properties").getFile());
+        System.setProperty("secret-config", Resources.getResource("secret-config.properties").getFile());
+
+        Injector injector = bootstrapApplication("test-application")
+                .doNotInitializeLogging()
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .quiet()
+                .initialize();
+
+        SimpleConfig simpleConfig = injector.getInstance(SimpleConfig.class);
+        assertEquals(simpleConfig.getProperty(), "value");
+        assertEquals(simpleConfig.getOtherProperty(), "secret-value");
     }
 
     @Test

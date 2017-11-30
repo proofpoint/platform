@@ -98,6 +98,9 @@ public class Main
         @Option(type = OptionType.GLOBAL, name = "--config", description = "Path to configuration file. Defaults to INSTALL_PATH/etc/config.properties")
         public String configPath = null;
 
+        @Option(type = OptionType.GLOBAL, name = "--secret-config", description = "Optional path to configuration file containing secrets.")
+        public String secretConfigPath = null;
+
         @Option(type = OptionType.GLOBAL, name = "--data", description = "Path to data directory. Defaults to INSTALL_PATH")
         public String dataDir = null;
 
@@ -176,6 +179,10 @@ public class Main
                 launcherArgs.add("--config");
                 launcherArgs.add(new File(configPath).getAbsolutePath());
             }
+            if (secretConfigPath != null) {
+                launcherArgs.add("--secret-config");
+                launcherArgs.add(new File(secretConfigPath).getAbsolutePath());
+            }
             if (dataDir == null) {
                 dataDir = installPath;
             }
@@ -202,6 +209,11 @@ public class Main
                 String key = split[0];
                 if (key.equals("config")) {
                     System.out.println("Config can not be passed in a -D argument. Use --config instead");
+                    System.exit(STATUS_INVALID_ARGS);
+                }
+
+                if (key.equals("secret-config")) {
+                    System.out.println("secret-config can not be passed in a -D argument. Use --secret-config instead");
                     System.exit(STATUS_INVALID_ARGS);
                 }
 
@@ -286,9 +298,13 @@ public class Main
                 System.err.println(msg);
                 System.exit(0);
             }
-
             if (!new File(configPath).exists()) {
                 System.err.println("Config file is missing: " + configPath);
+                System.exit(STATUS_CONFIG_MISSING);
+            }
+
+            if (secretConfigPath != null && !new File(secretConfigPath).exists()) {
+                System.err.println("Secret Config file is missing: " + secretConfigPath);
                 System.exit(STATUS_CONFIG_MISSING);
             }
 
@@ -354,6 +370,9 @@ public class Main
                 javaArgs.add("-D" + key + "=" + systemProperties.getProperty(key));
             }
             javaArgs.add("-Dconfig=" + configPath);
+            if (secretConfigPath != null) {
+                javaArgs.add("-Dsecret-config=" + secretConfigPath);
+            }
             if (daemon) {
                 javaArgs.add("-Dlog.path=" + logPath);
                 javaArgs.add("-Dlog.enable-console=false");
