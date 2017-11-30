@@ -39,7 +39,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -300,7 +299,7 @@ public class Main
                 System.err.println(msg);
                 System.exit(0);
             }
-            
+
             if (!new File(configPath).exists()) {
                 System.err.println("Config file is missing: " + configPath);
                 System.exit(STATUS_CONFIG_MISSING);
