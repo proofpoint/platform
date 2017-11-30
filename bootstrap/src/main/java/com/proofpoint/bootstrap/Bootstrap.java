@@ -331,13 +331,11 @@ public class Bootstrap
         if (requiredConfigurationProperties == null) {
             log.info("Loading configuration");
             String config = System.getProperty("config");
-            Collection<String> files = new ArrayList<>();
-            if (config != null) {
-                files = Arrays.asList(config.split(","));
-            }
+            String secretConfig = System.getProperty("secret-config");
 
             builder = builder
-                    .withFiles(files)
+                    .withFile(config)
+                    .withFile(secretConfig)
                     .withSystemProperties();
         }
         else {

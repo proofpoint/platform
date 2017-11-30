@@ -81,40 +81,6 @@ public final class ConfigurationFactoryBuilder
         return this;
     }
 
-    /**
-     * Loads properties from list of comma separated files
-     *
-     * @param files comma separated list of config files to be loaded
-     * @return self
-     * @throws java.io.IOException errors
-     */
-    public ConfigurationFactoryBuilder withFiles(Collection<String> files)
-            throws IOException
-    {
-        Set<String> fileNames = new HashSet<>();
-        Map<String, String> propertyMap = new HashMap<>();
-
-        for(String file: files) {
-            if (!fileNames.add(file)) {
-                errors.add(format("Duplicate config file '%s'", file));
-                continue;
-            }
-
-            Properties properties = this.fromFile(file);
-            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-                if (propertyMap.containsKey(entry.getKey().toString())) {
-                    errors.add(format("property '%s' already defined in file '%s'",
-                            entry.getKey().toString(), propertyMap.get(entry.getKey().toString())));
-                }
-                propertyMap.put(entry.getKey().toString(), file);
-            }
-            mergeProperties(properties);
-            expectToUse.addAll(properties.stringPropertyNames());
-        }
-
-        return this;
-    }
-
     public ConfigurationFactoryBuilder withSystemProperties()
     {
         mergeProperties(System.getProperties());
@@ -177,34 +143,5 @@ public final class ConfigurationFactoryBuilder
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             this.properties.put(entry.getKey().toString(), entry.getValue().toString());
         }
-    }
-
-    /**
-     * Loads properties from the given file
-     *
-     * @param path file path
-     * @return {@link Properties}
-     * @throws java.io.IOException errors
-     */
-    private Properties fromFile(@Nullable final String path)
-            throws IOException
-    {
-        final Properties properties = new Properties() {
-            @SuppressWarnings("UseOfPropertiesAsHashtable")
-            @Override
-            public synchronized Object put(Object key, Object value) {
-                final Object old = super.put(key, value);
-                if (old != null) {
-                    errors.add(format("Duplicate configuration property '%s' in file %s", key, path));
-                }
-                return old;
-            }
-        };
-
-        try (Reader reader = new InputStreamReader(new FileInputStream(path), UTF_8)) {
-            properties.load(reader);
-        }
-
-        return properties;
     }
 }
