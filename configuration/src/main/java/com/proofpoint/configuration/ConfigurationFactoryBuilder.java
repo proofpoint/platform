@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Collection;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static java.lang.String.format;
