@@ -293,7 +293,7 @@ public class Main
             }
 
             if (configPath == null || configPath == "") {
-                System.err.println("Config file is missing: " + configPath);
+                System.err.println("No config file provided");
                 System.exit(STATUS_CONFIG_MISSING);
             }
 
