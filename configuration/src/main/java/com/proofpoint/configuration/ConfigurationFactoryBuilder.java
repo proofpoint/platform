@@ -88,7 +88,7 @@ public final class ConfigurationFactoryBuilder
      * @return self
      * @throws java.io.IOException errors
      */
-    public ConfigurationFactoryBuilder withFiles(final Collection<String> files)
+    public ConfigurationFactoryBuilder withFiles(Collection<String> files)
             throws IOException
     {
         Set<String> fileNames = new HashSet<>();
