@@ -58,7 +58,6 @@ public class Main
     private static final int STATUS_INVALID_ARGS = 2;
     private static final int STATUS_UNSUPPORTED = 3;
     private static final int STATUS_CONFIG_MISSING = 6;
-    private static final int STATUS_SECRET_CONFIG_MISSING = 7;
 
     // Specific to the "status" command
     private static final int STATUS_NOT_RUNNING = 3;
@@ -306,7 +305,7 @@ public class Main
 
             if (secretConfigPath != null && !new File(secretConfigPath).exists()) {
                 System.err.println("Secret Config file is missing: " + secretConfigPath);
-                System.exit(STATUS_SECRET_CONFIG_MISSING);
+                System.exit(STATUS_CONFIG_MISSING);
             }
 
             Collection<String> jvmConfigArgs = new ArrayList<>();
