@@ -327,7 +327,6 @@ public class Bootstrap
         }
         if (requiredConfigurationProperties == null) {
             log.info("Loading configuration");
-
             builder = builder
                     .withFile(System.getProperty("config"))
                     .withFile(System.getProperty("secret-config"))
