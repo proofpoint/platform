@@ -98,8 +98,8 @@ public class Main
         @Option(type = OptionType.GLOBAL, name = "--config", description = "Path to configuration file. Defaults to INSTALL_PATH/etc/config.properties")
         public String configPath = null;
 
-        @Option(type = OptionType.GLOBAL, name = "--secret-config", description = "Optional path to configuration file containing secrets.")
-        public String secretConfigPath = null;
+        @Option(type = OptionType.GLOBAL, name = "--secrets-config", description = "Optional path to configuration file containing secrets.")
+        public String secretsConfigPath = null;
 
         @Option(type = OptionType.GLOBAL, name = "--data", description = "Path to data directory. Defaults to INSTALL_PATH")
         public String dataDir = null;
@@ -179,9 +179,9 @@ public class Main
                 launcherArgs.add("--config");
                 launcherArgs.add(new File(configPath).getAbsolutePath());
             }
-            if (secretConfigPath != null) {
-                launcherArgs.add("--secret-config");
-                launcherArgs.add(new File(secretConfigPath).getAbsolutePath());
+            if (secretsConfigPath != null) {
+                launcherArgs.add("--secrets-config");
+                launcherArgs.add(new File(secretsConfigPath).getAbsolutePath());
             }
             if (dataDir == null) {
                 dataDir = installPath;
@@ -212,8 +212,8 @@ public class Main
                     System.exit(STATUS_INVALID_ARGS);
                 }
 
-                if (key.equals("secret-config")) {
-                    System.out.println("secret-config can not be passed in a -D argument. Use --secret-config instead");
+                if (key.equals("secrets-config")) {
+                    System.out.println("secrets-config can not be passed in a -D argument. Use --secrets-config instead");
                     System.exit(STATUS_INVALID_ARGS);
                 }
 
@@ -304,8 +304,8 @@ public class Main
                 System.exit(STATUS_CONFIG_MISSING);
             }
 
-            if (secretConfigPath != null && !new File(secretConfigPath).exists()) {
-                System.err.println("Secret Config file is missing: " + secretConfigPath);
+            if (secretsConfigPath != null && !new File(secretsConfigPath).exists()) {
+                System.err.println("Secrets Config file is missing: " + secretsConfigPath);
                 System.exit(STATUS_CONFIG_MISSING);
             }
 
@@ -371,8 +371,8 @@ public class Main
                 javaArgs.add("-D" + key + "=" + systemProperties.getProperty(key));
             }
             javaArgs.add("-Dconfig=" + configPath);
-            if (secretConfigPath != null) {
-                javaArgs.add("-Dsecret-config=" + secretConfigPath);
+            if (secretsConfigPath != null) {
+                javaArgs.add("-Dsecrets-config=" + secretsConfigPath);
             }
             if (daemon) {
                 javaArgs.add("-Dlog.path=" + logPath);

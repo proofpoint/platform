@@ -2,9 +2,11 @@ Platform 1.65
 
 * Configuration
 
-  Add an optional --secret-config flag. If provided, read the secret config
-  properties from it.  In a future version, it will be mandatory to use
-  @ConfigSecuritySensitive annotation on configs used from this file.
+  We added an optional --secrets-config flag to the launcher. If this is
+  provided, Platform will read additional configuration properties from it.
+  In a future version all properties in this file will be required to be
+  consumed by a configuration attribute that is annotated with
+  @ConfigSecuritySensitive.
 
 * Docker
 
