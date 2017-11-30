@@ -91,10 +91,6 @@ public final class ConfigurationFactoryBuilder
     public ConfigurationFactoryBuilder withFiles(final Collection<String> files)
             throws IOException
     {
-        if (files.isEmpty()) {
-            return this;
-        }
-
         Set<String> fileNames = new HashSet<>();
         Map<String, String> propertyMap = new HashMap<>();
 
