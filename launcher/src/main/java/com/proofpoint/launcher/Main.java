@@ -179,6 +179,7 @@ public class Main
                 configPath = Arrays.stream(configPath.split(","))
                         .map(path -> new File(path).getAbsolutePath())
                         .collect(Collectors.joining(","));
+                launcherArgs.add(configPath);
             }
             if (dataDir == null) {
                 dataDir = installPath;
