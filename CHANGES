@@ -2,7 +2,7 @@ Platform 1.65
 
 * Configuration
 
-  - Supports reading configs from multiple files. Multiple files can be provided using comma separated names
+  - Add an optional --secret-config flag. If provided, read the secret config properties from it. In a future version, it will be mandatory to use @ConfigSecuritySensitive annotation on properties defined in this file
 
 Platform 1.64
 
