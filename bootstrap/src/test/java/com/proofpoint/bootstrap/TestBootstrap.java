@@ -60,7 +60,7 @@ public class TestBootstrap
     public void setup()
     {
         System.clearProperty("config");
-        System.clearProperty("secret-config");
+        System.clearProperty("secrets-config");
         System.clearProperty("property");
     }
 
@@ -131,7 +131,7 @@ public class TestBootstrap
             throws Exception
     {
         System.setProperty("config", Resources.getResource("simple-config.properties").getFile());
-        System.setProperty("secret-config", Resources.getResource("secret-config.properties").getFile());
+        System.setProperty("secrets-config", Resources.getResource("secret-config.properties").getFile());
 
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
