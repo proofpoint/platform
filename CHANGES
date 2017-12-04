@@ -1,3 +1,7 @@
+Platform 1.66
+
+* [Bug] Fix incorrect property name for --secrets-config.
+
 Platform 1.65
 
 * Configuration
