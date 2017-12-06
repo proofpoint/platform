@@ -32,7 +32,6 @@ import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.ConnectionFactory;
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -50,7 +49,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.util.thread.ThreadPool;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 import org.weakref.jmx.Nested;
@@ -74,6 +72,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -99,9 +98,6 @@ public class HttpServer
     };
 
     private final Server server;
-    private final ServerConnector httpConnector;
-    private final ServerConnector httpsConnector;
-    private final ServerConnector adminConnector;
     private final boolean registerErrorHandler;
     private final RequestStats stats;
     private final MaxGauge busyThreads = new MaxGauge();
@@ -198,6 +194,7 @@ public class HttpServer
         }
 
         // set up HTTP connector
+        ServerConnector httpConnector;
         if (config.isHttpEnabled()) {
             HttpConfiguration httpConfiguration = new HttpConfiguration();
             httpConfiguration.setSendServerVersion(false);
@@ -236,11 +233,9 @@ public class HttpServer
 
             server.addConnector(httpConnector);
         }
-        else {
-            httpConnector = null;
-        }
 
         // set up NIO-based HTTPS connector
+        ServerConnector httpsConnector;
         if (config.isHttpsEnabled()) {
             HttpConfiguration httpsConfiguration = new HttpConfiguration();
             httpsConfiguration.setSendServerVersion(false);
@@ -279,11 +274,9 @@ public class HttpServer
 
             server.addConnector(httpsConnector);
         }
-        else {
-            httpsConnector = null;
-        }
 
         // set up NIO-based Admin connector
+        ServerConnector adminConnector;
         if (config.isAdminEnabled()) {
             HttpConfiguration adminConfiguration = new HttpConfiguration();
             adminConfiguration.setSendServerVersion(false);
@@ -340,9 +333,6 @@ public class HttpServer
 
 
             server.addConnector(adminConnector);
-        }
-        else {
-            adminConnector = null;
         }
 
         /*
@@ -491,16 +481,6 @@ public class HttpServer
             server.setErrorHandler(null);
         }
         checkState(server.isStarted(), "server is not started");
-
-        // The combination of an NIO connector and an insufficient number of threads results
-        // in a server that hangs after accepting connections. Jetty scales the number of
-        // required threads based on the number of available processors in a non-trivial way,
-        // so a config that works on one machine might fail on a larger machine without an
-        // obvious reason why. Thus, we need this runtime check after startup as a safeguard.
-        checkSufficientThreads(httpConnector, "HTTP");
-        checkSufficientThreads(httpsConnector, "HTTPS");
-        checkSufficientThreads(adminConnector, "admin");
-        checkState(!server.getThreadPool().isLowOnThreads(), "insufficient threads configured for server connector");
     }
 
     @PreDestroy
@@ -520,19 +500,6 @@ public class HttpServer
     public MaxGauge getBusyThreads()
     {
         return busyThreads;
-    }
-
-
-    private static void checkSufficientThreads(Connector connector, String name)
-    {
-        if (connector == null) {
-            return;
-        }
-        Executor executor = connector.getExecutor();
-        if (executor instanceof ThreadPool) {
-            ThreadPool queuedThreadPool = (ThreadPool) executor;
-            checkState(!queuedThreadPool.isLowOnThreads(), "insufficient threads configured for %s connector", name);
-        }
     }
 
     private static Set<X509Certificate> loadAllX509Certificates(HttpServerConfig config)
