@@ -628,7 +628,7 @@ public class JettyHttpClient
     {
         long now = System.nanoTime();
         return getRequestListenersForDestination(destination).stream()
-                .map(request -> dumpRequest(now, request))
+                .map(listener -> dumpRequest(now, listener))
                 .sorted()
                 .collect(Collectors.joining("\n"));
     }
