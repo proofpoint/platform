@@ -193,16 +193,17 @@ public class HttpServer
             server.addBean(mbeanContainer);
         }
 
+        HttpConfiguration baseHttpConfiguration = new HttpConfiguration();
+        baseHttpConfiguration.setSendServerVersion(false);
+        baseHttpConfiguration.setSendXPoweredBy(false);
+        if (config.getMaxRequestHeaderSize() != null) {
+            baseHttpConfiguration.setRequestHeaderSize(toIntExact(config.getMaxRequestHeaderSize().toBytes()));
+        }
+
         // set up HTTP connector
         ServerConnector httpConnector;
         if (config.isHttpEnabled()) {
-            HttpConfiguration httpConfiguration = new HttpConfiguration();
-            httpConfiguration.setSendServerVersion(false);
-            httpConfiguration.setSendXPoweredBy(false);
-            if (config.getMaxRequestHeaderSize() != null) {
-                httpConfiguration.setRequestHeaderSize(Ints.checkedCast(config.getMaxRequestHeaderSize().toBytes()));
-            }
-
+            HttpConfiguration httpConfiguration = new HttpConfiguration(baseHttpConfiguration);
             // if https is enabled, set the CONFIDENTIAL and INTEGRAL redirection information
             if (config.isHttpsEnabled()) {
                 httpConfiguration.setSecureScheme("https");
@@ -237,12 +238,7 @@ public class HttpServer
         // set up NIO-based HTTPS connector
         ServerConnector httpsConnector;
         if (config.isHttpsEnabled()) {
-            HttpConfiguration httpsConfiguration = new HttpConfiguration();
-            httpsConfiguration.setSendServerVersion(false);
-            httpsConfiguration.setSendXPoweredBy(false);
-            if (config.getMaxRequestHeaderSize() != null) {
-                httpsConfiguration.setRequestHeaderSize(Ints.checkedCast(config.getMaxRequestHeaderSize().toBytes()));
-            }
+            HttpConfiguration httpsConfiguration = new HttpConfiguration(baseHttpConfiguration);
             httpsConfiguration.addCustomizer(new SecureRequestCustomizer());
 
             SslContextFactory sslContextFactory = new SslContextFactory();
@@ -278,12 +274,7 @@ public class HttpServer
         // set up NIO-based Admin connector
         ServerConnector adminConnector;
         if (config.isAdminEnabled()) {
-            HttpConfiguration adminConfiguration = new HttpConfiguration();
-            adminConfiguration.setSendServerVersion(false);
-            adminConfiguration.setSendXPoweredBy(false);
-            if (config.getMaxRequestHeaderSize() != null) {
-                adminConfiguration.setRequestHeaderSize(Ints.checkedCast(config.getMaxRequestHeaderSize().toBytes()));
-            }
+            HttpConfiguration adminConfiguration = new HttpConfiguration(baseHttpConfiguration);
 
             QueuedThreadPool adminThreadPool = new QueuedThreadPool(config.getAdminMaxThreads());
             adminThreadPool.setName("http-admin-worker");
