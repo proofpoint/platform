@@ -137,7 +137,7 @@ public final class JettyIoPool
         private final ScheduledExecutorService[] schedulers;
         private final ThreadFactory threadFactory;
 
-        public ConcurrentScheduler(int schedulerCount, int threadsPerScheduler, String threadBaseName)
+        ConcurrentScheduler(int schedulerCount, int threadsPerScheduler, String threadBaseName)
         {
             checkArgument(schedulerCount > 0, "schedulerCount must be at least one");
             this.schedulers = new ScheduledThreadPoolExecutor[schedulerCount];
@@ -149,7 +149,6 @@ public final class JettyIoPool
 
         @Override
         protected void doStart()
-                throws Exception
         {
             for (int i = 0; i < schedulers.length; i++) {
                 ScheduledThreadPoolExecutor scheduledExecutorService = new ScheduledThreadPoolExecutor(threadsPerScheduler, threadFactory);
@@ -160,7 +159,6 @@ public final class JettyIoPool
 
         @Override
         protected void doStop()
-                throws Exception
         {
             for (int i = 0; i < schedulers.length; i++) {
                 schedulers[i].shutdownNow();
