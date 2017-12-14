@@ -1689,7 +1689,7 @@ public abstract class AbstractHttpClientTest
 
             // some systems like Linux have a large minimum backlog
             int i = 0;
-            while (i <= 40) {
+            while (i <= 256) {
                 if (!connect()) {
                     return;
                 }
