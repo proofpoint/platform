@@ -11,6 +11,7 @@ Platform 1.67
   - JaxrsBinder.bind(Key<?>)
   - JaxrsBinder.bindAdmin(TypeLiteral<?>)
   - JaxrsBinder.bind(Key<?>)
+  - HttpRequestEvent
 
 Platform 1.66
 
