@@ -76,7 +76,7 @@ public class TestJaxrsModule
     public void testWadlDisabled()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(TestingResource.class), false);
+        createServer(binder -> jaxrsBinder(binder).bind(TestingResource.class));
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/application.wadl"))
@@ -90,7 +90,7 @@ public class TestJaxrsModule
     public void testOptionsDisabled()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(TestingResource.class), false);
+        createServer(binder -> jaxrsBinder(binder).bind(TestingResource.class));
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/"))
@@ -108,7 +108,7 @@ public class TestJaxrsModule
         createServer(binder -> {
             jaxrsBinder(binder).bindInstance(new InjectedResource());
             jaxrsBinder(binder).bindInjectionProvider(InjectedContextObject.class).to(InjectedContextObjectSupplier.class);
-        }, false);
+        });
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/injectedresource"))
@@ -127,7 +127,7 @@ public class TestJaxrsModule
             jaxrsBinder(binder).bindInstance(new InjectedResource2());
             jaxrsBinder(binder).bindInjectionProvider(InjectedContextObject.class).to(InjectedContextObjectSupplier.class);
             jaxrsBinder(binder).bindInjectionProvider(SecondInjectedContextObject.class).to(SecondInjectedContextObjectSupplier.class);
-        }, false);
+        });
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/injectedresource2"))
@@ -143,7 +143,7 @@ public class TestJaxrsModule
     public void testClientInfo()
         throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(ClientInfoResource.class), false);
+        createServer(binder -> jaxrsBinder(binder).bind(ClientInfoResource.class));
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/test"))
@@ -159,7 +159,7 @@ public class TestJaxrsModule
     public void testRedirectWithUnquotedSearch()
         throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(RedirectResource.class), false);
+        createServer(binder -> jaxrsBinder(binder).bind(RedirectResource.class));
 
         Request request = Request.builder()
                             .setUri(server.getBaseUrl().resolve("/test"))
@@ -171,26 +171,10 @@ public class TestJaxrsModule
     }
 
     @Test
-    public void testQueryParamAsFormParamEnabled()
-            throws Exception
-    {
-        createServer(binder -> jaxrsBinder(binder).bind(FormParamResource.class), true);
-
-        Request request = Request.builder()
-                            .setUri(uriBuilderFrom(server.getBaseUrl().resolve("/test")).addParameter("testParam", "foo").build())
-                            .setMethod("POST")
-                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
-                            .build();
-        StringResponse response = client.execute(request, createStringResponseHandler());
-        assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
-        assertEquals(response.getBody(), "foo");
-    }
-
-    @Test
     public void testQueryParamAsFormParamDisabled()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(FormParamResource.class), false);
+        createServer(binder -> jaxrsBinder(binder).bind(FormParamResource.class));
 
         Request request = Request.builder()
                 .setUri(uriBuilderFrom(server.getBaseUrl().resolve("/test")).addParameter("testParam", "foo").build())
@@ -233,8 +217,7 @@ public class TestJaxrsModule
         server = injector.getInstance(TestingHttpServer.class);
     }
 
-
-    private void createServer(Module module, boolean queryParamsAsFormParams)
+    private void createServer(Module module)
             throws Exception
     {
         Injector injector = bootstrapTest()
@@ -245,7 +228,6 @@ public class TestJaxrsModule
                         new ReportingModule(),
                         new TestingHttpServerModule(),
                         module)
-                .setRequiredConfigurationProperty("jaxrs.query-params-as-form-params", String.valueOf(queryParamsAsFormParams))
                 .initialize();
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         server = injector.getInstance(TestingHttpServer.class);
