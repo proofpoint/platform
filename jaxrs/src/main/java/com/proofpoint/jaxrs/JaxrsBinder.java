@@ -99,22 +99,6 @@ public class JaxrsBinder
         return registerJaxRsBinding(Key.get(implementation));
     }
 
-    @Deprecated
-    public PrefixedJaxrsBinder bind(TypeLiteral<?> implementation)
-    {
-        binder.bind(implementation).in(SINGLETON);
-        resourceBinder.addBinding().to(implementation).in(SINGLETON);
-        return registerJaxRsBinding(Key.get(implementation));
-    }
-
-    @Deprecated
-    public PrefixedJaxrsBinder bind(Key<?> targetKey)
-    {
-        binder.bind(targetKey).in(SINGLETON);
-        resourceBinder.addBinding().to(targetKey).in(SINGLETON);
-        return registerJaxRsBinding(targetKey);
-    }
-
     /**
      * See the EDSL description at {@link JaxrsBinder}.
      */
@@ -132,22 +116,6 @@ public class JaxrsBinder
         binder.bind(implementation).in(SINGLETON);
         adminResourceBinder.addBinding().to(implementation).in(SINGLETON);
         return registerJaxRsBinding(Key.get(implementation));
-    }
-
-    @Deprecated
-    public PrefixedJaxrsBinder bindAdmin(TypeLiteral<?> implementation)
-    {
-        binder.bind(implementation).in(SINGLETON);
-        adminResourceBinder.addBinding().to(implementation).in(SINGLETON);
-        return registerJaxRsBinding(Key.get(implementation));
-    }
-
-    @Deprecated
-    public PrefixedJaxrsBinder bindAdmin(Key<?> targetKey)
-    {
-        binder.bind(targetKey).in(SINGLETON);
-        adminResourceBinder.addBinding().to(targetKey).in(SINGLETON);
-        return registerJaxRsBinding(targetKey);
     }
 
     /**

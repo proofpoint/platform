@@ -7,7 +7,10 @@ Platform 1.67
   - Implicitly bound JAX-RS resources. All JAX-RS resources must now be bound
     with JaxrsBinder.
   - The jaxrs.query-params-as-form-params configuration option
-
+  - JaxrsBinder.bind(TypeLiteral<?>)
+  - JaxrsBinder.bind(Key<?>)
+  - JaxrsBinder.bindAdmin(TypeLiteral<?>)
+  - JaxrsBinder.bind(Key<?>)
 
 Platform 1.66
 
