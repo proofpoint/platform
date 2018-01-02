@@ -12,6 +12,8 @@ Platform 1.67
   - JaxrsBinder.bindAdmin(TypeLiteral<?>)
   - JaxrsBinder.bind(Key<?>)
   - HttpRequestEvent
+  - Logging.createFileAppender(String, int, long, Encoder<T>, Context)
+  - Logging.logToFile(String, int, long)
 
 Platform 1.66
 

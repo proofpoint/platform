@@ -147,16 +147,6 @@ public class Logging
         consoleHandler = null;
     }
 
-    /**
-     * @deprecated Use {@link #logToFile(String, int, DataSize, DataSize)}
-     */
-    @Deprecated
-    @SuppressWarnings("MethodMayBeStatic")
-    public void logToFile(String logPath, int maxHistory, long maxSizeInBytes)
-    {
-        logToFile(logPath, maxHistory, new DataSize(maxSizeInBytes, BYTE), new DataSize(1, GIGABYTE));
-    }
-
     @SuppressWarnings("MethodMayBeStatic")
     public void logToFile(String logPath, int maxHistory, DataSize maxSize, DataSize maxTotalSize)
     {
@@ -225,15 +215,6 @@ public class Logging
             entry.getKey().removeHandler(entry.getValue());
         }
         instance.testingHandlers.clear();
-    }
-
-    /**
-     * @deprecated Use {@link #createFileAppender(String, int, DataSize, DataSize, Encoder, Context)}
-     */
-    @Deprecated
-    public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, long maxFileSizeInBytes, Encoder<T> encoder, Context context)
-    {
-        return createFileAppender(logPath, maxHistory, new DataSize(maxFileSizeInBytes, BYTE), new DataSize(1, GIGABYTE), encoder, context);
     }
 
     public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context)
