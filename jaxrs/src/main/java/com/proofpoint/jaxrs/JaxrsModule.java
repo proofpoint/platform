@@ -29,7 +29,6 @@ import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.proofpoint.http.server.TheAdminServlet;
 import com.proofpoint.http.server.TheServlet;
-import com.proofpoint.log.Logger;
 import com.proofpoint.reporting.InRotationResource;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -64,26 +63,10 @@ import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 public class JaxrsModule
         implements Module
 {
-    private static final Logger log = Logger.get(JaxrsModule.class);
-
-    private CommonJaxrsModule commonJaxrsModule;
-
-    /**
-     * @deprecated use {@link #explicitJaxrsModule()} and explicitly bind JAX-RS resources.
-     */
-    @Deprecated
-    public JaxrsModule()
-    {
-        this(false);
-    }
-
-    private JaxrsModule(boolean requireExplicitBindings)
-    {
-        commonJaxrsModule = new CommonJaxrsModule(requireExplicitBindings);
-    }
+    private final CommonJaxrsModule commonJaxrsModule = new CommonJaxrsModule();
 
     public static JaxrsModule explicitJaxrsModule() {
-        return new JaxrsModule(true);
+        return new JaxrsModule();
     }
 
     public static Module adminOnlyJaxrsModule()
@@ -165,7 +148,7 @@ public class JaxrsModule
     private static class AdminOnlyJaxrsModule
             implements Module
     {
-        private CommonJaxrsModule commonJaxrsModule = new CommonJaxrsModule(true);
+        private final CommonJaxrsModule commonJaxrsModule = new CommonJaxrsModule();
 
         @Override
         public void configure(Binder binder)
@@ -183,13 +166,7 @@ public class JaxrsModule
     private static class CommonJaxrsModule
             implements Module
     {
-        private final boolean requireExplicitBindings;
         private final AtomicReference<ServiceLocator> locatorReference = new AtomicReference<>();
-
-        private CommonJaxrsModule(boolean requireExplicitBindings)
-        {
-            this.requireExplicitBindings = requireExplicitBindings;
-        }
 
         @Override
         public void configure(Binder binder)
@@ -284,19 +261,12 @@ public class JaxrsModule
                 for (Entry<Key<?>, Binding<?>> entry : injector.getBindings().entrySet()) {
                     Key<?> key = entry.getKey();
                     if (isJaxRsBinding(key) && !jaxrsBinding.contains(new JaxrsBinding(key))) {
-                        if (requireExplicitBindings) {
-                            missingBindings.add(key);
-                        }
-                        else {
-                            log.warn("Jax-rs service %s is not explicitly bound using the JaxRsBinder", key);
-                            Object jaxRsSingleton = entry.getValue().getProvider().get();
-                            singletons.add(TimingWrapper.wrapIfAnnotatedResource(jaxRsSingleton));
-                        }
+                        missingBindings.add(key);
                     }
                 }
                 injector = injector.getParent();
             }
-            checkState(!requireExplicitBindings || missingBindings.isEmpty(), "Jax-rs services must be explicitly bound using the JaxRsBinder: ", missingBindings);
+            checkState(missingBindings.isEmpty(), "Jax-rs services must be explicitly bound using the JaxRsBinder: ", missingBindings);
 
             return new JaxRsApplication(singletons.build());
         }
