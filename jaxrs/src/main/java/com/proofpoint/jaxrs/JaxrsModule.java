@@ -176,7 +176,7 @@ public class JaxrsModule
         @Provides
         ResourceConfig createResourceConfig(Application application, @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap)
         {
-            return commonJaxrsModule.createResourceConfig(application, supplierMap, null, new JaxrsConfig().setQueryParamsAsFormParams(false));
+            return commonJaxrsModule.createResourceConfig(application, supplierMap, null, new JaxrsConfig());
         }
     }
 
@@ -223,8 +223,7 @@ public class JaxrsModule
             config.setProperties(ImmutableMap.<String, String>builder()
                     .put(ServerProperties.WADL_FEATURE_DISABLE, "true")
                     .put(ServerProperties.LOCATION_HEADER_RELATIVE_URI_RESOLUTION_DISABLED, "true")
-                    .put(ServletProperties.QUERY_PARAMS_AS_FORM_PARAMS_DISABLED,
-                            String.valueOf(!jaxrsConfig.isQueryParamsAsFormParams()))
+                    .put(ServletProperties.QUERY_PARAMS_AS_FORM_PARAMS_DISABLED, "true")
                     .build());
 
             config.register(MultiPartFeature.class);

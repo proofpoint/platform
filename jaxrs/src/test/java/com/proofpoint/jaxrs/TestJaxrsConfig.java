@@ -15,7 +15,6 @@ public class TestJaxrsConfig
     public void testDefaults()
     {
         assertRecordedDefaults(ConfigAssertions.recordDefaults(JaxrsConfig.class)
-                .setQueryParamsAsFormParams(false)
         );
     }
 
@@ -23,11 +22,9 @@ public class TestJaxrsConfig
     public void testExplicitPropertyMappings()
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
-                .put("jaxrs.query-params-as-form-params", "true")
                 .build();
 
-        JaxrsConfig expected = new JaxrsConfig()
-                .setQueryParamsAsFormParams(true);
+        JaxrsConfig expected = new JaxrsConfig();
 
         assertFullMapping(properties, expected);
     }
