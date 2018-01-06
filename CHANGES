@@ -1,5 +1,11 @@
 Platform 1.93
 
+* HttpClient
+
+  We removed support for the shared IO pool. Now each HttpClient has a private
+  IO pool. The .withPrivateIOThreadPool() method of the HttpClient binding DSL
+  is deprecated and no longer necessary.
+
 * Maven
 
   We enabled compiled metadata for reflection on method parameters.
