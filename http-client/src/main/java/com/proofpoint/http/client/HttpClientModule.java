@@ -15,8 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -24,23 +22,15 @@ import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
-import com.proofpoint.http.client.jetty.JettyIoPool;
 import com.proofpoint.http.client.jetty.JettyIoPoolConfig;
 import com.proofpoint.log.Logger;
-import com.proofpoint.reporting.ReportExporter;
 
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
-import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
@@ -173,67 +163,5 @@ public class HttpClientModule
         {
             super("shared", null);
         }
-    }
-
-    @VisibleForTesting
-    static class JettyIoPoolManager
-    {
-        private final List<JettyHttpClient> clients = new ArrayList<>();
-        private final String name;
-        private final Class<? extends Annotation> annotation;
-        private final AtomicBoolean destroyed = new AtomicBoolean();
-        private JettyIoPool pool;
-        private Injector injector;
-
-        private JettyIoPoolManager(String name, Class<? extends Annotation> annotation)
-        {
-            this.name = name;
-            this.annotation = annotation;
-        }
-
-        void addClient(JettyHttpClient client)
-        {
-            clients.add(client);
-        }
-
-        boolean isDestroyed()
-        {
-            return destroyed.get();
-        }
-
-        @Inject
-        public void setInjector(Injector injector)
-        {
-            this.injector = injector;
-        }
-
-        @PreDestroy
-        public void destroy()
-        {
-            // clients must be destroyed before the pools or 
-            // you will create a several second busy wait loop
-            clients.forEach(JettyHttpClient::close);
-            if (pool != null) {
-                pool.close();
-                pool = null;
-            }
-            destroyed.set(true);
-        }
-
-        JettyIoPool get()
-        {
-            if (pool == null) {
-                JettyIoPoolConfig config = injector.getInstance(keyFromNullable(JettyIoPoolConfig.class, annotation));
-                ReportExporter reportExporter = injector.getInstance(ReportExporter.class);
-                pool = new JettyIoPool(name, config);
-                reportExporter.export(pool, false, "HttpClient.IoPool." + LOWER_HYPHEN.to(UPPER_CAMEL, name), ImmutableMap.of());
-            }
-            return pool;
-        }
-    }
-
-    private static <T> Key<T> keyFromNullable(Class<T> type, Class<? extends Annotation> annotation)
-    {
-        return (annotation != null) ? Key.get(type, annotation) : Key.get(type);
     }
 }
