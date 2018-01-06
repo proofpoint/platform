@@ -90,9 +90,12 @@ public class BalancingHttpClientBindingBuilder
         return this;
     }
 
+    /**
+     * @deprecated No longer necessary.
+     */
+    @Deprecated
     public BalancingHttpClientBindingBuilder withPrivateIoThreadPool()
     {
-        delegateBindingBuilder.withPrivateIoThreadPool();
         return this;
     }
 }

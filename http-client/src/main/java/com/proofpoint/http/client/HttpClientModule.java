@@ -70,12 +70,6 @@ public class HttpClientModule
         this.rootBinder = rootBinder;
     }
 
-    void withPrivateIoThreadPool()
-    {
-        bindConfig(binder).bind(JettyIoPoolConfig.class).annotatedWith(annotation).prefixedWith(name);
-        binder.bind(JettyIoPoolManager.class).annotatedWith(annotation).toInstance(new JettyIoPoolManager(name, annotation));
-    }
-
     @Override
     public final void configure(Binder binder)
     {
@@ -83,10 +77,15 @@ public class HttpClientModule
 
         // bind the configuration
         bindConfig(binder).bind(HttpClientConfig.class).annotatedWith(annotation).prefixedWith(name);
+        bindConfig(binder).bind(JettyIoPoolConfig.class).annotatedWith(annotation).prefixedWith(name);
 
-        // Shared thread pool
+        // Bind the deprecated shared thread pool config, which is not used,
+        // so that it can consume the deprecated config properties.
         bindConfig(rootBinder).bind(JettyIoPoolConfig.class);
-        rootBinder.bind(JettyIoPoolManager.class).to(SharedJettyIoPoolManager.class).in(Scopes.SINGLETON);
+
+        binder.bind(JettyIoPoolManager.class)
+                .annotatedWith(annotation)
+                .toInstance(new JettyIoPoolManager(name, annotation));
 
         // bind the client
         this.binder.bind(HttpClient.class).annotatedWith(annotation).toProvider(new HttpClientProvider(name, annotation)).in(Scopes.SINGLETON);
@@ -136,22 +135,14 @@ public class HttpClientModule
             Set<HttpRequestFilter> filters = new HashSet<>(injector.getInstance(Key.get(new TypeLiteral<Set<HttpRequestFilter>>() {}, annotation)));
             HttpClientBindOptions httpClientBindOptions = injector.getInstance(Key.get(HttpClientBindOptions.class, annotation));
 
-            JettyIoPoolManager ioPoolProvider;
-            if (injector.getExistingBinding(Key.get(JettyIoPoolManager.class, annotation)) != null) {
-                log.debug("HttpClient %s uses private IO thread pool", name);
-                ioPoolProvider = injector.getInstance(Key.get(JettyIoPoolManager.class, annotation));
-            }
-            else {
-                log.debug("HttpClient %s uses shared IO thread pool", name);
-                ioPoolProvider = injector.getInstance(JettyIoPoolManager.class);
-            }
+            JettyIoPoolManager ioPoolProvider = injector.getInstance(Key.get(JettyIoPoolManager.class, annotation));
 
             if (httpClientBindOptions.isWithTracing()) {
                 filters.add(new TraceTokenRequestFilter());
             }
 
             JettyHttpClient client = new JettyHttpClient(config, ioPoolProvider.get(), filters);
-            ioPoolProvider.addClient(client);
+            ioPoolProvider.setClient(client);
             return client;
         }
     }

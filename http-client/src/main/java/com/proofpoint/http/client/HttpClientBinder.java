@@ -337,11 +337,11 @@ public class HttpClientBinder
         }
 
         /**
-         * See the EDSL examples at {@link HttpClientBinder}.
+         * @deprecated No longer necessary.
          */
+        @Deprecated
         public HttpClientBindingBuilder withPrivateIoThreadPool()
         {
-            module.withPrivateIoThreadPool();
             return this;
         }
     }
