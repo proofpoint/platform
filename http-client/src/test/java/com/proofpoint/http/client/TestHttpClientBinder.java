@@ -21,7 +21,6 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
 import com.proofpoint.bootstrap.LifeCycleManager;
-import com.proofpoint.http.client.HttpClientModule.JettyIoPoolManager;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.reporting.ReportingModule;
 import org.testng.annotations.Test;
