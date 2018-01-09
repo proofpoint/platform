@@ -32,7 +32,6 @@ import com.proofpoint.http.client.balancing.BalancingHttpClientBindingBuilder;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import javax.inject.Provider;
@@ -46,6 +45,7 @@ import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static com.proofpoint.http.client.Request.Builder.fromRequest;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
 
@@ -64,7 +64,7 @@ public class TestDiscoveryBinder
         Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
         {
         }));
-        Assert.assertEquals(announcements, ImmutableSet.of(ANNOUNCEMENT));
+        assertEquals(announcements, ImmutableSet.of(ANNOUNCEMENT));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class TestDiscoveryBinder
         Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
         {
         }));
-        Assert.assertEquals(announcements, ImmutableSet.of(ANNOUNCEMENT));
+        assertEquals(announcements, ImmutableSet.of(ANNOUNCEMENT));
     }
 
     @Test
@@ -94,7 +94,7 @@ public class TestDiscoveryBinder
         Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
         {
         }));
-        Assert.assertEquals(announcements, ImmutableSet.of(ANNOUNCEMENT));
+        assertEquals(announcements, ImmutableSet.of(ANNOUNCEMENT));
     }
 
     @Test
@@ -154,7 +154,7 @@ public class TestDiscoveryBinder
                 binder -> discoveryBinder(binder).bindHttpBalancer("apple")
         );
 
-        Assert.assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
     }
 
     @Test
@@ -166,7 +166,7 @@ public class TestDiscoveryBinder
                 binder -> discoveryBinder(binder).bindHttpBalancer(serviceType("apple"))
         );
 
-        Assert.assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
     }
 
     @Test
@@ -178,7 +178,7 @@ public class TestDiscoveryBinder
                 binder -> discoveryBinder(binder).bindHttpBalancer("apple")
         );
 
-        Assert.assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
     }
 
     @Test
@@ -190,7 +190,7 @@ public class TestDiscoveryBinder
                 binder -> discoveryBinder(binder).bindHttpBalancer(serviceType("apple"))
         );
 
-        Assert.assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("apple"))));
     }
 
     @Test
@@ -294,9 +294,9 @@ public class TestDiscoveryBinder
     private static void assertCanCreateServiceSelector(Injector injector, String expectedType, String expectedPool)
     {
         ServiceSelector actualServiceSelector = injector.getInstance(Key.get(ServiceSelector.class, serviceType(expectedType)));
-        Assert.assertNotNull(actualServiceSelector);
-        Assert.assertEquals(actualServiceSelector.getType(), expectedType);
-        Assert.assertEquals(actualServiceSelector.getPool(), expectedPool);
+        assertNotNull(actualServiceSelector);
+        assertEquals(actualServiceSelector.getType(), expectedType);
+        assertEquals(actualServiceSelector.getPool(), expectedPool);
     }
 
     private static Injector createInjector(ImmutableMap<String, String> configurationProperties, Module module)
