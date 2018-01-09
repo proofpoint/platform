@@ -26,7 +26,6 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
 import com.google.inject.spi.Message;
-import com.proofpoint.bootstrap.LoggingWriter.Type;
 import com.proofpoint.configuration.ConfigurationAwareModule;
 import com.proofpoint.configuration.ConfigurationDefaultingModule;
 import com.proofpoint.configuration.ConfigurationFactory;
@@ -411,7 +410,7 @@ public class Bootstrap
     {
         ColumnPrinter columnPrinter = makePrinterForConfiguration(configurationFactory);
 
-        try (PrintWriter out = new PrintWriter(new LoggingWriter(log, Type.INFO))) {
+        try (PrintWriter out = new PrintWriter(new LoggingWriter(log))) {
             columnPrinter.print(out);
         }
     }
