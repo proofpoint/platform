@@ -60,7 +60,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 @SuppressFBWarnings(value = "DM_EXIT", justification = "Need to return specific exit codes")
-public class Main
+public final class Main
 {
     private static final int STATUS_GENERIC_ERROR = 1;
     private static final int STATUS_INVALID_ARGS = 2;
@@ -69,6 +69,10 @@ public class Main
 
     // Specific to the "status" command
     private static final int STATUS_NOT_RUNNING = 3;
+
+    private Main()
+    {
+    }
 
     public static void main(String[] args)
     {

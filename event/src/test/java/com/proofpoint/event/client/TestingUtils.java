@@ -25,8 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-class TestingUtils
+final class TestingUtils
 {
+    private TestingUtils()
+    {
+    }
+
     public static List<FixedDummyEventClass> getEvents()
     {
         return ImmutableList.of(
