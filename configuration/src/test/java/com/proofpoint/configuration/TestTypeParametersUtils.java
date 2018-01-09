@@ -32,17 +32,17 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
-@SuppressWarnings("UnusedDeclaration")
+@SuppressWarnings({"PublicField", "unused"})
 public class TestTypeParametersUtils
 {
-    @SuppressWarnings("RawUseOfParameterizedType")
+    @SuppressWarnings("rawtypes")
     public Map mapNotGeneric;
     public Map<Key, Value> mapSimple;
     public Map<?, ?> mapWildcard;
     public Map<? extends Key, ? extends Value> mapExtendsWildcard;
     public Map<? super Key, ? extends Value> mapSuperWildcard;
 
-    @SuppressWarnings("RawUseOfParameterizedType")
+    @SuppressWarnings("rawtypes")
     public MyMap myMapNotGeneric;
     public MyMap<Fake, Value, Key> myMapSimple;
     public MyMap<?, ?, ?> myMapWildcard;
@@ -107,11 +107,10 @@ public class TestTypeParametersUtils
         return getTypeParameters(Map.class, getClass().getField(fieldName).getGenericType());
     }
 
-    public static class MyMap<Unused, MapValue, MapKey>
-            extends AbstractMap<MapKey, MapValue>
+    public static class MyMap<X, V, K>
+            extends AbstractMap<K, V>
     {
-        public Iterator<MapKey> iterator()
-        {
+        public Iterator<K> iterator()        {
             return null;
         }
 
@@ -122,9 +121,9 @@ public class TestTypeParametersUtils
         }
 
         @Override
-        public Set<Entry<MapKey, MapValue>> entrySet()
+        public Set<Entry<K, V>> entrySet()
         {
-            return null;
+            throw new UnsupportedOperationException();
         }
     }
 
