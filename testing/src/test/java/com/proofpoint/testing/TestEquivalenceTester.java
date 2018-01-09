@@ -15,7 +15,7 @@
  */
 package com.proofpoint.testing;
 
-/**
+/*
  * Derived from http://code.google.com/p/kawala
  *
  * Licensed under Apache License, Version 2.0
@@ -101,12 +101,13 @@ public class TestEquivalenceTester
         }
     }
 
+    @SuppressWarnings({"EqualsAndHashcode", "checkstyle:EqualsHashCode"})
     static class NotReflexive
     {
         @Override
         public boolean equals(Object that)
         {
-            return that != null && that instanceof NotReflexive && this != that;
+            return (that instanceof NotReflexive) && (this != that);
         }
     }
 
@@ -125,8 +126,11 @@ public class TestEquivalenceTester
         }
     }
 
-    static class ComparableNotReflexive implements Comparable<ComparableNotReflexive>
+    @SuppressWarnings("ComparableImplementedButEqualsNotOverridden")
+    static class ComparableNotReflexive
+            implements Comparable<ComparableNotReflexive>
     {
+        @SuppressWarnings("ObjectEquality")
         @Override
         public int compareTo(ComparableNotReflexive that)
         {
@@ -157,7 +161,7 @@ public class TestEquivalenceTester
 
     static class NotSymmetric
     {
-        private int id;
+        private final int id;
 
         NotSymmetric(int id)
         {
@@ -167,7 +171,7 @@ public class TestEquivalenceTester
         @Override
         public boolean equals(Object that)
         {
-            return that != null && that instanceof NotSymmetric && id >= ((NotSymmetric) that).id;
+            return (that instanceof NotSymmetric) && (id >= ((NotSymmetric) that).id);
         }
 
         @Override
@@ -199,7 +203,7 @@ public class TestEquivalenceTester
 
     static class ComparableNotSymmetric implements Comparable<ComparableNotSymmetric>
     {
-        private int id;
+        private final int id;
 
         ComparableNotSymmetric(int id)
         {
@@ -219,7 +223,7 @@ public class TestEquivalenceTester
         @Override
         public boolean equals(Object that)
         {
-            return that != null && that instanceof ComparableNotSymmetric;
+            return that instanceof ComparableNotSymmetric;
         }
 
         @Override
@@ -244,6 +248,7 @@ public class TestEquivalenceTester
         }
     }
 
+    @SuppressWarnings({"EqualsAndHashcode", "checkstyle:EqualsHashCode"})
     static class EqualsNull
     {
         @Override
@@ -269,6 +274,7 @@ public class TestEquivalenceTester
         }
     }
 
+    @SuppressWarnings({"EqualsAndHashcode", "checkstyle:EqualsHashCode"})
     static class EqualsNullThrowsException
     {
         @Override
@@ -294,6 +300,7 @@ public class TestEquivalenceTester
         }
     }
 
+    @SuppressWarnings({"EqualsAndHashcode", "checkstyle:EqualsHashCode"})
     static class EqualsUnrelatedClass
     {
         @Override
@@ -319,10 +326,11 @@ public class TestEquivalenceTester
         }
     }
 
+    @SuppressWarnings({"EqualsAndHashcode", "checkstyle:EqualsHashCode"})
     static class EqualsOtherClassThrowsException
     {
         @Override
-        @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
+        @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass", "RedundantCast"})
         public boolean equals(Object that)
         {
             return that != null && ((EqualsOtherClassThrowsException) that).hashCode() == this.hashCode();
@@ -582,7 +590,8 @@ public class TestEquivalenceTester
         @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
         public boolean equals(Object that)
         {
-            return that != null && that instanceof ComparableThatDoesNotThrowNPE && value == ((ComparableThatDoesNotThrowNPE) that).value;
+            return (that instanceof ComparableThatDoesNotThrowNPE) &&
+                    (value == ((ComparableThatDoesNotThrowNPE) that).value);
         }
 
         @Override
@@ -592,7 +601,7 @@ public class TestEquivalenceTester
         }
     }
 
-    private void assertExpectedFailures(EquivalenceAssertionError e, ElementCheckFailure... expected)
+    private static void assertExpectedFailures(EquivalenceAssertionError e, ElementCheckFailure... expected)
     {
         assertEqualsIgnoreOrder(e.getFailures(), newArrayList(expected));
     }
