@@ -15,10 +15,10 @@
  */
 package com.proofpoint.discovery.client;
 
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
+import static org.testng.Assert.assertEquals;
 
 public class TestServiceTypes
 {
@@ -46,7 +46,7 @@ public class TestServiceTypes
     @Test
     public void testValue()
     {
-        Assert.assertEquals(ServiceTypes.serviceType("type").value(), "type");
+        assertEquals(ServiceTypes.serviceType("type").value(), "type");
     }
 
 
@@ -54,16 +54,16 @@ public class TestServiceTypes
     public void testToString()
     {
         if (!System.getProperty("java.version").startsWith("1.")) {
-            Assert.assertEquals(ServiceTypes.serviceType("qu\"ote").toString(), quoteServiceType.toString());
+            assertEquals(ServiceTypes.serviceType("qu\"ote").toString(), quoteServiceType.toString());
         }
-        Assert.assertEquals(ServiceTypes.serviceType("apple").toString(), appleServiceType.toString());
+        assertEquals(ServiceTypes.serviceType("apple").toString(), appleServiceType.toString());
     }
 
     @Test
     public void testAnnotationType()
     {
-        Assert.assertEquals(ServiceTypes.serviceType("apple").annotationType(), ServiceType.class);
-        Assert.assertEquals(ServiceTypes.serviceType("apple").annotationType(), appleServiceType.annotationType());
+        assertEquals(ServiceTypes.serviceType("apple").annotationType(), ServiceType.class);
+        assertEquals(ServiceTypes.serviceType("apple").annotationType(), appleServiceType.annotationType());
     }
 
     @Test

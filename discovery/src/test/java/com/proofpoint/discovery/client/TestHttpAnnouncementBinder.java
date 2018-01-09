@@ -25,7 +25,6 @@ import com.proofpoint.discovery.client.announce.StaticAnnouncementHttpServerInfo
 import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.weakref.jmx.testing.TestingMBeanModule;
 
@@ -36,6 +35,8 @@ import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class TestHttpAnnouncementBinder
 {
@@ -192,10 +193,10 @@ public class TestHttpAnnouncementBinder
 
     private void assertAnnouncement(Set<ServiceAnnouncement> actualAnnouncements, ServiceAnnouncement expected)
     {
-        Assert.assertNotNull(actualAnnouncements);
-        Assert.assertEquals(actualAnnouncements.size(), 1);
+        assertNotNull(actualAnnouncements);
+        assertEquals(actualAnnouncements.size(), 1);
         ServiceAnnouncement announcement = Iterables.getOnlyElement(actualAnnouncements);
-        Assert.assertEquals(announcement.getType(), expected.getType());
-        Assert.assertEquals(announcement.getProperties(), expected.getProperties());
+        assertEquals(announcement.getType(), expected.getType());
+        assertEquals(announcement.getProperties(), expected.getProperties());
     }
 }

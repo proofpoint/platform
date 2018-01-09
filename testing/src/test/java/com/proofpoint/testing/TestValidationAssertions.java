@@ -15,7 +15,6 @@
  */
 package com.proofpoint.testing;
 
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import javax.validation.constraints.NotNull;
@@ -25,6 +24,7 @@ import static com.proofpoint.testing.Assertions.assertContains;
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
 import static com.proofpoint.testing.ValidationAssertions.assertValidates;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
@@ -115,9 +115,9 @@ public class TestValidationAssertions
 
     private void verifyExceptionMessage(AssertionError e, String message, Object value, String property, Class<? extends Annotation> annotation)
     {
-        Assert.assertNotNull(e);
+        assertNotNull(e);
         String actualMessage = e.getMessage();
-        Assert.assertNotNull(actualMessage);
+        assertNotNull(actualMessage);
         if (message != null) {
             assertTrue(actualMessage.startsWith(message + " "), "message '" + actualMessage + "' starts with '" + message + "'");
         }

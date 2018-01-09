@@ -16,11 +16,13 @@
 package com.proofpoint.node;
 
 import com.google.common.net.InetAddresses;
-import com.proofpoint.testing.Assertions;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.net.InetAddress;
+
+import static com.proofpoint.testing.Assertions.assertGreaterThanOrEqual;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class TestNodeInfo
 {
@@ -43,29 +45,29 @@ public class TestNodeInfo
         String externalAddress = "external";
 
         NodeInfo nodeInfo = new NodeInfo(APPLICATION, APPLICATION_VERSION, PLATFORM_VERSION, ENVIRONMENT, POOL, nodeId, internalIp, internalHostname, bindIp, externalAddress, location);
-        Assert.assertEquals(nodeInfo.getApplication(), APPLICATION);
-        Assert.assertEquals(nodeInfo.getApplicationVersion(), APPLICATION_VERSION);
-        Assert.assertEquals(nodeInfo.getPlatformVersion(), PLATFORM_VERSION);
-        Assert.assertEquals(nodeInfo.getEnvironment(), ENVIRONMENT);
-        Assert.assertEquals(nodeInfo.getPool(), POOL);
-        Assert.assertEquals(nodeInfo.getNodeId(), nodeId);
-        Assert.assertEquals(nodeInfo.getLocation(), location);
+        assertEquals(nodeInfo.getApplication(), APPLICATION);
+        assertEquals(nodeInfo.getApplicationVersion(), APPLICATION_VERSION);
+        assertEquals(nodeInfo.getPlatformVersion(), PLATFORM_VERSION);
+        assertEquals(nodeInfo.getEnvironment(), ENVIRONMENT);
+        assertEquals(nodeInfo.getPool(), POOL);
+        assertEquals(nodeInfo.getNodeId(), nodeId);
+        assertEquals(nodeInfo.getLocation(), location);
 
-        Assert.assertEquals(nodeInfo.getInternalIp(), internalIp);
-        Assert.assertEquals(nodeInfo.getExternalAddress(), externalAddress);
-        Assert.assertEquals(nodeInfo.getBindIp(), bindIp);
-        Assertions.assertGreaterThanOrEqual(nodeInfo.getStartTime(), testStartTime);
+        assertEquals(nodeInfo.getInternalIp(), internalIp);
+        assertEquals(nodeInfo.getExternalAddress(), externalAddress);
+        assertEquals(nodeInfo.getBindIp(), bindIp);
+        assertGreaterThanOrEqual(nodeInfo.getStartTime(), testStartTime);
 
         // make sure toString doesn't throw an exception
-        Assert.assertNotNull(nodeInfo.toString());
+        assertNotNull(nodeInfo.toString());
     }
 
     @Test
     public void testDefaultAddresses()
     {
         NodeInfo nodeInfo = new NodeInfo(APPLICATION, APPLICATION_VERSION, PLATFORM_VERSION, ENVIRONMENT, POOL, "nodeInfo", InetAddresses.forString("10.0.0.22"), null, null, null, null);
-        Assert.assertEquals(nodeInfo.getExternalAddress(), "10.0.0.22");
-        Assert.assertEquals(nodeInfo.getBindIp(), InetAddresses.forString("0.0.0.0"));
+        assertEquals(nodeInfo.getExternalAddress(), "10.0.0.22");
+        assertEquals(nodeInfo.getBindIp(), InetAddresses.forString("0.0.0.0"));
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "nodeId .*")
