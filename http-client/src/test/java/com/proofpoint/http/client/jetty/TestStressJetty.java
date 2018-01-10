@@ -23,7 +23,6 @@ import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
 import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
 import com.proofpoint.http.client.HttpClientConfig;
-import com.proofpoint.http.client.HttpRequestFilter;
 import com.proofpoint.http.client.InputStreamBodySource;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.ResponseStatusCodeHandler;
@@ -41,7 +40,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -210,8 +208,7 @@ public class TestStressJetty
     {
         final CountDownLatch completionLatch = new CountDownLatch(NUM_REQUESTS);
         try (
-                JettyIoPool jettyIoPool = new JettyIoPool("test-private", new JettyIoPoolConfig().setMaxThreads(10));
-                JettyHttpClient client = new JettyHttpClient(new HttpClientConfig().setMaxRequestsQueuedPerDestination(NUM_REQUESTS), jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()))
+                JettyHttpClient client = new JettyHttpClient("test-private", new HttpClientConfig().setMaxRequestsQueuedPerDestination(NUM_REQUESTS), ImmutableList.of(new TestingRequestFilter()))
         ) {
             for (int i = 0; i < NUM_REQUESTS; i++) {
                 HttpResponseFuture<Integer> future = client.executeAsync(requestSupplier.get(), new ResponseStatusCodeHandler());

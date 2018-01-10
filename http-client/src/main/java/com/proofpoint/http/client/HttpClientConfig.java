@@ -54,6 +54,11 @@ public class HttpClientConfig
     private String trustStorePath;
     private String trustStorePassword;
 
+    private int maxThreads = 200;
+    private int minThreads = 8;
+    private int timeoutThreads = 1;
+    private int timeoutConcurrency = 1;
+
     private boolean http2Enabled;
     private DataSize http2InitialSessionReceiveWindowSize = new DataSize(16, MEGABYTE);
     private DataSize http2InitialStreamReceiveWindowSize = new DataSize(16, MEGABYTE);
@@ -272,6 +277,61 @@ public class HttpClientConfig
     public HttpClientConfig setSelectorCount(int selectorCount)
     {
         this.selectorCount = selectorCount;
+        return this;
+    }
+
+    @Min(1)
+    public int getMaxThreads()
+    {
+        return maxThreads;
+    }
+
+    @Config("http-client.max-threads")
+    @LegacyConfig("http-client.threads")
+    public HttpClientConfig setMaxThreads(int maxThreads)
+    {
+        this.maxThreads = maxThreads;
+        return this;
+    }
+
+    @Min(1)
+    public int getMinThreads()
+    {
+        return minThreads;
+    }
+
+    @Config("http-client.min-threads")
+    public HttpClientConfig setMinThreads(int minThreads)
+    {
+        this.minThreads = minThreads;
+        return this;
+    }
+
+    @Min(1)
+    public int getTimeoutThreads()
+    {
+        return timeoutThreads;
+    }
+
+    @Config("http-client.timeout-threads")
+    @ConfigDescription("Total number of timeout threads")
+    public HttpClientConfig setTimeoutThreads(int timeoutThreads)
+    {
+        this.timeoutThreads = timeoutThreads;
+        return this;
+    }
+
+    @Min(1)
+    public int getTimeoutConcurrency()
+    {
+        return timeoutConcurrency;
+    }
+
+    @Config("http-client.timeout-concurrency")
+    @ConfigDescription("Number of concurrent locks for timeout")
+    public HttpClientConfig setTimeoutConcurrency(int timeoutConcurrency)
+    {
+        this.timeoutConcurrency = timeoutConcurrency;
         return this;
     }
 }

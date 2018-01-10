@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
-import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.reporting.ReportingModule;
 import org.testng.annotations.Test;
@@ -29,14 +28,10 @@ import org.weakref.jmx.testing.TestingMBeanModule;
 
 import javax.inject.Inject;
 import javax.inject.Qualifier;
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.net.URI;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
 
 import static com.google.inject.name.Names.named;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
@@ -45,12 +40,9 @@ import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNotSame;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertSame;
-import static org.testng.Assert.assertTrue;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 public class TestHttpClientBinder
@@ -77,12 +69,6 @@ public class TestHttpClientBinder
 
         assertFilterCount(injector.getInstance(Key.get(HttpClient.class, FooClient.class)), 3);
         assertFilterCount(injector.getInstance(Key.get(HttpClient.class, BarClient.class)), 2);
-
-        // a pool should be registered for both clients
-        assertNotNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, FooClient.class)));
-        assertNotNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, BarClient.class)));
-
-        assertPoolsDestroyProperly(injector);
     }
 
     @Test
@@ -101,12 +87,6 @@ public class TestHttpClientBinder
 
         HttpClient httpClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
         assertFilterCount(httpClient, 3);
-
-        // a pool should be registered for FooClient only
-        assertNotNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, FooClient.class)));
-        assertNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, BarClient.class)));
-
-        assertPoolsDestroyProperly(injector);
     }
 
     @Test
@@ -121,11 +101,6 @@ public class TestHttpClientBinder
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
-
-        // a pool should be registered for FooClient
-        assertNotNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, FooClient.class)));
-
-        assertPoolsDestroyProperly(injector);
     }
 
     @Test
@@ -146,14 +121,6 @@ public class TestHttpClientBinder
         assertSame(injector.getInstance(Key.get(HttpClient.class, FooAlias1.class)), client);
         assertSame(injector.getInstance(Key.get(HttpClient.class, FooAlias2.class)), client);
         assertSame(injector.getInstance(Key.get(HttpClient.class, FooAlias3.class)), client);
-
-        // a pool should be registered for the FooClient only (not for the aliases)
-        assertNotNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, FooClient.class)));
-        assertNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, FooAlias1.class)));
-        assertNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, FooAlias2.class)));
-        assertNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, FooAlias3.class)));
-
-        assertPoolsDestroyProperly(injector);
     }
 
     @Test
@@ -173,14 +140,6 @@ public class TestHttpClientBinder
         HttpClient fooClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
         HttpClient barClient = injector.getInstance(Key.get(HttpClient.class, BarClient.class));
         assertNotSame(fooClient, barClient);
-
-        // a pool should be registered for all clients
-        assertNotNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, FooClient.class)));
-        assertNotNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, BarClient.class)));
-
-        assertJettyIoPools(injector, FooClient.class);
-        assertJettyIoPools(injector, BarClient.class);
-        assertPoolsDestroyProperly(injector);
     }
 
     @Test
@@ -201,8 +160,6 @@ public class TestHttpClientBinder
                 .initialize();
 
         assertNotNull(injector.getInstance(ExposeHttpClient.class).httpClient);
-
-        assertPoolsDestroyProperly(injector);
     }
 
     @Test
@@ -225,8 +182,6 @@ public class TestHttpClientBinder
 
         assertNotNull(injector.getInstance(ExposeHttpClient.class).httpClient);
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, BarClient.class)));
-
-        assertPoolsDestroyProperly(injector);
     }
 
     @Test
@@ -241,8 +196,6 @@ public class TestHttpClientBinder
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
-
-        assertPoolsDestroyProperly(injector);
     }
 
     @Test
@@ -257,41 +210,6 @@ public class TestHttpClientBinder
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, named("bar"))));
-
-        assertPoolsDestroyProperly(injector);
-    }
-
-    @SafeVarargs
-    private final void assertJettyIoPools(Injector injector, Class<? extends Annotation>... clientAnnotations)
-    {
-        assertNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class)), "all pools should be annotated");
-        Set<JettyIoPoolManager> pools = Collections.newSetFromMap(new IdentityHashMap<JettyIoPoolManager, Boolean>());
-        for (Class<? extends Annotation> clientAnnotation : clientAnnotations) {
-            assertNotNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class, clientAnnotation)));
-            JettyIoPoolManager pool = injector.getInstance(Key.get(JettyIoPoolManager.class, clientAnnotation));
-
-            // pool should not be the same as any other pool
-            assertFalse(pools.contains(pool));
-            pools.add(pool);
-        }
-    }
-
-    @SafeVarargs
-    private static void assertPoolsDestroyProperly(Injector injector, Class<? extends Annotation>... clientAnnotations)
-            throws Exception
-    {
-        assertNull(injector.getExistingBinding(Key.get(JettyIoPoolManager.class)), "all pools should be annotated");
-        Set<JettyIoPoolManager> pools = Collections.newSetFromMap(new IdentityHashMap<JettyIoPoolManager, Boolean>());
-        for (Class<? extends Annotation> clientAnnotation : clientAnnotations) {
-            JettyIoPoolManager pool = injector.getInstance(Key.get(JettyIoPoolManager.class, clientAnnotation));
-            assertFalse(pool.isDestroyed());
-        }
-
-        injector.getInstance(LifeCycleManager.class).stop();
-
-        for (JettyIoPoolManager pool : pools) {
-            assertTrue(pool.isDestroyed());
-        }
     }
 
     private static void assertFilterCount(HttpClient httpClient, int filterCount)

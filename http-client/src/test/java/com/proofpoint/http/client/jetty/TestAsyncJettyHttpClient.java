@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.proofpoint.http.client.AbstractHttpClientTest;
 import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
 import com.proofpoint.http.client.HttpClientConfig;
-import com.proofpoint.http.client.HttpRequestFilter;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
@@ -33,22 +32,18 @@ public class TestAsyncJettyHttpClient
         extends AbstractHttpClientTest
 {
     private JettyHttpClient httpClient;
-    private JettyIoPool jettyIoPool;
 
     @BeforeMethod
     public void setUpHttpClient()
     {
-        jettyIoPool = new JettyIoPool("test-shared", new JettyIoPoolConfig());
-        httpClient = new JettyHttpClient(createClientConfig(), jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()));
+        httpClient = new JettyHttpClient("test-shared", createClientConfig(), ImmutableList.of(new TestingRequestFilter()));
         stats = httpClient.getStats();
     }
 
     @AfterMethod
     public void tearDownHttpClient()
-            throws Exception
     {
         closeQuietly(httpClient);
-        closeQuietly(jettyIoPool);
     }
 
     @Override
@@ -71,8 +66,7 @@ public class TestAsyncJettyHttpClient
     {
         return new ClientTester()
         {
-            JettyIoPool jettyIoPool = new JettyIoPool("test-private", new JettyIoPoolConfig());
-            JettyHttpClient client = new JettyHttpClient(config, jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()));
+            JettyHttpClient client = new JettyHttpClient("test-private", config, ImmutableList.of(new TestingRequestFilter()));
 
             @Override
             public <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)
@@ -85,7 +79,6 @@ public class TestAsyncJettyHttpClient
             public void close()
             {
                 client.close();
-                jettyIoPool.close();
             }
         };
     }

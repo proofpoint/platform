@@ -1,11 +1,11 @@
 package com.proofpoint.http.client.jetty;
 
 import com.proofpoint.configuration.Config;
-import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.configuration.LegacyConfig;
 
 import javax.validation.constraints.Min;
 
+@Deprecated
 public class JettyIoPoolConfig
 {
     private int maxThreads = 200;
@@ -14,6 +14,7 @@ public class JettyIoPoolConfig
     private int timeoutConcurrency = 1;
 
     @Min(1)
+    @Deprecated
     public int getMaxThreads()
     {
         return maxThreads;
@@ -21,6 +22,7 @@ public class JettyIoPoolConfig
 
     @Config("http-client.max-threads")
     @LegacyConfig("http-client.threads")
+    @Deprecated
     public JettyIoPoolConfig setMaxThreads(int maxThreads)
     {
         this.maxThreads = maxThreads;
@@ -28,12 +30,14 @@ public class JettyIoPoolConfig
     }
 
     @Min(1)
+    @Deprecated
     public int getMinThreads()
     {
         return minThreads;
     }
 
     @Config("http-client.min-threads")
+    @Deprecated
     public JettyIoPoolConfig setMinThreads(int minThreads)
     {
         this.minThreads = minThreads;
@@ -41,13 +45,14 @@ public class JettyIoPoolConfig
     }
 
     @Min(1)
+    @Deprecated
     public int getTimeoutThreads()
     {
         return timeoutThreads;
     }
 
     @Config("http-client.timeout-threads")
-    @ConfigDescription("Total number of timeout threads")
+    @Deprecated
     public JettyIoPoolConfig setTimeoutThreads(int timeoutThreads)
     {
         this.timeoutThreads = timeoutThreads;
@@ -55,13 +60,14 @@ public class JettyIoPoolConfig
     }
 
     @Min(1)
+    @Deprecated
     public int getTimeoutConcurrency()
     {
         return timeoutConcurrency;
     }
 
     @Config("http-client.timeout-concurrency")
-    @ConfigDescription("Number of concurrent locks for timeout")
+    @Deprecated
     public JettyIoPoolConfig setTimeoutConcurrency(int timeoutConcurrency)
     {
         this.timeoutConcurrency = timeoutConcurrency;

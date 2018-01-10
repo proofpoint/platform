@@ -60,7 +60,11 @@ public class TestHttpClientConfig
                 .setHttp2InitialSessionReceiveWindowSize(new DataSize(16, MEGABYTE))
                 .setHttp2InitialStreamReceiveWindowSize(new DataSize(16, MEGABYTE))
                 .setHttp2InputBufferSize(new DataSize(8, KILOBYTE))
-                .setSelectorCount(2));
+                .setSelectorCount(2)
+                .setMaxThreads(200)
+                .setMinThreads(8)
+                .setTimeoutConcurrency(1)
+                .setTimeoutThreads(1));
         ;
     }
 
@@ -84,6 +88,10 @@ public class TestHttpClientConfig
                 .put("http-client.http2.stream-receive-window-size", "7MB")
                 .put("http-client.http2.input-buffer-size", "1MB")
                 .put("http-client.selector-count", "16")
+                .put("http-client.max-threads", "33")
+                .put("http-client.min-threads", "11")
+                .put("http-client.timeout-concurrency", "33")
+                .put("http-client.timeout-threads", "44")
                 .build();
 
         HttpClientConfig expected = new HttpClientConfig()
@@ -103,7 +111,11 @@ public class TestHttpClientConfig
                 .setHttp2InitialStreamReceiveWindowSize(new DataSize(7, MEGABYTE))
                 .setHttp2InputBufferSize(new DataSize(1, MEGABYTE))
                 .setHttp2InitialStreamReceiveWindowSize(new DataSize(7, MEGABYTE))
-                .setSelectorCount(16);
+                .setSelectorCount(16)
+                .setMaxThreads(33)
+                .setMinThreads(11)
+                .setTimeoutConcurrency(33)
+                .setTimeoutThreads(44);
 
         assertFullMapping(properties, expected);
     }
@@ -113,10 +125,12 @@ public class TestHttpClientConfig
     {
         Map<String, String> currentProperties = new ImmutableMap.Builder<String, String>()
                 .put("http-client.idle-timeout", "111m")
+                .put("http-client.max-threads", "111")
                 .build();
 
         Map<String, String> oldProperties = new ImmutableMap.Builder<String, String>()
                 .put("http-client.read-timeout", "111m")
+                .put("http-client.threads", "111")
                 .build();
 
         assertLegacyEquivalence(HttpClientConfig.class, currentProperties, oldProperties);
