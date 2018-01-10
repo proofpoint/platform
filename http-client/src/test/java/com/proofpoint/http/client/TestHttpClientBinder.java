@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
+import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.reporting.ReportingModule;
 import org.testng.annotations.Test;
@@ -40,9 +41,11 @@ import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNotSame;
 import static org.testng.Assert.assertSame;
+import static org.testng.Assert.assertTrue;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 public class TestHttpClientBinder
@@ -210,6 +213,32 @@ public class TestHttpClientBinder
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, named("bar"))));
+    }
+
+    @Test
+    public void testClientShutdown()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        binder -> {
+                            httpClientBinder(binder).bindHttpClient("foo", FooClient.class);
+                            httpClientBinder(binder).bindHttpClient("bar", BarClient.class);
+                        },
+                        new ReportingModule()
+                )
+                .initialize();
+
+        HttpClient fooClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
+        HttpClient barClient = injector.getInstance(Key.get(HttpClient.class, BarClient.class));
+
+        assertFalse(fooClient.isClosed());
+        assertFalse(barClient.isClosed());
+
+        injector.getInstance(LifeCycleManager.class).stop();
+
+        assertTrue(fooClient.isClosed());
+        assertTrue(barClient.isClosed());
     }
 
     private static void assertFilterCount(HttpClient httpClient, int filterCount)

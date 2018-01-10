@@ -27,6 +27,7 @@ import com.proofpoint.http.client.jetty.JettyIoPoolConfig;
 import com.proofpoint.log.Logger;
 import com.proofpoint.reporting.ReportExporter;
 
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
@@ -35,6 +36,7 @@ import java.util.Set;
 
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
@@ -114,6 +116,7 @@ public class HttpClientModule
         private final String name;
         private final Class<? extends Annotation> annotation;
         private Injector injector;
+        private JettyHttpClient client;
 
         private HttpClientProvider(String name, Class<? extends Annotation> annotation)
         {
@@ -130,6 +133,8 @@ public class HttpClientModule
         @Override
         public HttpClient get()
         {
+            checkState(client == null, "client already created");
+
             HttpClientConfig config = injector.getInstance(Key.get(HttpClientConfig.class, annotation));
             ReportExporter reportExporter = injector.getInstance(ReportExporter.class);
 
@@ -140,10 +145,17 @@ public class HttpClientModule
                 filters.add(new TraceTokenRequestFilter());
             }
 
-            JettyHttpClient client = new JettyHttpClient(name, config, filters);
+            client = new JettyHttpClient(name, config, filters);
             reportExporter.export(client.getIoPoolStats(), false, "HttpClient.IoPool." + LOWER_HYPHEN.to(UPPER_CAMEL, name), ImmutableMap.of());
-            return client;
 
+            injector = null;
+            return client;
+        }
+
+        @PreDestroy
+        public void destroy()
+        {
+            client.close();
         }
     }
 }
