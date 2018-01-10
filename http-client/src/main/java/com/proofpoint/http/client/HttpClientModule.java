@@ -15,6 +15,7 @@
  */
 package com.proofpoint.http.client;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -24,6 +25,7 @@ import com.google.inject.TypeLiteral;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.client.jetty.JettyIoPoolConfig;
 import com.proofpoint.log.Logger;
+import com.proofpoint.reporting.ReportExporter;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -31,6 +33,8 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
@@ -77,15 +81,10 @@ public class HttpClientModule
 
         // bind the configuration
         bindConfig(binder).bind(HttpClientConfig.class).annotatedWith(annotation).prefixedWith(name);
-        bindConfig(binder).bind(JettyIoPoolConfig.class).annotatedWith(annotation).prefixedWith(name);
 
         // Bind the deprecated shared thread pool config, which is not used,
         // so that it can consume the deprecated config properties.
         bindConfig(rootBinder).bind(JettyIoPoolConfig.class);
-
-        binder.bind(JettyIoPoolManager.class)
-                .annotatedWith(annotation)
-                .toInstance(new JettyIoPoolManager(name, annotation));
 
         // bind the client
         this.binder.bind(HttpClient.class).annotatedWith(annotation).toProvider(new HttpClientProvider(name, annotation)).in(Scopes.SINGLETON);
@@ -118,8 +117,8 @@ public class HttpClientModule
 
         private HttpClientProvider(String name, Class<? extends Annotation> annotation)
         {
-            this.name = name;
-            this.annotation = annotation;
+            this.name = requireNonNull(name, "name is null");
+            this.annotation = requireNonNull(annotation, "annotation is null");
         }
 
         @Inject
@@ -132,27 +131,19 @@ public class HttpClientModule
         public HttpClient get()
         {
             HttpClientConfig config = injector.getInstance(Key.get(HttpClientConfig.class, annotation));
+            ReportExporter reportExporter = injector.getInstance(ReportExporter.class);
+
             Set<HttpRequestFilter> filters = new HashSet<>(injector.getInstance(Key.get(new TypeLiteral<Set<HttpRequestFilter>>() {}, annotation)));
             HttpClientBindOptions httpClientBindOptions = injector.getInstance(Key.get(HttpClientBindOptions.class, annotation));
-
-            JettyIoPoolManager ioPoolProvider = injector.getInstance(Key.get(JettyIoPoolManager.class, annotation));
 
             if (httpClientBindOptions.isWithTracing()) {
                 filters.add(new TraceTokenRequestFilter());
             }
 
-            JettyHttpClient client = new JettyHttpClient(config, ioPoolProvider.get(), filters);
-            ioPoolProvider.setClient(client);
+            JettyHttpClient client = new JettyHttpClient(name, config, filters);
+            reportExporter.export(client.getIoPoolStats(), false, "HttpClient.IoPool." + LOWER_HYPHEN.to(UPPER_CAMEL, name), ImmutableMap.of());
             return client;
-        }
-    }
 
-    private static class SharedJettyIoPoolManager
-            extends JettyIoPoolManager
-    {
-        private SharedJettyIoPoolManager()
-        {
-            super("shared", null);
         }
     }
 }

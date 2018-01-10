@@ -24,16 +24,15 @@ import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.ResponseTooLargeException;
 import com.proofpoint.http.client.StaticBodyGenerator;
 import com.proofpoint.log.Logger;
+import com.proofpoint.reporting.Gauge;
 import com.proofpoint.stats.Distribution;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.tracetoken.TraceTokenScope;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.Duration;
-import org.eclipse.jetty.client.AbstractConnectionPool;
 import org.eclipse.jetty.client.DuplexConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
-import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.client.HttpRequest;
 import org.eclipse.jetty.client.PoolingHttpDestination;
@@ -52,9 +51,14 @@ import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
+import org.eclipse.jetty.io.MappedByteBufferPool;
 import org.eclipse.jetty.util.BlockingArrayQueue;
 import org.eclipse.jetty.util.HttpCookieStore;
+import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
+import org.eclipse.jetty.util.thread.Scheduler;
 import org.eclipse.jetty.util.thread.Sweeper;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
@@ -76,7 +80,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -124,11 +127,11 @@ public class JettyHttpClient
             "TLS_EMPTY_RENEGOTIATION_INFO_SCSV",
     };
 
-    private static final AtomicLong nameCounter = new AtomicLong();
     private static final String PLATFORM_STATS_KEY = "platform_stats";
     private static final long SWEEP_PERIOD_MILLIS = 5000;
 
-    private final JettyIoPool anonymousPool;
+    private static final AtomicLong NAME_COUNTER = new AtomicLong();
+
     private final HttpClient httpClient;
     private final long maxContentLength;
     private final Long requestTimeoutMillis;
@@ -148,31 +151,31 @@ public class JettyHttpClient
     private final Exception creationLocation = new Exception();
     private final String name;
     private final AtomicLong lastLoggedJettyState = new AtomicLong();
+    private final IoPoolStats ioPoolStats;
 
     public JettyHttpClient()
     {
-        this(new HttpClientConfig(), ImmutableList.of());
+        this(new HttpClientConfig());
     }
 
     public JettyHttpClient(HttpClientConfig config)
     {
-        this(config, ImmutableList.of());
+        this(uniqueName(), config);
     }
 
-    public JettyHttpClient(HttpClientConfig config, Iterable<? extends HttpRequestFilter> requestFilters)
+    public JettyHttpClient(String name, HttpClientConfig config)
     {
-        this(config, Optional.empty(), requestFilters);
+        this(name, config, ImmutableList.of());
     }
 
-    public JettyHttpClient(HttpClientConfig config, JettyIoPool jettyIoPool, Iterable<? extends HttpRequestFilter> requestFilters)
+    public JettyHttpClient(
+            String name,
+            HttpClientConfig config,
+            Iterable<? extends HttpRequestFilter> requestFilters)
     {
-        this(config, Optional.of(jettyIoPool), requestFilters);
-    }
+        this.name = requireNonNull(name, "name is null");
 
-    private JettyHttpClient(HttpClientConfig config, Optional<JettyIoPool> jettyIoPool, Iterable<? extends HttpRequestFilter> requestFilters)
-    {
         requireNonNull(config, "config is null");
-        requireNonNull(jettyIoPool, "jettyIoPool is null");
         requireNonNull(requestFilters, "requestFilters is null");
 
         maxContentLength = config.getMaxContentLength().toBytes();
@@ -240,28 +243,27 @@ public class JettyHttpClient
             httpClient.getProxyConfiguration().getProxies().add(new Socks4Proxy(socksProxy.getHost(), socksProxy.getPortOrDefault(1080)));
         }
 
-        JettyIoPool pool;
-        if (jettyIoPool.isPresent()) {
-            pool = jettyIoPool.get();
-            anonymousPool = null;
-        }
-        else {
-            pool = new JettyIoPool("anonymous" + nameCounter.incrementAndGet(), new JettyIoPoolConfig());
-            anonymousPool = pool;
-        }
+        httpClient.setByteBufferPool(new MappedByteBufferPool());
+        QueuedThreadPool executor = createExecutor(name, config.getMinThreads(), config.getMaxThreads());
+        ioPoolStats = new IoPoolStats(executor);
+        httpClient.setExecutor(executor);
+        httpClient.setScheduler(createScheduler(name, config.getTimeoutConcurrency(), config.getTimeoutThreads()));
 
-        name = pool.getName();
-        this.httpClient.setExecutor(pool.getExecutor());
-        this.httpClient.setByteBufferPool(pool.getByteBufferPool());
-        this.httpClient.setScheduler(pool.getScheduler());
+        httpClient.setSocketAddressResolver(new JettyAsyncSocketAddressResolver(
+                httpClient.getExecutor(),
+                httpClient.getScheduler(),
+                config.getConnectTimeout().toMillis()));
 
-        httpClient.setSocketAddressResolver(new JettyAsyncSocketAddressResolver(pool.getExecutor(), pool.getScheduler(), config.getConnectTimeout().toMillis()));
+        httpClient.setSocketAddressResolver(new JettyAsyncSocketAddressResolver(
+                httpClient.getExecutor(),
+                httpClient.getScheduler(),
+                config.getConnectTimeout().toMillis()));
 
         // Jetty client connections can sometimes get stuck while closing which reduces
         // the available connections.  The Jetty Sweeper periodically scans the active
         // connection pool looking for connections in the closed state, and if a connection
         // is observed in the closed state multiple times, it logs, and destroys the connection.
-        httpClient.addBean(new Sweeper(pool.getScheduler(), SWEEP_PERIOD_MILLIS), true);
+        httpClient.addBean(new Sweeper(httpClient.getScheduler(), SWEEP_PERIOD_MILLIS), true);
 
         try {
             this.httpClient.start();
@@ -344,6 +346,46 @@ public class JettyHttpClient
              }
              distribution.add(NANOSECONDS.toMillis(finished - responseStarted));
          });
+    }
+
+    private static QueuedThreadPool createExecutor(String name, int minThreads, int maxThreads)
+    {
+        try {
+            QueuedThreadPool pool = new QueuedThreadPool(maxThreads, minThreads, 60000, null);
+            pool.setName("http-client-" + name);
+            pool.setDaemon(true);
+            pool.start();
+            pool.setStopTimeout(2000);
+            return pool;
+        }
+        catch (Exception e) {
+            throwIfUnchecked(e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Scheduler createScheduler(String name, int timeoutConcurrency, int timeoutThreads)
+    {
+        Scheduler scheduler;
+        String threadName = "http-client-" + name + "-scheduler";
+        if ((timeoutConcurrency == 1) && (timeoutThreads == 1)) {
+            scheduler = new ScheduledExecutorScheduler(threadName, true);
+        }
+        else {
+            checkArgument(timeoutConcurrency >= 1, "timeoutConcurrency must be at least one");
+            int threads = max(1, timeoutThreads / timeoutConcurrency);
+            scheduler = new ConcurrentScheduler(timeoutConcurrency, threads, threadName);
+        }
+
+        try {
+            scheduler.start();
+        }
+        catch (Exception e) {
+            throwIfUnchecked(e);
+            throw new RuntimeException(e);
+        }
+
+        return scheduler;
     }
 
     @Override
@@ -527,6 +569,11 @@ public class JettyHttpClient
         return requestFilters;
     }
 
+    public IoPoolStats getIoPoolStats()
+    {
+        return ioPoolStats;
+    }
+
     @Override
     @Managed
     @Flatten
@@ -698,17 +745,11 @@ public class JettyHttpClient
     @Override
     public void close()
     {
-        try {
-            httpClient.stop();
-        }
-        catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
-        }
-        catch (Exception ignored) {
-        }
-        if (anonymousPool != null) {
-            anonymousPool.close();
-        }
+        // client must be destroyed before the pools or
+        // you will create a several second busy wait loop
+        closeQuietly(httpClient);
+        closeQuietly((LifeCycle) httpClient.getExecutor());
+        closeQuietly(httpClient.getScheduler());
     }
 
     @Override
@@ -729,6 +770,25 @@ public class JettyHttpClient
     public StackTraceElement[] getCreationLocation()
     {
         return creationLocation.getStackTrace();
+    }
+
+    private static void closeQuietly(LifeCycle service)
+    {
+        try {
+            if (service != null) {
+                service.stop();
+            }
+        }
+        catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
+        catch (Exception ignored) {
+        }
+    }
+
+    private static String uniqueName()
+    {
+        return "anonymous" + NAME_COUNTER.incrementAndGet();
     }
 
     private static class JettyResponse
@@ -1591,5 +1651,21 @@ public class JettyHttpClient
                 return distribution;
             });
         }
+    }
+
+    static class IoPoolStats
+    {
+        private final QueuedThreadPool executor;
+
+        private IoPoolStats(QueuedThreadPool executor)
+        {
+            this.executor = executor;
+        }
+
+        @Gauge
+        public int getFreeThreadCount() {
+            return (executor.getMaxThreads() - executor.getThreads()) + executor.getIdleThreads() ;
+        }
+
     }
 }

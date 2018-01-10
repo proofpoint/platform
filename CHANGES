@@ -4,7 +4,8 @@ Platform 1.93
 
   We removed support for the shared IO pool. Now each HttpClient has a private
   IO pool. The .withPrivateIOThreadPool() method of the HttpClient binding DSL
-  is deprecated and no longer necessary.
+  is deprecated and no longer necessary. The configuration properties for the
+  shared IO pool are likewise deprecated and no longer used.
 
 * Maven
 

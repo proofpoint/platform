@@ -11,7 +11,6 @@ public class TestJettyHttpClientSocksProxy
 // Intermittently fails due to bug in the Jetty SOCKS code        extends AbstractHttpClientTest
 {
     private JettyHttpClient httpClient;
-    private JettyIoPool jettyIoPool;
     private TestingSocksProxy testingSocksProxy;
 
     @BeforeMethod
@@ -19,15 +18,13 @@ public class TestJettyHttpClientSocksProxy
             throws IOException
     {
         testingSocksProxy = new TestingSocksProxy().start();
-        jettyIoPool = new JettyIoPool("test-shared", new JettyIoPoolConfig());
-//        httpClient = new JettyHttpClient(createClientConfig(), jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()));
+//        httpClient = new JettyHttpClient(createClientConfig(), jettyIoPool, ImmutableList.of(new TestingRequestFilter()));
     }
 
     @AfterMethod
     public void tearDownHttpClient()
     {
         closeQuietly(httpClient);
-        closeQuietly(jettyIoPool);
         closeQuietly(testingSocksProxy);
     }
 
@@ -52,8 +49,7 @@ public class TestJettyHttpClientSocksProxy
 //    {
 //        config.setSocksProxy(testingSocksProxy.getHostAndPort());
 //        try (
-//                JettyIoPool jettyIoPool = new JettyIoPool("test-private", new JettyIoPoolConfig());
-//                JettyHttpClient client = new JettyHttpClient(config, jettyIoPool, ImmutableList.<HttpRequestFilter>of(new TestingRequestFilter()))
+//                JettyHttpClient client = new JettyHttpClient("test-private", config, ImmutableList.of(new TestingRequestFilter()))
 //        ) {
 //            return client.execute(request, responseHandler);
 //        }
