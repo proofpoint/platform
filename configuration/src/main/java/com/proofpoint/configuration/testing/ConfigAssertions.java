@@ -35,8 +35,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.proofpoint.configuration.ConfigurationMetadata.isConfigClass;
-import static com.proofpoint.testing.Assertions.assertNotEquals;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 
