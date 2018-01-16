@@ -21,7 +21,7 @@ public class TestHttpServiceBalancerConfig
     public void testDefaults()
     {
         ConfigAssertions.assertRecordedDefaults(ConfigAssertions.recordDefaults(HttpServiceBalancerConfig.class)
-                .setConsecutiveFailures(Integer.MAX_VALUE)
+                .setConsecutiveFailures(5)
                 .setMinBackoff(new Duration(5, SECONDS))
                 .setMaxBackoff(new Duration(2, MINUTES)));
     }
