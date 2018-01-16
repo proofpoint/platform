@@ -30,9 +30,9 @@ public class TestBalancingHttpClientConfig
                 .setMaxAttempts(3)
                 .setMinBackoff(new Duration(10, MILLISECONDS))
                 .setMaxBackoff(new Duration(10, SECONDS))
-                .setRetryBudgetRatio(new BigDecimal(1000))
+                .setRetryBudgetRatio(new BigDecimal(2).movePointLeft(1))
                 .setRetryBudgetRatioPeriod(new Duration(10, SECONDS))
-                .setRetryBudgetMinPerSecond(1000000));
+                .setRetryBudgetMinPerSecond(10));
     }
 
     @Test

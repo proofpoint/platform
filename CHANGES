@@ -1,5 +1,9 @@
 Platform 1.67
 
+* BalancingHttpClient
+
+  - We enabled retry budgets and failure accrual by default.
+
 * Deprecation removals
 
   We removed the following deprecated features:

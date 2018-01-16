@@ -27,7 +27,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class HttpServiceBalancerConfig
 {
-    private int consecutiveFailures = Integer.MAX_VALUE;
+    private int consecutiveFailures = 5;
     private Duration minBackoff = new Duration(5, SECONDS);
     private Duration maxBackoff = new Duration(2, MINUTES);
 

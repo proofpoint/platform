@@ -35,9 +35,9 @@ public class BalancingHttpClientConfig
     private int maxAttempts = 3;
     private Duration minBackoff = new Duration(10, MILLISECONDS);
     private Duration maxBackoff = new Duration(10, SECONDS);
-    private BigDecimal retryBudgetRatio = new BigDecimal(1000);
+    private BigDecimal retryBudgetRatio = new BigDecimal(2).movePointLeft(1);
     private Duration retryBudgetRatioPeriod = new Duration(10, SECONDS);
-    private int retryBudgetMinPerSecond = 1000000;
+    private int retryBudgetMinPerSecond = 10;
 
     @Min(1)
     public int getMaxAttempts()
