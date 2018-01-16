@@ -328,7 +328,7 @@ public final class ConfigAssertions
             Object actualAttributeValue = invoke(actual, getter);
             Object expectedAttributeValue = attributeValues.get(attribute.getName());
 
-            assertEquals(expectedAttributeValue, actualAttributeValue, "Default value for " + attribute.getName());
+            assertEquals(actualAttributeValue, expectedAttributeValue, "Default value for " + attribute.getName());
         }
     }
 
