@@ -82,6 +82,17 @@ public class Announcer
         }
     }
 
+    /**
+     * Calls {@link #start()} unless running under Kubernetes.
+     */
+    public void startIfNotKubernetes()
+    {
+        if (System.getenv("KUBERNETES_SERVICE_PORT") == null)
+        {
+            start();
+        }
+    }
+
     @StopTraffic
     public void destroy()
     {
