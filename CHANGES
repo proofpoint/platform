@@ -4,6 +4,11 @@ Platform 1.67
 
   - We enabled retry budgets and failure accrual by default.
 
+* Discovery
+
+  We created a Announcer.startIfNotKubernetes() method which calls
+  Announcer.start() only when not running under Kubernetes.
+
 * Deprecation removals
 
   We removed the following deprecated features:
