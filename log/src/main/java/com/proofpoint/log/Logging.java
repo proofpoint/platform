@@ -218,7 +218,11 @@ public class Logging
         instance.testingHandlers.clear();
     }
 
-    public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context)
+    public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context) {
+        return createFileAppender(logPath, maxHistory, 256, maxFileSize, maxTotalSize, encoder, context);
+    }
+
+    public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, int queueSize, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context)
     {
         recoverTempFiles(logPath);
 
@@ -241,6 +245,7 @@ public class Logging
 
         AsyncAppenderBase<T> asyncAppender = new AsyncAppenderBase<>();
         asyncAppender.setContext(context);
+        asyncAppender.setQueueSize(queueSize);
         asyncAppender.addAppender(fileAppender);
 
         rollingPolicy.start();
