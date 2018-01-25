@@ -74,6 +74,7 @@ public class HttpServerConfig
     private DataSize logMaxSegmentSize = new DataSize(100, MEGABYTE);
     private int logMaxHistory = 30;
     private DataSize logMaxTotalSize = new DataSize(1, GIGABYTE);
+    private int queueSize = 10_000;
 
     private Integer httpAcceptorThreads;
     private Integer httpSelectorThreads;
@@ -345,6 +346,19 @@ public class HttpServerConfig
     public HttpServerConfig setLogMaxTotalSize(DataSize logMaxTotalSize)
     {
         this.logMaxTotalSize = logMaxTotalSize;
+        return this;
+    }
+
+    @Min(1)
+    public int getLogQueueSize()
+    {
+        return queueSize;
+    }
+
+    @Config("http-server.log.queue-size")
+    public HttpServerConfig setLogQueueSize(int queueSize)
+    {
+        this.queueSize = queueSize;
         return this;
     }
 

@@ -42,6 +42,7 @@ class JsonRequestLog
         appender = Logging.createFileAppender(
                 config.getLogPath(),
                 config.getLogMaxHistory(),
+                config.getLogQueueSize(),
                 config.getLogMaxSegmentSize(),
                 config.getLogMaxTotalSize(),
                 new EventEncoder(),
