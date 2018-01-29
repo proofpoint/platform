@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.locks.LockSupport;
 import java.util.jar.JarFile;
@@ -92,7 +93,10 @@ public class Main
         @Option(type = OptionType.GLOBAL, name = "--node-config", description = "Path to node properties file. Defaults to INSTALL_PATH/etc/node.properties")
         public String nodePropertiesPath = null;
 
-        @Option(type = OptionType.GLOBAL, name = "--jvm-config", description = "Path to jvm config file. Defaults to INSTALL_PATH/etc/jvm.config")
+        @Option(type = OptionType.GLOBAL, name = "--jvm-properties", description = "Path to jvm configuration file. Defaults to INSTALL_PATH/etc/jvm.properties")
+        public String jvmPropertiesPath = null;
+
+        @Option(type = OptionType.GLOBAL, name = "--jvm-config", description = "Path to legacy jvm config file. Defaults to INSTALL_PATH/etc/jvm.config")
         public String jvmConfigPath = null;
 
         @Option(type = OptionType.GLOBAL, name = "--config", description = "Path to configuration file. Defaults to INSTALL_PATH/etc/config.properties")
@@ -164,6 +168,13 @@ public class Main
             else {
                 launcherArgs.add("--node-config");
                 launcherArgs.add(new File(nodePropertiesPath).getAbsolutePath());
+            }
+            if (jvmPropertiesPath == null) {
+                jvmPropertiesPath = installPath + "/etc/jvm.properties";
+            }
+            else {
+                launcherArgs.add("--jvm-properties");
+                launcherArgs.add(new File(jvmPropertiesPath).getAbsolutePath());
             }
             if (jvmConfigPath == null) {
                 jvmConfigPath = installPath + "/etc/jvm.config";
@@ -310,33 +321,53 @@ public class Main
             }
 
             Collection<String> jvmConfigArgs = new ArrayList<>();
-            try (BufferedReader jvmReader = new BufferedReader(new InputStreamReader(new FileInputStream(jvmConfigPath), Charsets.UTF_8))) {
-                String line;
-                boolean allowSpaces = false;
-                while ((line = jvmReader.readLine()) != null) {
-                    if (!line.matches("\\s*(?:#.*)?")) {
-                        line = line.trim();
-                        if (!allowSpaces && line.matches(".*[ '\"\\\\].*")) {
-                            System.err.println("JVM config file line contains space or other shell metacharacter: " + line);
-                            System.err.println("JVM config file format is one argument per line, no shell quoting.");
-                            System.err.println("To indicate you know what you're doing, add before this line the comment line:");
-                            System.err.println("# allow spaces");
-                            System.exit(STATUS_GENERIC_ERROR);
-                        }
-
-                        jvmConfigArgs.add(line);
+            try (InputStream jvmPropertiesFile = new FileInputStream(jvmPropertiesPath)) {
+                Properties jvmProperties = new Properties();
+                jvmProperties.load(jvmPropertiesFile);
+                for (Entry<Object, Object> entry : jvmProperties.entrySet()) {
+                    if ("-classpath".equals(entry.getKey())) {
+                        jvmConfigArgs.add(entry.getKey().toString());
+                        jvmConfigArgs.add(entry.getValue().toString());
                     }
-                    else if (line.matches("(?i)\\s*#\\s*allow\\s+spaces\\s*")) {
-                        allowSpaces = true;
+                    else {
+                        jvmConfigArgs.add(entry.getKey().toString() + entry.getValue().toString());
                     }
                 }
             }
-            catch (FileNotFoundException e) {
-                System.err.println("JVM config file is missing: " + jvmConfigPath);
-                System.exit(STATUS_CONFIG_MISSING);
+            catch (FileNotFoundException ignore) {
+                // Fall back to jvm.config
+                try (BufferedReader jvmReader = new BufferedReader(new InputStreamReader(new FileInputStream(jvmConfigPath), Charsets.UTF_8))) {
+                    String line;
+                    boolean allowSpaces = false;
+                    while ((line = jvmReader.readLine()) != null) {
+                        if (!line.matches("\\s*(?:#.*)?")) {
+                            line = line.trim();
+                            if (!allowSpaces && line.matches(".*[ '\"\\\\].*")) {
+                                System.err.println("JVM config file line contains space or other shell metacharacter: " + line);
+                                System.err.println("JVM config file format is one argument per line, no shell quoting.");
+                                System.err.println("To indicate you know what you're doing, add before this line the comment line:");
+                                System.err.println("# allow spaces");
+                                System.exit(STATUS_GENERIC_ERROR);
+                            }
+
+                            jvmConfigArgs.add(line);
+                        }
+                        else if (line.matches("(?i)\\s*#\\s*allow\\s+spaces\\s*")) {
+                            allowSpaces = true;
+                        }
+                    }
+                }
+                catch (FileNotFoundException e) {
+                    System.err.println("JVM config file is missing: " + jvmConfigPath);
+                    System.exit(STATUS_CONFIG_MISSING);
+                }
+                catch (IOException e) {
+                    System.err.println("Error reading JVM config file: " + e);
+                    System.exit(STATUS_CONFIG_MISSING);
+                }
             }
             catch (IOException e) {
-                System.err.println("Error reading JVM config file: " + e);
+                System.err.println("Error reading JVM properties file: " + e);
                 System.exit(STATUS_CONFIG_MISSING);
             }
 
@@ -635,7 +666,7 @@ public class Main
         {
             start(args, false);
         }
-   }
+    }
 
     @Command(name = "start-client", description = "Internal use only", hidden = true)
     public static class StartClientCommand extends LauncherCommand
@@ -735,7 +766,7 @@ public class Main
             }
 
             start(args, true);
-       }
+        }
     }
 
     @Command(name = "try-restart", description = "Restart server gracefully if it is already running")
@@ -762,7 +793,7 @@ public class Main
             }
 
             start(args, true);
-       }
+        }
     }
 
     @SuppressWarnings("EmptyClass")
@@ -780,7 +811,7 @@ public class Main
             KillStatus killStatus = killProcess(true);
             System.out.println(killStatus.msg);
             System.exit(killStatus.exitCode);
-       }
+        }
     }
 
     @Command(name = "kill", description = "Hard stop of server")
@@ -792,7 +823,7 @@ public class Main
             KillStatus killStatus = killProcess(false);
             System.out.println(killStatus.msg);
             System.exit(killStatus.exitCode);
-       }
+        }
     }
 
     @Command(name = "ParseError")
