@@ -398,6 +398,15 @@ public class Main
 
             javaArgs.addAll(jvmConfigArgs);
 
+            if (jvmConfigArgs.stream().noneMatch(s -> s.startsWith("-Xmx"))) {
+                if (jvmConfigArgs.stream().noneMatch(s -> s.equals("-XX:+UnlockExperimentalVMOptions"))) {
+                    javaArgs.add("-XX:+UnlockExperimentalVMOptions");
+                }
+                if (jvmConfigArgs.stream().noneMatch(s -> s.equals("-XX:+UseCGroupMemoryLimitForHeap"))) {
+                    javaArgs.add("-XX:+UseCGroupMemoryLimitForHeap");
+                }
+            }
+
             for (String key : systemProperties.stringPropertyNames()) {
                 javaArgs.add("-D" + key + "=" + systemProperties.getProperty(key));
             }

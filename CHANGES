@@ -9,6 +9,10 @@ Platform 1.67
   key and value (without the = in between). The "-classpath" key is handled
   as a special case, resulting in the key and value being separate arguments.
 
+  If there is no -Xmx Java argument, the launcher now uses the
+  -XX:UseCGroupMemoryLimitForHeap argument to set the heap size limit to the
+  Docker container's memory limit.
+
 * BalancingHttpClient
 
   - We enabled retry budgets and failure accrual by default.
