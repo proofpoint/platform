@@ -3,7 +3,8 @@ Platform 1.67
 * Launcher
 
   We added support for an etc/jvm.properties file as an alternative for the
-  jvm.config file. Each property in that Java properties file is used to
+  jvm.config file. When the jvm.properties file is present it will be used
+  instead of jvm.config. Each property in that Java properties file is used to
   construct a Java command-line argument by concatenating the property
   key and value (without the = in between). The "-classpath" key is handled
   as a special case, resulting in the key and value being separate arguments.
