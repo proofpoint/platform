@@ -26,9 +26,11 @@ import io.airlift.command.Option;
 import io.airlift.command.OptionType;
 import io.airlift.command.ParseException;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +50,13 @@ import java.util.Properties;
 import java.util.concurrent.locks.LockSupport;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -150,6 +159,58 @@ public class Main
             logLevelsPath = installPath + "/etc/log.properties";
             if (!(new File(logLevelsPath).canRead()) && new File(installPath + "/etc/log.config").canRead()) {
                 System.err.print("Did not find a log.properties file, but found a log.config instead.  log.config is no longer supported, please use log.properties.");
+            }
+        }
+
+        // Copies default truststore to accessable path. Adds k8s ca root cert to truststore. Returns path of new truststore or null
+        private String addKubernetesToTrustStore()
+        {
+            File certFile = new File("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt");
+
+            // Check if the K8S cert exists. If exists, configure new truststore
+            if (certFile.exists() && certFile.isFile()) {
+
+                // It is not necessarily possible to find the path of current truststore used.
+                // Will request user to set java.home and access default truststore path
+                String javaHome = System.getProperty("java.home");
+                if (javaHome == null) {
+                    System.out.println("System Property java.home not set.");
+                    System.exit(STATUS_GENERIC_ERROR);
+                }
+
+                File sourceTS = new File(javaHome + "/lib/security/cacerts");
+                File destinationTS = new File(dataDir + "/var/cacerts");
+                String alias = "kubernetes-root-ca-cert";
+                char[] password = "changeit".toCharArray();
+
+                try (FileInputStream sourceIs = new FileInputStream(sourceTS);
+                     FileOutputStream destinationOs = new FileOutputStream(destinationTS);
+                     FileInputStream certIs = new FileInputStream(certFile)) {
+
+                    //Load default Keystore
+                    KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+                    keystore.load(sourceIs, password);
+
+                    //Get cert and add.
+                    BufferedInputStream bis = new BufferedInputStream(certIs);
+                    CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                    Certificate cert = cf.generateCertificate(bis);
+                    keystore.setCertificateEntry(alias, cert);
+
+                    // Save the new truststore contents
+                    keystore.store(destinationOs, password);
+
+                }
+                catch (KeyStoreException | IOException | CertificateException | NoSuchAlgorithmException e) {
+                    throw new RuntimeException("Configuring TLS TrustStore", e);
+                }
+                if (verbose) {
+                    System.out.println("Created new TrustStore with Kubernetes Certificate");
+                }
+                return destinationTS.getAbsolutePath();
+            }
+            else {
+                return null;
             }
         }
 
@@ -395,6 +456,14 @@ public class Main
                 javaArgs.add("-XX:OnOutOfMemoryError=kill -9 %p");
             }
             javaArgs.add("-Djava.util.logging.manager=com.proofpoint.log.ShutdownWaitingLogManager");
+
+            //Add the trust store. If the trustStore arg is passed from config file, ignore this new truststore.
+            if (launcherArgs.stream().noneMatch(s -> s.startsWith("-Djavax.net.ssl.trustStore="))) {
+                String trustStorePath = addKubernetesToTrustStore();
+                if (trustStorePath != null) {
+                    javaArgs.add("-Djavax.net.ssl.trustStore=" + trustStorePath);
+                }
+            }
 
             javaArgs.addAll(jvmConfigArgs);
 
