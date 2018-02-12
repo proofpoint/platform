@@ -13,6 +13,12 @@ Platform 1.67
   -XX:UseCGroupMemoryLimitForHeap argument to set the heap size limit to the
   Docker container's memory limit.
 
+  If running inside Kubernetes, the launcher automatically detect the CA cert
+  at path /var/run/secrets/kubernetes.io/serviceaccount/ca.crt and add to the default TLS
+  TrustStore. The location of new TrustStore with the K8S cert added is /service/var/cacerts
+  If the K8S cert is not present, default TrustStore will be used.
+  If TrustStore location is specified in config file, will use that and ignore others.
+
 * BalancingHttpClient
 
   - We enabled retry budgets and failure accrual by default.

@@ -29,16 +29,20 @@ import io.airlift.command.ParseException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -48,6 +52,13 @@ import java.util.Properties;
 import java.util.concurrent.locks.LockSupport;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -151,6 +162,62 @@ public class Main
             if (!(new File(logLevelsPath).canRead()) && new File(installPath + "/etc/log.config").canRead()) {
                 System.err.print("Did not find a log.properties file, but found a log.config instead.  log.config is no longer supported, please use log.properties.");
             }
+        }
+
+        // Copies default store to accessable path. Adds k8s ca root cert to truststore. Returns path of new truststore
+        private String addKubernetesToTrustStore() throws IOException, FileNotFoundException, CertificateException, KeyStoreException, NoSuchAlgorithmException{
+            String javaHome = System.getenv("JAVA_HOME");
+            String defaultTrustStorePath = javaHome + "/jre/lib/security/cacerts";
+            String destinationTrustStorePath = "/service/var/cacerts";
+            String certfile = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
+            String alias = "kubernetes-root-ca-cert";
+            char[] password = "changeit".toCharArray();
+
+            //Check if the K8S cert exists. If exists, configure new truststore
+            File f = new File(certfile);
+            if(f.exists() && !f.isDirectory()) {
+                System.out.println("Detected Kubernetes Cert.");
+
+                File source = new File(defaultTrustStorePath);
+                File dest = new File(destinationTrustStorePath);
+                Files.copy(source.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                //Load truststore
+                FileInputStream is = new FileInputStream(destinationTrustStorePath);
+                KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+                keystore.load(is, password);
+                is.close();
+
+                //Get cert
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                InputStream certstream = getCertStream (certfile);
+                Certificate certs =  cf.generateCertificate(certstream);
+                certstream.close();
+
+                // Add the certificate
+                keystore.setCertificateEntry(alias, certs);
+
+                // Save the new truststore contents
+                FileOutputStream out = new FileOutputStream(destinationTrustStorePath);
+                keystore.store(out, password);
+                out.close();
+                System.out.println("Created new TrustStore with Kubernetes Certificate");
+
+                return destinationTrustStorePath;
+            }
+            else{
+                System.out.println("Kubernetes CA cert not found. Skipping.");
+                return defaultTrustStorePath;
+            }
+        }
+
+        private InputStream getCertStream ( String fname ) throws IOException {
+            FileInputStream fis = new FileInputStream(fname);
+            DataInputStream dis = new DataInputStream(fis);
+            byte[] bytes = new byte[dis.available()];
+            dis.readFully(bytes);
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            return bais;
         }
 
         abstract void execute();
@@ -395,6 +462,25 @@ public class Main
                 javaArgs.add("-XX:OnOutOfMemoryError=kill -9 %p");
             }
             javaArgs.add("-Djava.util.logging.manager=com.proofpoint.log.ShutdownWaitingLogManager");
+
+            //Add the trust store
+            try {
+                Boolean addTrustStoreConfig = true;
+                //If the trustStore arg is passed from config file, ignore this new truststore.
+                for(String s : launcherArgs){
+                    if(s.contains("-Djavax.net.ssl.trustStore=")){
+                        addTrustStoreConfig = false;
+                    }
+                }
+                if(addTrustStoreConfig){
+                    javaArgs.add("-Djavax.net.ssl.trustStore=" + addKubernetesToTrustStore());
+                }else{
+                    System.out.println("Using trustStore provided in config");
+                }
+            }catch(IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException e){
+                System.err.println("Failed to get Truststore when adding Kubernetes cert. Error!");
+                System.exit(STATUS_GENERIC_ERROR);
+            }
 
             javaArgs.addAll(jvmConfigArgs);
 
