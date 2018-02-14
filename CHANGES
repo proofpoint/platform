@@ -13,9 +13,9 @@ Platform 1.67
   -XX:UseCGroupMemoryLimitForHeap argument to set the heap size limit to the
   Docker container's memory limit.
 
-  If running under Kubernetes and the javax.net.ssl.trustStore property has not been overridden
-  in the jvm configuration, the launcher now adds the Kubernetes cluster CA to the trust store used
-  by the launched process.
+  If running under Kubernetes and the javax.net.ssl.trustStore property has
+  not been overridden in the jvm configuration, the launcher now adds the
+  Kubernetes cluster CA to the trust store used by the launched process.
 
 * BalancingHttpClient
 
