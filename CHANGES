@@ -13,11 +13,9 @@ Platform 1.67
   -XX:UseCGroupMemoryLimitForHeap argument to set the heap size limit to the
   Docker container's memory limit.
 
-  If running inside Kubernetes, the launcher automatically detect the CA cert
-  at path /var/run/secrets/kubernetes.io/serviceaccount/ca.crt and add to the default TLS
-  TrustStore. The location of new TrustStore with the K8S cert added is /service/var/cacerts
-  If the K8S cert is not present, default TrustStore will be used.
-  If TrustStore location is specified in config file, will use that and ignore others.
+  If running under Kubernetes and the javax.net.ssl.trustStore property has not been overridden
+  in the jvm configuration, the launcher now adds the Kubernetes cluster CA to the trust store used
+  by the launched process.
 
 * BalancingHttpClient
 
@@ -2106,24 +2104,24 @@ Platform 0.78
 
 * Rack Packaging
 
- - Removed generation of gemfile.jar in favour of using Bundler’s standalone. 
- - Changed tar generation to include specific files instead of by exclusion to prevent pulling in unnecessary 
+ - Removed generation of gemfile.jar in favour of using Bundler’s standalone.
+ - Changed tar generation to include specific files instead of by exclusion to prevent pulling in unnecessary
    project files.
- - Incorporated asset precompilation fix 
- - Deprecated use of the bundler maven plugin as it didn’t work correctly or log useful information when it 
-   failed. May want to wrap the above changes in a plugin in the future (currently using command lines via Ant 
+ - Incorporated asset precompilation fix
+ - Deprecated use of the bundler maven plugin as it didn’t work correctly or log useful information when it
+   failed. May want to wrap the above changes in a plugin in the future (currently using command lines via Ant
    plugin).
- 
+
 * Rack
 
  - Added intiialization code to ensure Rails application correctly loads gems from the standalone gem bundle.
- - Fixed an issue in ServletAdapter that assumed status code was always an integer and caused exceptions when 
+ - Fixed an issue in ServletAdapter that assumed status code was always an integer and caused exceptions when
    it was actually a string
- - Fixed issue that prevented Rails apps from setting more than one cookie at a time. 
- - Re-implemented hack to override logging as a Railtie so it could be correctly scheduled in the application 
-   initialization sequence. All Rails apps will now correctly log everything (including startup logging) to 
+ - Fixed issue that prevented Rails apps from setting more than one cookie at a time.
+ - Re-implemented hack to override logging as a Railtie so it could be correctly scheduled in the application
+   initialization sequence. All Rails apps will now correctly log everything (including startup logging) to
    launcher.log.
- - Updated/added gems to the test resources to ensure unit tests run correctly (which accounts for most of the 
+ - Updated/added gems to the test resources to ensure unit tests run correctly (which accounts for most of the
    file changes)
 
 Platform 0.77
@@ -2857,7 +2855,7 @@ The HTTP client is still experimental.
 
 Platform 0.54
 
-This release removed the use of DocLava for generating javadocs for projects rest-server-base. 
+This release removed the use of DocLava for generating javadocs for projects rest-server-base.
 It was triggering a bug in javadoc that prevented some projects from building successfully.
 
 
@@ -2875,7 +2873,7 @@ prematurely.
 
 When developing servlet filters for use with the platform HTTP server, it is now possible
 to test these filters inside the TestingHttpServer. Bind the TestingHttpServerModule into your
-test injector along with the module that binds your servlet filter. 
+test injector along with the module that binds your servlet filter.
 
 * Rack packaging (JRuby on Rails)
 
@@ -2940,14 +2938,14 @@ Platform 0.51
 
 * Trace token support for http requests
 
-The http server can now deal with request trace tokens passed in via a 
+The http server can now deal with request trace tokens passed in via a
 request header (X-Proofpoint-TraceToken). The trace token is recorded
 in the request logs and is made available to application code via a
 TraceTokenManager object. If no token is provided, a new one is created
 automatically.
- 
+
 To enable this functionality, simply add a dependency to
-com.proofpoint.platform:trace-token and add TraceTokenModule to the list of 
+com.proofpoint.platform:trace-token and add TraceTokenModule to the list of
 guice modules for your application.
 
 * Event fields support Map and Multimap
