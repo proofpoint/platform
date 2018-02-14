@@ -163,16 +163,16 @@ public class Main
         }
 
         // Copies default truststore to accessable path. Adds k8s ca root cert to truststore. Returns path of new truststore
-        private String addKubernetesToTrustStore(){
+        private String addKubernetesToTrustStore() {
             File certFile = new File("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt");
 
             // Check if the K8S cert exists. If exists, configure new truststore
-            if (certFile.exists() && !certFile.isDirectory()) {
+            if (certFile.exists() && certFile.isFile()) {
 
                 // It is not necessarily possible to find the path of current truststore used.
                 // Will request user to set java home and access default truststore path
                 String javaHome = System.getenv("JAVA_HOME");
-                if (javaHome.equals("null")){
+                if (javaHome == null){
                     System.out.println("JAVA_HOME not set. Please set JAVA_HOME.");
                     System.exit(STATUS_GENERIC_ERROR);
                 }
