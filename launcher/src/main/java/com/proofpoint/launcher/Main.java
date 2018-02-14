@@ -162,29 +162,30 @@ public class Main
             }
         }
 
-        // Copies default truststore to accessable path. Adds k8s ca root cert to truststore. Returns path of new truststore
-        private String addKubernetesToTrustStore() {
+        // Copies default truststore to accessable path. Adds k8s ca root cert to truststore. Returns path of new truststore or null
+        private String addKubernetesToTrustStore()
+        {
             File certFile = new File("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt");
 
             // Check if the K8S cert exists. If exists, configure new truststore
             if (certFile.exists() && certFile.isFile()) {
 
                 // It is not necessarily possible to find the path of current truststore used.
-                // Will request user to set java home and access default truststore path
-                String javaHome = System.getenv("JAVA_HOME");
-                if (javaHome == null){
-                    System.out.println("JAVA_HOME not set. Please set JAVA_HOME.");
+                // Will request user to set java.home and access default truststore path
+                String javaHome = System.getProperty("java.home");
+                if (javaHome == null) {
+                    System.out.println("System Property java.home not set.");
                     System.exit(STATUS_GENERIC_ERROR);
                 }
 
-                File sourceTS = new File(javaHome + "/jre/lib/security/cacerts");
+                File sourceTS = new File(javaHome + "/lib/security/cacerts");
                 File destinationTS = new File(dataDir + "/var/cacerts");
                 String alias = "kubernetes-root-ca-cert";
                 char[] password = "changeit".toCharArray();
 
-                try(FileInputStream sourceIs = new FileInputStream(sourceTS);
-                    FileOutputStream destinationOs = new FileOutputStream(destinationTS);
-                    FileInputStream certIs = new FileInputStream(certFile)){
+                try (FileInputStream sourceIs = new FileInputStream(sourceTS);
+                     FileOutputStream destinationOs = new FileOutputStream(destinationTS);
+                     FileInputStream certIs = new FileInputStream(certFile)) {
 
                     //Load default Keystore
                     KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -199,16 +200,17 @@ public class Main
                     // Save the new truststore contents
                     keystore.store(destinationOs, password);
 
-                }catch(KeyStoreException | IOException | CertificateException | NoSuchAlgorithmException e ){
-                    throw new RuntimeException("Error configuring TLS TrustStore: " + e);
                 }
-                if (verbose){
+                catch (KeyStoreException | IOException | CertificateException | NoSuchAlgorithmException e) {
+                    throw new RuntimeException("Configuring TLS TrustStore", e);
+                }
+                if (verbose) {
                     System.out.println("Created new TrustStore with Kubernetes Certificate");
                 }
                 return destinationTS.getAbsolutePath();
             }
-            else{
-                return "";
+            else {
+                return null;
             }
         }
 
@@ -456,9 +458,9 @@ public class Main
             javaArgs.add("-Djava.util.logging.manager=com.proofpoint.log.ShutdownWaitingLogManager");
 
             //Add the trust store. If the trustStore arg is passed from config file, ignore this new truststore.
-            if(launcherArgs.stream().noneMatch(s -> s.startsWith("-Djavax.net.ssl.trustStore="))){
+            if (launcherArgs.stream().noneMatch(s -> s.startsWith("-Djavax.net.ssl.trustStore="))) {
                 String trustStorePath = addKubernetesToTrustStore();
-                if (trustStorePath.length() > 0){
+                if (trustStorePath != null) {
                     javaArgs.add("-Djavax.net.ssl.trustStore=" + trustStorePath);
                 }
             }
