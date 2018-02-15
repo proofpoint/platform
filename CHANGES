@@ -26,6 +26,8 @@ Platform 1.68
   We created a Announcer.startIfNotKubernetes() method which calls
   Announcer.start() only when not running under Kubernetes.
 
+* We now allow the "-" character in the "node.pool" configuration option.
+
 * Deprecation removals
 
   We removed the following deprecated features:

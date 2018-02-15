@@ -28,7 +28,7 @@ public class TestNodeInfo
     public static final String APPLICATION_VERSION = "1.1234";
     public static final String PLATFORM_VERSION = "platform.1234";
     public static final String ENVIRONMENT = "environment_1234";
-    public static final String POOL = "pool_1234";
+    public static final String POOL = "pool_12-34";
 
     @Test
     public void testBasicNodeInfo()
