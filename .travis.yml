@@ -4,6 +4,9 @@ sudo: false
 
 services:
   - docker
+  
+before_install:
+  - docker ps -a
 
 jdk:
   - oraclejdk8
