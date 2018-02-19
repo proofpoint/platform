@@ -7,7 +7,7 @@ services:
     
 before_install:
   - docker ps -a    
-
+  
 jdk:
   - oraclejdk8
 
