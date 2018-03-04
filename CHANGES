@@ -1,3 +1,9 @@
+Platform 1.69
+
+* Library Upgrades
+
+  - Guice to 4.2.0 (was 4.0)
+
 Platform 1.68
 
 * Launcher
