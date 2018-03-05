@@ -1,5 +1,7 @@
 Platform 1.69
 
+* The systemd service file now limits restarts of the service to 5 per minute.
+
 * Library Upgrades
 
   - Guice to 4.2.0 (was 4.0)
