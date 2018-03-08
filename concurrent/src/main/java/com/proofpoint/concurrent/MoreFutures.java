@@ -504,22 +504,9 @@ public final class MoreFutures
 
     public static <T> void addExceptionCallback(ListenableFuture<T> future, Runnable exceptionCallback)
     {
-        requireNonNull(future, "future is null");
         requireNonNull(exceptionCallback, "exceptionCallback is null");
 
-        Futures.addCallback(future, new FutureCallback<T>()
-        {
-            @Override
-            public void onSuccess(@Nullable T result)
-            {
-            }
-
-            @Override
-            public void onFailure(Throwable t)
-            {
-                exceptionCallback.run();
-            }
-        }, directExecutor());
+        addExceptionCallback(future, t -> exceptionCallback.run());
     }
 
     private static class UnmodifiableCompletableFuture<V>
