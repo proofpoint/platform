@@ -1,3 +1,10 @@
+Platform 1.70
+
+* Launcher
+
+  If an etc/secrets.properties file exists, it will be used as a default for
+  --secrets-config.
+
 Platform 1.69
 
 * The systemd service file now limits restarts of the service to 5 per minute.
