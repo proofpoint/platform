@@ -251,6 +251,12 @@ public class Main
                 launcherArgs.add("--config");
                 launcherArgs.add(new File(configPath).getAbsolutePath());
             }
+            if (secretsConfigPath == null) {
+                secretsConfigPath = installPath + "/etc/secrets.properties";
+                if (!new File(secretsConfigPath).exists()) {
+                    secretsConfigPath = null;
+                }
+            }
             if (secretsConfigPath != null) {
                 launcherArgs.add("--secrets-config");
                 launcherArgs.add(new File(secretsConfigPath).getAbsolutePath());
