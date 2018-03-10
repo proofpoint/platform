@@ -18,7 +18,6 @@ package com.proofpoint.http.server;
 import com.google.common.io.ByteStreams;
 import com.proofpoint.tracetoken.TraceToken;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,30 +25,31 @@ import java.io.IOException;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 class DummyServlet
         extends HttpServlet
 {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException
     {
-        resp.setStatus(HttpServletResponse.SC_OK);
-        if (req.getUserPrincipal() != null) {
-            resp.getOutputStream().write(req.getUserPrincipal().getName().getBytes(UTF_8));
+        response.setStatus(SC_OK);
+        if (request.getUserPrincipal() != null) {
+            response.getOutputStream().write(request.getUserPrincipal().getName().getBytes(UTF_8));
         }
         TraceToken token = getCurrentTraceToken();
         if (token != null) {
-            resp.addHeader("X-Trace-Token-Was", token.toString());
+            response.addHeader("X-Trace-Token-Was", token.toString());
         }
-        resp.setHeader("X-Protocol", req.getProtocol());
+        response.setHeader("X-Protocol", request.getProtocol());
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp)
             throws IOException
     {
-        resp.setStatus(HttpServletResponse.SC_OK);
+        resp.setStatus(SC_OK);
         ByteStreams.copy(req.getInputStream(), resp.getOutputStream());
     }
 }
