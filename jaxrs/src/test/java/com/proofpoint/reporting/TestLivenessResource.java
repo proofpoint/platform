@@ -44,7 +44,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.testng.Assert.assertEquals;
 
-public class TestInRotationResource
+public class TestLivenessResource
 {
     private final HttpClient client = new JettyHttpClient();
 
@@ -94,7 +94,7 @@ public class TestInRotationResource
             throws Exception
     {
         StringResponse response = client.execute(
-                prepareGet().setUri(uriFor("/inrotation.txt")).build(),
+                prepareGet().setUri(uriFor("/liveness")).build(),
                 createStringResponseHandler());
 
         assertEquals(response.getStatusCode(), OK.getStatusCode());
@@ -114,7 +114,7 @@ public class TestInRotationResource
             }
         });
         StringResponse response = client.execute(
-                prepareGet().setUri(uriFor("/inrotation.txt")).build(),
+                prepareGet().setUri(uriFor("/liveness")).build(),
                 createStringResponseHandler());
 
         assertEquals(response.getStatusCode(), OK.getStatusCode());
@@ -123,18 +123,18 @@ public class TestInRotationResource
     }
 
     @Test
-    public void testIgnoresHealthCheck()
+    public void testIgnoresHealthCheckRemoveFromRotation()
             throws Exception
     {
         healthExporter.export(null, new Object() {
-            @HealthCheck("Check one")
+            @HealthCheckRemoveFromRotation("Check one")
             public String getCheckOne()
             {
                 return "failed";
             }
         });
         StringResponse response = client.execute(
-                prepareGet().setUri(uriFor("/inrotation.txt")).build(),
+                prepareGet().setUri(uriFor("/liveness")).build(),
                 createStringResponseHandler());
 
         assertEquals(response.getStatusCode(), OK.getStatusCode());
@@ -144,32 +144,6 @@ public class TestInRotationResource
 
     @Test
     public void testFailed()
-            throws Exception
-    {
-        healthExporter.export(null, new Object() {
-            @HealthCheckRemoveFromRotation("Check one")
-            public String getCheckOne()
-            {
-                return "failed";
-            }
-
-            @HealthCheckRemoveFromRotation("Check two")
-            public String getCheckTwo()
-            {
-                return null;
-            }
-        });
-        StringResponse response = client.execute(
-                prepareGet().setUri(uriFor("/inrotation.txt")).build(),
-                createStringResponseHandler());
-
-        assertEquals(response.getStatusCode(), INTERNAL_SERVER_ERROR.getStatusCode());
-        assertEquals(response.getHeader(CONTENT_TYPE), "text/plain");
-        assertEquals(response.getBody(), "failed\n");
-    }
-
-    @Test
-    public void testRestartFailed()
             throws Exception
     {
         healthExporter.export(null, new Object() {
@@ -186,7 +160,7 @@ public class TestInRotationResource
             }
         });
         StringResponse response = client.execute(
-                prepareGet().setUri(uriFor("/inrotation.txt")).build(),
+                prepareGet().setUri(uriFor("/liveness")).build(),
                 createStringResponseHandler());
 
         assertEquals(response.getStatusCode(), INTERNAL_SERVER_ERROR.getStatusCode());
@@ -199,13 +173,13 @@ public class TestInRotationResource
             throws Exception
     {
         healthExporter.export(null, new Object() {
-            @HealthCheckRemoveFromRotation("Check one")
+            @HealthCheckRestartDesired("Check one")
             public String getCheckOne()
             {
                 return "failed";
             }
 
-            @HealthCheckRemoveFromRotation("Check two")
+            @HealthCheckRestartDesired("Check two")
             public Object getCheckTwo()
             {
                 return new Object() {
@@ -217,7 +191,7 @@ public class TestInRotationResource
             }
         });
         StringResponse response = client.execute(
-                prepareGet().setUri(uriFor("/inrotation.txt")).build(),
+                prepareGet().setUri(uriFor("/liveness")).build(),
                 createStringResponseHandler());
 
         assertEquals(response.getStatusCode(), INTERNAL_SERVER_ERROR.getStatusCode());

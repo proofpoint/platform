@@ -30,14 +30,14 @@ import javax.ws.rs.core.Response;
 import static java.util.Objects.requireNonNull;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
-@Path("/inrotation.txt")
+@Path("/liveness")
 @AccessDoesNotRequireAuthentication
-public class InRotationResource
+public class LivenessResource
 {
     private final HealthBeanRegistry healthBeanRegistry;
 
     @Inject
-    public InRotationResource(HealthBeanRegistry healthBeanRegistry)
+    public LivenessResource(HealthBeanRegistry healthBeanRegistry)
     {
         this.healthBeanRegistry = requireNonNull(healthBeanRegistry, "healthBeanRegistry is null");
     }
@@ -48,7 +48,7 @@ public class InRotationResource
     {
         StringBuilder sb = new StringBuilder();
         healthBeanRegistry.getHealthAttributes().values().stream()
-                .filter(healthBeanAttribute -> healthBeanAttribute.getType() != Type.NORMAL)
+                .filter(healthBeanAttribute -> healthBeanAttribute.getType() == Type.RESTART)
                 .forEach(attribute -> {
                     try {
                         String value = attribute.getValue();

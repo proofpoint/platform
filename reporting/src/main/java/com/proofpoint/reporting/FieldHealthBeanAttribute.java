@@ -12,9 +12,9 @@ import java.util.concurrent.atomic.AtomicReference;
 abstract class FieldHealthBeanAttribute
         implements HealthBeanAttribute
 {
-    static FieldHealthBeanAttribute fieldHealthBeanAttribute(String description, boolean isRemoveFromRotation, Object target, Field field)
+    static FieldHealthBeanAttribute fieldHealthBeanAttribute(String description, Type type, Object target, Field field)
     {
-        return new AutoValue_FieldHealthBeanAttribute(description, isRemoveFromRotation, target, field);
+        return new AutoValue_FieldHealthBeanAttribute(description, type, target, field);
     }
 
     abstract Object getTarget();

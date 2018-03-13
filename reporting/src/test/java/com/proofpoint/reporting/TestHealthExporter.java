@@ -86,6 +86,7 @@ public class TestHealthExporter extends AbstractHealthBeanTest<TestHealthExporte
         objects = new ArrayList<>(2);
         objects.add(NamedObject.of(new SimpleHealthObject()));
         objects.add(NamedObject.of(new SimpleHealthRemoveFromRotationObject()));
+        objects.add(NamedObject.of(new SimpleHealthRestartDesiredObject()));
         objects.add(NamedObject.of(new FlattenHealthObject()));
         objects.add(NamedObject.of(new NestedHealthObject()));
 
