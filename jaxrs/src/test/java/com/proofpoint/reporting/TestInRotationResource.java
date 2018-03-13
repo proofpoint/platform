@@ -169,6 +169,32 @@ public class TestInRotationResource
     }
 
     @Test
+    public void testRestartFailed()
+            throws Exception
+    {
+        healthExporter.export(null, new Object() {
+            @HealthCheckRestartDesired("Check one")
+            public String getCheckOne()
+            {
+                return "failed";
+            }
+
+            @HealthCheckRestartDesired("Check two")
+            public String getCheckTwo()
+            {
+                return null;
+            }
+        });
+        StringResponse response = client.execute(
+                prepareGet().setUri(uriFor("/inrotation.txt")).build(),
+                createStringResponseHandler());
+
+        assertEquals(response.getStatusCode(), INTERNAL_SERVER_ERROR.getStatusCode());
+        assertEquals(response.getHeader(CONTENT_TYPE), "text/plain");
+        assertEquals(response.getBody(), "failed\n");
+    }
+
+    @Test
     public void testMultipleFailed()
             throws Exception
     {

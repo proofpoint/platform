@@ -21,6 +21,7 @@ public class TestHealthBean extends AbstractHealthBeanTest<Object>
         objects = new ArrayList<>();
         objects.add(new SimpleHealthObject());
         objects.add(new SimpleHealthRemoveFromRotationObject());
+        objects.add(new SimpleHealthRestartDesiredObject());
         objects.add(new FlattenHealthObject());
         objects.add(new NestedHealthObject());
 
@@ -82,8 +83,58 @@ public class TestHealthBean extends AbstractHealthBeanTest<Object>
     }
 
     @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = ".*getString\\(\\) cannot have both @HealthCheckRemoveFromRotation and @HealthCheckRestartDesired annotations")
+    public void testMethodRestartAndRemoveAnnotations()
+    {
+        HealthBean.forTarget(new Object() {
+            @HealthCheckRemoveFromRotation("Name 1")
+            @HealthCheckRestartDesired("Name 2")
+            public String getString()
+            {
+                return null;
+            }
+        });
+    }
+
+    @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = ".*field cannot have both @HealthCheckRemoveFromRotation and @HealthCheckRestartDesired annotations")
+    public void testFieldRestartAndRemoveAnnotations()
+    {
+        HealthBean.forTarget(new Object() {
+            @HealthCheckRemoveFromRotation("Field 1")
+            @HealthCheckRestartDesired("Field 2")
+            private AtomicReference<String> field;
+        });
+    }
+
+    @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = ".*getString\\(\\) cannot have both @HealthCheck and @HealthCheckRestartDesired annotations")
+    public void testMethodRegularAndRestartAnnotations()
+    {
+        HealthBean.forTarget(new Object() {
+            @HealthCheck("Name 1")
+            @HealthCheckRestartDesired("Name 2")
+            public String getString()
+            {
+                return null;
+            }
+        });
+    }
+
+    @Test(expectedExceptions = RuntimeException.class,
+            expectedExceptionsMessageRegExp = ".*field cannot have both @HealthCheck and @HealthCheckRestartDesired annotations")
+    public void testFieldRegularAndRestartAnnotations()
+    {
+        HealthBean.forTarget(new Object() {
+            @HealthCheck("Field 1")
+            @HealthCheckRestartDesired("Field 2")
+            private AtomicReference<String> field;
+        });
+    }
+
+    @Test(expectedExceptions = RuntimeException.class,
             expectedExceptionsMessageRegExp = ".*getString\\(\\) cannot have both @HealthCheck and @HealthCheckRemoveFromRotation annotations")
-    public void testMethodBothAnnotations()
+    public void testMethodRegularAndRemoveAnnotations()
     {
         HealthBean.forTarget(new Object() {
             @HealthCheck("Name 1")
@@ -97,7 +148,7 @@ public class TestHealthBean extends AbstractHealthBeanTest<Object>
 
     @Test(expectedExceptions = RuntimeException.class,
             expectedExceptionsMessageRegExp = ".*field cannot have both @HealthCheck and @HealthCheckRemoveFromRotation annotations")
-    public void testFieldBothAnnotatins()
+    public void testFieldRegularAndRemoveAnnotations()
     {
         HealthBean.forTarget(new Object() {
             @HealthCheck("Field 1")

@@ -16,6 +16,7 @@
 package com.proofpoint.reporting;
 
 import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
+import com.proofpoint.reporting.HealthBeanAttribute.Type;
 
 import javax.inject.Inject;
 import javax.management.AttributeNotFoundException;
@@ -47,7 +48,7 @@ public class InRotationResource
     {
         StringBuilder sb = new StringBuilder();
         healthBeanRegistry.getHealthAttributes().values().stream()
-                .filter(HealthBeanAttribute::isRemoveFromRotation)
+                .filter(healthBeanAttribute -> healthBeanAttribute.getType() != Type.NORMAL)
                 .forEach(attribute -> {
                     try {
                         String value = attribute.getValue();

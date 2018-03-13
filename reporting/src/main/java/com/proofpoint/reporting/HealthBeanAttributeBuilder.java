@@ -16,6 +16,7 @@
 package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableList;
+import com.proofpoint.reporting.HealthBeanAttribute.Type;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -72,21 +73,32 @@ class HealthBeanAttributeBuilder
 
         if (field != null) {
             String description;
-            boolean isRemoveFromRotation;
+            Type type;
+            HealthCheckRestartDesired restartDesired = field.getAnnotation(HealthCheckRestartDesired.class);
             HealthCheckRemoveFromRotation removeFromRotation = field.getAnnotation(HealthCheckRemoveFromRotation.class);
-            if (removeFromRotation != null) {
+            if (restartDesired != null) {
+                if (field.getAnnotation(HealthCheck.class) != null) {
+                    throw new RuntimeException("field " + field + " cannot have both @HealthCheck and @HealthCheckRestartDesired annotations");
+                }
+                if (field.getAnnotation(HealthCheckRemoveFromRotation.class) != null) {
+                    throw new RuntimeException("field " + field + " cannot have both @HealthCheckRemoveFromRotation and @HealthCheckRestartDesired annotations");
+                }
+                description = restartDesired.value();
+                type = Type.RESTART;
+            }
+            else if (removeFromRotation != null) {
                 if (field.getAnnotation(HealthCheck.class) != null) {
                     throw new RuntimeException("field " + field + " cannot have both @HealthCheck and @HealthCheckRemoveFromRotation annotations");
                 }
                 description = removeFromRotation.value();
-                isRemoveFromRotation = true;
+                type = Type.REMOVE_FROM_ROTATION;
             }
             else {
                 description = field.getAnnotation(HealthCheck.class).value();
-                isRemoveFromRotation = false;
+                type = Type.NORMAL;
             }
 
-            return ImmutableList.of(fieldHealthBeanAttribute(description, isRemoveFromRotation, target, field));
+            return ImmutableList.of(fieldHealthBeanAttribute(description, type, target, field));
         }
         else if (AnnotationUtils.isFlatten(annotatedGetter) || AnnotationUtils.isNested(annotatedGetter)) {
             checkArgument(concreteGetter != null, "Nested/Flattened HealthBeanAttribute must have a concrete getter");
@@ -108,21 +120,32 @@ class HealthBeanAttributeBuilder
             checkArgument (concreteGetter != null, "HealthBeanAttribute must have a concrete getter");
 
             String description;
-            boolean isRemoveFromRotation;
+            Type type;
+            HealthCheckRestartDesired restartDesired = annotatedGetter.getAnnotation(HealthCheckRestartDesired.class);
             HealthCheckRemoveFromRotation removeFromRotation = annotatedGetter.getAnnotation(HealthCheckRemoveFromRotation.class);
-            if (removeFromRotation != null) {
+            if (restartDesired != null) {
+                if (annotatedGetter.getAnnotation(HealthCheck.class) != null) {
+                    throw new RuntimeException("Method " + annotatedGetter + " cannot have both @HealthCheck and @HealthCheckRestartDesired annotations");
+                }
+                if (annotatedGetter.getAnnotation(HealthCheckRemoveFromRotation.class) != null) {
+                    throw new RuntimeException("Method " + annotatedGetter + " cannot have both @HealthCheckRemoveFromRotation and @HealthCheckRestartDesired annotations");
+                }
+                description = restartDesired.value();
+                type = Type.RESTART;
+            }
+            else if (removeFromRotation != null) {
                 if (annotatedGetter.getAnnotation(HealthCheck.class) != null) {
                     throw new RuntimeException("Method " + annotatedGetter + " cannot have both @HealthCheck and @HealthCheckRemoveFromRotation annotations");
                 }
                 description = removeFromRotation.value();
-                isRemoveFromRotation = true;
+                type = Type.REMOVE_FROM_ROTATION;
             }
             else {
                 description = annotatedGetter.getAnnotation(HealthCheck.class).value();
-                isRemoveFromRotation = false;
+                type = Type.NORMAL;
             }
 
-            return ImmutableList.of(methodHealthBeanAttribute(description, isRemoveFromRotation, target, concreteGetter));
+            return ImmutableList.of(methodHealthBeanAttribute(description, type, target, concreteGetter));
         }
     }
 }
