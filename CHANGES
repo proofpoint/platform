@@ -1,3 +1,13 @@
+Platform 1.71
+
+* Health checks
+
+  We added a @HealthCheckRestartDesired annotation, which may be placed
+  on either a method with no arguments or a field of type AtomicReference.
+  A value of
+  null indicates healthy; any other value indicates a critical problem, with
+  the toString() used as the message.
+
 Platform 1.70
 
 * Launcher

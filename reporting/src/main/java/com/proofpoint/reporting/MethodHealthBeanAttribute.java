@@ -28,9 +28,9 @@ import static com.proofpoint.reporting.ReflectionUtils.invoke;
 abstract class MethodHealthBeanAttribute
         implements HealthBeanAttribute
 {
-    static MethodHealthBeanAttribute methodHealthBeanAttribute(String description, boolean isRemoveFromRotation, Object target, Method getter)
+    static MethodHealthBeanAttribute methodHealthBeanAttribute(String description, Type type, Object target, Method getter)
     {
-        return new AutoValue_MethodHealthBeanAttribute(description, isRemoveFromRotation, target, getter);
+        return new AutoValue_MethodHealthBeanAttribute(description, type, target, getter);
     }
 
     abstract Object getTarget();

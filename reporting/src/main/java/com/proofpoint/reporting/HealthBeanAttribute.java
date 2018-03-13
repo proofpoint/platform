@@ -8,8 +8,12 @@ interface HealthBeanAttribute
 {
     String getDescription();
 
-    boolean isRemoveFromRotation();
+    Type getType();
 
     String getValue()
             throws AttributeNotFoundException, MBeanException, ReflectionException;
+
+    enum Type {
+        NORMAL, REMOVE_FROM_ROTATION, RESTART
+    }
 }
