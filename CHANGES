@@ -4,7 +4,8 @@ Platform 1.71
 
   We added a @HealthCheckRestartDesired annotation, which may be placed
   on either a method with no arguments or a field of type AtomicReference.
-  A value of
+  When the object is bound with HealthBinder, the method will be called or
+  the field will be examined by the "/liveness" resource. A value of
   null indicates healthy; any other value indicates a critical problem, with
   the toString() used as the message.
 
