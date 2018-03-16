@@ -207,6 +207,16 @@ public class HttpServer
         // disable async error notifications to work around https://github.com/jersey/jersey/issues/3691
         baseHttpConfiguration.setNotifyRemoteAsyncErrors(false);
 
+        // register a channel listener if logging is enabled
+        HttpServerChannelListener channelListener = null;
+        if (config.isLogEnabled()) {
+            this.requestLog = createDelimitedRequestLog(config, tokenManager, eventClient);
+            channelListener = new HttpServerChannelListener(this.requestLog);
+        }
+        else {
+            this.requestLog = null;
+        }
+
         // set up HTTP connector
         ServerConnector httpConnector;
         if (config.isHttpEnabled()) {
@@ -240,6 +250,10 @@ public class HttpServer
             httpConnector.setHost(nodeInfo.getBindIp().getHostAddress());
             httpConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
 
+            if (channelListener != null) {
+                httpConnector.addBean(channelListener);
+            }
+
             server.addConnector(httpConnector);
         }
 
@@ -262,6 +276,10 @@ public class HttpServer
             httpsConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
             httpsConnector.setHost(nodeInfo.getBindIp().getHostAddress());
             httpsConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
+
+            if (channelListener != null) {
+                httpsConnector.addBean(channelListener);
+            }
 
             server.addConnector(httpsConnector);
         }
@@ -344,9 +362,6 @@ public class HttpServer
         }
 
         handlers.addHandler(createServletContext(theServlet, parameters, false, filters, queryStringFilter, loginService, nodeInfo, "http", "https"));
-        if (logHandler != null) {
-            handlers.addHandler(logHandler);
-        }
 
         RequestLogHandler statsRecorder = new RequestLogHandler();
         statsRecorder.setRequestLog(new StatsRecordingHandler(stats, detailedRequestStats));
