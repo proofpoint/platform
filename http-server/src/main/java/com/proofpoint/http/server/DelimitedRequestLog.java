@@ -32,7 +32,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 class DelimitedRequestLog
-        implements RequestLog, LifeCycle
 {
     // Tab-separated
     // Time, ip, method, url, user, agent, response code, request length, response length, response time
@@ -58,70 +57,31 @@ class DelimitedRequestLog
                 new ContextBase());
     }
 
-    @Override
-    public void log(Request request, Response response)
+    public void log(
+            Request request,
+            Response response,
+            long beginToDispatchMillis,
+            long beginToEndMillis,
+            long firstToLastContentTimeInMillis,
+            DoubleSummaryStats responseContentInterarrivalStats)
     {
-        long currentTime = currentTimeMillisProvider.getCurrentTimeMillis();
-        HttpRequestEvent event = createHttpRequestEvent(request, response, currentTime, clientAddressExtractor);
+        HttpRequestEvent event = createHttpRequestEvent(
+                request,
+                response,
+                currentTimeMillisProvider.getCurrentTimeMillis(),
+                beginToDispatchMillis,
+                beginToEndMillis,
+                firstToLastContentTimeInMillis,
+                responseContentInterarrivalStats,
+                clientAddressExtractor
+        );
 
         appender.doAppend(event);
     }
 
-    @Override
-    public void start()
-    {
-    }
-
-    @Override
     public void stop()
     {
         appender.stop();
-    }
-
-    @Override
-    public boolean isRunning()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isStarted()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isStarting()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isStopping()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isStopped()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isFailed()
-    {
-        return false;
-    }
-
-    @Override
-    public void addLifeCycleListener(Listener listener)
-    {
-    }
-
-    @Override
-    public void removeLifeCycleListener(Listener listener)
-    {
     }
 
     private static class EventEncoder extends EncoderBase<HttpRequestEvent>
