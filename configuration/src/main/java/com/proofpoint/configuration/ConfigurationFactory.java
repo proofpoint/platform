@@ -554,7 +554,13 @@ public final class ConfigurationFactory
                 return value;
             }
             else if (Boolean.class.isAssignableFrom(type) || Boolean.TYPE.isAssignableFrom(type)) {
-                return Boolean.valueOf(value);
+                if ("true".equalsIgnoreCase(value)) {
+                    return true;
+                }
+                if ("false".equalsIgnoreCase(value)) {
+                    return false;
+                }
+                return null;
             }
             else if (Byte.class.isAssignableFrom(type) || Byte.TYPE.isAssignableFrom(type)) {
                 return Byte.valueOf(value);
