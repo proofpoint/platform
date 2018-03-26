@@ -10,6 +10,10 @@ Platform 1.72
   generating an error for values other than case-insensitive "true" or
   "false".
 
+* Maven plugin upgrades
+
+  - docker-maven-plugin to 0.24.0 (was 0.22.1)
+
 Platform 1.71
 
 * Health checks
