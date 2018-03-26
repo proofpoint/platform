@@ -1,5 +1,9 @@
 Platform 1.72
 
+* Docker
+
+  We made the .build-docker support no longer create or push a "latest" tag.
+
 * Configuration
 
   We made the parsing for boolean configuration properties stricter,

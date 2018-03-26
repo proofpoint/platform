@@ -1434,12 +1434,9 @@
                             <verbose>${project.docker.verbose}</verbose>
                             <images combine.children="append">
                                 <image>
-                                    <name>${project.docker.project}/${project.docker.name}</name>
+                                    <name>${project.docker.project}/${project.docker.name}:${project.version}</name>
                                     <build>
                                         <from>${project.docker.from}</from>
-                                        <tags>
-                                            <tag>${project.version}</tag>
-                                        </tags>
                                         <optimise>true</optimise>
                                         <runCmds>
                                             <run>useradd -M -d /service -u ${project.docker.uid} service</run>
