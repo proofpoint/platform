@@ -242,6 +242,7 @@ public class Logging
         fileAppender.setBufferSize(BUFFER_SIZE_IN_BYTES);
         fileAppender.setEncoder(encoder);
         fileAppender.setRollingPolicy(rollingPolicy);
+        fileAppender.setImmediateFlush(false);
 
         AsyncAppenderBase<T> asyncAppender = new AsyncAppenderBase<>();
         asyncAppender.setContext(context);
