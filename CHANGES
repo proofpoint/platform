@@ -1,3 +1,10 @@
+Platform 1.73
+
+* Library Upgrades
+
+  - Jackson to 2.9.5 (was 2.8.4) (fixes deserialization vulnerability
+    CVE-2018-7489 when using @JsonTypeInfo or "default typing")
+
 Platform 1.72
 
 * Docker
