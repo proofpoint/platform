@@ -5,7 +5,6 @@ import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.ResponseHandler;
-import com.proofpoint.log.Logger;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.tracetoken.TraceTokenScope;
 import org.eclipse.jetty.client.api.Response;
@@ -19,23 +18,20 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
+import static java.util.Objects.requireNonNull;
 
 class JettyResponseFuture<T, E extends Exception>
         extends AbstractFuture<T>
         implements HttpResponseFuture<T>
 {
-    enum JettyAsyncHttpState
+    private enum JettyAsyncHttpState
     {
         WAITING_FOR_CONNECTION,
-        SENDING_REQUEST,
-        WAITING_FOR_RESPONSE,
         PROCESSING_RESPONSE,
         DONE,
         FAILED,
         CANCELED
     }
-
-    private static final Logger log = Logger.get(JettyResponseFuture.class);
 
     private JettyHttpClient jettyHttpClient;
     private final long requestStart = System.nanoTime();
@@ -49,12 +45,12 @@ class JettyResponseFuture<T, E extends Exception>
 
     JettyResponseFuture(JettyHttpClient jettyHttpClient, Request request, org.eclipse.jetty.client.api.Request jettyRequest, ResponseHandler<T, E> responseHandler, AtomicLong bytesWritten, RequestStats stats)
     {
-        this.jettyHttpClient = jettyHttpClient;
-        this.request = request;
-        this.jettyRequest = jettyRequest;
-        this.responseHandler = responseHandler;
-        this.bytesWritten = bytesWritten;
-        this.stats = stats;
+        this.jettyHttpClient = requireNonNull(jettyHttpClient, "jettyHttpClientf is null");
+        this.request = requireNonNull(request, "request is null");
+        this.jettyRequest = requireNonNull(jettyRequest, "jettyRequest is null");
+        this.responseHandler = requireNonNull(responseHandler, "responseHandler is null");
+        this.bytesWritten = requireNonNull(bytesWritten, "bytesWritten is null");
+        this.stats = requireNonNull(stats, "stats is null");
         traceToken = getCurrentTraceToken();
     }
 
@@ -80,7 +76,7 @@ class JettyResponseFuture<T, E extends Exception>
         }
     }
 
-    protected void completed(Response response, InputStream content)
+    void completed(Response response, InputStream content)
     {
         if (state.get() == JettyAsyncHttpState.CANCELED) {
             return;
@@ -121,7 +117,7 @@ class JettyResponseFuture<T, E extends Exception>
         return value;
     }
 
-    protected void failed(Throwable throwable)
+    void failed(Throwable throwable)
     {
         if (state.get() == JettyAsyncHttpState.CANCELED) {
             return;
@@ -160,7 +156,6 @@ class JettyResponseFuture<T, E extends Exception>
         }
         if (throwable == null) {
             throwable = new Throwable("Throwable is null");
-            log.error(throwable, "Something is broken");
         }
 
         setException(throwable);
