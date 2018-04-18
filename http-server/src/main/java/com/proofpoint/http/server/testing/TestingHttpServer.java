@@ -133,6 +133,11 @@ public class TestingHttpServer extends HttpServer
         return httpServerInfo.getHttpUri().getPort();
     }
 
+    public HttpServerInfo getHttpServerInfo()
+    {
+        return httpServerInfo;
+    }
+
     public static class DetailedRequestStats implements com.proofpoint.http.server.DetailedRequestStats
     {
         @Override

@@ -13,6 +13,10 @@ Platform 1.93
   configuring the size of the in-memory buffer for http-request.log. It
   now defaults to 10,000 records.
 
+  We added the "http-server.https.ssl-session-cache-size" and
+  "http-server.https.ssl-session-timeout" configuration properties to allow
+  configuring the TLS session cache.
+
 * Maven
 
   We enabled compiled metadata for reflection on method parameters.
