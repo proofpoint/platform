@@ -23,6 +23,7 @@ import com.proofpoint.units.DataSize;
 import com.proofpoint.units.Duration;
 import com.proofpoint.units.MaxDataSize;
 import com.proofpoint.units.MinDataSize;
+import com.proofpoint.units.MinDuration;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -30,6 +31,7 @@ import javax.validation.constraints.NotNull;
 import static com.proofpoint.units.DataSize.Unit.GIGABYTE;
 import static com.proofpoint.units.DataSize.Unit.KILOBYTE;
 import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
+import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -67,6 +69,9 @@ public class HttpServerConfig
     private int httpsPort = 8443;
     private String keystorePath = "etc/keystore.jks";
     private String keystorePassword = "keystore";
+
+    private Duration sslSessionTimeout = new Duration(4, HOURS);
+    private int sslSessionCacheSize = 10_000;
 
     private String logPath = "var/log/http-request.log";
     private boolean logEnabled = true;
@@ -159,6 +164,32 @@ public class HttpServerConfig
     public HttpServerConfig setHttpsPort(int httpsPort)
     {
         this.httpsPort = httpsPort;
+        return this;
+    }
+
+    @MinDuration("1s")
+    public Duration getSslSessionTimeout()
+    {
+        return sslSessionTimeout;
+    }
+
+    @Config("http-server.https.ssl-session-timeout")
+    public HttpServerConfig setSslSessionTimeout(Duration sslSessionTimeout)
+    {
+        this.sslSessionTimeout = sslSessionTimeout;
+        return this;
+    }
+
+    @Min(1)
+    public int getSslSessionCacheSize()
+    {
+        return sslSessionCacheSize;
+    }
+
+    @Config("http-server.https.ssl-session-cache-size")
+    public HttpServerConfig setSslSessionCacheSize(int sslSessionCacheSize)
+    {
+        this.sslSessionCacheSize = sslSessionCacheSize;
         return this;
     }
 

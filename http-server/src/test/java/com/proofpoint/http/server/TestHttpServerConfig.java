@@ -30,6 +30,7 @@ import static com.proofpoint.configuration.testing.ConfigAssertions.assertRecord
 import static com.proofpoint.units.DataSize.Unit.GIGABYTE;
 import static com.proofpoint.units.DataSize.Unit.KILOBYTE;
 import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
+import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -45,6 +46,8 @@ public class TestHttpServerConfig
                 .setHttpAcceptQueueSize(128)
                 .setHttpsEnabled(false)
                 .setHttpsPort(8443)
+                .setSslSessionTimeout(new Duration(4, HOURS))
+                .setSslSessionCacheSize(10_000)
                 .setKeystorePath("etc/keystore.jks")
                 .setKeystorePassword("keystore")
                 .setLogPath("var/log/http-request.log")
@@ -89,6 +92,8 @@ public class TestHttpServerConfig
                 .put("http-server.https.port", "2")
                 .put("http-server.https.keystore.path", "/keystore")
                 .put("http-server.https.keystore.key", "keystore password")
+                .put("http-server.https.ssl-session-timeout", "7h")
+                .put("http-server.https.ssl-session-cache-size", "456")
                 .put("http-server.log.path", "/log")
                 .put("http-server.log.enabled", "false")
                 .put("http-server.log.format", "TSV")
@@ -125,6 +130,8 @@ public class TestHttpServerConfig
                 .setHttpAcceptQueueSize(1024)
                 .setHttpsEnabled(true)
                 .setHttpsPort(2)
+                .setSslSessionTimeout(new Duration(7, HOURS))
+                .setSslSessionCacheSize(456)
                 .setKeystorePath("/keystore")
                 .setKeystorePassword("keystore password")
                 .setLogPath("/log")
