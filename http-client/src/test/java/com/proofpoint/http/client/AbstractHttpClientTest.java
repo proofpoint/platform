@@ -13,8 +13,6 @@ import com.proofpoint.testing.Closeables;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
-import org.eclipse.jetty.http.HttpField;
-import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -57,6 +55,7 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,12 +63,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.zip.Deflater;
 
 import static com.google.common.base.Throwables.getStackTraceAsString;
 import static com.google.common.base.Throwables.propagateIfPossible;
@@ -77,7 +74,6 @@ import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.net.HttpHeaders.ACCEPT_ENCODING;
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 import static com.proofpoint.concurrent.Threads.threadsNamed;
-import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
 import static com.proofpoint.http.client.Request.Builder.prepareDelete;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.Request.Builder.preparePost;
@@ -95,7 +91,6 @@ import static java.lang.Math.toIntExact;
 import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testng.Assert.assertEquals;
@@ -278,7 +273,7 @@ public abstract class AbstractHttpClientTest
             }
             catch (CapturedException e) {
                 Throwable t = e.getCause();
-                if (!isConnectTimeout(t)) {
+                if (!(isConnectTimeout(t) || t instanceof ClosedChannelException)) {
                     fail(format("unexpected exception: [%s]", getStackTraceAsString(t)));
                 }
                 assertLessThan(nanosSince(start), new Duration(300, MILLISECONDS));
