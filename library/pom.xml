@@ -671,6 +671,12 @@
                 <version>1.75-SNAPSHOT</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.proofpoint.platform</groupId>
+                <artifactId>openapi</artifactId>
+                <version>1.74-SNAPSHOT</version>
+            </dependency>
+
             <!-- Java APIs -->
             <dependency>
                 <groupId>javax.inject</groupId>

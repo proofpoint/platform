@@ -1,3 +1,12 @@
+Platform 1.75
+
+* OpenApi
+
+  We added OpenApiModule() in the "openapi" project. This exposes the
+  "/admin/openapi.json" and "/admin/openapi.yaml" resources on the admin port,
+  returning the Open API Specification (OAS) description of the service
+  port's protocol.
+
 Platform 1.74
 
 * We added the "http-server.internal-networks" configuration property.

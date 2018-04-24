@@ -102,6 +102,7 @@
         <module>trace-token</module>
         <module>reporting</module>
         <module>reporting-client</module>
+        <module>openapi</module>
     </modules>
 </project>
 
