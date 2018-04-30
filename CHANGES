@@ -1,3 +1,7 @@
+Platform 1.73
+* OpenApi specification support
+    Added openapi module to generate Open API Specification (OAS) JSON and YAML
+
 Platform 1.72
 
 * Docker
