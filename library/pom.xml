@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.proofpoint.platform</groupId>
     <artifactId>library</artifactId>
-    <version>1.73-SNAPSHOT</version>
+    <version>1.74-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Library POM</name>
     <description>Library POM</description>
@@ -38,7 +38,7 @@
         <project.rpm.username>${project.artifactId}</project.rpm.username>
         <project.docker.project>dev-docker-local</project.docker.project>
         <project.docker.name>%a</project.docker.name>
-        <project.docker.from>docker.io/openjdk:8u151-jdk</project.docker.from>
+        <project.docker.from>docker.io/openjdk:8u162-jdk</project.docker.from>
         <project.docker.uid>1000</project.docker.uid>
         <project.docker.verbose>false</project.docker.verbose>
 
@@ -86,7 +86,7 @@
         <dep.slf4j.version>1.7.16</dep.slf4j.version>
         <dep.logback.version>1.2.3</dep.logback.version>
         <dep.javax-servlet.version>3.1.0</dep.javax-servlet.version>
-        <dep.jackson.version>2.8.9</dep.jackson.version>
+        <dep.jackson.version>2.9.5</dep.jackson.version>
         <dep.jersey.version>2.25.1</dep.jersey.version>
     </properties>
 
@@ -546,73 +546,73 @@
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>audit</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>bootstrap</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>configuration</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>concurrent</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>discovery</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>event</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>jaxrs</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>http-server</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>http-client</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>json</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>jmx</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>launcher</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
                 <classifier>bin</classifier>
                 <type>tar.gz</type>
             </dependency>
@@ -620,55 +620,55 @@
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>log</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>node</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>reporting</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>reporting-client</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>stats</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>units</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>testing</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>trace-token</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
                 <artifactId>jmx-http</artifactId>
-                <version>1.73-SNAPSHOT</version>
+                <version>1.74-SNAPSHOT</version>
             </dependency>
 
             <dependency>
@@ -1163,7 +1163,7 @@
                             <dependency>
                                 <groupId>com.proofpoint.platform</groupId>
                                 <artifactId>packaging</artifactId>
-                                <version>1.73-SNAPSHOT</version>
+                                <version>1.74-SNAPSHOT</version>
                             </dependency>
                         </dependencies>
 
