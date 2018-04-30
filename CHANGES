@@ -1,6 +1,14 @@
-Platform 1.73
+Platform 1.74
 * OpenApi specification support
     Added openapi module to generate Open API Specification (OAS) JSON and YAML
+
+Platform 1.73
+
+* Library Upgrades
+
+  - Jackson to 2.9.5 (was 2.8.4) (fixes deserialization vulnerability
+    CVE-2018-7489 when using @JsonTypeInfo or "default typing")
+  - Base docker image to 8u162-jdk
 
 Platform 1.72
 
