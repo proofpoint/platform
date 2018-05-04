@@ -1,3 +1,7 @@
+Platform 1.74
+
+* We disabled the TLS 1.0 protocol.
+
 Platform 1.73
 
 * Library Upgrades
