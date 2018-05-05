@@ -2,6 +2,10 @@ Platform 1.74
 
 * We disabled the TLS 1.0 protocol.
 
+* Library Upgrades
+
+  - Jetty to 9.3.23 (was 9.3.22)
+
 Platform 1.73
 
 * Library Upgrades
