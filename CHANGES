@@ -5,6 +5,7 @@ Platform 1.74
 * Library Upgrades
 
   - Jetty to 9.3.23 (was 9.3.22)
+  - Guava to 25.0-jre (was 23.3-jre)
 
 Platform 1.73
 
