@@ -24,11 +24,6 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
-import org.joda.time.format.ISODateTimeFormat;
-
-import java.io.IOException;
 
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 
@@ -37,11 +32,12 @@ class JsonRequestLog
 {
     private final CurrentTimeMillisProvider currentTimeMillisProvider;
     private final Appender<HttpRequestEvent> appender;
+    private final ClientAddressExtractor clientAddressExtractor;
 
-    JsonRequestLog(HttpServerConfig config, CurrentTimeMillisProvider currentTimeMillisProvider)
-            throws IOException
+    JsonRequestLog(HttpServerConfig config, CurrentTimeMillisProvider currentTimeMillisProvider, ClientAddressExtractor clientAddressExtractor)
     {
         this.currentTimeMillisProvider = currentTimeMillisProvider;
+        this.clientAddressExtractor = clientAddressExtractor;
 
         appender = Logging.createFileAppender(
                 config.getLogPath(),
@@ -56,7 +52,7 @@ class JsonRequestLog
     public void log(Request request, Response response)
     {
         long currentTime = currentTimeMillisProvider.getCurrentTimeMillis();
-        HttpRequestEvent event = createHttpRequestEvent(request, response, currentTime);
+        HttpRequestEvent event = createHttpRequestEvent(request, response, currentTime, clientAddressExtractor);
 
         synchronized (appender) {
             appender.doAppend(event);
@@ -65,13 +61,11 @@ class JsonRequestLog
 
     @Override
     public void start()
-            throws Exception
     {
     }
 
     @Override
     public void stop()
-            throws Exception
     {
         appender.stop();
     }

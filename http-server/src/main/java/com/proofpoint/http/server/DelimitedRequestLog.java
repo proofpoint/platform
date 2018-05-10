@@ -27,8 +27,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.joda.time.format.ISODateTimeFormat;
 
-import java.io.IOException;
-
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -40,11 +38,12 @@ class DelimitedRequestLog
 
     private final CurrentTimeMillisProvider currentTimeMillisProvider;
     private final Appender<HttpRequestEvent> appender;
+    private final ClientAddressExtractor clientAddressExtractor;
 
-    DelimitedRequestLog(HttpServerConfig config, CurrentTimeMillisProvider currentTimeMillisProvider)
-            throws IOException
+    DelimitedRequestLog(HttpServerConfig config, CurrentTimeMillisProvider currentTimeMillisProvider, ClientAddressExtractor clientAddressExtractor)
     {
         this.currentTimeMillisProvider = currentTimeMillisProvider;
+        this.clientAddressExtractor = clientAddressExtractor;
 
         appender = Logging.createFileAppender(
                 config.getLogPath(),
@@ -59,7 +58,7 @@ class DelimitedRequestLog
     public void log(Request request, Response response)
     {
         long currentTime = currentTimeMillisProvider.getCurrentTimeMillis();
-        HttpRequestEvent event = createHttpRequestEvent(request, response, currentTime);
+        HttpRequestEvent event = createHttpRequestEvent(request, response, currentTime, clientAddressExtractor);
 
         synchronized (appender) {
             appender.doAppend(event);
@@ -68,13 +67,11 @@ class DelimitedRequestLog
 
     @Override
     public void start()
-            throws Exception
     {
     }
 
     @Override
     public void stop()
-            throws Exception
     {
         appender.stop();
     }

@@ -47,6 +47,8 @@ public abstract class AbstractTestRequestLog
     Response response;
     @Mock
     Principal principal;
+    @Mock
+    ClientAddressExtractor clientAddressExtractor;
     private File file;
     private long timeToFirstByte;
     private long timeToLastByte;
@@ -67,7 +69,7 @@ public abstract class AbstractTestRequestLog
     protected RequestLog logger;
     private long currentTime;
 
-    protected abstract void setup(HttpServerConfig httpServerConfig, CurrentTimeMillisProvider currentTimeMillisProvider)
+    protected abstract void setup(HttpServerConfig httpServerConfig)
             throws IOException;
 
     protected abstract void stopLogger()
@@ -76,7 +78,7 @@ public abstract class AbstractTestRequestLog
     protected abstract String getExpectedLogLine(long timestamp, String clientAddr, String method, String pathQuery, String user, String agent, int responseCode, long requestSize, long responseSize, long timeToLastByte);
 
     @BeforeMethod
-    final public void setupAbstract()
+    public final void setupAbstract()
             throws IOException
     {
         initMocks(this);
@@ -105,13 +107,14 @@ public abstract class AbstractTestRequestLog
                 .setLogMaxHistory(1)
                 .setLogMaxSegmentSize(new DataSize(1, Unit.MEGABYTE))
                 .setLogMaxTotalSize(new DataSize(1, Unit.GIGABYTE));
-        setup(httpServerConfig, currentTimeMillisProvider);
+        setup(httpServerConfig);
 
         when(principal.getName()).thenReturn(user);
+        when(clientAddressExtractor.clientAddressFor(request)).thenReturn("9.9.9.9");
         when(request.getTimeStamp()).thenReturn(timestamp);
         when(request.getHeader("User-Agent")).thenReturn(agent);
         when(request.getHeader("Referer")).thenReturn(referrer);
-        when(request.getRemoteAddr()).thenReturn("9.9.9.9");
+        when(request.getRemoteAddr()).thenReturn("8.8.8.8");
         when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of()));
         when(request.getProtocol()).thenReturn("unknown");
         when(request.getHeader("X-FORWARDED-PROTO")).thenReturn(protocol);
@@ -130,7 +133,7 @@ public abstract class AbstractTestRequestLog
     }
 
     @AfterMethod
-    final public void teardownAbstract()
+    public final void teardownAbstract()
             throws IOException
     {
         if (!file.delete()) {
@@ -147,110 +150,6 @@ public abstract class AbstractTestRequestLog
 
         String actual = Files.asCharSource(file, Charsets.UTF_8).read();
         String expected = getExpectedLogLine(timestamp, "9.9.9.9", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
-        assertEquals(actual, expected);
-    }
-
-    @Test
-    public void testIgnoreForwardedFor()
-            throws Exception
-    {
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
-
-        logger.log(request, response);
-        stopLogger();
-
-        String actual = Files.asCharSource(file, Charsets.UTF_8).read();
-        String expected = getExpectedLogLine(timestamp, "9.9.9.9", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
-        assertEquals(actual, expected);
-    }
-
-    @Test
-    public void testUseForwardedFor()
-            throws Exception
-    {
-        when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
-
-        logger.log(request, response);
-        stopLogger();
-
-        String actual = Files.asCharSource(file, Charsets.UTF_8).read();
-        String expected = getExpectedLogLine(timestamp, "4.4.4.4", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
-        assertEquals(actual, expected);
-    }
-
-    @Test
-    public void testUseForwardedForTwoHops()
-            throws Exception
-    {
-        when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 10.11.12.13")));
-
-        logger.log(request, response);
-        stopLogger();
-
-        String actual = Files.asCharSource(file, Charsets.UTF_8).read();
-        String expected = getExpectedLogLine(timestamp, "3.3.3.3", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
-        assertEquals(actual, expected);
-    }
-
-    @Test
-    public void testUseForwardedForThreeHops()
-            throws Exception
-    {
-        when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "10.14.15.16, 10.11.12.13")));
-
-        logger.log(request, response);
-        stopLogger();
-
-        String actual = Files.asCharSource(file, Charsets.UTF_8).read();
-        String expected = getExpectedLogLine(timestamp, "2.2.2.2", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
-        assertEquals(actual, expected);
-    }
-
-    @Test
-    public void testUseForwardedForInternal()
-            throws Exception
-    {
-        when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("10.11.12.13")));
-
-        logger.log(request, response);
-        stopLogger();
-
-        String actual = Files.asCharSource(file, Charsets.UTF_8).read();
-        String expected = getExpectedLogLine(timestamp, "10.11.12.13", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
-        assertEquals(actual, expected);
-    }
-
-    @Test
-    public void testUseForwardedForInternalTwoHops()
-            throws Exception
-    {
-        when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("10.14.15.16, 10.11.12.13")));
-
-        logger.log(request, response);
-        stopLogger();
-
-        String actual = Files.asCharSource(file, Charsets.UTF_8).read();
-        String expected = getExpectedLogLine(timestamp, "10.14.15.16", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
-        assertEquals(actual, expected);
-    }
-
-    @Test
-    public void testInvalidIpAddress()
-            throws Exception
-    {
-        when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("notanaddr, 10.14.15.16, 10.11.12.13")));
-
-        logger.log(request, response);
-        stopLogger();
-
-        String actual = Files.asCharSource(file, Charsets.UTF_8).read();
-        String expected = getExpectedLogLine(timestamp, "10.14.15.16", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
         assertEquals(actual, expected);
     }
 }

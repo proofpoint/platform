@@ -16,30 +16,43 @@
 package com.proofpoint.jaxrs;
 
 import com.google.common.base.Supplier;
+import com.proofpoint.http.server.ClientAddressExtractor;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
-import static com.proofpoint.http.server.ClientInfoUtils.clientAddressFor;
-
 class ClientInfoSupplier
     implements Supplier<ClientInfo>
 {
+    private final ClientAddressExtractor clientAddressExtractor;
+
+    @Inject
+    ClientInfoSupplier(ClientAddressExtractor clientAddressExtractor)
+    {
+        this.clientAddressExtractor = clientAddressExtractor;
+    }
+
     @Override
     public ClientInfo get()
     {
-        return new InjectedClientInfo();
+        return new InjectedClientInfo(clientAddressExtractor);
     }
 
     private static class InjectedClientInfo
             implements ClientInfo
     {
+        private final ClientAddressExtractor clientAddressExtractor;
         private String address;
+
+        private InjectedClientInfo(ClientAddressExtractor clientAddressExtractor)
+        {
+            this.clientAddressExtractor = clientAddressExtractor;
+        }
 
         @Inject
         void setRequest(HttpServletRequest request)
         {
-            address = clientAddressFor(request);
+            address = clientAddressExtractor.clientAddressFor(request);
         }
 
         @Override

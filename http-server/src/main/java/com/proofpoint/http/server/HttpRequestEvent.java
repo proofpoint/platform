@@ -25,7 +25,6 @@ import org.joda.time.DateTime;
 import java.security.Principal;
 import java.util.concurrent.TimeUnit;
 
-import static com.proofpoint.http.server.ClientInfoUtils.clientAddressFor;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 import static java.lang.Math.max;
 
@@ -33,7 +32,7 @@ import static java.lang.Math.max;
         "responseCode", "requestSize", "responseSize", "timeToLastByte"})
 class HttpRequestEvent
 {
-    static HttpRequestEvent createHttpRequestEvent(Request request, Response response, long currentTimeInMillis)
+    static HttpRequestEvent createHttpRequestEvent(Request request, Response response, long currentTimeInMillis, ClientAddressExtractor clientAddressExtractor)
     {
         String user = null;
         Principal principal = request.getUserPrincipal();
@@ -58,7 +57,7 @@ class HttpRequestEvent
         return new HttpRequestEvent(
                 new DateTime(request.getTimeStamp()),
                 token,
-                clientAddressFor(request),
+                clientAddressExtractor.clientAddressFor(request),
                 method,
                 requestUri,
                 user,

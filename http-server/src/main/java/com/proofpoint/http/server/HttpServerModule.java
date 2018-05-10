@@ -65,6 +65,7 @@ public class HttpServerModule
         binder.bind(HttpServerInfo.class).in(Scopes.SINGLETON);
         binder.bind(QueryStringFilter.class).in(Scopes.SINGLETON);
         binder.bind(RequestStats.class).in(Scopes.SINGLETON);
+        binder.bind(ClientAddressExtractor.class).in(Scopes.SINGLETON);
         Multibinder.newSetBinder(binder, Filter.class, TheServlet.class);
         Multibinder.newSetBinder(binder, Filter.class, TheAdminServlet.class);
         Multibinder.newSetBinder(binder, HttpResourceBinding.class, TheServlet.class);

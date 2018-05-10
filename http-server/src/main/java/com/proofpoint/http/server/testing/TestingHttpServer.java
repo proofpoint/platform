@@ -18,6 +18,7 @@ package com.proofpoint.http.server.testing;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
+import com.proofpoint.http.server.ClientAddressExtractor;
 import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig;
@@ -30,7 +31,6 @@ import com.proofpoint.stats.SparseTimeStat;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
@@ -49,17 +49,41 @@ public class TestingHttpServer extends HttpServer
             HttpServerConfig config,
             Servlet servlet,
             Map<String, String> initParameters)
-            throws IOException
     {
         this(httpServerInfo,
                 nodeInfo,
                 config,
                 servlet,
                 initParameters,
-                ImmutableSet.<Filter>of(),
-                ImmutableSet.<HttpResourceBinding>of(),
-                new QueryStringFilter()
+                ImmutableSet.of(),
+                ImmutableSet.of(),
+                new QueryStringFilter(),
+                new ClientAddressExtractor()
         );
+    }
+
+    /**
+     * @deprecated Use {@link #TestingHttpServer(HttpServerInfo, NodeInfo, HttpServerConfig, Servlet,
+     * Map, Set, Set, QueryStringFilter, ClientAddressExtractor)}
+     */
+    @Deprecated
+    public TestingHttpServer(HttpServerInfo httpServerInfo,
+            NodeInfo nodeInfo,
+            HttpServerConfig config,
+            Servlet servlet,
+            Map<String, String> initParameters,
+            Set<Filter> filters,
+            Set<HttpResourceBinding> resources,
+            QueryStringFilter queryStringFilter) {
+        this(httpServerInfo,
+                nodeInfo,
+                config,
+                servlet,
+                initParameters,
+                filters,
+                resources,
+                queryStringFilter,
+                new ClientAddressExtractor());
     }
 
     @Inject
@@ -70,8 +94,8 @@ public class TestingHttpServer extends HttpServer
             @TheServlet Map<String, String> initParameters,
             @TheServlet Set<Filter> filters,
             @TheServlet Set<HttpResourceBinding> resources,
-            QueryStringFilter queryStringFilter)
-            throws IOException
+            QueryStringFilter queryStringFilter,
+            ClientAddressExtractor clientAddressExtractor)
     {
         super(httpServerInfo,
                 nodeInfo,
@@ -81,14 +105,15 @@ public class TestingHttpServer extends HttpServer
                 ImmutableSet.copyOf(filters),
                 resources,
                 null,
-                ImmutableMap.<String, String>of(),
-                ImmutableSet.<Filter>of(),
+                ImmutableMap.of(),
+                ImmutableSet.of(),
                 null,
                 null,
                 queryStringFilter,
                 new RequestStats(),
                 new DetailedRequestStats(),
-                null
+                null,
+                clientAddressExtractor
         );
         this.httpServerInfo = httpServerInfo;
     }

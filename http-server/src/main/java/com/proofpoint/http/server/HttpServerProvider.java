@@ -62,7 +62,31 @@ public class HttpServerProvider
     private final Set<Filter> filters;
     private final Set<Filter> adminFilters;
     private final QueryStringFilter queryStringFilter;
+    private final ClientAddressExtractor clientAddressExtractor;
     private final LifeCycleManager lifeCycleManager;
+
+    /**
+     * @deprecated Use {@link #HttpServerProvider(HttpServerInfo, NodeInfo, HttpServerConfig, Servlet,
+     * Set, Set, Servlet, Set, RequestStats, DetailedRequestStats, QueryStringFilter,
+     * ClientAddressExtractor, LifeCycleManager)}.
+     */
+    @Deprecated
+    public HttpServerProvider(HttpServerInfo httpServerInfo,
+            NodeInfo nodeInfo,
+            HttpServerConfig config,
+            Servlet theServlet,
+            Set<Filter> filters,
+            Set<HttpResourceBinding> resources,
+            Servlet theAdminServlet,
+            Set<Filter> adminFilters,
+            RequestStats stats,
+            DetailedRequestStats detailedRequestStats,
+            QueryStringFilter queryStringFilter,
+            LifeCycleManager lifeCycleManager) {
+        this(httpServerInfo, nodeInfo, config, theServlet, filters, resources, theAdminServlet,
+                adminFilters, stats, detailedRequestStats, queryStringFilter,
+                new ClientAddressExtractor(), lifeCycleManager);
+    }
 
     @Inject
     public HttpServerProvider(HttpServerInfo httpServerInfo,
@@ -76,6 +100,7 @@ public class HttpServerProvider
             RequestStats stats,
             DetailedRequestStats detailedRequestStats,
             QueryStringFilter queryStringFilter,
+            ClientAddressExtractor clientAddressExtractor,
             LifeCycleManager lifeCycleManager)
     {
         requireNonNull(httpServerInfo, "httpServerInfo is null");
@@ -88,6 +113,7 @@ public class HttpServerProvider
         requireNonNull(adminFilters, "adminFilters is null");
         requireNonNull(stats, "stats is null");
         requireNonNull(detailedRequestStats, "detailedRequestStats is null");
+        requireNonNull(clientAddressExtractor, "clientAddressExtractor is null");
         requireNonNull(queryStringFilter, "queryStringFilter is null");
 
         this.httpServerInfo = httpServerInfo;
@@ -101,6 +127,7 @@ public class HttpServerProvider
         this.stats = stats;
         this.detailedRequestStats = detailedRequestStats;
         this.queryStringFilter = queryStringFilter;
+        this.clientAddressExtractor = clientAddressExtractor;
         this.lifeCycleManager = requireNonNull(lifeCycleManager, "lifeCycleManager is null");
     }
 
@@ -153,7 +180,8 @@ public class HttpServerProvider
                     queryStringFilter,
                     stats,
                     detailedRequestStats,
-                    logHandler
+                    logHandler,
+                    clientAddressExtractor
             );
             lifeCycleManager.addInstance(httpServer);
             return httpServer;
@@ -177,10 +205,10 @@ public class HttpServerProvider
         }
 
         if (config.getLogFormat() == LogFormat.TSV) {
-            return new DelimitedRequestLog(config, new SystemCurrentTimeMillisProvider());
+            return new DelimitedRequestLog(config, new SystemCurrentTimeMillisProvider(), clientAddressExtractor);
         }
         else {
-            return new JsonRequestLog(config, new SystemCurrentTimeMillisProvider());
+            return new JsonRequestLog(config, new SystemCurrentTimeMillisProvider(), clientAddressExtractor);
         }
     }
 }

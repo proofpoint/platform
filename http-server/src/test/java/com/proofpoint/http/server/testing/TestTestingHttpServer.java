@@ -29,6 +29,7 @@ import com.proofpoint.http.client.HttpUriBuilder;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.StringResponseHandler;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
+import com.proofpoint.http.server.ClientAddressExtractor;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
 import com.proofpoint.http.server.QueryStringFilter;
@@ -265,7 +266,6 @@ public class TestTestingHttpServer
     }
 
     private static TestingHttpServer createTestingHttpServer(DummyServlet servlet, Map<String, String> params)
-            throws IOException
     {
         NodeInfo nodeInfo = new NodeInfo("test");
         HttpServerConfig config = new HttpServerConfig().setHttpPort(0);
@@ -274,12 +274,12 @@ public class TestTestingHttpServer
     }
 
     private static TestingHttpServer createTestingHttpServerWithFilter(DummyServlet servlet, Map<String, String> params, DummyFilter filter)
-            throws IOException
     {
         NodeInfo nodeInfo = new NodeInfo("test");
         HttpServerConfig config = new HttpServerConfig().setHttpPort(0);
         HttpServerInfo httpServerInfo = new HttpServerInfo(config, nodeInfo);
-        return new TestingHttpServer(httpServerInfo, nodeInfo, config, servlet, params, ImmutableSet.of(filter), ImmutableSet.of(), new QueryStringFilter());
+        return new TestingHttpServer(httpServerInfo, nodeInfo, config, servlet, params, ImmutableSet.of(filter),
+                ImmutableSet.of(), new QueryStringFilter(), new ClientAddressExtractor());
     }
 
     static class DummyServlet
@@ -307,7 +307,6 @@ public class TestTestingHttpServer
 
         @Override
         protected synchronized void doGet(HttpServletRequest req, HttpServletResponse resp)
-                throws ServletException, IOException
         {
             ++callCount;
             resp.setStatus(HttpServletResponse.SC_OK);
@@ -326,7 +325,6 @@ public class TestTestingHttpServer
 
         @Override
         public void init(FilterConfig filterConfig)
-                throws ServletException
         {
         }
 

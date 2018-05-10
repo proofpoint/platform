@@ -19,8 +19,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.joda.time.format.ISODateTimeFormat;
 
-import java.io.IOException;
-
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 
 public class TestDelimitedRequestLog extends AbstractTestRequestLog
@@ -28,19 +26,17 @@ public class TestDelimitedRequestLog extends AbstractTestRequestLog
     private DateTimeFormatter isoFormatter;
 
     @Override
-    protected void setup(HttpServerConfig httpServerConfig, CurrentTimeMillisProvider currentTimeMillisProvider)
-            throws IOException
+    protected void setup(HttpServerConfig httpServerConfig)
     {
         isoFormatter = new DateTimeFormatterBuilder()
                 .append(ISODateTimeFormat.dateHourMinuteSecondFraction())
                 .appendTimeZoneOffset("Z", true, 2, 2)
                 .toFormatter();
-        logger = new DelimitedRequestLog(httpServerConfig, currentTimeMillisProvider);
+        logger = new DelimitedRequestLog(httpServerConfig, currentTimeMillisProvider, clientAddressExtractor);
     }
 
     @Override
     protected void stopLogger()
-            throws Exception
     {
         ((DelimitedRequestLog)logger).stop();
     }

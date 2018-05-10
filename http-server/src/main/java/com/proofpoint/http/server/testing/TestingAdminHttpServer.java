@@ -18,21 +18,19 @@ package com.proofpoint.http.server.testing;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
+import com.proofpoint.http.server.ClientAddressExtractor;
 import com.proofpoint.http.server.HttpServer;
-import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
 import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.RequestStats;
 import com.proofpoint.http.server.TheAdminServlet;
-import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.stats.SparseTimeStat;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +49,6 @@ public class TestingAdminHttpServer extends HttpServer
             HttpServerConfig config,
             Servlet adminServlet,
             Map<String, String> initParameters)
-            throws IOException
     {
         this(httpServerInfo,
                 nodeInfo,
@@ -59,9 +56,31 @@ public class TestingAdminHttpServer extends HttpServer
                 new NullServlet(),
                 adminServlet,
                 initParameters,
-                ImmutableSet.<Filter>of(),
-                new QueryStringFilter()
+                ImmutableSet.of(),
+                new QueryStringFilter(),
+                new ClientAddressExtractor()
         );
+    }
+
+    @Deprecated
+    public TestingAdminHttpServer(HttpServerInfo httpServerInfo,
+            NodeInfo nodeInfo,
+            HttpServerConfig config,
+            Servlet servlet,
+            Servlet adminServlet,
+            Map<String, String> initParameters,
+            Set<Filter> filters,
+            QueryStringFilter queryStringFilter)
+    {
+        this(httpServerInfo,
+                nodeInfo,
+                config,
+                servlet,
+                adminServlet,
+                initParameters,
+                filters,
+                queryStringFilter,
+                new ClientAddressExtractor());
     }
 
     @Inject
@@ -72,15 +91,16 @@ public class TestingAdminHttpServer extends HttpServer
             @TheAdminServlet Servlet adminServlet,
             @TheAdminServlet Map<String, String> initParameters,
             @TheAdminServlet Set<Filter> filters,
-            QueryStringFilter queryStringFilter)
+            QueryStringFilter queryStringFilter,
+            ClientAddressExtractor clientAddressExtractor)
     {
         super(httpServerInfo,
                 nodeInfo,
                 config,
                 servlet,
-                ImmutableMap.<String, String>of(),
-                ImmutableSet.<Filter>of(),
-                ImmutableSet.<HttpResourceBinding>of(),
+                ImmutableMap.of(),
+                ImmutableSet.of(),
+                ImmutableSet.of(),
                 adminServlet,
                 initParameters,
                 ImmutableSet.copyOf(filters),
@@ -89,7 +109,8 @@ public class TestingAdminHttpServer extends HttpServer
                 queryStringFilter,
                 new RequestStats(),
                 new DetailedRequestStats(),
-                null
+                null,
+                clientAddressExtractor
         );
         this.httpServerInfo = httpServerInfo;
     }

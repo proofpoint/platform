@@ -20,6 +20,7 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
+import com.proofpoint.http.server.ClientAddressExtractor;
 import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig;
@@ -68,6 +69,7 @@ public class TestingAdminHttpServerModule
         binder.bind(TestingAdminHttpServer.class).in(Scopes.SINGLETON);
         binder.bind(HttpServer.class).to(Key.get(TestingAdminHttpServer.class));
         binder.bind(QueryStringFilter.class).in(Scopes.SINGLETON);
+        binder.bind(ClientAddressExtractor.class).in(Scopes.SINGLETON);
         newSetBinder(binder, Filter.class, TheAdminServlet.class);
         newSetBinder(binder, HttpResourceBinding.class, TheAdminServlet.class);
         binder.bind(AnnouncementHttpServerInfo.class).to(LocalAnnouncementHttpServerInfo.class);

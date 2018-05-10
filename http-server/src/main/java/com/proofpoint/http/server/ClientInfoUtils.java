@@ -15,45 +15,25 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
 import javax.servlet.http.HttpServletRequest;
-import java.util.Enumeration;
 
+/**
+ * @deprecated Use {@link ClientAddressExtractor}
+ */
+@Deprecated
 public class ClientInfoUtils
 {
     private ClientInfoUtils()
     {}
 
+    private static final ClientAddressExtractor clientAddressExtractor = new ClientAddressExtractor();
+
+    /**
+     * @deprecated Use {@link ClientAddressExtractor#clientAddressFor(HttpServletRequest)}.
+     */
+    @Deprecated
     public static String clientAddressFor(HttpServletRequest request)
     {
-        ImmutableList.Builder<String> builder = ImmutableList.builder();
-        for (Enumeration<String> e = request.getHeaders("X-FORWARDED-FOR"); e != null && e.hasMoreElements(); ) {
-            String forwardedFor = e.nextElement();
-            builder.addAll(Splitter.on(',').trimResults().omitEmptyStrings().split(forwardedFor));
-        }
-        if (request.getRemoteAddr() != null) {
-            builder.add(request.getRemoteAddr());
-        }
-        String clientAddress = null;
-        ImmutableList<String> clientAddresses = builder.build();
-        for (String address : Lists.reverse(clientAddresses)) {
-            try {
-                if (!Inet4Networks.isPrivateNetworkAddress(address)) {
-                    clientAddress = address;
-                    break;
-                }
-                clientAddress = address;
-            }
-            catch (IllegalArgumentException ignored) {
-                break;
-            }
-        }
-        if (clientAddress == null) {
-            clientAddress = request.getRemoteAddr();
-        }
-        return clientAddress;
+        return clientAddressExtractor.clientAddressFor(request);
     }
 }

@@ -100,9 +100,16 @@ public class HttpServer
     private final ServerConnector adminConnector;
     private final RequestStats stats;
     private final MaxGauge busyThreads = new MaxGauge();
+    private final ClientAddressExtractor clientAddressExtractor;
 
     private final Optional<ZonedDateTime> certificateExpiration;
 
+    /**
+     * @deprecated Use {@link #HttpServer(HttpServerInfo, NodeInfo, HttpServerConfig, Servlet, Map,
+     * Set, Set, Servlet, Map, Set, MBeanServer, LoginService, QueryStringFilter, RequestStats,
+     * DetailedRequestStats, RequestLogHandler, ClientAddressExtractor)}.
+     */
+    @Deprecated
     public HttpServer(HttpServerInfo httpServerInfo,
             NodeInfo nodeInfo,
             HttpServerConfig config,
@@ -120,6 +127,30 @@ public class HttpServer
             DetailedRequestStats detailedRequestStats,
             @Nullable RequestLogHandler logHandler)
     {
+        this(httpServerInfo, nodeInfo, config, theServlet, parameters, filters, resources, theAdminServlet,
+                adminParameters, adminFilters, mbeanServer, loginService, queryStringFilter, stats,
+                detailedRequestStats, logHandler, new ClientAddressExtractor());
+
+    }
+
+    public HttpServer(HttpServerInfo httpServerInfo,
+            NodeInfo nodeInfo,
+            HttpServerConfig config,
+            Servlet theServlet,
+            Map<String, String> parameters,
+            Set<Filter> filters,
+            Set<HttpResourceBinding> resources,
+            @Nullable Servlet theAdminServlet,
+            @Nullable Map<String, String> adminParameters,
+            @Nullable Set<Filter> adminFilters,
+            @Nullable MBeanServer mbeanServer,
+            @Nullable LoginService loginService,
+            QueryStringFilter queryStringFilter,
+            RequestStats stats,
+            DetailedRequestStats detailedRequestStats,
+            @Nullable RequestLogHandler logHandler,
+            ClientAddressExtractor clientAddressExtractor)
+    {
         requireNonNull(httpServerInfo, "httpServerInfo is null");
         requireNonNull(nodeInfo, "nodeInfo is null");
         requireNonNull(config, "config is null");
@@ -128,8 +159,9 @@ public class HttpServer
         requireNonNull(filters, "filters is null");
         requireNonNull(resources, "resources is null");
         requireNonNull(queryStringFilter, "queryStringFilter is null");
-        requireNonNull(stats, "stats is null");
+        this.stats = requireNonNull(stats, "stats is null");
         requireNonNull(detailedRequestStats, "detailedRequestStats is null");
+        this.clientAddressExtractor = requireNonNull(clientAddressExtractor, "clientAddressExtractor is null");
 
         QueuedThreadPool threadPool = new QueuedThreadPool(config.getMaxThreads()) {
             @Override
@@ -149,7 +181,6 @@ public class HttpServer
         threadPool.setName("http-worker");
         server = new Server(threadPool);
         server.setStopTimeout(config.getStopTimeout().toMillis());
-        this.stats = stats;
 
         if (config.isShowStackTrace()) {
             server.addBean(new ErrorHandler());
@@ -333,7 +364,7 @@ public class HttpServer
                 .map(date -> ZonedDateTime.ofInstant(date.toInstant(), ZoneOffset.systemDefault()));
     }
 
-    private static ServletContextHandler createServletContext(Servlet theServlet,
+    private ServletContextHandler createServletContext(Servlet theServlet,
             Map<String, String> parameters,
             boolean isAdmin,
             Set<Filter> filters,
@@ -351,7 +382,7 @@ public class HttpServer
         }
         context.addFilter(new FilterHolder(new TimingFilter()), "/*", null);
         context.addFilter(new FilterHolder(queryStringFilter), "/*", null);
-        context.addFilter(new FilterHolder(new TraceTokenFilter(nodeInfo.getInternalIp())), "/*", null);
+        context.addFilter(new FilterHolder(new TraceTokenFilter(nodeInfo.getInternalIp(), clientAddressExtractor)), "/*", null);
 
         // -- gzip handler
         context.setGzipHandler(new HackGzipHandler());

@@ -450,13 +450,14 @@ public class TestHttpServerProvider
                 nodeInfo,
                 config,
                 servlet,
-                ImmutableSet.<Filter>of(new DummyFilter()),
-                ImmutableSet.<HttpResourceBinding>of(),
+                ImmutableSet.of(new DummyFilter()),
+                ImmutableSet.of(),
                 new DummyServlet(),
-                ImmutableSet.<Filter>of(),
+                ImmutableSet.of(),
                 new RequestStats(),
                 new TestingHttpServer.DetailedRequestStats(),
                 new QueryStringFilter(),
+                new ClientAddressExtractor(),
                 lifeCycleManager)
         {
             @Override

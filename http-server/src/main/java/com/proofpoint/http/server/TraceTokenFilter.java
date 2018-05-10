@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 
-import static com.proofpoint.http.server.ClientInfoUtils.clientAddressFor;
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
@@ -46,11 +45,14 @@ class TraceTokenFilter
     private static final JsonCodec<TraceToken> TRACE_TOKEN_JSON_CODEC = jsonCodec(TraceToken.class);
     private static final Encoder BASE64_URL_ENCODER = Base64.getUrlEncoder();
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    private final ClientAddressExtractor clientAddressExtractor;
     private final String tokenPrefix;
 
-    TraceTokenFilter(InetAddress internalIp)
+    TraceTokenFilter(InetAddress internalIp, ClientAddressExtractor clientAddressExtractor)
     {
         tokenPrefix = encodeAddress(requireNonNull(internalIp, "internalIp is null"));
+        this.clientAddressExtractor = requireNonNull(clientAddressExtractor, "clientAddressExtractor is null");
     }
 
     @Override
@@ -118,7 +120,7 @@ class TraceTokenFilter
         byte[] randomBytes = new byte[15];
         SECURE_RANDOM.nextBytes(randomBytes);
         registerRequestToken(tokenPrefix
-                + encodeAddress(InetAddress.getByName(clientAddressFor(request)))
+                + encodeAddress(InetAddress.getByName(clientAddressExtractor.clientAddressFor(request)))
                 + BASE64_URL_ENCODER.encodeToString(randomBytes)
         );
     }
