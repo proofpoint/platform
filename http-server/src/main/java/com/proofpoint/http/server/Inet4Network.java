@@ -19,37 +19,18 @@ import com.google.common.net.InetAddresses;
 
 import java.net.Inet4Address;
 
-final class Inet4Network implements Comparable<Inet4Network>
+final class Inet4Network
 {
-    private final Inet4Address address;
     private final int bits;
     private final long start;
     private final long end;
 
     private Inet4Network(Inet4Address address, int bits)
     {
-        this.address = address;
         this.bits = bits;
-        this.start = addressToLong(getStartingAddress());
-        this.end = addressToLong(getEndingAddress());
-    }
-
-    public Inet4Address getStartingAddress()
-    {
-        return address;
-    }
-
-    public Inet4Address getEndingAddress()
-    {
-        int start = InetAddresses.coerceToInteger(address);
-        int length = (bits == 0) ? 0 : (1 << (32 - bits));
-        int end = start + length - 1;
-        return InetAddresses.fromInteger(end);
-    }
-
-    public int getBits()
-    {
-        return bits;
+        this.start = addressToLong(address);
+        long length = 1L << (32 - this.bits);
+        this.end = start + length - 1;
     }
 
     public boolean containsAddress(Inet4Address address)
@@ -61,7 +42,7 @@ final class Inet4Network implements Comparable<Inet4Network>
     @Override
     public String toString()
     {
-        return address.getHostAddress() + "/" + bits;
+        return InetAddresses.fromInteger((int)start).getHostAddress() + "/" + bits;
     }
 
     @Override
@@ -80,7 +61,7 @@ final class Inet4Network implements Comparable<Inet4Network>
         if (bits != that.bits) {
             return false;
         }
-        if (!address.equals(that.address)) {
+        if (start != that.start) {
             return false;
         }
 
@@ -90,21 +71,9 @@ final class Inet4Network implements Comparable<Inet4Network>
     @Override
     public int hashCode()
     {
-        int result = address.hashCode();
+        int result = (int)start;
         result = 31 * result + bits;
         return result;
-    }
-
-    @Override
-    public int compareTo(Inet4Network o)
-    {
-        if (start != o.start) {
-            return (start < o.start) ? -1 : 1;
-        }
-        if (bits != o.bits) {
-            return (bits < o.bits) ? -1 : 1;
-        }
-        return 0;
     }
 
     public static Inet4Network fromCidr(String cidr)
@@ -117,11 +86,6 @@ final class Inet4Network implements Comparable<Inet4Network>
         Inet4Address address = (Inet4Address) InetAddresses.forString(parts[0]);
         int bits = Integer.parseInt(parts[1]);
 
-        return fromAddress(address, bits);
-    }
-
-    public static Inet4Network fromAddress(Inet4Address address, int bits)
-    {
         if ((bits < 0) || (bits > 32)) {
             throw new IllegalArgumentException("invalid prefix size: " + bits);
         }
@@ -133,13 +97,6 @@ final class Inet4Network implements Comparable<Inet4Network>
         }
 
         return new Inet4Network(address, bits);
-    }
-
-    public static Inet4Network truncatedFromAddress(Inet4Address address, int bits)
-    {
-        int mask = (bits == 0) ? 0 : (-1 << (32 - bits));
-        int ip = InetAddresses.coerceToInteger(address);
-        return fromAddress(InetAddresses.fromInteger(ip & mask), bits);
     }
 
     static long addressToLong(Inet4Address address)

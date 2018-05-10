@@ -21,7 +21,6 @@ import org.testng.annotations.Test;
 
 import java.net.Inet4Address;
 
-import static com.proofpoint.testing.EquivalenceTester.comparisonTester;
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -91,9 +90,19 @@ public class TestInet4Network
     private static void assertStartingAndEndingAddress(String cidr, String endingAddress)
     {
         String startingAddress = cidr.substring(0, cidr.indexOf('/'));
-        Inet4Network network = Inet4Network.fromCidr(cidr);
-        assertEquals(network.getStartingAddress(), InetAddresses.forString(startingAddress));
-        assertEquals(network.getEndingAddress(), InetAddresses.forString(endingAddress));
+
+        assertTrue(containsAddress(cidr, startingAddress));
+        assertTrue(containsAddress(cidr, endingAddress));
+
+        int start = InetAddresses.coerceToInteger(InetAddresses.forString(startingAddress));
+        if (start != 0) {
+            assertFalse(containsAddress(cidr, InetAddresses.fromInteger(start - 1).getHostAddress()));
+        }
+
+        int end = InetAddresses.coerceToInteger(InetAddresses.forString(endingAddress));
+        if (end != -1) {
+            assertFalse(containsAddress(cidr, InetAddresses.fromInteger(end + 1).getHostAddress()));
+        }
     }
 
     @Test
@@ -110,49 +119,6 @@ public class TestInet4Network
     {
         Inet4Address addr = (Inet4Address) InetAddresses.forString(address);
         assertEquals(Inet4Network.addressToLong(addr), ip);
-    }
-
-    @Test
-    public void testFromAddress()
-    {
-        assertFromAddress("1.2.3.4", "1.2.3.4/32", 32);
-        assertFromAddress("8.8.8.8", "8.8.8.8/32", 32);
-        assertFromAddress("208.86.202.10", "208.86.202.10/32", 32);
-        assertFromAddress("208.86.202.0", "208.86.202.0/24", 24);
-    }
-
-    private static void assertFromAddress(String address, String cidr, int bits)
-    {
-        Inet4Address addr = (Inet4Address) InetAddresses.forString(address);
-        assertEquals(Inet4Network.fromAddress(addr, bits), Inet4Network.fromCidr(cidr));
-    }
-
-    @Test
-    public void testTruncatedFromAddress()
-    {
-        assertTruncatedFromAddress("1.2.3.4", "1.2.3.4/32", 32);
-        assertTruncatedFromAddress("1.2.3.4", "1.2.3.0/24", 24);
-        assertTruncatedFromAddress("8.8.8.8", "8.8.8.8/32", 32);
-        assertTruncatedFromAddress("8.8.8.8", "8.8.8.0/24", 24);
-        assertTruncatedFromAddress("8.8.8.8", "8.8.0.0/16", 16);
-        assertTruncatedFromAddress("8.8.8.8", "8.0.0.0/8", 8);
-        assertTruncatedFromAddress("208.86.202.10", "208.86.202.10/32", 32);
-        assertTruncatedFromAddress("208.86.202.10", "208.86.202.0/24", 24);
-        assertTruncatedFromAddress("208.86.202.0", "208.86.202.0/24", 24);
-    }
-
-    private static void assertTruncatedFromAddress(String address, String cidr, int bits)
-    {
-        Inet4Address addr = (Inet4Address) InetAddresses.forString(address);
-        assertEquals(Inet4Network.truncatedFromAddress(addr, bits), Inet4Network.fromCidr(cidr));
-    }
-
-    @Test
-    public void testGetBits()
-    {
-        assertEquals(Inet4Network.fromCidr("8.0.0.0/8").getBits(), 8);
-        assertEquals(Inet4Network.fromCidr("8.0.0.0/24").getBits(), 24);
-        assertEquals(Inet4Network.fromCidr("8.0.0.0/32").getBits(), 32);
     }
 
     @Test
@@ -182,36 +148,30 @@ public class TestInet4Network
     }
 
     @Test
-    @SuppressWarnings({"unchecked"})
     public void testEquals()
     {
         equivalenceTester()
                 .addEquivalentGroup(Inet4Network.fromCidr("8.0.0.0/8"))
+                .addEquivalentGroup(Inet4Network.fromCidr("9.0.0.0/8"))
+                .addEquivalentGroup(Inet4Network.fromCidr("8.0.0.0/9"))
                 .addEquivalentGroup(Inet4Network.fromCidr("8.8.8.0/24"))
                 .addEquivalentGroup(Inet4Network.fromCidr("8.8.8.8/32"))
                 .check();
     }
 
     @Test
-    @SuppressWarnings({"unchecked"})
-    public void testCompareTo()
+    public void testToString()
     {
-        comparisonTester()
-                .addLesserGroup(Inet4Network.fromCidr("0.0.0.0/0"))
-                .addGreaterGroup(Inet4Network.fromCidr("8.0.0.0/8"))
-                .addGreaterGroup(Inet4Network.fromCidr("8.0.0.0/9"))
-                .addGreaterGroup(Inet4Network.fromCidr("8.8.8.0/24"))
-                .addGreaterGroup(Inet4Network.fromCidr("8.8.8.1/32"))
-                .addGreaterGroup(Inet4Network.fromCidr("8.8.8.8/32"))
-                .addGreaterGroup(Inet4Network.fromCidr("8.8.8.255/32"))
-                .addGreaterGroup(Inet4Network.fromCidr("8.8.9.0/24"))
-                .addGreaterGroup(Inet4Network.fromCidr("17.0.0.0/8"))
-                .addGreaterGroup(Inet4Network.fromCidr("17.0.0.0/9"))
-                .addGreaterGroup(Inet4Network.fromCidr("202.12.128.0/18"))
-                .addGreaterGroup(Inet4Network.fromCidr("202.12.191.255/32"))
-                .addGreaterGroup(Inet4Network.fromCidr("255.0.0.0/8"))
-                .addGreaterGroup(Inet4Network.fromCidr("255.255.255.0/24"))
-                .addGreaterGroup(Inet4Network.fromCidr("255.255.255.255/32"))
-                .check();
+        assertToString("8.0.0.0/8");
+        assertToString("9.0.0.0/8");
+        assertToString("8.0.0.0/9");
+        assertToString("8.8.8.0/24");
+        assertToString("8.8.8.8/32");
+        assertToString("255.254.0.0/16");
+    }
+
+    private static void assertToString(String cidr)
+    {
+        assertEquals(Inet4Network.fromCidr(cidr).toString(), cidr);
     }
 }
