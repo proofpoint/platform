@@ -19,6 +19,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.net.InetAddresses;
+import com.google.inject.Inject;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
@@ -31,6 +32,19 @@ public class ClientAddressExtractor
             "192.168.0.0/16," +
             "172.16.0.0/12," +
             "10.0.0.0/8");
+
+    private final CidrSet trustedNetworks;
+
+    public ClientAddressExtractor()
+    {
+        trustedNetworks = PRIVATE_NETWORKS;
+    }
+
+    @Inject
+    public ClientAddressExtractor(InternalNetworkConfig config)
+    {
+        trustedNetworks = PRIVATE_NETWORKS.union(config.getInternalNetworks());
+    }
 
     public String clientAddressFor(HttpServletRequest request)
     {
@@ -46,7 +60,7 @@ public class ClientAddressExtractor
         ImmutableList<String> clientAddresses = builder.build();
         for (String address : Lists.reverse(clientAddresses)) {
             try {
-                if (!PRIVATE_NETWORKS.containsAddress(InetAddresses.forString(address))) {
+                if (!trustedNetworks.containsAddress(InetAddresses.forString(address))) {
                     clientAddress = address;
                     break;
                 }

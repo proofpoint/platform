@@ -25,6 +25,7 @@ import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
+import com.proofpoint.http.server.InternalNetworkConfig;
 import com.proofpoint.http.server.LocalAnnouncementHttpServerInfo;
 import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.TheAdminServlet;
@@ -65,6 +66,7 @@ public class TestingAdminHttpServerModule
         HttpServerConfig config = new HttpServerConfig().setMinThreads(1).setMaxThreads(threads).setHttpPort(0);
 
         binder.bind(HttpServerConfig.class).toInstance(config);
+        binder.bind(InternalNetworkConfig.class).toInstance(new InternalNetworkConfig());
         binder.bind(HttpServerInfo.class).in(Scopes.SINGLETON);
         binder.bind(TestingAdminHttpServer.class).in(Scopes.SINGLETON);
         binder.bind(HttpServer.class).to(Key.get(TestingAdminHttpServer.class));
