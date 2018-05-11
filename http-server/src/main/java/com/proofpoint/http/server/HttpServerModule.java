@@ -19,12 +19,12 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
-import com.proofpoint.configuration.ConfigurationModule;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 
 import javax.servlet.Filter;
 
+import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
@@ -74,7 +74,8 @@ public class HttpServerModule
         newExporter(binder).export(HttpServer.class).withGeneratedName();
         reportBinder(binder).bindReportCollection(DetailedRequestStats.class).withNamePrefix("HttpServer");
 
-        ConfigurationModule.bindConfig(binder).to(HttpServerConfig.class);
+        bindConfig(binder).to(HttpServerConfig.class);
+        bindConfig(binder).to(InternalNetworkConfig.class);
 
         binder.bind(AnnouncementHttpServerInfo.class).to(LocalAnnouncementHttpServerInfo.class).in(Scopes.SINGLETON);
     }

@@ -126,8 +126,16 @@ public class TestClientAddressExtractor
     public void testAddressUsed(String address, boolean isPrivate)
     {
         when(request.getRemoteAddr()).thenReturn(address);
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenAnswer(invocation -> Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), isPrivate ? "4.4.4.4" : address);
+        assertEquals(new ClientAddressExtractor(new InternalNetworkConfig()).clientAddressFor(request), isPrivate ? "4.4.4.4" : address);
+
+        if (!isPrivate) {
+            ClientAddressExtractor extractor = new ClientAddressExtractor(
+                    new InternalNetworkConfig().setInternalNetworks(
+                            CidrSet.fromString(address + "/32")));
+            assertEquals(extractor.clientAddressFor(request), "4.4.4.4");
+        }
     }
 }
