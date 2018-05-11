@@ -18,6 +18,7 @@ package com.proofpoint.http.server;
 import com.google.common.collect.ImmutableList;
 import org.eclipse.jetty.server.Request;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
@@ -97,5 +98,36 @@ public class TestClientAddressExtractor
         when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("notanaddr, 10.14.15.16, 10.11.12.13")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), "10.14.15.16");
+    }
+
+    @DataProvider(name = "addresses")
+    public Object[][] addresses()
+    {
+        return new Object[][] {
+                new Object[] {"127.0.0.1", true},
+                new Object[] {"127.1.2.3", true},
+                new Object[] {"169.254.0.1", true},
+                new Object[] {"169.254.1.2", true},
+                new Object[] {"192.168.0.1", true},
+                new Object[] {"192.168.1.2", true},
+                new Object[] {"172.16.0.1", true},
+                new Object[] {"172.16.1.2", true},
+                new Object[] {"172.16.1.2", true},
+                new Object[] {"10.0.0.1", true},
+                new Object[] {"10.1.2.3", true},
+
+                new Object[] {"1.2.3.4", false},
+                new Object[] {"172.33.0.0", false},
+        };
+
+    }
+
+    @Test(dataProvider = "addresses")
+    public void testAddressUsed(String address, boolean isPrivate)
+    {
+        when(request.getRemoteAddr()).thenReturn(address);
+        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
+
+        assertEquals(new ClientAddressExtractor().clientAddressFor(request), isPrivate ? "4.4.4.4" : address);
     }
 }

@@ -18,12 +18,20 @@ package com.proofpoint.http.server;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.net.InetAddresses;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 
 public class ClientAddressExtractor
 {
+    private static final CidrSet PRIVATE_NETWORKS = CidrSet.fromString(
+            "127.0.0.0/8," +
+            "169.254.0.0/16," +
+            "192.168.0.0/16," +
+            "172.16.0.0/12," +
+            "10.0.0.0/8");
+
     public String clientAddressFor(HttpServletRequest request)
     {
         ImmutableList.Builder<String> builder = ImmutableList.builder();
@@ -38,7 +46,7 @@ public class ClientAddressExtractor
         ImmutableList<String> clientAddresses = builder.build();
         for (String address : Lists.reverse(clientAddresses)) {
             try {
-                if (!Inet4Networks.isPrivateNetworkAddress(address)) {
+                if (!PRIVATE_NETWORKS.containsAddress(InetAddresses.forString(address))) {
                     clientAddress = address;
                     break;
                 }
