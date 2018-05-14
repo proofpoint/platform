@@ -33,6 +33,12 @@ public class CidrSet
         this.cidrs = ImmutableSet.copyOf(cidrs);
     }
 
+    /**
+     * Returns a {@link CidrSet} from a string.
+     *
+     * @param cidrList Comma-separated list of IPv4 CIDR blocks. For now only IPv4 CIDR blocks are supported.
+     * @return A {@link CidrSet} identifying all addresses in the blocks in {@code cidrList}.
+     */
     public static CidrSet fromString(String cidrList) {
         Set<Inet4Network> uris = Arrays.stream(cidrList.split("\\s*,\\s*"))
                         .map(Inet4Network::fromCidr)
@@ -40,11 +46,20 @@ public class CidrSet
         return new CidrSet(uris);
     }
 
+    /**
+     * @return A {@link CidrSet} identifying no addresses.
+     */
     public static CidrSet empty()
     {
         return new CidrSet(ImmutableSet.of());
     }
 
+    /**
+     * Determines whether an {@link InetAddress} is contained in this {@link CidrSet}.
+     *
+     * @param address The address to check.
+     * @return true iff the address is contained in the {@link CidrSet}.
+     */
     public boolean containsAddress(InetAddress address)
     {
         if (!(address instanceof Inet4Address)) {
