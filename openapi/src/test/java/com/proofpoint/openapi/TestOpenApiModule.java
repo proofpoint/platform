@@ -1,15 +1,12 @@
 package com.proofpoint.openapi;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.proofpoint.bootstrap.LifeCycleManager;
-
-import com.proofpoint.http.client.FullJsonResponseHandler.JsonResponse;
 import com.proofpoint.http.client.HttpClient;
+import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.server.testing.TestingAdminHttpServer;
-
-
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
@@ -21,21 +18,21 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static com.proofpoint.http.client.FullJsonResponseHandler.createFullJsonResponseHandler;
+import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseHandler;
+import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.http.server.testing.TestingAdminHttpServerModule.initializesMainServletTestingAdminHttpServerModule;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.json.JsonCodec.mapJsonCodec;
 
-
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Map;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
-
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
-import static org.testng.Assert.assertNotNull;
-
+import static com.proofpoint.testing.Assertions.assertContains;
+import static org.testng.Assert.assertEquals;
 
 public class TestOpenApiModule
 {
@@ -49,12 +46,6 @@ public class TestOpenApiModule
     public void setup()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(TestingResource.class));
-    }
-
-    private void createServer(Module module)
-            throws Exception
-    {
         Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
@@ -62,9 +53,8 @@ public class TestOpenApiModule
                         initializesMainServletTestingAdminHttpServerModule(),
                         new JsonModule(),
                         new ReportingModule(),
-                        new OpenApiModule()
-                        ,
-                        module)
+                        new OpenApiModule(),
+                        binder -> jaxrsBinder(binder).bind(TestingResource.class))
                 .initialize();
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         server = injector.getInstance(TestingAdminHttpServer.class);
@@ -88,22 +78,93 @@ public class TestOpenApiModule
     @Test
     public void testOpenApiJson()
     {
-        JsonResponse<Map<String, Object>> response = client.execute(
-                prepareGet().setUri(uriForOpenJSon("/openapi/api.json")).build(),
-                createFullJsonResponseHandler(MAP_CODEC));
-        assertNotNull(response.getResponseBody());
+        ArrayList<String> resourceList = new ArrayList<>();
+        resourceList.add("TestingResource");
+        Object expected = ImmutableMap.of(
+                "openapi", "3.0.1",
+                "paths", ImmutableMap.of(
+                        "/", ImmutableMap.of(
+                                "get", ImmutableMap.of(
+                                        "tags", resourceList,
+                                        "summary", "Testing GET request",
+                                        "operationId", "get",
+                                        "responses", ImmutableMap.of(
+                                                "200", ImmutableMap.of("description", "SUCESSFUL"),
+                                                "400", ImmutableMap.of("description", "One or more query parameter(s) is null or empty"),
+                                                "503", ImmutableMap.of("description", "Failed to process")
+                                        )),
+                                "put", ImmutableMap.of(
+                                        "tags", resourceList,
+                                        "summary", "Testing PUT request",
+                                        "operationId", "put",
+                                        "responses", ImmutableMap.of(
+                                                "200", ImmutableMap.of("description", "SUCESSFUL"),
+                                                "401", ImmutableMap.of("description", "Unauthorized"),
+                                                "503", ImmutableMap.of("description", "Failed to process")
+                                        )),
+                                "post", ImmutableMap.of(
+                                        "tags", resourceList,
+                                        "summary", "Testing POST request",
+                                        "operationId", "post",
+                                        "responses", ImmutableMap.of(
+                                                "200", ImmutableMap.of("description", "SUCESSFUL"),
+                                                "400", ImmutableMap.of("description", "One or more query parameter(s) is null or empty"),
+                                                "409", ImmutableMap.of("description", "State of the resource doesn't permit request."),
+                                                "503", ImmutableMap.of("description", "Failed to process"))),
+                                "delete", ImmutableMap.of(
+                                        "tags", resourceList,
+                                        "summary", "Testing DELETE request",
+                                        "operationId", "delete",
+                                        "responses", ImmutableMap.of(
+                                                "200", ImmutableMap.of("description", "SUCESSFUL"),
+                                                "401", ImmutableMap.of("description", "Unauthorized"),
+                                                "503", ImmutableMap.of("description", "Failed to process")
+                                        )
+                                )
+                        ),
+                        "/inrotation.txt", ImmutableMap.of(
+                                "get", ImmutableMap.of(
+                                        "operationId", "get_1",
+                                        "responses", ImmutableMap.of(
+                                                "default", ImmutableMap.of(
+                                                        "description", "default response",
+                                                        "content", ImmutableMap.of("text/plain", ImmutableMap.of())
+                                                )
+                                        )
+                                )
+                        ),
+                        "/liveness", ImmutableMap.of(
+                                "get", ImmutableMap.of(
+                                        "operationId", "get_2",
+                                        "responses", ImmutableMap.of(
+                                                "default", ImmutableMap.of(
+                                                        "description", "default response",
+                                                        "content", ImmutableMap.of("text/plain", ImmutableMap.of())
+                                                ))
+                                )
+                        )
+                )
+        );
+        Object response = client.execute(
+                prepareGet().setUri(uriForOpenSpec("/admin/openapi/api.json")).build(),
+                createJsonResponseHandler(MAP_CODEC));
+        assertEquals(response, expected);
     }
 
     @Test
     public void testOpenApiYaml()
     {
-        JsonResponse<Map<String, Object>> response = client.execute(
-                prepareGet().setUri(uriForOpenJSon("/openapi/api.yaml")).build(),
-                createFullJsonResponseHandler(MAP_CODEC));
-        assertNotNull(response.getResponseBody());
+        StringResponse response = client.execute(
+                prepareGet().setUri(uriForOpenSpec("/admin/openapi/api.yaml")).build(),
+                createStringResponseHandler());
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getHeader("Content-Type"), "application/yaml");
+        assertContains(response.getBody(), "summary: Testing GET request");
+        assertContains(response.getBody(), "description: One or more query parameter(s) is null or empty");
+
     }
 
-    private URI uriForOpenJSon(String specLocation)
+    private URI uriForOpenSpec(String specLocation)
     {
         return server.getBaseUrl().resolve(specLocation);
     }

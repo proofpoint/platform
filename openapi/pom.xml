@@ -10,20 +10,26 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>openapi</artifactId>
+
     <dependencies>
+
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
             <artifactId>jaxrs</artifactId>
         </dependency>
+
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-jaxrs2</artifactId>
             <version>2.0.0</version>
         </dependency>
+
+        <!-- Dependencies for testing -->
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
             <artifactId>testing</artifactId>
@@ -41,8 +47,5 @@
             <artifactId>reporting-client</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
-
-
 </project>
