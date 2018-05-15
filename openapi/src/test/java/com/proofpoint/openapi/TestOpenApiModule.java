@@ -146,7 +146,7 @@ public class TestOpenApiModule
                 )
         );
         Object response = client.execute(
-                prepareGet().setUri(uriForOpenSpec("/admin/openapi/api.json")).build(),
+                prepareGet().setUri(uriForOpenSpec("/admin/openapi.json")).build(),
                 createJsonResponseHandler(MAP_CODEC));
         assertEquals(response, expected);
     }
@@ -155,7 +155,7 @@ public class TestOpenApiModule
     public void testOpenApiYaml()
     {
         StringResponse response = client.execute(
-                prepareGet().setUri(uriForOpenSpec("/admin/openapi/api.yaml")).build(),
+                prepareGet().setUri(uriForOpenSpec("/admin/openapi.yaml")).build(),
                 createStringResponseHandler());
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getHeader("Content-Type"), "application/yaml");

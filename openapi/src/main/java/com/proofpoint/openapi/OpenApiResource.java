@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.GET;
@@ -19,59 +20,43 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.proofpoint.openapi.OpenApiResource.BASE_PATH;
 import static java.util.Objects.requireNonNull;
 
-@Path(BASE_PATH + "api.{type:json|yaml}")
+@Path("/admin/openapi.{type:json|yaml}")
 public class OpenApiResource extends BaseOpenApiResource
 {
-    static final String BASE_PATH = "admin/openapi/";
-    private Set<String> resourceClasses;
     private final Set<Object> jaxrsResources;
     private static final String SWAGGER_JAXRS_ANNOTATION_SCANNER = "io.swagger.v3.oas.integration.GenericOpenApiScanner";
-    private SwaggerConfiguration oasConfig;
-
 
     @Inject
     public OpenApiResource(@JaxrsResource Set<Object> jaxrsResources)
     {
-        this.jaxrsResources = requireNonNull(jaxrsResources, "jaxrsResouces is null");
-        this.oasConfig = getSwaggerConfiguration();
+        this.jaxrsResources = requireNonNull(jaxrsResources, "jaxrsResources is null");
     }
 
     @GET
     @Operation(hidden = true)
-    public Response getOpenApiSpec(@Context HttpHeaders headers,
+    public Response getOpenApiSpec(
+            @Context HttpHeaders headers,
             @Context UriInfo uriInfo,
             @PathParam("type") String type,
             @Context ServletConfig config,
             @Context Application app)
             throws Exception
     {
-        setOpenApiConfiguration(oasConfig);
-        Response response = super.getOpenApi(headers, config, app, uriInfo, type);
+        Response response = getOpenApi(headers, config, app, uriInfo, type);
         response.getHeaders().add("Access-Control-Allow-Origin", "*");
         return response;
     }
 
-    private SwaggerConfiguration getSwaggerConfiguration()
+    @PostConstruct
+    void configureSwagger()
     {
-        if (oasConfig == null) {
-            oasConfig = new SwaggerConfiguration()
-                    .openAPI(new OpenAPI())
-                    .prettyPrint(true);
-            oasConfig.setResourceClasses(getJaxrsResourceClasses());
-            oasConfig.setScannerClass(SWAGGER_JAXRS_ANNOTATION_SCANNER);
-        }
-        return oasConfig;
+        SwaggerConfiguration oasConfig = new SwaggerConfiguration()
+                .openAPI(new OpenAPI())
+                .prettyPrint(true);
+        oasConfig.setResourceClasses(jaxrsResources.stream().map(classame -> classame.getClass().getName()).collect(Collectors.toSet()));
+        oasConfig.setScannerClass(SWAGGER_JAXRS_ANNOTATION_SCANNER);
+        setOpenApiConfiguration(oasConfig);
     }
-
-    private Set<String> getJaxrsResourceClasses()
-    {
-        if (resourceClasses == null) {
-            resourceClasses = jaxrsResources.stream().map(classame -> classame.getClass().getName()).collect(Collectors.toSet());
-        }
-        return resourceClasses;
-    }
-
 }
