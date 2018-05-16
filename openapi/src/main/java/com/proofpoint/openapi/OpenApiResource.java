@@ -1,5 +1,6 @@
 package com.proofpoint.openapi;
 
+import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 import com.proofpoint.jaxrs.JaxrsResource;
 import io.swagger.v3.jaxrs2.integration.resources.BaseOpenApiResource;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 import static java.util.Objects.requireNonNull;
 
 @Path("/admin/openapi.{type:json|yaml}")
+@AccessDoesNotRequireAuthentication
 public class OpenApiResource extends BaseOpenApiResource
 {
     private final Set<Object> jaxrsResources;
