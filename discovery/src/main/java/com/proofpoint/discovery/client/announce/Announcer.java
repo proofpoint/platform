@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
@@ -39,8 +38,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -63,8 +63,8 @@ public class Announcer
     @Inject
     public Announcer(DiscoveryAnnouncementClient announcementClient, Set<ServiceAnnouncement> serviceAnnouncements)
     {
-        checkNotNull(announcementClient, "client is null");
-        checkNotNull(serviceAnnouncements, "serviceAnnouncements is null");
+        requireNonNull(announcementClient, "client is null");
+        requireNonNull(serviceAnnouncements, "serviceAnnouncements is null");
 
         this.announcementClient = announcementClient;
         for (ServiceAnnouncement serviceAnnouncement : serviceAnnouncements) {
@@ -75,7 +75,7 @@ public class Announcer
 
     public void start()
     {
-        Preconditions.checkState(!executor.isShutdown(), "Announcer has been destroyed");
+        checkState(!executor.isShutdown(), "Announcer has been destroyed");
         if (started.compareAndSet(false, true)) {
             // announce immediately, if discovery is running
             announce();
@@ -124,7 +124,7 @@ public class Announcer
 
     public void addServiceAnnouncement(ServiceAnnouncement serviceAnnouncement)
     {
-        checkNotNull(serviceAnnouncement, "serviceAnnouncement is null");
+        requireNonNull(serviceAnnouncement, "serviceAnnouncement is null");
         announcements.put(serviceAnnouncement.getId(), serviceAnnouncement);
     }
 
@@ -135,7 +135,13 @@ public class Announcer
 
     private Set<ServiceAnnouncement> getServiceAnnouncements()
     {
-        return ImmutableSet.copyOf(announcements.values());
+        Set<ServiceAnnouncement> announcements = ImmutableSet.copyOf(this.announcements.values());
+        announcements.forEach(serviceAnnouncement -> {
+            if (serviceAnnouncement.getError() != null) {
+                throw new IllegalStateException(serviceAnnouncement.getError());
+            }
+        });
+        return announcements;
     }
 
     private ListenableFuture<Duration> announce()

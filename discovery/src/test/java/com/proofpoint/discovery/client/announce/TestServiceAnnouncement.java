@@ -18,18 +18,21 @@ package com.proofpoint.discovery.client.announce;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
-import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.json.JsonCodec;
+import com.proofpoint.node.NodeInfo;
 import org.testng.annotations.Test;
 
 import java.util.Map;
 
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
+import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncementError;
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static com.proofpoint.json.JsonCodec.mapJsonCodec;
+import static com.proofpoint.testing.Assertions.assertContains;
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.fail;
 
 public class TestServiceAnnouncement
 {
@@ -49,6 +52,36 @@ public class TestServiceAnnouncement
         assertAnnouncement(serviceAnnouncement("foo").addProperties(ImmutableMap.of("a", "apple", "b", "banana")).build(),
                 "foo",
                 ImmutableMap.of("a", "apple", "b", "banana"));
+    }
+
+    @Test
+    public void testError()
+    {
+        ServiceAnnouncement announcement = serviceAnnouncementError("test error");
+
+        try {
+            announcement.getType();
+            fail("Expected IllegalStateException");
+        }
+        catch (IllegalStateException e) {
+            assertContains(e.getMessage(), "test error");
+        }
+
+        try {
+            announcement.getProperties();
+            fail("Expected IllegalStateException");
+        }
+        catch (IllegalStateException e) {
+            assertContains(e.getMessage(), "test error");
+        }
+
+        try {
+            announcement.toServiceDescriptor(new NodeInfo("test"));
+            fail("Expected IllegalStateException");
+        }
+        catch (IllegalStateException e) {
+            assertContains(e.getMessage(), "test error");
+        }
     }
 
     private void assertAnnouncement(ServiceAnnouncement announcement, String type, Map<String, String> properties)
@@ -98,6 +131,8 @@ public class TestServiceAnnouncement
                         .addProperty("jmx", "jmx://localhost:1234")
                         .build()
                 )
+                .addEquivalentGroup(serviceAnnouncementError("foo"))
+                .addEquivalentGroup(serviceAnnouncementError("foo"))
                 .check();
     }
 }

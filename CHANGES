@@ -1,3 +1,11 @@
+Platform 1.76
+
+* Discovery
+
+  We delayed the check for HTTPS announcements with unqualified hostnames
+  until the Announcer is asked to send an announcement. This was done to
+  aid transition of services into Kubernetes.
+
 Platform 1.75
 
 * OpenApi

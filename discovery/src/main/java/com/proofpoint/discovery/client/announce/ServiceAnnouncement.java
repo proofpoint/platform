@@ -16,31 +16,38 @@
 package com.proofpoint.discovery.client.announce;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceState;
 import com.proofpoint.node.NodeInfo;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.proofpoint.discovery.client.ServiceDescriptor.serviceDescriptor;
+import static java.util.Objects.requireNonNull;
 
 public class ServiceAnnouncement
 {
     private final UUID id = UUID.randomUUID();
     private final String type;
     private final Map<String, String> properties;
+    private final String error;
 
     private ServiceAnnouncement(String type, Map<String, String> properties)
     {
-        Preconditions.checkNotNull(type, "type is null");
-        Preconditions.checkNotNull(properties, "properties is null");
+        this.type = requireNonNull(type, "type is null");
+        this.properties = ImmutableMap.copyOf(requireNonNull(properties, "properties is null"));
+        error = null;
+    }
 
-        this.type = type;
-        this.properties = ImmutableMap.copyOf(properties);
+    private ServiceAnnouncement(String error)
+    {
+        this.type = null;
+        this.properties = null;
+        this.error = requireNonNull(error, "error is null");
     }
 
     @JsonProperty
@@ -52,38 +59,25 @@ public class ServiceAnnouncement
     @JsonProperty
     public String getType()
     {
+        if (error != null) {
+            throw new IllegalStateException(error);
+        }
         return type;
+    }
+
+    @Nullable
+    public String getError()
+    {
+        return error;
     }
 
     @JsonProperty
     public Map<String, String> getProperties()
     {
+        if (error != null) {
+            throw new IllegalStateException(error);
+        }
         return properties;
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        ServiceAnnouncement that = (ServiceAnnouncement) o;
-
-        if (!id.equals(that.id)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return id.hashCode();
     }
 
     @Override
@@ -93,11 +87,15 @@ public class ServiceAnnouncement
                 .add("id", id)
                 .add("type", type)
                 .add("properties", properties)
+                .add("error", error)
                 .toString();
     }
 
     public ServiceDescriptor toServiceDescriptor(NodeInfo nodeInfo)
     {
+        if (error != null) {
+            throw new IllegalStateException(error);
+        }
         return serviceDescriptor(type)
                 .setId(id)
                 .setNodeInfo(nodeInfo)
@@ -112,6 +110,11 @@ public class ServiceAnnouncement
         return new ServiceAnnouncementBuilder(type);
     }
 
+    public static ServiceAnnouncement serviceAnnouncementError(String error)
+    {
+        return new ServiceAnnouncement(error);
+    }
+
     public static class ServiceAnnouncementBuilder
     {
         private final String type;
@@ -124,15 +127,15 @@ public class ServiceAnnouncement
 
         public ServiceAnnouncementBuilder addProperty(String key, String value)
         {
-            Preconditions.checkNotNull(key, "key is null");
-            Preconditions.checkNotNull(value, "value is null");
+            requireNonNull(key, "key is null");
+            requireNonNull(value, "value is null");
             properties.put(key, value);
             return this;
         }
 
         public ServiceAnnouncementBuilder addProperties(Map<String, String> properties)
         {
-            Preconditions.checkNotNull(properties, "properties is null");
+            requireNonNull(properties, "properties is null");
             this.properties.putAll(properties);
             return this;
         }
