@@ -16,11 +16,14 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.CreationException;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.proofpoint.bootstrap.LifeCycleManager;
+import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
+import com.proofpoint.discovery.client.announce.StaticAnnouncementHttpServerInfoImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
@@ -30,6 +33,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.weakref.jmx.testing.TestingMBeanModule;
 
+import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -53,14 +57,13 @@ public class TestDiscoveryModule
 
     @AfterMethod(alwaysRun = true)
     public void teardown()
-            throws Exception
     {
         try {
             LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
             lifeCycleManager.stop();
         }
-        catch (Exception ignored)
-        {}
+        catch (Exception ignored) {
+        }
     }
 
     @Test
@@ -124,5 +127,55 @@ public class TestDiscoveryModule
         assertFalse(executor.isShutdown());
         lifeCycleManager.stop();
         assertTrue(executor.isShutdown());
+    }
+
+    @Test(expectedExceptions = IllegalStateException.class, expectedExceptionsMessageRegExp = ".*HttpServer's HTTPS URI host \"example\" must be a FQDN.*")
+    public void testHttpsAnnouncementWithoutFqdnFailsStart()
+            throws Exception
+    {
+        Announcer announcer = getAnnouncerWithUnqualifiedHttpsAnnouncement();
+
+        announcer.start();
+    }
+
+    @Test(expectedExceptions = IllegalStateException.class, expectedExceptionsMessageRegExp = ".*HttpServer's HTTPS URI host \"example\" must be a FQDN.*")
+    public void testHttpsAnnouncementWithoutFqdnFailsForceAnnounce()
+            throws Exception
+    {
+        Announcer announcer = getAnnouncerWithUnqualifiedHttpsAnnouncement();
+
+        announcer.forceAnnounce();
+    }
+
+    @Test
+    public void testHttpsAnnouncementWithoutFqdnOkayWithNoStart()
+            throws Exception
+    {
+        getAnnouncerWithUnqualifiedHttpsAnnouncement();
+    }
+
+    private Announcer getAnnouncerWithUnqualifiedHttpsAnnouncement()
+            throws Exception
+    {
+        injector = bootstrapTest()
+                .withModules(
+                        new JsonModule(),
+                        new TestingNodeModule(),
+                        new ReportingModule(),
+                        new DiscoveryModule(),
+                        binder -> {
+                            binder.bind(AnnouncementHttpServerInfo.class).toInstance(new StaticAnnouncementHttpServerInfoImpl(
+                                    null,
+                                    null,
+                                    URI.create("https://example:4444")
+                            ));
+                            discoveryBinder(binder).bindHttpAnnouncement("service");
+                        }
+
+                )
+                .setRequiredConfigurationProperties(ImmutableMap.of("testing.discovery.uri", "fake://server"))
+                .initialize();
+
+        return injector.getInstance(Announcer.class);
     }
 }

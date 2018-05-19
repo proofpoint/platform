@@ -19,7 +19,6 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.Provider;
-import com.google.inject.ProvisionException;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
@@ -38,6 +37,7 @@ import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
+import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncementError;
 import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
 import static java.util.Objects.requireNonNull;
 
@@ -196,7 +196,7 @@ public class DiscoveryBinder
             URI httpsUri = httpServerInfo.getHttpsUri();
             if (httpsUri != null) {
                 if (!httpsUri.getHost().contains(".")) {
-                    throw new ProvisionException("HttpServer's HTTPS URI host \"" + httpsUri.getHost() + "\" must be a FQDN");
+                    return serviceAnnouncementError("HttpServer's HTTPS URI host \"" + httpsUri.getHost() + "\" must be a FQDN");
                 }
                 builder.addProperty("https", httpsUri.toString());
             }
