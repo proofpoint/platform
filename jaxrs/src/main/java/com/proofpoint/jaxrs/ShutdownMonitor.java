@@ -13,27 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofpoint.reporting;
+package com.proofpoint.jaxrs;
 
-import org.testng.annotations.Test;
+import com.proofpoint.bootstrap.StopTraffic;
+import com.proofpoint.reporting.HealthCheckRemoveFromRotation;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class TestShutdownMonitor
+public class ShutdownMonitor
 {
-    @Test
-    public void testInitialState()
+    private final AtomicBoolean isShuttingDown = new AtomicBoolean(false);
+
+    @HealthCheckRemoveFromRotation("server shutdown state")
+    public String getShutdownState()
     {
-        ShutdownMonitor shutdownMonitor = new ShutdownMonitor();
-        assertNull(shutdownMonitor.getShutdownState());
+        if (isShuttingDown.get()) {
+            return "Server is shutting down";
+        }
+        return null;
     }
 
-    @Test
-    public void testShutdown()
+    @StopTraffic
+    public void stopTraffic()
     {
-        ShutdownMonitor shutdownMonitor = new ShutdownMonitor();
-        shutdownMonitor.stopTraffic();
-        assertEquals(shutdownMonitor.getShutdownState(), "Server is shutting down");
+        isShuttingDown.set(true);
     }
 }
