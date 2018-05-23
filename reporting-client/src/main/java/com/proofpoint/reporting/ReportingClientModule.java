@@ -46,9 +46,6 @@ public class ReportingClientModule
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);
         bindConfig(binder).to(ReportClientConfig.class);
-
-        binder.bind(ShutdownMonitor.class).in(SINGLETON);
-        healthBinder(binder).export(ShutdownMonitor.class);
     }
 
     @Provides
