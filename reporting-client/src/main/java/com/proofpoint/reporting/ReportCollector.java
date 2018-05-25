@@ -17,11 +17,11 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
-import com.google.inject.Inject;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 
+import javax.inject.Inject;
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
@@ -29,6 +29,7 @@ import java.util.Map;
 
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
+import static com.proofpoint.reporting.ReportUtils.isReportable;
 import static java.util.Objects.requireNonNull;
 
 public class ReportCollector
@@ -103,26 +104,6 @@ public class ReportCollector
         catch (Throwable e) {
             log.error(e, "Unexpected exception from report collection");
         }
-    }
-
-    private static boolean isReportable(Object value)
-    {
-        if (value instanceof Double) {
-            return !(((Double) value).isNaN() || ((Double) value).isInfinite());
-        }
-        if (value instanceof Float) {
-            return !(((Float) value).isNaN() || ((Float) value).isInfinite());
-        }
-        if (value instanceof Long) {
-            return !(value.equals(Long.MAX_VALUE) || value.equals(Long.MIN_VALUE));
-        }
-        if (value instanceof Integer) {
-            return !(value.equals(Integer.MAX_VALUE) || value.equals(Integer.MIN_VALUE));
-        }
-        if (value instanceof Short) {
-            return !(value.equals(Short.MAX_VALUE) || value.equals(Short.MIN_VALUE));
-        }
-        return true;
     }
 
     Map<String, String> getVersionTags()
