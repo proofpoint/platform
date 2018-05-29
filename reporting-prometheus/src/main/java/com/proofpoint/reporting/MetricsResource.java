@@ -66,11 +66,18 @@ public class MetricsResource
         return output -> {
             try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output))) {
                 for (Entry<String, Collection<TaggedValue>> entry : prometheusCollector.collectData().asMap().entrySet()) {
-                    writer.write("#TYPE ");
-                    writer.write(entry.getKey());
-                    writer.write(" gauge\n");
+                    boolean first = true;
 
                     for (TaggedValue taggedValue : entry.getValue()) {
+                        if (first) {
+                            first = false;
+                            writer.write("#TYPE ");
+                            writer.write(entry.getKey());
+                            writer.append(' ');
+                            writer.write(taggedValue.getType());
+                            writer.append('\n');
+                        }
+
                         writer.write(entry.getKey());
 
                         char prefix = '{';

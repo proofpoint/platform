@@ -26,12 +26,12 @@ public class TestTaggedValue
     @Test
     public void testComparison() {
         comparisonTester()
-                .addLesserGroup(taggedValue(ImmutableMap.of(), 3), taggedValue(ImmutableMap.of(), 4))
-                .addGreaterGroup(taggedValue(ImmutableMap.of("a", "x"), 1))
-                .addGreaterGroup(taggedValue(ImmutableMap.of("a", "x", "b", "y"), 1))
-                .addGreaterGroup(taggedValue(ImmutableMap.of("a", "x", "b", "z"), 1))
-                .addGreaterGroup(taggedValue(ImmutableMap.of("a", "y", "b", "y"), 1))
-                .addGreaterGroup(taggedValue(ImmutableMap.of("b", "y"), 1))
+                .addLesserGroup(taggedValue("gauge", ImmutableMap.of(), 3), taggedValue("counter", ImmutableMap.of(), 4))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x"), 1))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x", "b", "y"), 1))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x", "b", "z"), 1))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "y", "b", "y"), 1))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("b", "y"), 1))
                 .check();
     }
 }

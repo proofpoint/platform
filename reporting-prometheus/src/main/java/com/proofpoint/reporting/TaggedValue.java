@@ -27,9 +27,11 @@ import java.util.SortedMap;
 abstract class TaggedValue
     implements Comparable<TaggedValue>
 {
-    static TaggedValue taggedValue(Map<String, String> tags, Object value) {
-        return new AutoValue_TaggedValue(ImmutableSortedMap.copyOf(tags), value);
+    static TaggedValue taggedValue(String type, Map<String, String> tags, Object value) {
+        return new AutoValue_TaggedValue(type, ImmutableSortedMap.copyOf(tags), value);
     }
+
+    abstract String getType();
 
     abstract SortedMap<String, String> getTags();
 

@@ -23,15 +23,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.reporting.ReflectionUtils.getAttributeName;
 import static com.proofpoint.reporting.ReflectionUtils.isGetter;
+import static java.util.Objects.requireNonNull;
 
 class ReportedBean
 {
     static Method GET_PREVIOUS_BUCKET;
 
     private final Map<String, ReportedBeanAttribute> attributes;
+    private final Map<String, PrometheusBeanAttribute> prometheusAttributes;
 
     static {
         try {
@@ -44,25 +45,37 @@ class ReportedBean
         }
     }
 
-    public ReportedBean(Collection<ReportedBeanAttribute> attributes)
+    private ReportedBean(Collection<ReportedBeanAttribute> attributes, Collection<PrometheusBeanAttribute> prometheusAttributes)
     {
         Map<String, ReportedBeanAttribute> attributesBuilder = new TreeMap<>();
         for (ReportedBeanAttribute attribute : attributes) {
             attributesBuilder.put(attribute.getName(), attribute);
         }
         this.attributes = Collections.unmodifiableMap(attributesBuilder);
+
+        Map<String, PrometheusBeanAttribute> prometheusAttributesBuilder = new TreeMap<>();
+        for (PrometheusBeanAttribute attribute : prometheusAttributes) {
+            prometheusAttributesBuilder.put(attribute.getName(), attribute);
+        }
+        this.prometheusAttributes = Collections.unmodifiableMap(prometheusAttributesBuilder);
     }
 
-    public Collection<ReportedBeanAttribute> getAttributes()
+    Collection<ReportedBeanAttribute> getAttributes()
     {
         return attributes.values();
     }
 
-    public static ReportedBean forTarget(Object target)
+    Collection<PrometheusBeanAttribute> getPrometheusAttributes()
     {
-        checkNotNull(target, "target is null");
+        return prometheusAttributes.values();
+    }
+
+    static ReportedBean forTarget(Object target)
+    {
+        requireNonNull(target, "target is null");
 
         List<ReportedBeanAttribute> attributes = new ArrayList<>();
+        List<PrometheusBeanAttribute> prometheusAttributes = new ArrayList<>();
 
         if (target instanceof Bucketed) {
 
@@ -78,12 +91,15 @@ class ReportedBean
                 for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
                     attributes.add(new BucketedReportedBeanAttribute(target, attribute));
                 }
+                for (PrometheusBeanAttribute prometheusAttribute : reportedBean.getPrometheusAttributes()) {
+                    prometheusAttributes.add(new BucketedPrometheusBeanAttribute(target, prometheusAttribute));
+                }
             }
         }
 
-        Map<String, ReportedBeanAttributeBuilder> attributeBuilders = new TreeMap<>();
+        Map<String, ReportedMethodInfoBuilder> methodInfoBuilders = new TreeMap<>();
 
-        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), ReportedAnnotation.class).entrySet()) {
+        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), ReportedAnnotation.class, Prometheus.class).entrySet()) {
             Method concreteMethod = entry.getKey();
             Method annotatedMethod = entry.getValue();
 
@@ -93,22 +109,24 @@ class ReportedBean
 
             String attributeName = getAttributeName(concreteMethod);
 
-            ReportedBeanAttributeBuilder attributeBuilder = attributeBuilders.get(attributeName);
+            ReportedMethodInfoBuilder attributeBuilder = methodInfoBuilders.get(attributeName);
             if (attributeBuilder == null) {
-                attributeBuilder = new ReportedBeanAttributeBuilder().named(attributeName).onInstance(target);
+                attributeBuilder = new ReportedMethodInfoBuilder().named(attributeName).onInstance(target);
             }
 
             attributeBuilder = attributeBuilder
                     .withConcreteGetter(concreteMethod)
                     .withAnnotatedGetter(annotatedMethod);
 
-            attributeBuilders.put(attributeName, attributeBuilder);
+            methodInfoBuilders.put(attributeName, attributeBuilder);
         }
 
-        for (ReportedBeanAttributeBuilder attributeBuilder : attributeBuilders.values()) {
-            attributes.addAll(attributeBuilder.build());
+        for (ReportedMethodInfoBuilder methodInfoBuilder : methodInfoBuilders.values()) {
+            ReportedMethodInfo methodInfo = methodInfoBuilder.build();
+            attributes.addAll(methodInfo.getAttributes());
+            prometheusAttributes.addAll(methodInfo.getPrometheusAttributes());
         }
 
-        return new ReportedBean(attributes);
+        return new ReportedBean(attributes, prometheusAttributes);
     }
 }

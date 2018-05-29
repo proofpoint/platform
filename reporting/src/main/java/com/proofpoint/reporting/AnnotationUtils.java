@@ -45,6 +45,7 @@ final class AnnotationUtils
     private static final Set<Class<? extends Annotation>> FLATTEN_OR_NESTED_ANNOTATION_SET = ImmutableSet.of(Nested.class, Flatten.class);
     private static final Set<Class<? extends Annotation>> FLATTEN_ANNOTATION_SET = ImmutableSet.of(Flatten.class);
     private static final Set<Class<? extends Annotation>> NESTED_ANNOTATION_SET = ImmutableSet.of(Nested.class);
+    private static final Set<Class<? extends Annotation>> REPORTED_ANNOTATION_SET = ImmutableSet.of(ReportedAnnotation.class);
 
     private AnnotationUtils()
     {
@@ -303,6 +304,11 @@ final class AnnotationUtils
     static boolean isNested(Method method)
     {
         return method != null && isAnnotationPresent(NESTED_ANNOTATION_SET, new HashSet<>(), method.getAnnotations());
+    }
+
+    static boolean isReported(Method method)
+    {
+        return method != null && isAnnotationPresent(REPORTED_ANNOTATION_SET, new HashSet<>(), method.getAnnotations());
     }
 
     private static boolean isAnnotationPresent(Set<Class<? extends Annotation>> annotationClasses, Set<Class<? extends Annotation>> processedTypes, Annotation... annotations)
