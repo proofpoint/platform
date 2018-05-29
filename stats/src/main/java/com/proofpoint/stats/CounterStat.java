@@ -18,6 +18,7 @@ package com.proofpoint.stats;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.Beta;
+import com.proofpoint.reporting.Prometheus;
 import com.proofpoint.stats.DecayCounter.DecayCounterSnapshot;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
@@ -26,6 +27,7 @@ import org.weakref.jmx.Nested;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.proofpoint.reporting.PrometheusType.COUNTER;
 
 @Beta
 public class CounterStat
@@ -89,6 +91,7 @@ public class CounterStat
     }
 
     @Managed
+    @Prometheus(name = "Count", type = COUNTER)
     public long getTotalCount()
     {
         return count.get();

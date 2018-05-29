@@ -28,7 +28,7 @@ class FlattenReportedBeanAttribute implements ReportedBeanAttribute
     private final ReportedBeanAttribute delegate;
     private final String name;
 
-    public FlattenReportedBeanAttribute(String prefix, Method flattenGetter, ReportedBeanAttribute delegate)
+    FlattenReportedBeanAttribute(Method flattenGetter, ReportedBeanAttribute delegate)
     {
         this.flattenGetter = flattenGetter;
         this.delegate = delegate;

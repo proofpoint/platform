@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
+import com.google.inject.util.Modules;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
@@ -13,16 +14,20 @@ import com.proofpoint.http.server.testing.TestingAdminHttpServerModule;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
-import com.proofpoint.node.testing.TestingNodeModule;
+import com.proofpoint.stats.CounterStat;
+import com.proofpoint.stats.SparseCounterStat;
 import com.proofpoint.testing.Closeables;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.weakref.jmx.Nested;
 
 import javax.management.InstanceAlreadyExistsException;
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.inject.Scopes.SINGLETON;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
@@ -191,7 +196,7 @@ public class TestReportingPrometheusModule
     public void testUnreportedValues()
             throws InstanceAlreadyExistsException
     {
-        ReportedBeanRegistry reportedBeanRegistry = createServer(binder -> {});
+        ReportedBeanRegistry reportedBeanRegistry = createServer(binder -> {}).getInstance(ReportedBeanRegistry.class);
 
         UnreportedValueObject unreportedValueObject = new UnreportedValueObject();
         reportedBeanRegistry.register(unreportedValueObject, ReportedBean.forTarget(unreportedValueObject), false, "TestObject", ImmutableMap.of());
@@ -224,6 +229,36 @@ public class TestReportingPrometheusModule
                         "TestObject_ShortMetric{" + EXPECTED_INSTANCE_TAGS + "} 0\n" +
                         "#TYPE TestObject_TrueBooleanMetric gauge\n" +
                         "TestObject_TrueBooleanMetric{" + EXPECTED_INSTANCE_TAGS + "} 1\n");
+    }
+
+    @Test
+    public void testCounters()
+    {
+        Injector injector = createServer(binder -> {
+            binder.bind(CounterObject.class).in(SINGLETON);
+            reportBinder(binder).export(CounterObject.class);
+        });
+        CounterObject counterObject = injector.getInstance(CounterObject.class);
+        TestingBucketIdProvider bucketIdProvider = injector.getInstance(TestingBucketIdProvider.class);
+
+        counterObject.getNormal().add(1);
+        counterObject.getSparse().add(2);
+        bucketIdProvider.incrementBucket();
+        counterObject.getNormal().add(1);
+        counterObject.getSparse().add(2);
+
+        StringResponse response = client.execute(
+                prepareGet().setUri(uriFor("/metrics")).build(),
+                createStringResponseHandler());
+
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getBody(),
+                "#TYPE CounterObject_Normal_Count counter\n" +
+                        "CounterObject_Normal_Count{" + EXPECTED_INSTANCE_TAGS + "} 2\n" +
+                        "#TYPE CounterObject_Sparse_Count counter\n" +
+                        "CounterObject_Sparse_Count{" + EXPECTED_INSTANCE_TAGS + "} 4.0\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
 
     private static class TestingValue
@@ -391,7 +426,25 @@ public class TestReportingPrometheusModule
         }
     }
 
-    private ReportedBeanRegistry createServer(Module module)
+    private static class CounterObject
+    {
+        private CounterStat normal = new CounterStat();
+        private SparseCounterStat sparse = new SparseCounterStat();
+
+        @Nested
+        public CounterStat getNormal()
+        {
+            return normal;
+        }
+
+        @Nested
+        public SparseCounterStat getSparse()
+        {
+            return sparse;
+        }
+    }
+
+    private Injector createServer(Module module)
     {
         Injector injector;
         try {
@@ -404,7 +457,10 @@ public class TestReportingPrometheusModule
                             new TestingAdminHttpServerModule(),
                             explicitJaxrsModule(),
                             new JsonModule(),
-                            new ReportingModule(),
+                            Modules.override(new ReportingModule()).with(binder -> {
+                                binder.bind(TestingBucketIdProvider.class).in(SINGLETON);
+                                binder.bind(BucketIdProvider.class).to(TestingBucketIdProvider.class).in(SINGLETON);
+                            }),
                             new ReportingPrometheusModule(),
                             module
                     )
@@ -416,11 +472,28 @@ public class TestReportingPrometheusModule
 
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         server = injector.getInstance(TestingAdminHttpServer.class);
-        return injector.getInstance(ReportedBeanRegistry.class);
+        return injector;
     }
 
     private URI uriFor(String path)
     {
         return server.getBaseUrl().resolve(path);
+    }
+
+    private static class TestingBucketIdProvider
+        implements BucketIdProvider
+    {
+        private AtomicInteger bucket = new AtomicInteger();
+
+        @Override
+        public int get()
+        {
+            return bucket.get();
+        }
+
+        void incrementBucket()
+        {
+            bucket.incrementAndGet();
+        }
     }
 }

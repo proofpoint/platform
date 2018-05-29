@@ -77,7 +77,7 @@ class PrometheusCollector
             }
             nameBuilder.append(sanitizeMetricName(registrationInfo.getNamePrefix())).append('_');
 
-            for (ReportedBeanAttribute attribute : registrationInfo.getReportedBean().getAttributes()) {
+            for (PrometheusBeanAttribute attribute : registrationInfo.getReportedBean().getPrometheusAttributes()) {
                 String name = nameBuilder + sanitizeMetricName(attribute.getName());
                 if (INITIAL_DIGIT_PATTERN.matcher(name).lookingAt()) {
                     name = "_" + name;
@@ -92,11 +92,11 @@ class PrometheusCollector
 
                 if (value != null && isReportable(value) && value instanceof Number) {
                     ++numAttributes;
-                    valuesByMetric.put(name, taggedValue(registrationInfo.getTags(), value));
+                    valuesByMetric.put(name, taggedValue(attribute.getType(), registrationInfo.getTags(), value));
                 }
             }
         }
-        valuesByMetric.put("ReportCollector_NumMetrics", taggedValue(versionTags, numAttributes));
+        valuesByMetric.put("ReportCollector_NumMetrics", taggedValue("gauge", versionTags, numAttributes));
         return valuesByMetric;
     }
 }

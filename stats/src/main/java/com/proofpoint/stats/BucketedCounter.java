@@ -17,8 +17,11 @@ package com.proofpoint.stats;
 
 import com.google.common.base.Function;
 import com.proofpoint.reporting.Bucketed;
+import com.proofpoint.reporting.Prometheus;
 import com.proofpoint.reporting.Reported;
 import com.proofpoint.stats.BucketedCounter.Counter;
+
+import static com.proofpoint.reporting.PrometheusType.SUPPRESSED;
 
 public final class BucketedCounter
     extends Bucketed<Counter>
@@ -30,14 +33,9 @@ public final class BucketedCounter
 
     public void add(final double count)
     {
-        applyToCurrentBucket(new Function<Counter, Void>()
-        {
-            @Override
-            public Void apply(Counter input)
-            {
-                input.count += count;
-                return null;
-            }
+        applyToCurrentBucket((Function<Counter, Void>) input -> {
+            input.count += count;
+            return null;
         });
     }
 
@@ -52,6 +50,7 @@ public final class BucketedCounter
         private double count = 0;
 
         @Reported
+        @Prometheus(type = SUPPRESSED)
         public double getCount()
         {
             return count;

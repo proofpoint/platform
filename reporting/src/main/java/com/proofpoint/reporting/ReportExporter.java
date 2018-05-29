@@ -16,6 +16,7 @@
 package com.proofpoint.reporting;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 import com.proofpoint.reporting.ReportException.Reason;
 
@@ -29,10 +30,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
+import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.proofpoint.reporting.AnnotationUtils.findAnnotatedMethods;
 import static com.proofpoint.reporting.AnnotationUtils.isFlatten;
 import static com.proofpoint.reporting.AnnotationUtils.isNested;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Dynamically exports and unexports reporting-annotated objects to the reporting
@@ -46,8 +48,8 @@ public class ReportExporter
     @Inject
     ReportExporter(ReportedBeanRegistry registry, BucketIdProvider bucketIdProvider)
     {
-        this.registry = checkNotNull(registry, "registry is null");
-        this.bucketIdProvider = checkNotNull(bucketIdProvider, "bucketIdProvider is null");
+        this.registry = requireNonNull(registry, "registry is null");
+        this.bucketIdProvider = requireNonNull(bucketIdProvider, "bucketIdProvider is null");
     }
 
     /**
@@ -165,12 +167,13 @@ public class ReportExporter
         }
 
         try {
-            for (Entry<Method, Method> entry : findAnnotatedMethods(object.getClass(), ReportedAnnotation.class).entrySet()) {
+            for (Entry<Method, Method> entry : findAnnotatedMethods(object.getClass(), ReportedAnnotation.class, Prometheus.class).entrySet()) {
                 notifyBucketIdProvider(entry.getKey().invoke(object), bucketIdProvider, entry.getValue());
             }
         }
         catch (IllegalAccessException | InvocationTargetException e) {
-            throw propagate(e);
+            throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
     }
 }
