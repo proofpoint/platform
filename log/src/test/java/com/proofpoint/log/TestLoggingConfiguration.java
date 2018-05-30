@@ -21,6 +21,8 @@ public class TestLoggingConfiguration
                 .setMaxHistory(30)
                 .setLevelsFile(null)
                 .setMaxTotalSize(new DataSize(1, Unit.GIGABYTE))
+                .setScanEnabled(false)
+                .setScanPeriodInMiliseconds(5000)
         );
     }
 
@@ -35,6 +37,8 @@ public class TestLoggingConfiguration
                 .put("log.max-history", "25")
                 .put("log.levels-file", "var/log/log-levels-test.cfg")
                 .put("log.max-total-size", "5GB")
+                .put("log.scan-enabled", "true")
+                .put("log.scan-period-in-miliseconds", "500")
                 .build();
 
         LoggingConfiguration expected = new LoggingConfiguration()
@@ -44,7 +48,9 @@ public class TestLoggingConfiguration
                 .setMaxSegmentSize(new DataSize(1, Unit.GIGABYTE))
                 .setMaxHistory(25)
                 .setLevelsFile("var/log/log-levels-test.cfg")
-                .setMaxTotalSize(new DataSize(5, Unit.GIGABYTE));
+                .setMaxTotalSize(new DataSize(5, Unit.GIGABYTE))
+                .setScanEnabled(true)
+                .setScanPeriodInMiliseconds(500);
 
         ConfigAssertions.assertFullMapping(properties, expected);
     }
