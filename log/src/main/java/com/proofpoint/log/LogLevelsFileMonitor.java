@@ -29,7 +29,7 @@ class LogLevelsFileMonitor {
     private final LoggingConfiguration config;
 
     protected LogLevelsFileMonitor(LoggingConfiguration logConfig) {
-        logging =Logging.initialize();
+        logging = Logging.initialize();
         config = logConfig;
         timer.scheduleAtFixedRate(new ScanTask(), config.getScanPeriodInMiliseconds(), config.getScanPeriodInMiliseconds() );
 

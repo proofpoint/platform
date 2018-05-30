@@ -131,7 +131,7 @@ public class LoggingConfiguration
     public boolean isScanEnabled() { return scanEnabled;}
 
     @Config("log.scan-enabled")
-    @ConfigDescription("Set to true to eanble run time log level setting")
+    @ConfigDescription("Set to true to eanble run time log level setting. The default is false.")
     public LoggingConfiguration setScanEnabled(boolean enabled)
     {
         this.scanEnabled = enabled;
@@ -141,7 +141,7 @@ public class LoggingConfiguration
     public long getScanPeriodInMiliseconds() {return scanPeriodInMiliseconds;}
 
     @Config("log.scan-period-in-miliseconds")
-    @ConfigDescription("Number of miliseconds to wait between scans of the levels file")
+    @ConfigDescription("Number of miliseconds to wait between scans of the levels file. The default is 5,000.")
     public LoggingConfiguration setScanPeriodInMiliseconds(long period) {
         this.scanPeriodInMiliseconds = period;
         return this;
