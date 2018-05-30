@@ -32,6 +32,7 @@ import static org.testng.Assert.assertEquals;
 
 public class TestReportingPrometheusModule
 {
+    private static final String EXPECTED_INSTANCE_TAGS = "application=\"test-application\",environment=\"test_environment\",host=\"test.hostname\",pool=\"test_pool\"";
     private final HttpClient client = new JettyHttpClient();
 
     private LifeCycleManager lifeCycleManager;
@@ -74,9 +75,9 @@ public class TestReportingPrometheusModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
                 "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics 1\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
                         "#TYPE TestObject_Metric gauge\n" +
-                        "TestObject_Metric 2\n");
+                        "TestObject_Metric{" + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
 
     @Test
@@ -87,7 +88,11 @@ public class TestReportingPrometheusModule
         injector = bootstrapTest()
                 .withModules(
                         binder -> binder.bind(NodeInfo.class).toInstance(
-                                new NodeInfo("test-application", "1.2", "platform.1", new NodeConfig().setEnvironment("testing"))),
+                                new NodeInfo("test-application", "1.2", "platform.1",
+                                        new NodeConfig().setEnvironment("test_environment")
+                                                .setNodeInternalHostname("test.hostname")
+                                                .setPool("test_pool")
+                                )),
                         new TestingAdminHttpServerModule(),
                         explicitJaxrsModule(),
                         new JsonModule(),
@@ -107,7 +112,7 @@ public class TestReportingPrometheusModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
                 "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{applicationVersion=\"1.2\",platformVersion=\"platform.1\"} 0\n");
+                        "ReportCollector_NumMetrics{applicationVersion=\"1.2\",platformVersion=\"platform.1\"," + EXPECTED_INSTANCE_TAGS  + "} 0\n");
     }
 
     @Test
@@ -128,9 +133,9 @@ public class TestReportingPrometheusModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
                 "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics 1\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
                         "#TYPE TestApplication_TestObject_Metric gauge\n" +
-                        "TestApplication_TestObject_Metric{_2=\"bar\"} 2\n");
+                        "TestApplication_TestObject_Metric{_2=\"bar\"," + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
 
     @Test
@@ -155,10 +160,10 @@ public class TestReportingPrometheusModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
                 "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics 2\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n" +
                         "#TYPE TestObject_Metric gauge\n" +
-                        "TestObject_Metric{a=\"b\",baz=\"quux\",c=\"d\\\"\\\\\\n\"} 2\n" +
-                        "TestObject_Metric{foo=\"bar\"} 2\n");
+                        "TestObject_Metric{a=\"b\",baz=\"quux\",c=\"d\\\"\\\\\\n\"," + EXPECTED_INSTANCE_TAGS + "} 2\n" +
+                        "TestObject_Metric{foo=\"bar\"," + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
 
     @Test
@@ -177,9 +182,9 @@ public class TestReportingPrometheusModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
                 "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics 1\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
                         "#TYPE TestObject_Metric gauge\n" +
-                        "TestObject_Metric{foo=\"bar\"} 2\n");
+                        "TestObject_Metric{foo=\"bar\"," + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
 
     @Test
@@ -198,27 +203,27 @@ public class TestReportingPrometheusModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
                 "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics 10\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 10\n" +
                         "#TYPE TestObject_ByteMetric gauge\n" +
-                        "TestObject_ByteMetric 0\n" +
+                        "TestObject_ByteMetric{" + EXPECTED_INSTANCE_TAGS + "} 0\n" +
                         "#TYPE TestObject_DoubleMetric gauge\n" +
-                        "TestObject_DoubleMetric 0.0\n" +
+                        "TestObject_DoubleMetric{" + EXPECTED_INSTANCE_TAGS + "} 0.0\n" +
                         "#TYPE TestObject_FalseBooleanMetric gauge\n" +
-                        "TestObject_FalseBooleanMetric 0\n" +
+                        "TestObject_FalseBooleanMetric{" + EXPECTED_INSTANCE_TAGS + "} 0\n" +
                         "#TYPE TestObject_FloatMetric gauge\n" +
-                        "TestObject_FloatMetric 0.0\n" +
+                        "TestObject_FloatMetric{" + EXPECTED_INSTANCE_TAGS + "} 0.0\n" +
                         "#TYPE TestObject_IntegerMetric gauge\n" +
-                        "TestObject_IntegerMetric 0\n" +
+                        "TestObject_IntegerMetric{" + EXPECTED_INSTANCE_TAGS + "} 0\n" +
                         "#TYPE TestObject_LongMetric gauge\n" +
-                        "TestObject_LongMetric 0\n" +
+                        "TestObject_LongMetric{" + EXPECTED_INSTANCE_TAGS + "} 0\n" +
                         "#TYPE TestObject_MaxByteMetric gauge\n" +
-                        "TestObject_MaxByteMetric 127\n" +
+                        "TestObject_MaxByteMetric{" + EXPECTED_INSTANCE_TAGS + "} 127\n" +
                         "#TYPE TestObject_MinByteMetric gauge\n" +
-                        "TestObject_MinByteMetric -128\n" +
+                        "TestObject_MinByteMetric{" + EXPECTED_INSTANCE_TAGS + "} -128\n" +
                         "#TYPE TestObject_ShortMetric gauge\n" +
-                        "TestObject_ShortMetric 0\n" +
+                        "TestObject_ShortMetric{" + EXPECTED_INSTANCE_TAGS + "} 0\n" +
                         "#TYPE TestObject_TrueBooleanMetric gauge\n" +
-                        "TestObject_TrueBooleanMetric 1\n");
+                        "TestObject_TrueBooleanMetric{" + EXPECTED_INSTANCE_TAGS + "} 1\n");
     }
 
     private static class TestingValue
@@ -392,7 +397,10 @@ public class TestReportingPrometheusModule
         try {
             injector = bootstrapTest()
                     .withModules(
-                            new TestingNodeModule(),
+                            binder -> binder.bind(NodeInfo.class).toInstance(new NodeInfo("test-application", new NodeConfig()
+                                            .setEnvironment("test_environment")
+                                            .setNodeInternalHostname("test.hostname")
+                                            .setPool("test_pool"))),
                             new TestingAdminHttpServerModule(),
                             explicitJaxrsModule(),
                             new JsonModule(),

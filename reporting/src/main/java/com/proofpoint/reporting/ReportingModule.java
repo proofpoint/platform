@@ -20,6 +20,7 @@ import com.google.inject.Module;
 import com.google.inject.Scopes;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 
 public class ReportingModule
     implements Module
@@ -39,5 +40,7 @@ public class ReportingModule
         binder.bind(HealthExporter.class).asEagerSingleton();
         binder.bind(GuiceHealthExporter.class).asEagerSingleton();
         binder.bind(HealthBeanRegistry.class).in(Scopes.SINGLETON);
+
+        bindConfig(binder).to(ReportTagConfig.class);
     }
 }

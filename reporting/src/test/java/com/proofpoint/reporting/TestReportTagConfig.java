@@ -25,24 +25,24 @@ import static com.proofpoint.configuration.testing.ConfigAssertions.assertLegacy
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertRecordedDefaults;
 import static com.proofpoint.configuration.testing.ConfigAssertions.recordDefaults;
 
-public class TestReportClientConfig
+public class TestReportTagConfig
 {
     @Test
     public void testDefaults()
     {
-        assertRecordedDefaults(recordDefaults(ReportClientConfig.class)
-                .setEnabled(true));
+        assertRecordedDefaults(recordDefaults(ReportTagConfig.class)
+                .setTags(ImmutableMap.of()));
     }
 
     @Test
     public void testExplicitPropertyMappings()
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
-                .put("reporting.enabled", "false")
+                .put("reporting.tag.foo", "bar")
                 .build();
 
-        ReportClientConfig expected = new ReportClientConfig()
-                .setEnabled(false);
+        ReportTagConfig expected = new ReportTagConfig()
+                .setTags(ImmutableMap.of("foo", "bar"));
 
         assertFullMapping(properties, expected);
     }
@@ -51,8 +51,13 @@ public class TestReportClientConfig
     public void testLegacyProperties()
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
+                .put("reporting.tag.foo", "bar")
                 .build();
 
-        assertLegacyEquivalence(ReportClientConfig.class, properties);
+        Map<String, String> olderProperties = new ImmutableMap.Builder<String, String>()
+                .put("report.tag.foo", "bar")
+                .build();
+
+        assertLegacyEquivalence(ReportTagConfig.class, properties, olderProperties);
     }
 }
