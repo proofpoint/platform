@@ -15,9 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import javax.management.AttributeNotFoundException;
-import javax.management.MBeanException;
-import javax.management.ReflectionException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,17 +56,6 @@ class ReportedBean
     public Collection<ReportedBeanAttribute> getAttributes()
     {
         return attributes.values();
-    }
-
-    public Object getAttribute(String name)
-            throws AttributeNotFoundException, MBeanException, ReflectionException
-    {
-        checkNotNull(name, "name is null");
-        ReportedBeanAttribute mbeanAttribute = attributes.get(name);
-        if (mbeanAttribute == null) {
-            throw new AttributeNotFoundException(name);
-        }
-        return mbeanAttribute.getValue(null);
     }
 
     public static ReportedBean forTarget(Object target)

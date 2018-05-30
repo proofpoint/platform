@@ -1,5 +1,6 @@
 package com.proofpoint.reporting;
 
+import com.google.common.collect.MoreCollectors;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.weakref.jmx.internal.guava.collect.ImmutableList;
@@ -49,7 +50,10 @@ public class TestReportedBean
     private Object getAttribute(Object object, String attributeName)
             throws AttributeNotFoundException, MBeanException, ReflectionException
     {
-        return reportedBeans.get(object).getAttribute(attributeName);
+        return reportedBeans.get(object).getAttributes().stream()
+                .filter(reportedBeanAttribute -> attributeName.equals(reportedBeanAttribute.getName()))
+                .collect(MoreCollectors.onlyElement())
+                .getValue(null);
     }
 
     @Test(expectedExceptions = RuntimeException.class,
@@ -150,22 +154,6 @@ public class TestReportedBean
                 }
 
                 assertEquals(getAttribute(t, attributeName), value);
-            }
-        }
-    }
-
-    @Test
-    public void testGetFailsOnNotReported()
-            throws Exception
-    {
-
-        for (Object t : objects) {
-            try {
-                getAttribute(t, "NotReported");
-                fail("Should not allow getting unreported attribute");
-            }
-            catch (AttributeNotFoundException e) {
-                // ignore
             }
         }
     }
