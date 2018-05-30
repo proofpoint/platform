@@ -79,6 +79,7 @@ public class Logging
     private static final String LOG_FILE_EXTENSION = ".log";
 
     private static Logging instance;
+    private static LogLevelsFileMonitor monitor;
 
     // hard reference to loggers for which we set the level
     private final Map<String, java.util.logging.Logger> loggers = new ConcurrentHashMap<>();
@@ -358,6 +359,11 @@ public class Logging
 
         if (config.getBootstrapLogPath() != null) {
             setupBootstrapLog(config.getBootstrapLogPath());
+        }
+
+        if (config.isScanEnabled()) {
+            if (monitor == null)
+                monitor = new LogLevelsFileMonitor(config);
         }
     }
 

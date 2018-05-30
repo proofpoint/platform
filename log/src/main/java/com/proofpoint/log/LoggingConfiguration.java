@@ -21,8 +21,6 @@ import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 
-import java.nio.file.Path;
-
 public class LoggingConfiguration
 {
     private boolean consoleEnabled = true;
@@ -32,6 +30,8 @@ public class LoggingConfiguration
     private int maxHistory = 30;
     private String levelsFile = null;
     private DataSize maxTotalSize = new DataSize(1, Unit.GIGABYTE);
+    private boolean scanEnabled;
+    private long scanPeriodInMiliseconds = 5000;
 
     public boolean isConsoleEnabled()
     {
@@ -125,6 +125,25 @@ public class LoggingConfiguration
     public LoggingConfiguration setMaxTotalSize(DataSize maxTotalSize)
     {
         this.maxTotalSize = maxTotalSize;
+        return this;
+    }
+
+    public boolean isScanEnabled() { return scanEnabled;}
+
+    @Config("log.scan-enabled")
+    @ConfigDescription("Set to true to eanble run time log level setting")
+    public LoggingConfiguration setScanEnabled(boolean enabled)
+    {
+        this.scanEnabled = enabled;
+        return this;
+    }
+
+    public long getScanPeriodInMiliseconds() {return scanPeriodInMiliseconds;}
+
+    @Config("log.scan-period-in-miliseconds")
+    @ConfigDescription("Number of miliseconds to wait between scans of the levels file")
+    public LoggingConfiguration setScanPeriodInMiliseconds(long period) {
+        this.scanPeriodInMiliseconds = period;
         return this;
     }
 }
