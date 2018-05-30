@@ -39,11 +39,13 @@ import javax.management.MalformedObjectNameException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import static com.google.common.base.Throwables.propagate;
+import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.proofpoint.http.client.testing.BodySourceTester.writeBodySourceTo;
 import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;
 import static org.testng.Assert.assertEquals;
@@ -60,7 +62,6 @@ public class TestReportClient
 
     @BeforeMethod
     public void setup()
-            throws MalformedObjectNameException
     {
         nodeInfo = new NodeInfo("test-application", new NodeConfig()
                 .setEnvironment("test_environment")
@@ -80,14 +81,14 @@ public class TestReportClient
     public void testReportingDisabled()
     {
         httpClient = new TestingHttpClient();
-        ReportClient client = new ReportClient(nodeInfo, httpClient, new ReportClientConfig().setEnabled(false), objectMapper);
+        ReportClient client = new ReportClient(nodeInfo, httpClient, new ReportClientConfig().setEnabled(false), new ReportTagConfig(), objectMapper);
         client.report(System.currentTimeMillis(), collectedData);
     }
 
     @Test
     public void testReportData()
     {
-        ReportClient client = new ReportClient(nodeInfo, httpClient, new ReportClientConfig(), objectMapper);
+        ReportClient client = new ReportClient(nodeInfo, httpClient, new ReportClientConfig(), new ReportTagConfig(), objectMapper);
         client.report(TEST_TIME, collectedData);
         assertEquals(sentJson.size(), 2);
 
@@ -113,10 +114,9 @@ public class TestReportClient
 
     @Test
     public void testReportString()
-            throws MalformedObjectNameException
     {
 
-        ReportClient client = new ReportClient(nodeInfo, httpClient, new ReportClientConfig(), objectMapper);
+        ReportClient client = new ReportClient(nodeInfo, httpClient, new ReportClientConfig(), new ReportTagConfig(), objectMapper);
         collectedData = HashBasedTable.create();
         collectedData.put("Foo.String", ImmutableMap.of(), "test value");
         client.report(TEST_TIME, collectedData);
@@ -139,9 +139,8 @@ public class TestReportClient
     @Test
     public void testConfiguredTags()
     {
-
         ReportClient client = new ReportClient(nodeInfo, httpClient,
-                new ReportClientConfig()
+                new ReportClientConfig(), new ReportTagConfig()
                         .setTags(ImmutableMap.of("foo", "ba:r", "baz", "quux")), objectMapper);
         client.report(TEST_TIME, collectedData);
         assertEquals(sentJson.size(), 2);
@@ -178,10 +177,11 @@ public class TestReportClient
                 {
                 });
                 sentJson = Lists.newArrayList(sentJson);
-                Collections.sort(sentJson, (o1, o2) -> ((String) o1.get("name")).compareTo((String) o2.get("name")));
+                sentJson.sort(Comparator.comparing(o -> ((String) o.get("name"))));
             }
             catch (Exception e) {
-                throw propagate(e);
+                throwIfUnchecked(e);
+                throw new RuntimeException(e);
             }
 
             return mockResponse(HttpStatus.NO_CONTENT);

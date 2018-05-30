@@ -15,23 +15,26 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.Config;
-import com.proofpoint.configuration.DefunctConfig;
+import com.proofpoint.configuration.LegacyConfig;
 
-@DefunctConfig("report.uri")
-public class ReportClientConfig
+import java.util.Map;
+
+public class ReportTagConfig
 {
-    private boolean enabled = true;
+    private Map<String, String> tags = ImmutableMap.of();
 
-    public boolean isEnabled()
+    public Map<String, String> getTags()
     {
-        return enabled;
+        return tags;
     }
 
-    @Config("reporting.enabled")
-    public ReportClientConfig setEnabled(boolean enabled)
+    @Config("reporting.tag")
+    @LegacyConfig("report.tag")
+    public ReportTagConfig setTags(Map<String, String> tags)
     {
-        this.enabled = enabled;
+        this.tags = tags;
         return this;
     }
 }

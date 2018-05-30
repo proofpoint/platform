@@ -40,9 +40,9 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.http.client.Request.Builder.preparePost;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
+import static java.util.Objects.requireNonNull;
 
 class ReportClient
 {
@@ -54,21 +54,22 @@ class ReportClient
     private final ObjectMapper objectMapper;
 
     @Inject
-    ReportClient(NodeInfo nodeInfo, @ForReportClient HttpClient httpClient, ReportClientConfig reportClientConfig, ObjectMapper objectMapper)
+    ReportClient(NodeInfo nodeInfo, @ForReportClient HttpClient httpClient, ReportClientConfig reportClientConfig, ReportTagConfig reportTagConfig, ObjectMapper objectMapper)
     {
         this.objectMapper = objectMapper;
-        checkNotNull(nodeInfo, "nodeInfo is null");
-        checkNotNull(reportClientConfig, "reportClientConfig is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(reportClientConfig, "reportClientConfig is null");
+        requireNonNull(reportTagConfig, "reportTagConfig is null");
 
         Builder<String, String> builder = ImmutableMap.builder();
         builder.put("application", nodeInfo.getApplication());
         builder.put("host", nodeInfo.getInternalHostname());
         builder.put("environment", nodeInfo.getEnvironment());
         builder.put("pool", nodeInfo.getPool());
-        builder.putAll(reportClientConfig.getTags());
+        builder.putAll(reportTagConfig.getTags());
         this.instanceTags = builder.build();
 
-        this.httpClient = checkNotNull(httpClient, "httpClient is null");
+        this.httpClient = requireNonNull(httpClient, "httpClient is null");
     }
 
     public void report(long systemTimeMillis, Table<String, Map<String, String>, Object> collectedData)

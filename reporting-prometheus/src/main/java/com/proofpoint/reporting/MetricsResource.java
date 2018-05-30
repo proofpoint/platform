@@ -15,7 +15,11 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
+import com.proofpoint.node.NodeInfo;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -25,6 +29,7 @@ import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
@@ -36,11 +41,22 @@ public class MetricsResource
     private static final Pattern LABEL_NOT_ACCEPTED_CHARACTER_PATTERN = Pattern.compile("[^A-Za-z0-9_]");
     private static final Pattern INITIAL_DIGIT_PATTERN = Pattern.compile("[0-9]");
     private final PrometheusCollector prometheusCollector;
+    private final Map<String, String> instanceTags;
 
     @Inject
-    public MetricsResource(PrometheusCollector prometheusCollector)
+    public MetricsResource(PrometheusCollector prometheusCollector, NodeInfo nodeInfo, ReportTagConfig reportTagConfig)
     {
         this.prometheusCollector = requireNonNull(prometheusCollector, "prometheusCollector is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(reportTagConfig, "reportTagConfig is null");
+
+        Builder<String, String> builder = ImmutableSortedMap.naturalOrder();
+        builder.put("application", nodeInfo.getApplication());
+        builder.put("host", nodeInfo.getInternalHostname());
+        builder.put("environment", nodeInfo.getEnvironment());
+        builder.put("pool", nodeInfo.getPool());
+        builder.putAll(reportTagConfig.getTags());
+        this.instanceTags = builder.build();
     }
 
     @GET
@@ -58,7 +74,7 @@ public class MetricsResource
                         writer.write(entry.getKey());
 
                         char prefix = '{';
-                        for (Entry<String, String> tag : taggedValue.getTags().entrySet()) {
+                        for (Entry<String, String> tag : Iterables.concat(taggedValue.getTags().entrySet(), instanceTags.entrySet())) {
                             writer.append(prefix);
                             prefix = ',';
                             String label = LABEL_NOT_ACCEPTED_CHARACTER_PATTERN.matcher(tag.getKey()).replaceAll("_");
