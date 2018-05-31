@@ -180,6 +180,7 @@ public class JaxrsModule
             jaxrsBinder(binder).bindAdmin(QueryParamExceptionMapper.class);
             jaxrsBinder(binder).bindAdmin(OverrideMethodFilter.class);
             jaxrsBinder(binder).bindAdmin(ThreadDumpResource.class);
+            jaxrsBinder(binder).bindAdmin(LoggingResource.class);
 
             newSetBinder(binder, Object.class, JaxrsResource.class).permitDuplicates();
             newSetBinder(binder, JaxrsBinding.class, JaxrsResource.class).permitDuplicates();
