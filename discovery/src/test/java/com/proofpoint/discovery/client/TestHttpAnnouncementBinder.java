@@ -16,16 +16,14 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.Iterables;
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.discovery.client.announce.StaticAnnouncementHttpServerInfoImpl;
 import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
-import com.proofpoint.node.ApplicationNameModule;
+import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -34,6 +32,9 @@ import org.weakref.jmx.testing.TestingMBeanModule;
 import java.net.URI;
 import java.util.Set;
 
+import static com.google.common.base.Throwables.throwIfUnchecked;
+import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
+import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
 
 public class TestHttpAnnouncementBinder
@@ -133,6 +134,7 @@ public class TestHttpAnnouncementBinder
 
     @Test
     public void testHttpAnnouncementWithCustomProperties()
+            throws Exception
     {
         final StaticAnnouncementHttpServerInfoImpl httpServerInfo = new StaticAnnouncementHttpServerInfoImpl(
                 URI.create("http://127.0.0.1:4444"),
@@ -140,16 +142,18 @@ public class TestHttpAnnouncementBinder
                 URI.create("https://example.com:4444")
         );
 
-        Injector injector = Guice.createInjector(
-                new ApplicationNameModule("test-application"),
-                new TestingDiscoveryModule(),
-                new TestingMBeanModule(),
-                new ReportingModule(),
-                binder -> {
-                    binder.bind(AnnouncementHttpServerInfo.class).toInstance(httpServerInfo);
-                    DiscoveryBinder.discoveryBinder(binder).bindHttpAnnouncement("apple").addProperty("a", "apple");
-                }
-        );
+        Injector injector = bootstrapTest()
+                .withModules(
+                        new TestingNodeModule(),
+                        new TestingDiscoveryModule(),
+                        new TestingMBeanModule(),
+                        new ReportingModule(),
+                        binder -> {
+                            binder.bind(AnnouncementHttpServerInfo.class).toInstance(httpServerInfo);
+                            discoveryBinder(binder).bindHttpAnnouncement("apple").addProperty("a", "apple");
+                        }
+                )
+                .initialize();
 
         ServiceAnnouncement announcement = serviceAnnouncement("apple")
                 .addProperty("a", "apple")
@@ -167,15 +171,23 @@ public class TestHttpAnnouncementBinder
 
     private Injector createInjector(final StaticAnnouncementHttpServerInfoImpl httpServerInfo)
     {
-        return Guice.createInjector(
-                new ApplicationNameModule("test-application"),
-                new TestingDiscoveryModule(),
-                new ReportingModule(),
-                binder -> {
-                    binder.bind(AnnouncementHttpServerInfo.class).toInstance(httpServerInfo);
-                    DiscoveryBinder.discoveryBinder(binder).bindHttpAnnouncement("apple");
-                }
-        );
+        try {
+            return bootstrapTest()
+                    .withModules(
+                            new TestingNodeModule(),
+                            new TestingDiscoveryModule(),
+                            new ReportingModule(),
+                            binder -> {
+                                binder.bind(AnnouncementHttpServerInfo.class).toInstance(httpServerInfo);
+                                discoveryBinder(binder).bindHttpAnnouncement("apple");
+                            }
+                    )
+                    .initialize();
+        }
+        catch (Exception e) {
+            throwIfUnchecked(e);
+            throw new RuntimeException(e);
+        }
     }
 
     private void assertAnnouncement(Set<ServiceAnnouncement> actualAnnouncements, ServiceAnnouncement expected)
