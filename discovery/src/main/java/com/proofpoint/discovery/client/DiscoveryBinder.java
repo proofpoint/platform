@@ -19,7 +19,6 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.Provider;
-import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
@@ -34,6 +33,7 @@ import java.net.URI;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
+import static com.google.inject.Scopes.SINGLETON;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
@@ -69,7 +69,7 @@ public class DiscoveryBinder
     {
         requireNonNull(serviceType, "serviceType is null");
         bindConfig(binder).annotatedWith(serviceType).prefixedWith("discovery." + serviceType.value()).to(ServiceSelectorConfig.class);
-        binder.bind(ServiceSelector.class).annotatedWith(serviceType).toProvider(new ServiceSelectorProvider(serviceType.value())).in(Scopes.SINGLETON);
+        binder.bind(ServiceSelector.class).annotatedWith(serviceType).toProvider(new ServiceSelectorProvider(serviceType.value())).in(SINGLETON);
     }
 
     public void bindHttpBalancer(String type)
@@ -82,7 +82,7 @@ public class DiscoveryBinder
     {
         requireNonNull(serviceType, "serviceType is null");
         bindConfig(binder).annotatedWith(serviceType).prefixedWith("service-balancer." + serviceType.value()).to(HttpServiceBalancerConfig.class);
-        binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType).toProvider(new HttpServiceBalancerProvider(serviceType.value())).in(Scopes.SINGLETON);
+        binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType).toProvider(new HttpServiceBalancerProvider(serviceType.value())).in(SINGLETON);
     }
 
     public void bindServiceAnnouncement(ServiceAnnouncement announcement)
@@ -94,13 +94,13 @@ public class DiscoveryBinder
     public void bindServiceAnnouncement(Provider<ServiceAnnouncement> announcementProvider)
     {
         requireNonNull(announcementProvider, "announcementProvider is null");
-        serviceAnnouncementBinder.addBinding().toProvider(announcementProvider);
+        serviceAnnouncementBinder.addBinding().toProvider(announcementProvider).in(SINGLETON);
     }
 
     public <T extends ServiceAnnouncement> void bindServiceAnnouncement(Class<? extends Provider<T>> announcementProviderClass)
     {
         requireNonNull(announcementProviderClass, "announcementProviderClass is null");
-        serviceAnnouncementBinder.addBinding().toProvider(announcementProviderClass);
+        serviceAnnouncementBinder.addBinding().toProvider(announcementProviderClass).in(SINGLETON);
     }
 
     public ServiceAnnouncementBuilder bindHttpAnnouncement(String type)
@@ -136,7 +136,7 @@ public class DiscoveryBinder
     {
         requireNonNull(serviceType, "serviceType is null");
         bindSelector(serviceType);
-        binder.bind(HttpServiceSelector.class).annotatedWith(serviceType).toProvider(new HttpServiceSelectorProvider(serviceType.value())).in(Scopes.SINGLETON);
+        binder.bind(HttpServiceSelector.class).annotatedWith(serviceType).toProvider(new HttpServiceSelectorProvider(serviceType.value())).in(SINGLETON);
     }
 
     public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String type)
