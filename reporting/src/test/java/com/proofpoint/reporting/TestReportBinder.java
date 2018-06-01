@@ -49,6 +49,7 @@ import java.util.Set;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.spy;
@@ -695,7 +696,7 @@ public class TestReportBinder
         @Singleton
         BucketIdProvider getBucketIdProvider()
         {
-            return () -> 0;
+            return () -> bucketId(0, 0);
         }
     }
 
@@ -716,7 +717,7 @@ public class TestReportBinder
         @Singleton
         BucketIdProvider getBucketIdProvider()
         {
-            return () -> 0;
+            return () -> bucketId(0, 0);
         }
     }
 

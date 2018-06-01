@@ -18,6 +18,7 @@ package com.proofpoint.reporting;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableSortedMap;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,13 +28,16 @@ import java.util.SortedMap;
 abstract class TaggedValue
     implements Comparable<TaggedValue>
 {
-    static TaggedValue taggedValue(String type, Map<String, String> tags, Object value) {
-        return new AutoValue_TaggedValue(type, ImmutableSortedMap.copyOf(tags), value);
+    static TaggedValue taggedValue(String type, Map<String, String> tags, Long timestamp, Object value) {
+        return new AutoValue_TaggedValue(type, ImmutableSortedMap.copyOf(tags), timestamp, value);
     }
 
     abstract String getType();
 
     abstract SortedMap<String, String> getTags();
+
+    @Nullable
+    abstract Long getTimestamp();
 
     abstract Object getValue();
 

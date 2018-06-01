@@ -31,9 +31,11 @@ import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 @Path("/metrics")
 public class MetricsResource
@@ -114,6 +116,11 @@ public class MetricsResource
                         }
                         writer.append(' ');
                         writer.write(taggedValue.getValue().toString());
+                        Long timestamp = taggedValue.getTimestamp();
+                        if (timestamp != null) {
+                            writer.append(' ');
+                            writer.write(Long.toString(NANOSECONDS.toMillis(timestamp)));
+                        }
                         writer.append('\n');
                     }
                 }

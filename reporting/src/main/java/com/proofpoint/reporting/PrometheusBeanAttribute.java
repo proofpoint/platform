@@ -15,6 +15,8 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.auto.value.AutoValue;
+
 import javax.annotation.Nullable;
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
@@ -26,6 +28,21 @@ interface PrometheusBeanAttribute
 
     String getType();
 
-    Object getValue(@Nullable Object target)
+    ValueAndTimestamp getValue(@Nullable Object target)
             throws AttributeNotFoundException, MBeanException, ReflectionException;
+
+    @AutoValue
+    abstract class ValueAndTimestamp
+    {
+        static ValueAndTimestamp valueAndTimestamp(@Nullable Object value, @Nullable Long timestamp)
+        {
+            return new AutoValue_PrometheusBeanAttribute_ValueAndTimestamp(value, timestamp);
+        }
+
+        @Nullable
+        abstract Object getValue();
+
+        @Nullable
+        abstract Long getTimestamp();
+    }
 }

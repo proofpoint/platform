@@ -15,22 +15,20 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.proofpoint.reporting.BucketIdProvider;
+import com.proofpoint.reporting.BucketIdProvider.BucketId;
+
+import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
+import static com.proofpoint.reporting.Bucketed.BucketInfo.bucketInfo;
 
 public abstract class Bucketed<T>
 {
-    private static final BucketIdProvider INITIAL_BUCKET_ID_PROVIDER = new BucketIdProvider()
-    {
-        @Override
-        public int get()
-        {
-            return -5;
-        }
-    };
+    private static final BucketIdProvider INITIAL_BUCKET_ID_PROVIDER = () -> bucketId(-5, 0);
     private BucketIdProvider bucketIdProvider = INITIAL_BUCKET_ID_PROVIDER;
-    private int currentBucketId = -10;
+    private BucketId currentBucketId = bucketId(-10, 0);
     private T previousBucket = null;
     private T currentBucket = null;
 
@@ -43,10 +41,10 @@ public abstract class Bucketed<T>
     }
 
     @SuppressWarnings("UnusedDeclaration") // Called via reflection
-    private synchronized T getPreviousBucket()
+    private synchronized BucketInfo getPreviousBucket()
     {
         rotateBucketIfNeeded();
-        return previousBucket;
+        return bucketInfo(previousBucket, currentBucketId);
     }
 
     @VisibleForTesting
@@ -60,9 +58,9 @@ public abstract class Bucketed<T>
 
     private void rotateBucketIfNeeded()
     {
-        int bucketId = bucketIdProvider.get();
-        if (bucketId != currentBucketId) {
-            if (currentBucketId + 1 == bucketId) {
+        BucketId bucketId = bucketIdProvider.get();
+        if (bucketId.getId() != currentBucketId.getId()) {
+            if (currentBucketId.getId() + 1 == bucketId.getId()) {
                 previousBucket = currentBucket;
             }
             else {
@@ -71,5 +69,17 @@ public abstract class Bucketed<T>
             currentBucketId = bucketId;
             currentBucket = createBucket();
         }
+    }
+
+    @AutoValue
+    public abstract static class BucketInfo
+    {
+        static BucketInfo bucketInfo(Object bucket, BucketId bucketId) {
+            return new AutoValue_Bucketed_BucketInfo(bucket, bucketId);
+        }
+
+        public abstract Object getBucket();
+
+        public abstract BucketId getBucketId();
     }
 }

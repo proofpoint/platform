@@ -1,6 +1,7 @@
 package com.proofpoint.stats;
 
 import com.proofpoint.reporting.Bucketed;
+import com.proofpoint.reporting.Bucketed.BucketInfo;
 import com.proofpoint.stats.SparseCounterStat.Counter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -75,7 +76,8 @@ public class TestSparseCounterStat
     {
         Method method = Bucketed.class.getDeclaredMethod("getPreviousBucket");
         method.setAccessible(true);
-        Counter previousBucket = (Counter) method.invoke(counter);
+        BucketInfo bucketInfo = (BucketInfo) method.invoke(counter);
+        Counter previousBucket = (Counter) bucketInfo.getBucket();
         assertEquals(previousBucket.getCount(), expected);
     }
     
@@ -84,7 +86,8 @@ public class TestSparseCounterStat
     {
         Method method = Bucketed.class.getDeclaredMethod("getPreviousBucket");
         method.setAccessible(true);
-        Counter previousBucket = (Counter) method.invoke(counter);
+        BucketInfo bucketInfo = (BucketInfo) method.invoke(counter);
+        Counter previousBucket = (Counter) bucketInfo.getBucket();
         assertNull(previousBucket.getCount());
     }
 

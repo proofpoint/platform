@@ -15,11 +15,14 @@
  */
 package com.proofpoint.reporting;
 
+import com.proofpoint.reporting.Bucketed.BucketInfo;
+
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp.valueAndTimestamp;
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
 import static com.proofpoint.reporting.ReportedBean.GET_PREVIOUS_BUCKET;
 import static java.util.Objects.requireNonNull;
@@ -50,9 +53,11 @@ class BucketedPrometheusBeanAttribute implements PrometheusBeanAttribute
     }
 
     @Override
-    public Object getValue(Object target)
+    public ValueAndTimestamp getValue(Object target)
             throws AttributeNotFoundException, MBeanException, ReflectionException
     {
-        return delegate.getValue(invoke(firstNonNull(target, holder), GET_PREVIOUS_BUCKET));
+        BucketInfo bucketInfo = (BucketInfo) invoke(firstNonNull(target, holder), GET_PREVIOUS_BUCKET);
+        ValueAndTimestamp valueAndTimestamp = delegate.getValue(bucketInfo.getBucket());
+        return valueAndTimestamp(valueAndTimestamp.getValue(), bucketInfo.getBucketId().getTimestamp());
     }
 }

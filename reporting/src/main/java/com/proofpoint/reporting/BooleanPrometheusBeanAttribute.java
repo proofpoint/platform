@@ -22,6 +22,7 @@ import javax.management.ReflectionException;
 import java.lang.reflect.Method;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp.valueAndTimestamp;
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
 import static java.util.Objects.requireNonNull;
 
@@ -51,7 +52,7 @@ class BooleanPrometheusBeanAttribute implements PrometheusBeanAttribute
     }
 
     @Override
-    public Object getValue(@Nullable Object target)
+    public ValueAndTimestamp getValue(@Nullable Object target)
             throws AttributeNotFoundException, MBeanException, ReflectionException
     {
         Boolean value = (Boolean) invoke(firstNonNull(target, this.target), getter);
@@ -59,8 +60,8 @@ class BooleanPrometheusBeanAttribute implements PrometheusBeanAttribute
             return null;
         }
         if (value) {
-            return 1;
+            return valueAndTimestamp(1, null);
         }
-        return 0;
+        return valueAndTimestamp(0, null);
     }
 }

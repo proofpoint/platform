@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
 import static com.proofpoint.reporting.ReportExporter.notifyBucketIdProvider;
 import static com.proofpoint.reporting.Util.getMethod;
 import static org.testng.Assert.assertEquals;
@@ -251,9 +252,9 @@ public class TestReportedBean
         private int bucketId = 0;
 
         @Override
-        public int get()
+        public BucketId get()
         {
-            return bucketId;
+            return bucketId(bucketId, bucketId * 3);
         }
 
         public void advance()

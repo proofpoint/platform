@@ -15,6 +15,8 @@
  */
 package com.proofpoint.reporting;
 
+import com.proofpoint.reporting.Bucketed.BucketInfo;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,16 +80,15 @@ class ReportedBean
         List<PrometheusBeanAttribute> prometheusAttributes = new ArrayList<>();
 
         if (target instanceof Bucketed) {
-
-            Object value = null;
+            BucketInfo bucketInfo = null;
             try {
-                value = GET_PREVIOUS_BUCKET.invoke(target);
+                bucketInfo = (BucketInfo) GET_PREVIOUS_BUCKET.invoke(target);
             }
             catch (Exception ignored) {
                 // todo log me
             }
-            if (value != null) {
-                ReportedBean reportedBean = ReportedBean.forTarget(value);
+            if (bucketInfo != null) {
+                ReportedBean reportedBean = ReportedBean.forTarget(bucketInfo.getBucket());
                 for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
                     attributes.add(new BucketedReportedBeanAttribute(target, attribute));
                 }

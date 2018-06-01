@@ -16,6 +16,7 @@
 package com.proofpoint.stats;
 
 import com.proofpoint.reporting.Bucketed;
+import com.proofpoint.reporting.Bucketed.BucketInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -74,7 +75,8 @@ public class TestMaxGauge
     {
         Method method = Bucketed.class.getDeclaredMethod("getPreviousBucket");
         method.setAccessible(true);
-        MaxGauge.Bucket previousBucket = (MaxGauge.Bucket) method.invoke(maxGauge);
+        BucketInfo bucketInfo = (BucketInfo) method.invoke(maxGauge);
+        MaxGauge.Bucket previousBucket = (MaxGauge.Bucket) bucketInfo.getBucket();
         assertEquals(previousBucket.getMax(), expected);
     }
 }

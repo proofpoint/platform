@@ -15,6 +15,8 @@
  */
 package com.proofpoint.reporting;
 
+import com.proofpoint.reporting.Bucketed.BucketInfo;
+
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
@@ -47,6 +49,7 @@ class BucketedReportedBeanAttribute implements ReportedBeanAttribute
     public Object getValue(Object target)
             throws AttributeNotFoundException, MBeanException, ReflectionException
     {
-        return delegate.getValue(invoke(firstNonNull(target, holder), GET_PREVIOUS_BUCKET));
+        BucketInfo bucketInfo = (BucketInfo) invoke(firstNonNull(target, holder), GET_PREVIOUS_BUCKET);
+        return delegate.getValue(bucketInfo.getBucket());
     }
 }

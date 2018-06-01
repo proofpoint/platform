@@ -1,6 +1,7 @@
 package com.proofpoint.stats;
 
 import com.proofpoint.reporting.Bucketed;
+import com.proofpoint.reporting.Bucketed.BucketInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -84,7 +85,8 @@ public class TestSparseDistributionStat
     {
         Method method = Bucketed.class.getDeclaredMethod("getPreviousBucket");
         method.setAccessible(true);
-        SparseDistributionStat.Distribution previousBucket = (SparseDistributionStat.Distribution) method.invoke(distribution);
+        BucketInfo bucketInfo = (BucketInfo) method.invoke(distribution);
+        SparseDistributionStat.Distribution previousBucket = (SparseDistributionStat.Distribution) bucketInfo.getBucket();
         assertEquals(previousBucket.getCount(), expectedCount);
         assertEquals(previousBucket.getMin(), expectedMin);
         assertEquals(previousBucket.getMax(), expectedMax);
