@@ -76,10 +76,17 @@ class PrometheusCollector
             if (registrationInfo.isApplicationPrefix()) {
                 nameBuilder.append(applicationPrefix);
             }
-            nameBuilder.append(sanitizeMetricName(registrationInfo.getNamePrefix())).append('_');
+            nameBuilder.append(sanitizeMetricName(registrationInfo.getNamePrefix()));
 
             for (PrometheusBeanAttribute attribute : registrationInfo.getReportedBean().getPrometheusAttributes()) {
-                String name = nameBuilder + sanitizeMetricName(attribute.getName());
+                String metricName = sanitizeMetricName(attribute.getName());
+                String name;
+                if ("" == metricName) {
+                    name = nameBuilder.toString();
+                }
+                else {
+                    name = nameBuilder + "_" + metricName;
+                }
                 if (INITIAL_DIGIT_PATTERN.matcher(name).lookingAt()) {
                     name = "_" + name;
                 }

@@ -15,18 +15,25 @@ import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.stats.CounterStat;
+import com.proofpoint.stats.DistributionStat;
 import com.proofpoint.stats.MaxGauge;
 import com.proofpoint.stats.SparseCounterStat;
+import com.proofpoint.stats.SparseDistributionStat;
+import com.proofpoint.stats.SparseTimeStat;
+import com.proofpoint.stats.TimeStat;
 import com.proofpoint.testing.Closeables;
+import com.proofpoint.units.Duration;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Nested;
 
 import javax.management.InstanceAlreadyExistsException;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.inject.Scopes.SINGLETON;
@@ -291,6 +298,118 @@ public class TestReportingPrometheusModule
                         "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n");
     }
 
+    @Test(dataProvider = "getStatsObjects")
+    public void testSummary(StatsObject statsObject, String expectedSuffix)
+    {
+        Injector injector = createServer(binder -> {
+            binder.bind(StatsObject.class).toInstance(statsObject);
+            reportBinder(binder).export(StatsObject.class);
+        });
+        TestingBucketIdProvider bucketIdProvider = injector.getInstance(TestingBucketIdProvider.class);
+
+        for (int i = 0; i < 100; i++) {
+             statsObject.add(1000);
+        }
+        bucketIdProvider.incrementBucket();
+        for (int i = 0; i < 100; i++) {
+             statsObject.add(i);
+        }
+        bucketIdProvider.incrementBucket();
+        statsObject.add(1000);
+
+        StringResponse response = client.execute(
+                prepareGet().setUri(uriFor("/metrics")).build(),
+                createStringResponseHandler());
+
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getBody(),
+                "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
+                        "#TYPE StatsObject summary\n" +
+                        "StatsObject{quantile=\"0\"," + EXPECTED_INSTANCE_TAGS + "} 0" + expectedSuffix + " 1200\n" +
+                        "StatsObject{quantile=\"0.5\"," + EXPECTED_INSTANCE_TAGS + "} 50" + expectedSuffix + " 1200\n" +
+                        "StatsObject{quantile=\"0.75\"," + EXPECTED_INSTANCE_TAGS + "} 75" + expectedSuffix + " 1200\n" +
+                        "StatsObject{quantile=\"0.90\"," + EXPECTED_INSTANCE_TAGS + "} 90" + expectedSuffix + " 1200\n" +
+                        "StatsObject{quantile=\"0.95\"," + EXPECTED_INSTANCE_TAGS + "} 95" + expectedSuffix + " 1200\n" +
+                        "StatsObject{quantile=\"0.99\"," + EXPECTED_INSTANCE_TAGS + "} 99" + expectedSuffix + " 1200\n" +
+                        "StatsObject{quantile=\"1\"," + EXPECTED_INSTANCE_TAGS + "} 99" + expectedSuffix + " 1200\n" +
+                        "StatsObject_sum{" + EXPECTED_INSTANCE_TAGS + "} 104950" + expectedSuffix + " 1200\n" +
+                        "StatsObject_count{" + EXPECTED_INSTANCE_TAGS + "} 200 1200\n"
+        );
+    }
+
+    @DataProvider(name = "getStatsObjects")
+    public Object[][] getStatsObjects()
+    {
+        return new Object[][] {
+                new Object[] {new StatsObject()
+                {
+                    private final DistributionStat delegate = new DistributionStat();
+
+                    @Override
+                    public Object getDelegate()
+                    {
+                        return delegate;
+                    }
+
+                    @Override
+                    void add(int value)
+                    {
+                        delegate.add(value);
+                    }
+                }, ""},
+                new Object[] {new StatsObject()
+                {
+                    private final SparseDistributionStat delegate = new SparseDistributionStat();
+
+                    @Override
+                    public Object getDelegate()
+                    {
+                        return delegate;
+                    }
+
+                    @Override
+                    void add(int value)
+                    {
+                        delegate.add(value);
+                    }
+                }, ""},
+                new Object[] {new StatsObject()
+                {
+                    private final TimeStat delegate = new TimeStat();
+
+                    @Override
+                    public Object getDelegate()
+                    {
+                        return delegate;
+                    }
+
+                    @Override
+                    void add(int value)
+                    {
+                        delegate.add(new Duration(value, TimeUnit.SECONDS));
+                    }
+                }, ".0"},
+                new Object[] {new StatsObject()
+                {
+                    private final SparseTimeStat delegate = new SparseTimeStat();
+
+                    @Override
+                    public Object getDelegate()
+                    {
+                        return delegate;
+                    }
+
+                    @Override
+                    void add(int value)
+                    {
+                        delegate.add(new Duration(value, TimeUnit.SECONDS));
+                    }
+                }, ".0"},
+        };
+    }
+
+
     private static class TestingValue
     {
         @Override
@@ -536,6 +655,20 @@ public class TestReportingPrometheusModule
         void incrementBucket()
         {
             bucket.incrementAndGet();
+        }
+    }
+
+    private abstract static class StatsObject
+    {
+        @Flatten
+        public abstract Object getDelegate();
+
+        abstract void add(int value);
+
+        @Override
+        public String toString()
+        {
+            return getDelegate().getClass().getSimpleName();
         }
     }
 }

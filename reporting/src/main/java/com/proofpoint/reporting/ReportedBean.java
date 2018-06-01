@@ -92,8 +92,12 @@ class ReportedBean
                 for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
                     attributes.add(new BucketedReportedBeanAttribute(target, attribute));
                 }
-                for (PrometheusBeanAttribute prometheusAttribute : reportedBean.getPrometheusAttributes()) {
-                    prometheusAttributes.add(new BucketedPrometheusBeanAttribute(target, prometheusAttribute));
+                if (target instanceof PrometheusSummary) {
+                    prometheusAttributes.add(new SummaryPrometheusBeanAttribute(target, reportedBean.getPrometheusAttributes()));
+                } else {
+                    for (PrometheusBeanAttribute prometheusAttribute : reportedBean.getPrometheusAttributes()) {
+                        prometheusAttributes.add(new BucketedPrometheusBeanAttribute(target, prometheusAttribute));
+                    }
                 }
             }
         }
