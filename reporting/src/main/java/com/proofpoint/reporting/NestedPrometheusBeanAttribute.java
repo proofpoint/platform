@@ -48,7 +48,7 @@ class NestedPrometheusBeanAttribute implements PrometheusBeanAttribute
     }
 
     @Override
-    public Object getValue(Object target)
+    public ValueAndTimestamp getValue(Object target)
             throws AttributeNotFoundException, MBeanException, ReflectionException
     {
         if (target != null) {

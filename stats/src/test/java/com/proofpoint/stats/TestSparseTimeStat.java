@@ -1,6 +1,7 @@
 package com.proofpoint.stats;
 
 import com.proofpoint.reporting.Bucketed;
+import com.proofpoint.reporting.Bucketed.BucketInfo;
 import com.proofpoint.stats.SparseTimeStat.BlockTimer;
 import com.proofpoint.testing.TestingTicker;
 import com.proofpoint.units.Duration;
@@ -187,7 +188,8 @@ public class TestSparseTimeStat
     {
         Method method = Bucketed.class.getDeclaredMethod("getPreviousBucket");
         method.setAccessible(true);
-        SparseTimeStat.Distribution previousBucket = (SparseTimeStat.Distribution) method.invoke(distribution);
+        BucketInfo bucketInfo = (BucketInfo) method.invoke(distribution);
+        SparseTimeStat.Distribution previousBucket = (SparseTimeStat.Distribution) bucketInfo.getBucket();
         assertEquals(previousBucket.getCount(), expectedCount);
         assertEquals(previousBucket.getMin(), expectedMin);
         assertEquals(previousBucket.getMax(), expectedMax);

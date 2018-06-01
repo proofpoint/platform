@@ -1,5 +1,17 @@
 Platform 1.79
 
+* Reporting
+
+  We created ReportingPrometheusModule() for enabling Prometheus collection
+  of the reporting metrics. The module may be used either in addition to or
+  instead of ReportingClientModule() (which exports the metrics to KairosDB).
+
+  ReportingPrometheusModule() exposes on the admin port a "/metrics" resource
+  which returns the data in Prometheus format.
+
+  This required making an incompatible change to BucketIdProvider. It is
+  unlikely that code outside of Platform itself is directly using this class.
+
 * TestingHttpServer
 
   We changed TestingHttpServerModule and TestingAdminHttpServerModule to

@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.proofpoint.node.NodeInfo;
+import com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 
 import javax.inject.Inject;
@@ -82,21 +83,24 @@ class PrometheusCollector
                 if (INITIAL_DIGIT_PATTERN.matcher(name).lookingAt()) {
                     name = "_" + name;
                 }
-                Object value = null;
+                ValueAndTimestamp valueAndTimestamp = null;
 
                 try {
-                    value = attribute.getValue(null);
+                    valueAndTimestamp = attribute.getValue(null);
                 }
                 catch (AttributeNotFoundException | MBeanException | ReflectionException ignored) {
                 }
 
-                if (value != null && isReportable(value) && value instanceof Number) {
-                    ++numAttributes;
-                    valuesByMetric.put(name, taggedValue(attribute.getType(), registrationInfo.getTags(), value));
+                if (valueAndTimestamp != null) {
+                    Object value = valueAndTimestamp.getValue();
+                    if (value != null && isReportable(value) && value instanceof Number) {
+                        ++numAttributes;
+                        valuesByMetric.put(name, taggedValue(attribute.getType(), registrationInfo.getTags(), valueAndTimestamp.getTimestamp(), value));
+                    }
                 }
             }
         }
-        valuesByMetric.put("ReportCollector_NumMetrics", taggedValue("gauge", versionTags, numAttributes));
+        valuesByMetric.put("ReportCollector_NumMetrics", taggedValue("gauge", versionTags, null, numAttributes));
         return valuesByMetric;
     }
 }

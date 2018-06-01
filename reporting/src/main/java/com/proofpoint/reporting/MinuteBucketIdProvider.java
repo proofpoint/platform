@@ -20,6 +20,7 @@ import com.google.inject.Inject;
 
 import java.util.concurrent.TimeUnit;
 
+import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
 import static java.lang.System.currentTimeMillis;
 
 public class MinuteBucketIdProvider
@@ -42,9 +43,13 @@ public class MinuteBucketIdProvider
     }
 
     @Override
-    public int get()
+    public BucketId get()
     {
-        return (int) ((ticker.read() - initialValue) / ONE_MINUTE_IN_NANOS);
+        long nanosSinceInitial = ticker.read() - initialValue;
+        int id = (int) (nanosSinceInitial / ONE_MINUTE_IN_NANOS);
+        long nanosSinceBoundary = nanosSinceInitial % ONE_MINUTE_IN_NANOS;
+        long timeAtBoundary = TimeUnit.MILLISECONDS.toNanos(currentTimeMillis()) - nanosSinceBoundary;
+        return bucketId(id, timeAtBoundary);
     }
 
     public long getLastSystemTimeMillis()

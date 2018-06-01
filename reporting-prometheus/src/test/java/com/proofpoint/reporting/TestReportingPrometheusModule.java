@@ -15,12 +15,14 @@ import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.stats.CounterStat;
+import com.proofpoint.stats.MaxGauge;
 import com.proofpoint.stats.SparseCounterStat;
 import com.proofpoint.testing.Closeables;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Nested;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -32,6 +34,7 @@ import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
+import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static org.testng.Assert.assertEquals;
 
@@ -261,6 +264,33 @@ public class TestReportingPrometheusModule
                         "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
 
+    @Test
+    public void testMaxGauge()
+    {
+        Injector injector = createServer(binder -> {
+            binder.bind(MaxGaugeObject.class).in(SINGLETON);
+            reportBinder(binder).export(MaxGaugeObject.class);
+        });
+        MaxGaugeObject maxGaugeObject = injector.getInstance(MaxGaugeObject.class);
+        TestingBucketIdProvider bucketIdProvider = injector.getInstance(TestingBucketIdProvider.class);
+
+        maxGaugeObject.getMaxGauge().update(10);
+        maxGaugeObject.getMaxGauge().update(1);
+        bucketIdProvider.incrementBucket();
+        maxGaugeObject.getMaxGauge().update(1000);
+
+        StringResponse response = client.execute(
+                prepareGet().setUri(uriFor("/metrics")).build(),
+                createStringResponseHandler());
+
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getBody(),
+                "#TYPE MaxGaugeObject_Max gauge\n" +
+                        "MaxGaugeObject_Max{" + EXPECTED_INSTANCE_TAGS + "} 10 1100\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n");
+    }
+
     private static class TestingValue
     {
         @Override
@@ -444,6 +474,17 @@ public class TestReportingPrometheusModule
         }
     }
 
+    private static class MaxGaugeObject
+    {
+        private MaxGauge maxGauge = new MaxGauge();
+
+        @Flatten
+        public MaxGauge getMaxGauge()
+        {
+            return maxGauge;
+        }
+    }
+
     private Injector createServer(Module module)
     {
         Injector injector;
@@ -486,9 +527,10 @@ public class TestReportingPrometheusModule
         private AtomicInteger bucket = new AtomicInteger();
 
         @Override
-        public int get()
+        public BucketId get()
         {
-            return bucket.get();
+            int id = bucket.get();
+            return bucketId(id, id * 100_000_000 + 1_000_000_000);
         }
 
         void incrementBucket()

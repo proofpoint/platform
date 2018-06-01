@@ -1,6 +1,7 @@
 package com.proofpoint.stats;
 
 import com.proofpoint.reporting.Bucketed;
+import com.proofpoint.reporting.Bucketed.BucketInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -79,7 +80,8 @@ public class TestBucketedTimeDistribution
     {
         Method method = Bucketed.class.getDeclaredMethod("getPreviousBucket");
         method.setAccessible(true);
-        BucketedTimeDistribution.Distribution previousBucket = (BucketedTimeDistribution.Distribution) method.invoke(distribution);
+        BucketInfo bucketInfo = (BucketInfo) method.invoke(distribution);
+        BucketedTimeDistribution.Distribution previousBucket = (BucketedTimeDistribution.Distribution) bucketInfo.getBucket();
         assertEquals(previousBucket.getCount(), (double) expectedCount);
         assertEquals(previousBucket.getMin(), expectedMin);
         assertEquals(previousBucket.getMax(), expectedMax);

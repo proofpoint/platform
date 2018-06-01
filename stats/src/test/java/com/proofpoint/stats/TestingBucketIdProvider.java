@@ -17,14 +17,16 @@ package com.proofpoint.stats;
 
 import com.proofpoint.reporting.BucketIdProvider;
 
+import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
+
 class TestingBucketIdProvider
     implements BucketIdProvider
 {
     public int id = 0;
 
     @Override
-    public int get()
+    public BucketId get()
     {
-        return id;
+        return bucketId(id, id * 10);
     }
 }
