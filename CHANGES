@@ -1,3 +1,10 @@
+Platform 1.79
+
+* TestingHttpServer
+
+  We changed TestingHttpServerModule and TestingAdminHttpServerModule to
+  enable stack traces in error responses.
+
 Platform 1.78
 
 * Library Upgrades
