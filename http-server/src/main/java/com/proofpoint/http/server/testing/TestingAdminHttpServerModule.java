@@ -63,7 +63,11 @@ public class TestingAdminHttpServerModule
 
         // Jetty scales required threads based on processor count, so pick a safe number
         int threads = Math.max(200, Runtime.getRuntime().availableProcessors() * 2);
-        HttpServerConfig config = new HttpServerConfig().setMinThreads(1).setMaxThreads(threads).setHttpPort(0);
+        HttpServerConfig config = new HttpServerConfig()
+                .setMinThreads(1)
+                .setMaxThreads(threads)
+                .setHttpPort(0)
+                .setShowStackTrace(true);
 
         binder.bind(HttpServerConfig.class).toInstance(config);
         binder.bind(InternalNetworkConfig.class).toInstance(new InternalNetworkConfig());

@@ -6,6 +6,11 @@ Platform 1.76
   until the Announcer is asked to send an announcement. This was done to
   aid transition of services into Kubernetes.
 
+* TestingHttpServer
+
+  We changed TestingHttpServerModule and TestingAdminHttpServerModule to
+  enable stack traces in error responses.
+
 * Maven plugin upgrades
 
 - jacoco-maven-plugin to 0.8.1 (was 0.7.9)
