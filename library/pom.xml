@@ -1444,7 +1444,7 @@
                                     <build>
                                         <from>${project.docker.from}</from>
                                         <optimise>true</optimise>
-                                        <runCmds>
+                                        <runCmds combine.children="append">
                                             <run>useradd -M -d /service -u ${project.docker.uid} service</run>
                                             <run>mkdir /service/var</run>
                                             <run>chown service /service/var</run>
@@ -1454,14 +1454,14 @@
                                         <assembly>
                                             <targetDir>/service</targetDir>
                                             <inline>
-                                                <files>
+                                                <files combine.children="append">
                                                     <file>
                                                         <source>target/${project.artifactId}-${project.version}.jar</source>
                                                         <destName>main.jar</destName>
                                                         <outputDirectory>lib/</outputDirectory>
                                                     </file>
                                                 </files>
-                                                <dependencySets>
+                                                <dependencySets combine.children="append">
                                                     <dependencySet>
                                                         <scope>runtime</scope>
                                                         <useProjectArtifact>false</useProjectArtifact>
