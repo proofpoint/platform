@@ -34,13 +34,16 @@ interface PrometheusBeanAttribute
     @AutoValue
     abstract class ValueAndTimestamp
     {
-        static ValueAndTimestamp valueAndTimestamp(@Nullable Object value, @Nullable Long timestamp)
+        @Nullable
+        static ValueAndTimestamp valueAndTimestamp(@Nullable PrometheusValue value, @Nullable Long timestamp)
         {
-            return new AutoValue_PrometheusBeanAttribute_ValueAndTimestamp(value, timestamp);
+            if (value != null) {
+                return new AutoValue_PrometheusBeanAttribute_ValueAndTimestamp(value, timestamp);
+            }
+            return null;
         }
 
-        @Nullable
-        abstract Object getValue();
+        abstract PrometheusValue getValue();
 
         @Nullable
         abstract Long getTimestamp();

@@ -31,7 +31,8 @@ import java.util.regex.Pattern;
 
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static com.proofpoint.reporting.ReportUtils.isReportable;
+import static com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp.valueAndTimestamp;
+import static com.proofpoint.reporting.SimplePrometheusValue.simplePrometheusValue;
 import static com.proofpoint.reporting.TaggedValue.taggedValue;
 import static java.util.Objects.requireNonNull;
 
@@ -70,7 +71,6 @@ class PrometheusCollector
     {
         Multimap<String, TaggedValue> valuesByMetric = MultimapBuilder.treeKeys().treeSetValues().build();
 
-        int numAttributes = 0;
         for (RegistrationInfo registrationInfo : reportedBeanRegistry.getReportedBeans()) {
             StringBuilder nameBuilder = new StringBuilder();
             if (registrationInfo.isApplicationPrefix()) {
@@ -92,15 +92,11 @@ class PrometheusCollector
                 }
 
                 if (valueAndTimestamp != null) {
-                    Object value = valueAndTimestamp.getValue();
-                    if (value != null && isReportable(value) && value instanceof Number) {
-                        ++numAttributes;
-                        valuesByMetric.put(name, taggedValue(attribute.getType(), registrationInfo.getTags(), valueAndTimestamp.getTimestamp(), value));
-                    }
+                    valuesByMetric.put(name, taggedValue(attribute.getType(), registrationInfo.getTags(), valueAndTimestamp));
                 }
             }
         }
-        valuesByMetric.put("ReportCollector_NumMetrics", taggedValue("gauge", versionTags, null, numAttributes));
+        valuesByMetric.put("ReportCollector_NumMetrics", taggedValue("gauge", versionTags, valueAndTimestamp(simplePrometheusValue(valuesByMetric.size()), null)));
         return valuesByMetric;
     }
 }

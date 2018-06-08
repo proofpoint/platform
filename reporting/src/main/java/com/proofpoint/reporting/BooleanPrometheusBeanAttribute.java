@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp.valueAndTimestamp;
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
+import static com.proofpoint.reporting.SimplePrometheusValue.simplePrometheusValue;
 import static java.util.Objects.requireNonNull;
 
 class BooleanPrometheusBeanAttribute implements PrometheusBeanAttribute
@@ -60,8 +61,8 @@ class BooleanPrometheusBeanAttribute implements PrometheusBeanAttribute
             return null;
         }
         if (value) {
-            return valueAndTimestamp(1, null);
+            return valueAndTimestamp(simplePrometheusValue(1), null);
         }
-        return valueAndTimestamp(0, null);
+        return valueAndTimestamp(simplePrometheusValue(0), null);
     }
 }

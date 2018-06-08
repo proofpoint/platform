@@ -31,17 +31,12 @@ import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 @Path("/metrics")
 public class MetricsResource
 {
-    private static final Pattern LABEL_NOT_ACCEPTED_CHARACTER_PATTERN = Pattern.compile("[^A-Za-z0-9_]");
-    private static final Pattern INITIAL_DIGIT_PATTERN = Pattern.compile("[0-9]");
     private final PrometheusCollector prometheusCollector;
     private final Map<String, String> instanceTags;
 
@@ -80,48 +75,12 @@ public class MetricsResource
                             writer.append('\n');
                         }
 
-                        writer.write(entry.getKey());
-
-                        char prefix = '{';
-                        for (Entry<String, String> tag : Iterables.concat(taggedValue.getTags().entrySet(), instanceTags.entrySet())) {
-                            writer.append(prefix);
-                            prefix = ',';
-                            String label = LABEL_NOT_ACCEPTED_CHARACTER_PATTERN.matcher(tag.getKey()).replaceAll("_");
-                            String value = tag.getValue();
-                            if (INITIAL_DIGIT_PATTERN.matcher(label).lookingAt()) {
-                                writer.append('_');
-                            }
-                            writer.write(label);
-                            writer.append("=\"");
-                            for (int i = 0; i < value.length(); i++) {
-                                char c = value.charAt(i);
-                                switch (c) {
-                                    case '\\':
-                                        writer.append("\\\\");
-                                        break;
-                                    case '\"':
-                                        writer.append("\\\"");
-                                        break;
-                                    case '\n':
-                                        writer.append("\\n");
-                                        break;
-                                    default:
-                                        writer.append(c);
-                                }
-                            }
-                            writer.append("\"");
-                        }
-                        if (prefix == ',') {
-                            writer.append('}');
-                        }
-                        writer.append(' ');
-                        writer.write(taggedValue.getValue().toString());
-                        Long timestamp = taggedValue.getTimestamp();
-                        if (timestamp != null) {
-                            writer.append(' ');
-                            writer.write(Long.toString(NANOSECONDS.toMillis(timestamp)));
-                        }
-                        writer.append('\n');
+                        taggedValue.getValueAndTimestamp().getValue().writeMetric(
+                                writer,
+                                entry.getKey(),
+                                Iterables.concat(taggedValue.getTags().entrySet(), instanceTags.entrySet()),
+                                taggedValue.getValueAndTimestamp().getTimestamp()
+                        );
                     }
                 }
             }

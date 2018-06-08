@@ -18,6 +18,8 @@ package com.proofpoint.reporting;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.Test;
 
+import static com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp.valueAndTimestamp;
+import static com.proofpoint.reporting.SimplePrometheusValue.simplePrometheusValue;
 import static com.proofpoint.reporting.TaggedValue.taggedValue;
 import static com.proofpoint.testing.EquivalenceTester.comparisonTester;
 
@@ -26,12 +28,13 @@ public class TestTaggedValue
     @Test
     public void testComparison() {
         comparisonTester()
-                .addLesserGroup(taggedValue("gauge", ImmutableMap.of(), null, 3), taggedValue("counter", ImmutableMap.of(), 3333L, 4))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x"), null, 1))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x", "b", "y"), null, 1))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x", "b", "z"), null, 1))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "y", "b", "y"), null, 1))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("b", "y"), null, 1))
+                .addLesserGroup(taggedValue("gauge", ImmutableMap.of(), valueAndTimestamp(simplePrometheusValue(3), null)),
+                        taggedValue("counter", ImmutableMap.of(), valueAndTimestamp(simplePrometheusValue(4), 3333L)))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x"), valueAndTimestamp(simplePrometheusValue(1), null)))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x", "b", "y"), valueAndTimestamp(simplePrometheusValue(1), null)))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x", "b", "z"), valueAndTimestamp(simplePrometheusValue(1), null)))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "y", "b", "y"), valueAndTimestamp(simplePrometheusValue(1), null)))
+                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("b", "y"), valueAndTimestamp(simplePrometheusValue(1), null)))
                 .check();
     }
 }

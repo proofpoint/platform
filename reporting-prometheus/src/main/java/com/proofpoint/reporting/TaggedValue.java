@@ -17,8 +17,8 @@ package com.proofpoint.reporting;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableSortedMap;
+import com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp;
 
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,20 +26,17 @@ import java.util.SortedMap;
 
 @AutoValue
 abstract class TaggedValue
-    implements Comparable<TaggedValue>
+        implements Comparable<TaggedValue>
 {
-    static TaggedValue taggedValue(String type, Map<String, String> tags, Long timestamp, Object value) {
-        return new AutoValue_TaggedValue(type, ImmutableSortedMap.copyOf(tags), timestamp, value);
+    static TaggedValue taggedValue(String type, Map<String, String> tags, ValueAndTimestamp valueAndTimestamp) {
+        return new AutoValue_TaggedValue(type, ImmutableSortedMap.copyOf(tags), valueAndTimestamp);
     }
 
     abstract String getType();
 
     abstract SortedMap<String, String> getTags();
 
-    @Nullable
-    abstract Long getTimestamp();
-
-    abstract Object getValue();
+    abstract ValueAndTimestamp getValueAndTimestamp();
 
     @Override
     public int compareTo(TaggedValue o)
