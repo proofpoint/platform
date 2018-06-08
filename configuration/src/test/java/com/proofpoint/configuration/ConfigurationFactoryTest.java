@@ -231,11 +231,30 @@ public class ConfigurationFactoryTest
         properties.put("string-value", "this is a");
         properties.put("string-b", "this is b");
         TestMonitor monitor = new TestMonitor();
-        Injector injector = createInjector(properties, null, null, null, monitor, binder -> bindConfig(binder).bind(LegacyConfigPresent.class));
+        Injector injector = createInjector(properties, null, null, null, monitor,
+                binder -> bindConfig(binder).bind(LegacyConfigPresent.class));
         LegacyConfigPresent legacyConfigPresent = injector.getInstance(LegacyConfigPresent.class);
         monitor.assertNumberOfErrors(0);
         monitor.assertNumberOfWarnings(1);
         monitor.assertMatchingWarningRecorded("string-value", "replaced", "Use 'string-a'");
+        assertNotNull(legacyConfigPresent);
+        assertEquals(legacyConfigPresent.getStringA(), "this is a");
+        assertEquals(legacyConfigPresent.getStringB(), "this is b");
+    }
+
+    @Test
+    public void testConfigurationWithPrefixThroughLegacyConfig()
+    {
+        Map<String, String> properties = new TreeMap<>();
+        properties.put("example.string-value", "this is a");
+        properties.put("example.string-b", "this is b");
+        TestMonitor monitor = new TestMonitor();
+        Injector injector = createInjector(properties, null, null, null, monitor,
+                binder -> bindConfig(binder).bind(LegacyConfigPresent.class).prefixedWith("example"));
+        LegacyConfigPresent legacyConfigPresent = injector.getInstance(LegacyConfigPresent.class);
+        monitor.assertNumberOfErrors(0);
+        monitor.assertNumberOfWarnings(1);
+        monitor.assertMatchingWarningRecorded("Configuration property 'example.string-value' has been replaced. Use 'example.string-a' instead.");
         assertNotNull(legacyConfigPresent);
         assertEquals(legacyConfigPresent.getStringA(), "this is a");
         assertEquals(legacyConfigPresent.getStringB(), "this is b");
