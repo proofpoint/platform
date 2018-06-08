@@ -15,8 +15,16 @@
  */
 package com.proofpoint.reporting;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
+
 public final class ReportUtils
 {
+    private static final Pattern LABEL_NOT_ACCEPTED_CHARACTER_PATTERN = Pattern.compile("[^A-Za-z0-9_]");
+    private static final Pattern INITIAL_DIGIT_PATTERN = Pattern.compile("[0-9]");
+
     private ReportUtils()
     {}
 
@@ -38,5 +46,42 @@ public final class ReportUtils
             return !(value.equals(Short.MAX_VALUE) || value.equals(Short.MIN_VALUE));
         }
         return true;
+    }
+
+    static void writeTags(BufferedWriter writer, Iterable<Entry<String, String>> tags)
+            throws IOException
+    {
+        char prefix = '{';
+        for (Entry<String, String> tag : tags) {
+            writer.append(prefix);
+            prefix = ',';
+            String label = LABEL_NOT_ACCEPTED_CHARACTER_PATTERN.matcher(tag.getKey()).replaceAll("_");
+            String value = tag.getValue();
+            if (INITIAL_DIGIT_PATTERN.matcher(label).lookingAt()) {
+                writer.append('_');
+            }
+            writer.write(label);
+            writer.append("=\"");
+            for (int i = 0; i < value.length(); i++) {
+                char c = value.charAt(i);
+                switch (c) {
+                    case '\\':
+                        writer.append("\\\\");
+                        break;
+                    case '\"':
+                        writer.append("\\\"");
+                        break;
+                    case '\n':
+                        writer.append("\\n");
+                        break;
+                    default:
+                        writer.append(c);
+                }
+            }
+            writer.append("\"");
+        }
+        if (prefix == ',') {
+            writer.append('}');
+        }
     }
 }

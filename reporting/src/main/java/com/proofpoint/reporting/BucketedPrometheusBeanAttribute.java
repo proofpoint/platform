@@ -58,6 +58,9 @@ class BucketedPrometheusBeanAttribute implements PrometheusBeanAttribute
     {
         BucketInfo bucketInfo = (BucketInfo) invoke(firstNonNull(target, holder), GET_PREVIOUS_BUCKET);
         ValueAndTimestamp valueAndTimestamp = delegate.getValue(bucketInfo.getBucket());
+        if (valueAndTimestamp == null) {
+            return null;
+        }
         return valueAndTimestamp(valueAndTimestamp.getValue(), bucketInfo.getBucketId().getTimestamp());
     }
 }
