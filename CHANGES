@@ -9,8 +9,9 @@ Platform 1.79
   ReportingPrometheusModule() exposes on the admin port a "/metrics" resource
   which returns the data in Prometheus format.
 
-  This required making an incompatible change to BucketIdProvider. It is
-  unlikely that code outside of Platform itself is directly using this class.
+  This required making incompatible changes to Bucketed and BucketIdProvider.
+  It is unlikely that code outside of Platform itself is directly using these
+  classes.
 
 * TestingHttpServer
 

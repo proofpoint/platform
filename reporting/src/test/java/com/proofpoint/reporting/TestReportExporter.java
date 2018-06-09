@@ -314,7 +314,7 @@ public class TestReportExporter
         private InnerBucketed innerBucketed = spy(new InnerBucketed());
 
         @Override
-        protected Object createBucket()
+        protected Object createBucket(Object previousBucket)
         {
             return new Object();
         }
@@ -329,7 +329,7 @@ public class TestReportExporter
         extends Bucketed<Object>
     {
         @Override
-        protected Object createBucket()
+        protected Object createBucket(Object previousBucket)
         {
             return new Object();
         }

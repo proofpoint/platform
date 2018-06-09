@@ -727,7 +727,7 @@ public class TestReportBinder
     {}
 
     private static class BucketedClass
-        extends Bucketed
+        extends Bucketed<GaugeClass>
     {
         private BucketedClass()
         {
@@ -739,7 +739,7 @@ public class TestReportBinder
         }
 
         @Override
-        protected GaugeClass createBucket()
+        protected GaugeClass createBucket(GaugeClass previousBucket)
         {
             return new GaugeClass();
         }

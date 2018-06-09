@@ -21,86 +21,56 @@ public class SimpleBucketed
     extends Bucketed<SimpleBucket>
 {
     @Override
-    protected SimpleBucket createBucket()
+    protected SimpleBucket createBucket(SimpleBucket previousBucket)
     {
         return new SimpleBucket();
     }
 
     public void setBucketedBooleanValue(final boolean bucketedBooleanValue)
     {
-        applyToCurrentBucket(new Function<SimpleBucket, Void>()
-        {
-            @Override
-            public Void apply(SimpleBucket input)
-            {
-                input.bucketedBooleanValue = bucketedBooleanValue;
-                return null;
-            }
+        applyToCurrentBucket((Function<SimpleBucket, Void>) input -> {
+            input.bucketedBooleanValue = bucketedBooleanValue;
+            return null;
         });
     }
 
     public void setBucketedIntegerValue(final int bucketedIntegerValue)
     {
-        applyToCurrentBucket(new Function<SimpleBucket, Void>()
-        {
-            @Override
-            public Void apply(SimpleBucket input)
-            {
-                input.bucketedIntegerValue = bucketedIntegerValue;
-                return null;
-            }
+        applyToCurrentBucket((Function<SimpleBucket, Void>) input -> {
+            input.bucketedIntegerValue = bucketedIntegerValue;
+            return null;
         });
     }
 
     public void setNestedBucketBucketedBooleanBoxedValue(final Boolean nestedBucketBucketedBooleanBoxedValue)
     {
-        applyToCurrentBucket(new Function<SimpleBucket, Void>()
-        {
-            @Override
-            public Void apply(SimpleBucket input)
-            {
-                input.nestedBucket.bucketedBooleanBoxedValue = nestedBucketBucketedBooleanBoxedValue;
-                return null;
-            }
+        applyToCurrentBucket((Function<SimpleBucket, Void>) input -> {
+            input.nestedBucket.bucketedBooleanBoxedValue = nestedBucketBucketedBooleanBoxedValue;
+            return null;
         });
     }
 
     public void setNestedBucketBucketedLongValue(final long nestedBucketBucketedLongValue)
     {
-        applyToCurrentBucket(new Function<SimpleBucket, Void>()
-        {
-            @Override
-            public Void apply(SimpleBucket input)
-            {
-                input.nestedBucket.bucketedLongValue = nestedBucketBucketedLongValue;
-                return null;
-            }
+        applyToCurrentBucket((Function<SimpleBucket, Void>) input -> {
+            input.nestedBucket.bucketedLongValue = nestedBucketBucketedLongValue;
+            return null;
         });
     }
 
     public void setBucketedBooleanBoxedValue(final Boolean bucketedBooleanBoxedValue)
     {
-        applyToCurrentBucket(new Function<SimpleBucket, Void>()
-        {
-            @Override
-            public Void apply(SimpleBucket input)
-            {
-                input.flattenBucket.bucketedBooleanBoxedValue = bucketedBooleanBoxedValue;
-                return null;
-            }
+        applyToCurrentBucket((Function<SimpleBucket, Void>) input -> {
+            input.flattenBucket.bucketedBooleanBoxedValue = bucketedBooleanBoxedValue;
+            return null;
         });
     }
 
     public void setBucketedLongValue(final long bucketedLongValue)
     {
-        applyToCurrentBucket(new Function<SimpleBucket, Void>()
-        {
-            @Override
-            public Void apply(SimpleBucket input)
-            {
-                input.flattenBucket.bucketedLongValue = bucketedLongValue;
-                return null;
-            }
+        applyToCurrentBucket((Function<SimpleBucket, Void>) input -> {
+            input.flattenBucket.bucketedLongValue = bucketedLongValue;
+            return null;
         });
     }
 }

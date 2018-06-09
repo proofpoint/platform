@@ -60,17 +60,12 @@ public class SparseTimeStat
 
     private void add(final long value)
     {
-        applyToCurrentBucket(new Function<Distribution, Void>()
-        {
-            @Override
-            public Void apply(Distribution input)
-            {
-                synchronized (input) {
-                    input.digest.add(value);
-                    input.total += value;
-                }
-                return null;
+        applyToCurrentBucket((Function<Distribution, Void>) input -> {
+            synchronized (input) {
+                input.digest.add(value);
+                input.total += value;
             }
+            return null;
         });
     }
 
@@ -111,7 +106,7 @@ public class SparseTimeStat
     }
 
     @Override
-    protected final Distribution createBucket()
+    protected final Distribution createBucket(Distribution previousBucket)
     {
         return new Distribution();
     }

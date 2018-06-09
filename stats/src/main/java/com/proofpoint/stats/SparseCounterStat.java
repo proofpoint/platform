@@ -54,7 +54,7 @@ public class SparseCounterStat
     }
 
     @Override
-    protected final Counter createBucket()
+    protected final Counter createBucket(Counter previousBucket)
     {
         return new Counter();
     }

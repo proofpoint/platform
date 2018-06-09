@@ -73,7 +73,7 @@ public class MaxGauge
     }
 
     @Override
-    protected Bucket createBucket()
+    protected Bucket createBucket(Bucket previousBucket)
     {
         return new Bucket(currentValue.get());
     }
