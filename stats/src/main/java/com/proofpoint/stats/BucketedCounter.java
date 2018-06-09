@@ -40,7 +40,7 @@ public final class BucketedCounter
     }
 
     @Override
-    protected Counter createBucket()
+    protected Counter createBucket(Counter previousBucket)
     {
         return new Counter();
     }

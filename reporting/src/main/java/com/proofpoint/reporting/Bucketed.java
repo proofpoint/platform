@@ -18,8 +18,9 @@ package com.proofpoint.reporting;
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import com.proofpoint.reporting.BucketIdProvider;
 import com.proofpoint.reporting.BucketIdProvider.BucketId;
+
+import javax.annotation.Nullable;
 
 import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
 import static com.proofpoint.reporting.Bucketed.BucketInfo.bucketInfo;
@@ -32,7 +33,7 @@ public abstract class Bucketed<T>
     private T previousBucket = null;
     private T currentBucket = null;
 
-    protected abstract T createBucket();
+    protected abstract T createBucket(@Nullable T previousBucket);
 
     protected final synchronized <R> R applyToCurrentBucket(Function<T, R> function)
     {
@@ -52,8 +53,8 @@ public abstract class Bucketed<T>
     {
         this.bucketIdProvider = bucketIdProvider;
         currentBucketId = bucketIdProvider.get();
-        currentBucket = createBucket();
-        previousBucket = createBucket();
+        previousBucket = createBucket(null);
+        currentBucket = createBucket(previousBucket);
     }
 
     private void rotateBucketIfNeeded()
@@ -64,10 +65,10 @@ public abstract class Bucketed<T>
                 previousBucket = currentBucket;
             }
             else {
-                previousBucket = createBucket();
+                previousBucket = createBucket(currentBucket);
             }
             currentBucketId = bucketId;
-            currentBucket = createBucket();
+            currentBucket = createBucket(previousBucket);
         }
     }
 
