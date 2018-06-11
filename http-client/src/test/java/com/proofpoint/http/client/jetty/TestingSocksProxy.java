@@ -5,7 +5,6 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.net.HostAndPort;
 import com.google.common.net.InetAddresses;
-import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -388,20 +387,7 @@ public class TestingSocksProxy
                     executor.submit(new Pipe(targetInput, sourceOutput)));
 
             // close socket when both jobs finish
-            Futures.addCallback(Futures.allAsList(jobs), new FutureCallback<List<Object>>()
-            {
-                @Override
-                public void onSuccess(List<Object> result)
-                {
-                    closeIgnoreException(socket);
-                }
-
-                @Override
-                public void onFailure(Throwable ignored)
-                {
-                    closeIgnoreException(socket);
-                }
-            }, directExecutor());
+            Futures.allAsList(jobs).addListener(() -> closeIgnoreException(socket), directExecutor());
         }
     }
 

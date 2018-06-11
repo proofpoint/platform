@@ -18,9 +18,7 @@ package com.proofpoint.discovery.client.testing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
-import com.google.common.util.concurrent.CheckedFuture;
-import com.google.common.util.concurrent.Futures;
-import com.proofpoint.discovery.client.DiscoveryException;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.proofpoint.discovery.client.DiscoveryLookupClient;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceDescriptors;
@@ -40,6 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static java.util.Objects.requireNonNull;
 
 public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, DiscoveryLookupClient
@@ -106,7 +105,7 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
     }
 
     @Override
-    public CheckedFuture<Duration, DiscoveryException> announce(Set<ServiceAnnouncement> services)
+    public ListenableFuture<Duration> announce(Set<ServiceAnnouncement> services)
     {
         requireNonNull(services, "services is null");
 
@@ -115,18 +114,18 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
             builder.add(service.toServiceDescriptor(nodeInfo));
         }
         announcements.set(builder.build());
-        return Futures.immediateCheckedFuture(maxAge);
+        return immediateFuture(maxAge);
     }
 
     @Override
-    public CheckedFuture<Void, DiscoveryException> unannounce()
+    public ListenableFuture<Void> unannounce()
     {
         announcements.set(ImmutableSet.<ServiceDescriptor>of());
-        return Futures.immediateCheckedFuture(null);
+        return immediateFuture(null);
     }
 
     @Override
-    public CheckedFuture<ServiceDescriptors, DiscoveryException> getServices(String type)
+    public ListenableFuture<ServiceDescriptors> getServices(String type)
     {
         requireNonNull(type, "type is null");
 
@@ -141,11 +140,11 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
                 builder.add(serviceDescriptor);
             }
         }
-        return Futures.immediateCheckedFuture(new ServiceDescriptors(type, null, builder.build(), maxAge, UUID.randomUUID().toString()));
+        return immediateFuture(new ServiceDescriptors(type, null, builder.build(), maxAge, UUID.randomUUID().toString()));
     }
 
     @Override
-    public CheckedFuture<ServiceDescriptors, DiscoveryException> getServices(String type, String pool)
+    public ListenableFuture<ServiceDescriptors> getServices(String type, String pool)
     {
         requireNonNull(type, "type is null");
         requireNonNull(pool, "pool is null");
@@ -161,11 +160,11 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
                 builder.add(serviceDescriptor);
             }
         }
-        return Futures.immediateCheckedFuture(new ServiceDescriptors(type, pool, builder.build(), maxAge, UUID.randomUUID().toString()));
+        return immediateFuture(new ServiceDescriptors(type, pool, builder.build(), maxAge, UUID.randomUUID().toString()));
     }
 
     @Override
-    public CheckedFuture<ServiceDescriptors, DiscoveryException> refreshServices(ServiceDescriptors serviceDescriptors)
+    public ListenableFuture<ServiceDescriptors> refreshServices(ServiceDescriptors serviceDescriptors)
     {
         requireNonNull(serviceDescriptors, "serviceDescriptors is null");
 
