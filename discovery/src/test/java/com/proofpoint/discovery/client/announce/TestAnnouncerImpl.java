@@ -17,6 +17,7 @@ package com.proofpoint.discovery.client.announce;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.proofpoint.discovery.client.DiscoveryException;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceDescriptors;
 import com.proofpoint.discovery.client.ServiceType;
@@ -31,8 +32,10 @@ import org.testng.annotations.Test;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static com.proofpoint.concurrent.MoreFutures.getFutureValue;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -156,7 +159,8 @@ public class TestAnnouncerImpl
 
     private void assertAnnounced(ServiceAnnouncement... serviceAnnouncements)
     {
-        ServiceDescriptors serviceDescriptors = discoveryClient.getServices(serviceType.value(), "pool").checkedGet();
+        Future<ServiceDescriptors> future = discoveryClient.getServices(serviceType.value(), "pool");
+        ServiceDescriptors serviceDescriptors = getFutureValue(future, DiscoveryException.class);
 
         assertEquals(serviceDescriptors.getType(), serviceType.value());
         assertEquals(serviceDescriptors.getPool(), "pool");

@@ -40,14 +40,7 @@ public class AsyncSemaphore<T>
 {
     private final Queue<QueuedTask<T>> queuedTasks = new ConcurrentLinkedQueue<>();
     private final AtomicInteger counter = new AtomicInteger();
-    private final Runnable runNextTask = new Runnable()
-    {
-        @Override
-        public void run()
-        {
-            runNext();
-        }
-    };
+    private final Runnable runNextTask = this::runNext;
     private final int maxPermits;
     private final Executor submitExecutor;
     private final Function<T, ListenableFuture<?>> submitter;
@@ -88,7 +81,7 @@ public class AsyncSemaphore<T>
     {
         final QueuedTask<T> queuedTask = queuedTasks.poll();
         ListenableFuture<?> future = submitTask(queuedTask.getTask());
-        Futures.addCallback(future, new FutureCallback<Object>()
+        FutureCallback<Object> callback = new FutureCallback<Object>()
         {
             @Override
             public void onSuccess(Object result)
@@ -103,7 +96,8 @@ public class AsyncSemaphore<T>
                 queuedTask.markFailure(t);
                 releasePermit();
             }
-        }, directExecutor());
+        };
+        Futures.addCallback(future, callback, directExecutor());
     }
 
     private ListenableFuture<?> submitTask(T task)
