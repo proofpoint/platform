@@ -19,6 +19,7 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.encoder.EncoderBase;
 import com.proofpoint.log.Logging;
+import com.proofpoint.units.Duration;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 
@@ -28,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 class DelimitedRequestLog
     implements RequestLog
@@ -50,6 +52,7 @@ class DelimitedRequestLog
                 config.getLogPath(),
                 config.getLogMaxHistory(),
                 config.getLogQueueSize(),
+                new Duration(10, SECONDS),
                 config.getLogMaxSegmentSize(),
                 config.getLogMaxTotalSize(),
                 new EventEncoder(),

@@ -20,10 +20,12 @@ import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.encoder.EncoderBase;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.log.Logging;
+import com.proofpoint.units.Duration;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 class JsonRequestLog
         implements RequestLog
@@ -41,6 +43,7 @@ class JsonRequestLog
                 config.getLogPath(),
                 config.getLogMaxHistory(),
                 config.getLogQueueSize(),
+                new Duration(10, SECONDS),
                 config.getLogMaxSegmentSize(),
                 config.getLogMaxTotalSize(),
                 new EventEncoder(),
