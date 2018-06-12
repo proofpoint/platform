@@ -17,10 +17,13 @@ package com.proofpoint.http.client;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.proofpoint.testing.EquivalenceTester;
 import org.testng.annotations.Test;
 
 import java.net.URI;
+
+import static com.proofpoint.http.client.Request.Builder.prepareGet;
+import static com.proofpoint.http.client.Request.Builder.preparePut;
+import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 
 public class TestRequest
 {
@@ -29,77 +32,82 @@ public class TestRequest
     {
         BodySource bodySource = createBodySource();
 
-        EquivalenceTester.<Request>equivalenceTester()
+        equivalenceTester()
                 .addEquivalentGroup(
-                        new Request(createUri1(), "GET", createHeaders1(), null),
-                        new Request(createUri1(), "GET", createHeaders1(), null, false))
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).build(),
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setFollowRedirects(false).build())
                 .addEquivalentGroup(
-                        new Request(createUri1(), "GET", createHeaders1(), bodySource),
-                        new Request(createUri1(), "GET", createHeaders1(), bodySource, false))
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setBodySource(bodySource).build(),
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setBodySource(bodySource).setFollowRedirects(false).build())
                 .addEquivalentGroup(
-                        new Request(createUri1(), "GET", createHeaders2(), bodySource))
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersB()).setBodySource(bodySource).build())
                 .addEquivalentGroup(
-                        new Request(createUri2(), "GET", createHeaders1(), bodySource))
+                        prepareGet().setUri(createUriB()).addHeaders(createHeadersA()).setBodySource(bodySource).build())
                 .addEquivalentGroup(
-                        new Request(createUri1(), "PUT", createHeaders1(), null),
-                        new Request(createUri1(), "PUT", createHeaders1(), null))
+                        preparePut().setUri(createUriA()).addHeaders(createHeadersA()).build(),
+                        preparePut().setUri(createUriA()).addHeaders(createHeadersA()).build())
                 .addEquivalentGroup(
-                        new Request(createUri2(), "PUT", createHeaders1(), null))
+                        preparePut().setUri(createUriB()).addHeaders(createHeadersA()).build())
                 .addEquivalentGroup(
-                        new Request(createUri1(), "PUT", createHeaders2(), null))
+                        preparePut().setUri(createUriA()).addHeaders(createHeadersB()).build())
                 .addEquivalentGroup(
-                        new Request(createUri1(), "PUT", createHeaders1(), bodySource),
-                        new Request(createUri1(), "PUT", createHeaders1(), bodySource))
+                        preparePut().setUri(createUriA()).addHeaders(createHeadersA()).setBodySource(bodySource).build(),
+                        preparePut().setUri(createUriA()).addHeaders(createHeadersA()).setBodySource(bodySource).build())
                 .addEquivalentGroup(
-                        new Request(createUri1(), "GET", createHeaders1(), createBodySource()))
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setBodySource(createBodySource()).build())
                 .addEquivalentGroup(
-                        new Request(createUri1(), "PUT", createHeaders1(), createBodySource()))
+                        preparePut().setUri(createUriA()).addHeaders(createHeadersA()).setBodySource(createBodySource()).build())
                 .addEquivalentGroup(
-                        new Request(createUri1(), "GET", createHeaders1(), null, true),
-                        new Request(createUri1(), "GET", createHeaders1(), null, true)
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setFollowRedirects(true).build(),
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setFollowRedirects(true).build()
                 )
                 .check();
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Cannot make requests to HTTP port 0")
     public void testCannotMakeRequestToIllegalPort()
-            throws Exception
     {
-        new Request(URI.create("http://example.com:0/"), "GET", createHeaders1(), createBodySource());
+        new Request(URI.create("http://example.com:0/"), "GET", createHeadersA(), createBodySource());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "uri does not have a host: http:///foo")
     public void testInvalidUriMissingHost()
-            throws Exception
     {
-        new Request(URI.create("http:///foo"), "GET", createHeaders1(), createBodySource());
+        new Request(URI.create("http:///foo"), "GET", createHeadersA(), createBodySource());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "uri scheme must be http or https: gopher://example.com")
     public void testInvalidUriScheme()
-            throws Exception
     {
-        new Request(URI.create("gopher://example.com"), "GET", createHeaders1(), createBodySource());
+        new Request(URI.create("gopher://example.com"), "GET", createHeadersA(), createBodySource());
     }
 
-    private URI createUri1()
+    private static URI createUriA()
     {
         return URI.create("http://example.com");
     }
 
-    private URI createUri2()
+    private static URI createUriB()
     {
         return URI.create("http://example.net");
     }
 
-    private ListMultimap<String, String> createHeaders1()
+    private static ListMultimap<String, String> createHeadersA()
     {
-        return ImmutableListMultimap.of("foo", "bar", "abc", "xyz");
+        return ImmutableListMultimap.<String, String>builder()
+                .put("foo", "bar")
+                .put("abc", "xyz")
+                .build();
     }
 
-    private ListMultimap<String, String> createHeaders2()
+    private static ListMultimap<String, String> createHeadersB()
     {
-        return ImmutableListMultimap.of("foo", "bar", "abc", "xyz", "qqq", "www", "foo", "zzz");
+        return ImmutableListMultimap.<String, String>builder()
+                .put("foo", "bar")
+                .put("abc", "xyz")
+                .put("qqq", "www")
+                .put("foo", "zzz")
+                .build();
     }
 
     public static BodySource createBodySource()
