@@ -7,6 +7,9 @@ Platform 1.93
   is deprecated and no longer necessary. The configuration properties for the
   shared IO pool are likewise deprecated and no longer used.
 
+  We added a Request.Builder.addHeaders() method for adding multiple request
+  headers.
+
   We now preserve the User-Agent header when following redirects.
 
 * HttpServer
