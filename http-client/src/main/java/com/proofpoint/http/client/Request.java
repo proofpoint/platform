@@ -18,6 +18,7 @@ package com.proofpoint.http.client;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 
 import javax.annotation.Nullable;
 import java.net.URI;
@@ -153,16 +154,12 @@ public class Request
 
         public static Builder fromRequest(Request request)
         {
-            Builder requestBuilder = new Builder();
-            requestBuilder.setMethod(request.getMethod());
-            requestBuilder.setBodySource(request.getBodySource());
-            requestBuilder.setUri(request.getUri());
-            requestBuilder.setFollowRedirects(request.isFollowRedirects());
-
-            for (Entry<String, String> entry : request.getHeaders().entries()) {
-                requestBuilder.addHeader(entry.getKey(), entry.getValue());
-            }
-            return requestBuilder;
+            return new Builder()
+                    .setFollowRedirects(request.isFollowRedirects())
+                    .setUri(request.getUri())
+                    .setMethod(request.getMethod())
+                    .addHeaders(request.getHeaders())
+                    .setBodySource(request.getBodySource());
         }
 
         private URI uri;
@@ -193,6 +190,12 @@ public class Request
         public Builder addHeader(String name, String value)
         {
             this.headers.put(name, value);
+            return this;
+        }
+
+        public Builder addHeaders(Multimap<String, String> headers)
+        {
+            this.headers.putAll(headers);
             return this;
         }
 
