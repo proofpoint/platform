@@ -21,12 +21,14 @@ import ch.qos.logback.core.Context;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
+import ch.qos.logback.core.status.ErrorStatus;
 import ch.qos.logback.core.util.FileSize;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import com.proofpoint.units.DataSize;
+import com.proofpoint.units.Duration;
 
 import javax.annotation.concurrent.GuardedBy;
 import java.io.BufferedWriter;
@@ -49,6 +51,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -60,6 +63,8 @@ import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Initializes the logging subsystem.
@@ -219,14 +224,14 @@ public class Logging
     }
 
     public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context) {
-        return createFileAppender(logPath, maxHistory, 256, maxFileSize, maxTotalSize, encoder, context);
+        return createFileAppender(logPath, maxHistory, 256, new Duration(10, SECONDS), maxFileSize, maxTotalSize, encoder, context);
     }
 
-    public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, int queueSize, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context)
+    public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, int queueSize, Duration flushInterval, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context)
     {
         recoverTempFiles(logPath);
 
-        RollingFileAppender<T> fileAppender = new RollingFileAppender<>();
+        FlushingFileAppender<T> fileAppender = new FlushingFileAppender<>(flushInterval);
         SizeAndTimeBasedRollingPolicy<T> rollingPolicy = new SizeAndTimeBasedRollingPolicy<>();
 
         rollingPolicy.setContext(context);
@@ -434,6 +439,48 @@ public class Logging
         LogManager logManager = LogManager.getLogManager();
         if (logManager instanceof ShutdownWaitingLogManager) {
             ((ShutdownWaitingLogManager) logManager).removeWaitForShutdownHook(shutdownHook);
+        }
+    }
+
+    private static class FlushingFileAppender<T>
+            extends RollingFileAppender<T>
+    {
+        private final AtomicLong lastFlushed = new AtomicLong(System.nanoTime());
+        private final long flushIntervalNanos;
+
+        private FlushingFileAppender(Duration flushInterval)
+        {
+            this.flushIntervalNanos = flushInterval.roundTo(NANOSECONDS);
+        }
+
+        @Override
+        protected void subAppend(T event)
+        {
+            super.subAppend(event);
+
+            long now = System.nanoTime();
+            long last = lastFlushed.get();
+            if (((now - last) > flushIntervalNanos) && lastFlushed.compareAndSet(last, now)) {
+                flush();
+            }
+        }
+
+        @SuppressWarnings("Duplicates")
+        private void flush()
+        {
+            try {
+                lock.lock();
+                try {
+                    getOutputStream().flush();
+                }
+                finally {
+                    lock.unlock();
+                }
+            }
+            catch (IOException e) {
+                started = false;
+                addStatus(new ErrorStatus("IO failure in appender", this, e));
+            }
         }
     }
 }
