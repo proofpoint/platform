@@ -7,6 +7,8 @@ Platform 1.93
   is deprecated and no longer necessary. The configuration properties for the
   shared IO pool are likewise deprecated and no longer used.
 
+  We now preserve the User-Agent header when following redirects.
+
 * HttpServer
 
   We added the "http-server.log.queue-size" configuration property to allow

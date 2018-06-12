@@ -189,6 +189,9 @@ public class JettyHttpClient
         // disable cookies
         httpClient.setCookieStore(new HttpCookieStore.Empty());
 
+        // remove default user agent
+        httpClient.setUserAgentField(null);
+
         // timeouts
         httpClient.setIdleTimeout(idleTimeoutMillis);
         httpClient.setConnectTimeout(config.getConnectTimeout().toMillis());
@@ -489,10 +492,6 @@ public class JettyHttpClient
         jettyRequest.onResponseBegin(response -> listener.onResponseBegin());
         jettyRequest.onComplete(result -> listener.onFinish());
         jettyRequest.attribute(PLATFORM_STATS_KEY, listener);
-
-        // jetty client always adds the user agent header
-        // todo should there be a default?
-        jettyRequest.getHeaders().remove(HttpHeader.USER_AGENT);
 
         jettyRequest.method(finalRequest.getMethod());
 
