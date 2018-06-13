@@ -1,3 +1,11 @@
+Platform 1.77
+
+* Docker
+
+  We removed the "combine.children" attribute from the <images> array in the
+  docker-maven-plugin configuration, allowing clients to add additional files
+  into the created image.
+
 Platform 1.76
 
 * Discovery
