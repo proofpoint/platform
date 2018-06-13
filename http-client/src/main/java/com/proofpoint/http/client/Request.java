@@ -23,7 +23,6 @@ import com.google.common.collect.Multimap;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
@@ -37,12 +36,33 @@ public class Request
     private final ListMultimap<String, String> headers;
     private final BodySource bodySource;
     private final boolean followRedirects;
+    private final boolean preserveAuthorizationOnRedirect;
 
+    /**
+     * @deprecated Use {@link #builder()} to construct this.
+     */
+    @Deprecated
     public Request(URI uri, String method, ListMultimap<String, String> headers, @Nullable BodySource bodySource)
     {
         this(uri, method, headers, bodySource, false);
     }
+
+    /**
+     * @deprecated Use {@link #builder()} to construct this.
+     */
+    @Deprecated
     public Request(URI uri, String method, ListMultimap<String, String> headers, @Nullable BodySource bodySource, boolean followRedirects)
+    {
+        this(uri, method, headers, bodySource, followRedirects, false);
+    }
+
+    private Request(
+            URI uri,
+            String method,
+            ListMultimap<String, String> headers,
+            @Nullable BodySource bodySource,
+            boolean followRedirects,
+            boolean preserveAuthorizationOnRedirect)
     {
         requireNonNull(uri, "uri is null");
         requireNonNull(method, "method is null");
@@ -52,6 +72,7 @@ public class Request
         this.headers = ImmutableListMultimap.copyOf(headers);
         this.bodySource = bodySource;
         this.followRedirects = followRedirects;
+        this.preserveAuthorizationOnRedirect = preserveAuthorizationOnRedirect;
     }
 
     public static Request.Builder builder()
@@ -93,6 +114,11 @@ public class Request
         return followRedirects;
     }
 
+    public boolean isPreserveAuthorizationOnRedirect()
+    {
+        return preserveAuthorizationOnRedirect;
+    }
+
     @Override
     public String toString()
     {
@@ -102,13 +128,14 @@ public class Request
                 .add("headers", headers)
                 .add("bodySource", bodySource)
                 .add("followRedirects", followRedirects)
+                .add("preserveAuthorizationOnRedirect", preserveAuthorizationOnRedirect)
                 .toString();
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(uri, method, headers, bodySource, followRedirects);
+        return Objects.hash(uri, method, headers, bodySource, followRedirects, preserveAuthorizationOnRedirect);
     }
 
     @Override
@@ -117,12 +144,13 @@ public class Request
         if (!(obj instanceof Request)) {
             return false;
         }
-        final Request other = (Request) obj;
-        return Objects.equals(this.uri, other.uri) &&
-                Objects.equals(this.method, other.method) &&
-                Objects.equals(this.headers, other.headers) &&
-                Objects.equals(this.bodySource, other.bodySource) &&
-                Objects.equals(this.followRedirects, other.followRedirects);
+        final Request r = (Request) obj;
+        return Objects.equals(uri, r.uri) &&
+                Objects.equals(method, r.method) &&
+                Objects.equals(headers, r.headers) &&
+                Objects.equals(bodySource, r.bodySource) &&
+                Objects.equals(followRedirects, r.followRedirects) &&
+                Objects.equals(preserveAuthorizationOnRedirect, r.preserveAuthorizationOnRedirect);
     }
 
     public static class Builder
@@ -155,11 +183,12 @@ public class Request
         public static Builder fromRequest(Request request)
         {
             return new Builder()
-                    .setFollowRedirects(request.isFollowRedirects())
                     .setUri(request.getUri())
                     .setMethod(request.getMethod())
                     .addHeaders(request.getHeaders())
-                    .setBodySource(request.getBodySource());
+                    .setBodySource(request.getBodySource())
+                    .setFollowRedirects(request.isFollowRedirects())
+                    .setPreserveAuthorizationOnRedirect(request.isPreserveAuthorizationOnRedirect());
         }
 
         private URI uri;
@@ -167,6 +196,7 @@ public class Request
         private final ListMultimap<String, String> headers = ArrayListMultimap.create();
         private BodySource bodySource;
         private boolean followRedirects = false;
+        private boolean preserveAuthorizationOnRedirect;
 
         public Builder setUri(URI uri)
         {
@@ -221,9 +251,21 @@ public class Request
             return this;
         }
 
+        public Builder setPreserveAuthorizationOnRedirect(boolean preserveAuthorizationOnRedirect)
+        {
+            this.preserveAuthorizationOnRedirect = preserveAuthorizationOnRedirect;
+            return this;
+        }
+
         public Request build()
         {
-            return new Request(uri, method, headers, bodySource, followRedirects);
+            return new Request(
+                    uri,
+                    method,
+                    headers,
+                    bodySource,
+                    followRedirects,
+                    preserveAuthorizationOnRedirect);
         }
     }
 

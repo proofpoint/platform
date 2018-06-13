@@ -10,7 +10,13 @@ Platform 1.93
   We added a Request.Builder.addHeaders() method for adding multiple request
   headers.
 
+  We added a Request.Builder.setPreserveAuthorizationOnRedirect() method for
+  preserving the Authorization header when following redirects. By default
+  it is not preserved.
+
   We now preserve the User-Agent header when following redirects.
+
+  We deprecated the Request constructors. Instead use a Request.Builder.
 
 * HttpServer
 

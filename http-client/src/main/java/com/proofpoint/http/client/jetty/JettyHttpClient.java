@@ -29,7 +29,6 @@ import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.http.HttpConnectionOverHTTP;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
-import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.io.MappedByteBufferPool;
@@ -62,6 +61,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.proofpoint.http.client.jetty.AuthorizationPreservingHttpClient.setPreserveAuthorization;
 import static java.lang.Math.max;
 import static java.lang.Math.toIntExact;
 import static java.util.Objects.requireNonNull;
@@ -181,7 +181,7 @@ public class JettyHttpClient
             transport = new HttpClientTransportOverHTTP(config.getSelectorCount());
         }
 
-        httpClient = new HttpClient(transport, sslContextFactory);
+        httpClient = new AuthorizationPreservingHttpClient(transport, sslContextFactory);
 
         httpClient.setMaxRequestsQueuedPerDestination(config.getMaxRequestsQueuedPerDestination());
         httpClient.setMaxConnectionsPerDestination(config.getMaxConnectionsPerServer());
@@ -517,6 +517,8 @@ public class JettyHttpClient
             }
         }
         jettyRequest.followRedirects(finalRequest.isFollowRedirects());
+
+        setPreserveAuthorization(jettyRequest, finalRequest.isPreserveAuthorizationOnRedirect());
 
         // timeouts
         if (requestTimeoutMillis != null) {
