@@ -35,7 +35,10 @@ public class TestRequest
         equivalenceTester()
                 .addEquivalentGroup(
                         prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).build(),
-                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setFollowRedirects(false).build())
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setFollowRedirects(false).build(),
+                        prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setPreserveAuthorizationOnRedirect(false).build())
+                .addEquivalentGroup(
+                        preparePut().setUri(createUriA()).addHeaders(createHeadersA()).setPreserveAuthorizationOnRedirect(true).build())
                 .addEquivalentGroup(
                         prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setBodySource(bodySource).build(),
                         prepareGet().setUri(createUriA()).addHeaders(createHeadersA()).setBodySource(bodySource).setFollowRedirects(false).build())

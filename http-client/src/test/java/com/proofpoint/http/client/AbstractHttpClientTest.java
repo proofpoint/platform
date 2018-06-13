@@ -46,7 +46,6 @@ import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -74,6 +73,7 @@ import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.net.HttpHeaders.ACCEPT_ENCODING;
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
+import static com.google.common.net.HttpHeaders.LOCATION;
 import static com.google.common.net.HttpHeaders.USER_AGENT;
 import static com.proofpoint.concurrent.Threads.threadsNamed;
 import static com.proofpoint.http.client.Request.Builder.prepareDelete;
@@ -89,7 +89,6 @@ import static com.proofpoint.testing.Closeables.closeQuietly;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.units.Duration.nanosSince;
-import static java.lang.Math.toIntExact;
 import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -988,61 +987,6 @@ public abstract class AbstractHttpClientTest
         assertEquals(statusCode, 302);
     }
 
-    @Test
-    public void testFollowRedirect()
-            throws Exception
-    {
-        EchoServlet destinationServlet = new EchoServlet();
-
-        int port;
-        try (ServerSocket socket = new ServerSocket()) {
-            socket.bind(new InetSocketAddress(0));
-            port = socket.getLocalPort();
-        }
-
-        Server server = new Server();
-
-        HttpConfiguration httpConfiguration = new HttpConfiguration();
-        httpConfiguration.setSendServerVersion(false);
-        httpConfiguration.setSendXPoweredBy(false);
-
-        HttpConnectionFactory http1 = new HttpConnectionFactory(httpConfiguration);
-        HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(httpConfiguration);
-        ServerConnector connector = new ServerConnector(server, null, null, null, -1, -1, http1, http2c);
-
-        connector.setIdleTimeout(30000);
-        connector.setName("http");
-        connector.setPort(port);
-
-        server.addConnector(connector);
-
-        ServletHolder servletHolder = new ServletHolder(destinationServlet);
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        context.addServlet(servletHolder, "/redirect");
-        HandlerCollection handlers = new HandlerCollection();
-        handlers.addHandler(context);
-        server.setHandler(handlers);
-
-        try {
-            server.start();
-
-            servlet.setResponseStatusCode(302);
-            servlet.setResponseBody("body text");
-            servlet.addResponseHeader("Location", format("http://127.0.0.1:%d/redirect", port));
-
-            Request request = prepareGet()
-                    .setUri(baseURI)
-                    .setFollowRedirects(true)
-                    .build();
-
-            int statusCode = executeRequest(request, createStatusResponseHandler()).getStatusCode();
-            assertEquals(statusCode, 200);
-        }
-        finally {
-            server.stop();
-        }
-    }
-
     @Test(expectedExceptions = {SocketTimeoutException.class, TimeoutException.class})
     public void testReadTimeout()
             throws Exception
@@ -1183,6 +1127,41 @@ public abstract class AbstractHttpClientTest
         assertThat(servlet.getRequestHeaders("X-Test")).containsExactly("xtest1", "xtest2");
         assertThat(servlet.getRequestHeaders(USER_AGENT)).containsExactly("testagent");
         assertThat(servlet.getRequestHeaders(AUTHORIZATION)).isEmpty();
+
+        request = Request.Builder.fromRequest(request)
+                .setPreserveAuthorizationOnRedirect(true)
+                .build();
+
+        response = executeRequest(request, createStatusResponseHandler());
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(servlet.getRequestUri(), URI.create(baseURI.toASCIIString() + "/redirect"));
+        assertThat(servlet.getRequestHeaders("X-Test")).containsExactly("xtest1", "xtest2");
+        assertThat(servlet.getRequestHeaders(USER_AGENT)).containsExactly("testagent");
+        assertThat(servlet.getRequestHeaders(AUTHORIZATION)).containsExactly(basic, bearer);
+    }
+
+    @Test
+    public void testFollowRedirects()
+            throws Exception
+    {
+        Request request = prepareGet()
+                .setUri(URI.create(baseURI.toASCIIString() + "/test?redirect=/redirect"))
+                .setFollowRedirects(true)
+                .build();
+
+        StatusResponse response = executeRequest(request, createStatusResponseHandler());
+        assertEquals(response.getStatusCode(), 200);
+        assertNull(response.getHeader(LOCATION));
+        assertEquals(servlet.getRequestUri(), URI.create(baseURI.toASCIIString() + "/redirect"));
+
+        request = Request.Builder.fromRequest(request)
+                .setFollowRedirects(false)
+                .build();
+
+        response = executeRequest(request, createStatusResponseHandler());
+        assertEquals(response.getStatusCode(), 302);
+        assertEquals(response.getHeader(LOCATION), baseURI.toASCIIString() + "/redirect");
+        assertEquals(servlet.getRequestUri(), request.getUri());
     }
 
     @Test(expectedExceptions = UnexpectedResponseException.class)
