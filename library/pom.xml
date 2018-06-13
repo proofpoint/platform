@@ -1438,7 +1438,7 @@
                         </executions>
                         <configuration>
                             <verbose>${project.docker.verbose}</verbose>
-                            <images combine.children="append">
+                            <images>
                                 <image>
                                     <name>${project.docker.project}/${project.docker.name}:${project.version}</name>
                                     <build>
