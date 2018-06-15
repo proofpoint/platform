@@ -36,7 +36,16 @@ public class RequestStats
         writtenBytes = new DistributionStat();
     }
 
+    /**
+     * @deprecated Use {@link #record(long, long, Duration)}.
+     */
+    @Deprecated
     public void record(String method, int responseCode, long requestSizeInBytes, long responseSizeInBytes, Duration schedulingDelay, Duration requestProcessingTime)
+    {
+        record(requestSizeInBytes, responseSizeInBytes, requestProcessingTime);
+    }
+
+    public void record(long requestSizeInBytes, long responseSizeInBytes, Duration requestProcessingTime)
     {
         requestTime.add(requestProcessingTime);
         readBytes.add(requestSizeInBytes);
