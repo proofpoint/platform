@@ -40,7 +40,7 @@ public class TestHttpServerConfig
         assertRecordedDefaults(ConfigAssertions.recordDefaults(HttpServerConfig.class)
                 .setHttpEnabled(true)
                 .setHttpPort(8080)
-                .setHttpAcceptQueueSize(8000)
+                .setHttpAcceptQueueSize(128)
                 .setHttpsEnabled(false)
                 .setHttpsPort(8443)
                 .setKeystorePath("etc/keystore.jks")
