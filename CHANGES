@@ -1,5 +1,14 @@
 Platform 1.77
 
+* HttpServer
+
+  We changed the default value of the "http-server.accept-queue-size"
+  configuration option to 128 from 8000. The OS can truncate the accept queue
+  size to the platform defaults. E.g. for linux, the effective server listen
+  backlog queue size cannot be set greater than /proc/sys/net/core/somaxconn
+  on the system. If you feel the need to increase httpAcceptQueueSize, increase
+  the OS limit first.
+
 * Docker
 
   We removed the "combine.children" attribute from the <images> array in the
