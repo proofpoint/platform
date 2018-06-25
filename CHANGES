@@ -43,11 +43,29 @@ Platform 1.77
 
 Platform 1.76
 
+* Reporting
+
+  We created ReportingPrometheusModule() for enabling Prometheus collection
+  of the reporting metrics. The module may be used either in addition to or
+  instead of ReportingClientModule() (which exports the metrics to KairosDB).
+
+  ReportingPrometheusModule() exposes on the admin port a "/metrics" resource
+  which returns the data in Prometheus format.
+
+  This required making incompatible changes to Bucketed and BucketIdProvider.
+  It is unlikely that code outside of Platform itself is directly using these
+  classes.
+
 * Discovery
 
   We delayed the check for HTTPS announcements with unqualified hostnames
   until the Announcer is asked to send an announcement. This was done to
   aid transition of services into Kubernetes.
+
+* TestingHttpServer
+
+  We changed TestingHttpServerModule and TestingAdminHttpServerModule to
+  enable stack traces in error responses.
 
 * Maven plugin upgrades
 
