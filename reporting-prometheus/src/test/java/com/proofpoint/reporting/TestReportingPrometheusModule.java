@@ -3,6 +3,7 @@ package com.proofpoint.reporting;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 import com.proofpoint.bootstrap.LifeCycleManager;
@@ -409,6 +410,46 @@ public class TestReportingPrometheusModule
         };
     }
 
+    @Test
+    public void testNestedSummary()
+    {
+        Injector injector = createServer(binder -> {
+            binder.bind(NestedStatsObject.class).in(Scopes.SINGLETON);
+            reportBinder(binder).export(NestedStatsObject.class).withNamePrefix("StatsObject");
+        });
+        TestingBucketIdProvider bucketIdProvider = injector.getInstance(TestingBucketIdProvider.class);
+        NestedStatsObject statsObject = injector.getInstance(NestedStatsObject.class);
+
+        for (int i = 0; i < 100; i++) {
+             statsObject.add(1000);
+        }
+        bucketIdProvider.incrementBucket();
+        for (int i = 0; i < 100; i++) {
+             statsObject.add(i);
+        }
+        bucketIdProvider.incrementBucket();
+        statsObject.add(1000);
+
+        StringResponse response = client.execute(
+                prepareGet().setUri(uriFor("/metrics")).build(),
+                createStringResponseHandler());
+
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getBody(),
+                "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
+                        "#TYPE StatsObject_DistributionStat summary\n" +
+                        "StatsObject_DistributionStat{quantile=\"0\"," + EXPECTED_INSTANCE_TAGS + "} 0 1200\n" +
+                        "StatsObject_DistributionStat{quantile=\"0.5\"," + EXPECTED_INSTANCE_TAGS + "} 50 1200\n" +
+                        "StatsObject_DistributionStat{quantile=\"0.75\"," + EXPECTED_INSTANCE_TAGS + "} 75 1200\n" +
+                        "StatsObject_DistributionStat{quantile=\"0.90\"," + EXPECTED_INSTANCE_TAGS + "} 90 1200\n" +
+                        "StatsObject_DistributionStat{quantile=\"0.95\"," + EXPECTED_INSTANCE_TAGS + "} 95 1200\n" +
+                        "StatsObject_DistributionStat{quantile=\"0.99\"," + EXPECTED_INSTANCE_TAGS + "} 99 1200\n" +
+                        "StatsObject_DistributionStat{quantile=\"1\"," + EXPECTED_INSTANCE_TAGS + "} 99 1200\n" +
+                        "StatsObject_DistributionStat_sum{" + EXPECTED_INSTANCE_TAGS + "} 104950 1200\n" +
+                        "StatsObject_DistributionStat_count{" + EXPECTED_INSTANCE_TAGS + "} 200 1200\n"
+        );
+    }
 
     private static class TestingValue
     {
@@ -669,6 +710,21 @@ public class TestReportingPrometheusModule
         public String toString()
         {
             return getDelegate().getClass().getSimpleName();
+        }
+    }
+
+    private static class NestedStatsObject
+    {
+        private final DistributionStat distributionStat = new DistributionStat();
+
+        @Nested
+        public DistributionStat getDistributionStat() {
+            return distributionStat;
+        }
+
+        public void add(int value)
+        {
+            distributionStat.add(value);
         }
     }
 }

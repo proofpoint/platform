@@ -1,3 +1,10 @@
+Platform 1.80
+
+* Reporting
+
+  We fixed a bug with the Prometheus names of @Nested stats of summary
+  type.
+
 Platform 1.79
 
 * Reporting

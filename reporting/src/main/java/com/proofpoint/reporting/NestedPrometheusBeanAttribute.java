@@ -32,7 +32,13 @@ class NestedPrometheusBeanAttribute implements PrometheusBeanAttribute
     {
         this.nestedGetter = nestedGetter;
         this.delegate = delegate;
-        name = prefix + "." + delegate.getName();
+        String delegateName = delegate.getName();
+        if ("".equals(delegateName)) {
+            this.name = prefix;
+        }
+        else {
+            this.name = prefix + "_" + delegateName;
+        }
     }
 
     @Override
