@@ -643,6 +643,12 @@
 
             <dependency>
                 <groupId>com.proofpoint.platform</groupId>
+                <artifactId>reporting-prometheus</artifactId>
+                <version>1.80-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.proofpoint.platform</groupId>
                 <artifactId>stats</artifactId>
                 <version>1.80-SNAPSHOT</version>
             </dependency>
