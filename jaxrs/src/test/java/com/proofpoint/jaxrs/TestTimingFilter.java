@@ -122,28 +122,24 @@ public class TestTimingFilter
 
     @Test
     public void testGet()
-            throws Exception
     {
         assertTimingMeasurement(prepareGet(), "testGet", 1.0);
     }
 
     @Test
     public void testPut()
-            throws Exception
     {
         assertTimingMeasurement(preparePut(), "testPut", 2.0);
     }
 
     @Test
     public void testPost()
-            throws Exception
     {
         assertTimingMeasurement(preparePost(), "testPost", 3.0);
     }
 
     @Test
     public void testDelete()
-            throws Exception
     {
         assertTimingMeasurement(prepareDelete(), "testDelete", 9.0);
     }
@@ -158,12 +154,11 @@ public class TestTimingFilter
 
         Table<String, Map<String, String>, Object> data = reportingTester.collectData();
 
-        assertEquals(data.row("TestingTimingResource.RequestTime.Max"), ImmutableMap.of(ImmutableMap.of("method", expectedMethod, "responseCode", "204"), expectedValue));
+        assertEquals(data.row("TestingTimingResource.RequestTime.Max"), ImmutableMap.of(ImmutableMap.of("method", expectedMethod, "responseCode", "204", "responseCodeFamily", "2"), expectedValue));
     }
 
     @Test
     public void testAnnotatedGet()
-            throws Exception
     {
         StatusResponse response = client.execute(
                 prepareGet().setUri(uriFor("/annotated?param1=value1")).build(),
@@ -173,12 +168,11 @@ public class TestTimingFilter
 
         Table<String, Map<String, String>, Object> data = reportingTester.collectData();
 
-        assertEquals(data.row("TestingAnnotatedTimingResource.RequestTime.Max"), ImmutableMap.of(ImmutableMap.of("method", "testGet", "responseCode", "204", "tag", "value1"), 1.0));
+        assertEquals(data.row("TestingAnnotatedTimingResource.RequestTime.Max"), ImmutableMap.of(ImmutableMap.of("method", "testGet", "responseCode", "204", "responseCodeFamily", "2", "tag", "value1"), 1.0));
     }
 
     @Test
     public void testAnnotatedPut()
-            throws Exception
     {
         StatusResponse response = client.execute(
                 preparePut().setUri(uriFor("/annotated?param4=1")).build(),
@@ -188,12 +182,11 @@ public class TestTimingFilter
 
         Table<String, Map<String, String>, Object> data = reportingTester.collectData();
 
-        assertEquals(data.row("TestingAnnotatedTimingResource.RequestTime.Max"), ImmutableMap.of(ImmutableMap.of("method", "testPut", "responseCode", "204", "tag2", "1"), 2.0));
+        assertEquals(data.row("TestingAnnotatedTimingResource.RequestTime.Max"), ImmutableMap.of(ImmutableMap.of("method", "testPut", "responseCode", "204", "responseCodeFamily", "2", "tag2", "1"), 2.0));
     }
 
     @Test
     public void testAnnotatedPost()
-            throws Exception
     {
         StatusResponse response = client.execute(
                 preparePost().setUri(uriFor("/annotated?param1=1.5&param2=3.5&param3=9")).build(),
@@ -203,13 +196,22 @@ public class TestTimingFilter
 
         Table<String, Map<String, String>, Object> data = reportingTester.collectData();
 
-        assertEquals(data.row("TestingAnnotatedTimingResource.RequestTime.Max"), ImmutableMap.of(ImmutableMap.of("method", "testPost", "responseCode", "204", "tag", "1.5", "tag2", "3.5", "tag3", "9"), 3.0));
+        assertEquals(data.row("TestingAnnotatedTimingResource.RequestTime.Max"), ImmutableMap.of(
+                ImmutableMap.<String, String>builder()
+                        .put("method", "testPost")
+                        .put("responseCode", "204")
+                        .put("responseCodeFamily", "2")
+                        .put("tag", "1.5")
+                        .put("tag2", "3.5")
+                        .put("tag3", "9")
+                        .build(),
+                3.0)
+        );
     }
 
 
     @Test
     public void testAnnotatedDelete()
-            throws Exception
     {
         StatusResponse response = client.execute(
                 prepareDelete().setUri(uriFor("/annotated?param3=true")).build(),
@@ -219,7 +221,7 @@ public class TestTimingFilter
 
         Table<String, Map<String, String>, Object> data = reportingTester.collectData();
 
-        assertEquals(data.row("TestingAnnotatedTimingResource.RequestTime.Max"), ImmutableMap.of(ImmutableMap.of("method", "testDelete", "responseCode", "204", "tag", "true"), 9.0));
+        assertEquals(data.row("TestingAnnotatedTimingResource.RequestTime.Max"), ImmutableMap.of(ImmutableMap.of("method", "testDelete", "responseCode", "204", "responseCodeFamily", "2", "tag", "true"), 9.0));
     }
 
     @Test(expectedExceptions = CreationException.class,

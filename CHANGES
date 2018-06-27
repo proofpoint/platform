@@ -1,3 +1,9 @@
+Platform 1.81
+
+* We added a "responseCodeFamily" tag containing the first digit of the
+  response code to the HttpServer.RequestTimeByCode and JAX-RS
+  ResourceClass.RequestTime metrics.
+
 Platform 1.80
 
 * Reporting
