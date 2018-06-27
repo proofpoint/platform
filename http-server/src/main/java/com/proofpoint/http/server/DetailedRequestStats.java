@@ -20,5 +20,5 @@ import com.proofpoint.stats.SparseTimeStat;
 
 public interface DetailedRequestStats
 {
-    SparseTimeStat requestTimeByCode(@Key("responseCode") int responseCode);
+    SparseTimeStat requestTimeByCode(@Key("responseCode") int responseCode, @Key("responseCodeFamily") int responseCodeFamily);
 }
