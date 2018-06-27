@@ -62,7 +62,7 @@ class TimingFilter
         Long startTime = (Long) request.getProperty(START_TIME_KEY);
 
         ImmutableList.Builder<Optional<String>> builder = ImmutableList.builder();
-        builder.add(Optional.of(methodName), Optional.of(Integer.toString(response.getStatus())));
+        builder.add(Optional.of(methodName), Optional.of(Integer.toString(response.getStatus())), Optional.of(Integer.toString(response.getStatus()/100)));
 
         Collection<Optional<Object>> tags = (Collection<Optional<Object>>) request.getProperty(TAGS_KEY);
         if (tags != null) {

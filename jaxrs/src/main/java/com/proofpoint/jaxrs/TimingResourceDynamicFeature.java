@@ -77,7 +77,7 @@ class TimingResourceDynamicFeature
         }
 
         ImmutableList.Builder<String> builder = ImmutableList.builder();
-        builder.add("method", "responseCode");
+        builder.add("method", "responseCode", "responseCodeFamily");
 
         if (TimingWrapped.class.isAssignableFrom(resourceClass)) {
             Map<String, List<String>> keyNamesMap;

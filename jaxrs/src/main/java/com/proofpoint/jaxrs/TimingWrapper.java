@@ -119,7 +119,7 @@ class TimingWrapper
                     Key keyAnnotation = parameter.getAnnotation(Key.class);
                     if (keyAnnotation != null) {
                         String keyValue = keyAnnotation.value();
-                        if ("method".equals(keyValue) || "responseCode".equals(keyValue)) {
+                        if ("method".equals(keyValue) || "responseCode".equals(keyValue) || "responseCodeFamily".equals(keyValue)) {
                             throw new RuntimeException("\"" + keyValue + "\" tag name in @Key annotation on parameter of method " + method + " duplicates standard tag name");
                         }
                         if (keyNames.contains(keyValue)) {
