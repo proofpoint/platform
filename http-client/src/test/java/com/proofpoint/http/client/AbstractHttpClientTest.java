@@ -1683,7 +1683,7 @@ public abstract class AbstractHttpClientTest
         }
     }
 
-    private static int findUnusedPort()
+    protected static int findUnusedPort()
             throws IOException
     {
         try (ServerSocket socket = new ServerSocket(0)) {

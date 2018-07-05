@@ -1,3 +1,10 @@
+Platform 1.82
+
+* HttpClient
+
+  We ensured that JettyHttpClient propagates the trace token to callbacks
+  added to the HttpResponseFuture returned from HttpClient.executeAsync().
+
 Platform 1.81
 
 * We added a "responseCodeFamily" tag containing the first digit of the
