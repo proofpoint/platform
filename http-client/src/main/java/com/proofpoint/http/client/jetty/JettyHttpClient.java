@@ -821,7 +821,9 @@ public class JettyHttpClient
                 return super.cancel(mayInterruptIfRunning);
             }
             catch (Throwable e) {
-                setException(e);
+                try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
+                    setException(e);
+                }
                 return true;
             }
         }
@@ -832,17 +834,19 @@ public class JettyHttpClient
                 return;
             }
 
-            T value;
-            try {
-                value = processResponse(response, content);
+            try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
+                T value;
+                try {
+                    value = processResponse(response, content);
+                }
+                catch (Throwable e) {
+                    // this will be an instance of E from the response handler or an Error
+                    storeException(e);
+                    return;
+                }
+                state.set(JettyAsyncHttpState.DONE);
+                set(value);
             }
-            catch (Throwable e) {
-                // this will be an instance of E from the response handler or an Error
-                storeException(e);
-                return;
-            }
-            state.set(JettyAsyncHttpState.DONE);
-            set(value);
         }
 
         private T processResponse(Response response, InputStream content)
@@ -855,7 +859,7 @@ public class JettyHttpClient
             state.set(JettyAsyncHttpState.PROCESSING_RESPONSE);
             JettyResponse jettyResponse = null;
             T value;
-            try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
+            try {
                 jettyResponse = new JettyResponse(response, content);
                 value = responseHandler.handle(request, jettyResponse);
             }
@@ -870,27 +874,28 @@ public class JettyHttpClient
             if (state.get() == JettyAsyncHttpState.CANCELED) {
                 return;
             }
-
-            // give handler a chance to rewrite the exception or return a value instead
-            if (throwable instanceof Exception) {
-                try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
-                    if (throwable instanceof RejectedExecutionException) {
-                        maybeLogJettyState();
+            try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
+                // give handler a chance to rewrite the exception or return a value instead
+                if (throwable instanceof Exception) {
+                    try {
+                        if (throwable instanceof RejectedExecutionException) {
+                            maybeLogJettyState();
+                        }
+                        T value = responseHandler.handleException(request, (Exception) throwable);
+                        // handler returned a value, store it in the future
+                        state.set(JettyAsyncHttpState.DONE);
+                        set(value);
+                        return;
                     }
-                    T value = responseHandler.handleException(request, (Exception) throwable);
-                    // handler returned a value, store it in the future
-                    state.set(JettyAsyncHttpState.DONE);
-                    set(value);
-                    return;
+                    catch (Throwable newThrowable) {
+                        throwable = newThrowable;
+                    }
                 }
-                catch (Throwable newThrowable) {
-                    throwable = newThrowable;
-                }
-            }
 
-            // at this point "throwable" will either be an instance of E
-            // from the response handler or not an instance of Exception
-            storeException(throwable);
+                // at this point "throwable" will either be an instance of E
+                // from the response handler or not an instance of Exception
+                storeException(throwable);
+            }
         }
 
         private void storeException(Throwable throwable)
