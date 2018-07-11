@@ -31,14 +31,19 @@ import static java.util.Objects.requireNonNull;
 public class StopAnnouncingResource
 {
     private static final Logger log = Logger.get(StopAnnouncingResource.class);
-    private final Announcer announcer;
+    private Announcer announcer;
     private final AdminServerCredentialVerifier adminServerCredentialVerifier;
 
     @Inject
-    public StopAnnouncingResource(Announcer announcer, AdminServerCredentialVerifier adminServerCredentialVerifier)
+    public StopAnnouncingResource(AdminServerCredentialVerifier adminServerCredentialVerifier)
     {
-        this.announcer = requireNonNull(announcer, "announcer is null");
         this.adminServerCredentialVerifier = requireNonNull(adminServerCredentialVerifier, "adminServerCredentialVerifier is null");
+    }
+
+    @Inject(optional = true)
+    public void setAnnouncer(Announcer announcer)
+    {
+        this.announcer = announcer;
     }
 
     @PUT
@@ -46,7 +51,9 @@ public class StopAnnouncingResource
     {
         adminServerCredentialVerifier.authenticate(authHeader);
 
-        log.info("Received shutdown request. Stopping discovery announcer.");
-        announcer.destroy();
+        if (announcer != null) {
+            log.info("Received shutdown request. Stopping discovery announcer.");
+            announcer.destroy();
+        }
     }
 }
