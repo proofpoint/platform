@@ -18,7 +18,6 @@ import org.testng.annotations.Test;
 
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
@@ -93,7 +92,8 @@ public class TestAsyncJettyHttpClient
     public void testFutureExceptionSeesTraceToken()
             throws Exception
     {
-        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch responseHandlerLatch = new CountDownLatch(1);
+        CountDownLatch listenerLatch = new CountDownLatch(1);
         createAndRegisterNewRequestToken("somekey", "somevalue");
         TraceToken token = getCurrentTraceToken();
         int port = findUnusedPort();
@@ -114,7 +114,7 @@ public class TestAsyncJettyHttpClient
                     throws RuntimeException
             {
                 try {
-                    latch.await();
+                    responseHandlerLatch.await();
                 }
                 catch (InterruptedException e) {
                     throw new RuntimeException(e);
@@ -136,16 +136,15 @@ public class TestAsyncJettyHttpClient
         }
 
         AtomicReference<TraceToken> callbackToken = new AtomicReference<>();
-        future.addListener(() -> callbackToken.set(getCurrentTraceToken()), MoreExecutors.directExecutor());
+        future.addListener(() -> {
+            callbackToken.set(getCurrentTraceToken());
+            listenerLatch.countDown();
+        }, MoreExecutors.directExecutor());
 
         registerTraceToken(null);
-        latch.countDown();
+        responseHandlerLatch.countDown();
 
-        try {
-            future.get();
-        }
-        catch (ExecutionException ignored) {
-        }
+        listenerLatch.await();
         assertEquals(callbackToken.get(), token);
     }
 
@@ -153,7 +152,8 @@ public class TestAsyncJettyHttpClient
     public void testFutureResponseSeesTraceToken()
             throws Exception
     {
-        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch responseHandlerLatch = new CountDownLatch(1);
+        CountDownLatch listenerLatch = new CountDownLatch(1);
         createAndRegisterNewRequestToken("somekey", "somevalue");
         TraceToken token = getCurrentTraceToken();
         Request request = prepareGet()
@@ -177,7 +177,7 @@ public class TestAsyncJettyHttpClient
                     throws RuntimeException
             {
                 try {
-                    latch.await();
+                    responseHandlerLatch.await();
                 }
                 catch (InterruptedException e) {
                     throw new RuntimeException(e);
@@ -191,12 +191,15 @@ public class TestAsyncJettyHttpClient
         }
 
         AtomicReference<TraceToken> callbackToken = new AtomicReference<>();
-        future.addListener(() -> callbackToken.set(getCurrentTraceToken()), MoreExecutors.directExecutor());
+        future.addListener(() -> {
+            callbackToken.set(getCurrentTraceToken());
+            listenerLatch.countDown();
+        }, MoreExecutors.directExecutor());
 
         registerTraceToken(null);
-        latch.countDown();
+        responseHandlerLatch.countDown();
 
-        future.get();
+        listenerLatch.await();
         assertEquals(callbackToken.get(), token);
     }
 }
