@@ -66,7 +66,6 @@ public class TestStopAnnouncingResource
     {
         announcer = mock(Announcer.class);
         verifier = mock(AdminServerCredentialVerifier.class);
-        StopAnnouncingResource resource = new StopAnnouncingResource(announcer, verifier);
 
         Injector injector = bootstrapTest()
                 .withModules(
@@ -81,7 +80,6 @@ public class TestStopAnnouncingResource
                         override(new JmxHttpModule())
                                 .with(binder -> {
                                     binder.bind(AdminServerCredentialVerifier.class).toInstance(verifier);
-                                    binder.bind(StopAnnouncingResource.class).toInstance(resource);
                                 })
                 )
                 .initialize();
