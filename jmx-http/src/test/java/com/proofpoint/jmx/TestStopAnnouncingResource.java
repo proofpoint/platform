@@ -16,7 +16,9 @@
 package com.proofpoint.jmx;
 
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.proofpoint.bootstrap.LifeCycleManager;
+import com.proofpoint.discovery.client.StaticDiscoveryModule;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
 import com.proofpoint.http.client.HttpClient;
@@ -59,14 +61,23 @@ public class TestStopAnnouncingResource
     private TestingAdminHttpServer server;
     private Announcer announcer;
     private AdminServerCredentialVerifier verifier;
+    private Module discoveryModule;
 
     @BeforeMethod
     public void setup()
             throws Exception
     {
         announcer = mock(Announcer.class);
+        discoveryModule = override(new TestingDiscoveryModule())
+                .with(binder -> binder.bind(Announcer.class).toInstance(announcer));
         verifier = mock(AdminServerCredentialVerifier.class);
+        lifeCycleManager = null;
+        server = null;
+    }
 
+    private void createServer()
+            throws Exception
+    {
         Injector injector = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
@@ -75,8 +86,7 @@ public class TestStopAnnouncingResource
                         explicitJaxrsModule(),
                         new ReportingModule(),
                         new TestingMBeanModule(),
-                        override(new TestingDiscoveryModule())
-                                .with(binder -> binder.bind(Announcer.class).toInstance(announcer)),
+                        discoveryModule,
                         override(new JmxHttpModule())
                                 .with(binder -> {
                                     binder.bind(AdminServerCredentialVerifier.class).toInstance(verifier);
@@ -88,7 +98,7 @@ public class TestStopAnnouncingResource
         server = injector.getInstance(TestingAdminHttpServer.class);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void teardown()
             throws Exception
     {
@@ -107,6 +117,8 @@ public class TestStopAnnouncingResource
     public void testStopAnnouncing()
             throws Exception
     {
+        createServer();
+
         StatusResponse response = client.execute(
                 preparePut()
                         .setUri(uriFor("/admin/stop-announcing"))
@@ -120,12 +132,13 @@ public class TestStopAnnouncingResource
         verifyNoMoreInteractions(verifier);
         verify(announcer).destroy();
         verifyNoMoreInteractions(announcer);
-
     }
 
     @Test
     public void testFailAuthentication()
+            throws Exception
     {
+        createServer();
         doThrow(new WebApplicationException(FORBIDDEN.getStatusCode())).when(verifier).authenticate(anyString());
 
         StatusResponse response = client.execute(
@@ -140,6 +153,26 @@ public class TestStopAnnouncingResource
         verify(verifier).authenticate("authHeader");
         verifyNoMoreInteractions(verifier);
         verifyNoMoreInteractions(announcer);
+    }
+
+    @Test
+    public void testStaticDiscovery()
+            throws Exception
+    {
+        discoveryModule = new StaticDiscoveryModule();
+        createServer();
+
+        StatusResponse response = client.execute(
+                preparePut()
+                        .setUri(uriFor("/admin/stop-announcing"))
+                        .addHeader("Authorization", "authHeader")
+                        .build(),
+                createStatusResponseHandler());
+
+        assertEquals(response.getStatusCode(), NO_CONTENT.getStatusCode());
+
+        verify(verifier).authenticate("authHeader");
+        verifyNoMoreInteractions(verifier);
     }
 
     private URI uriFor(String path)
