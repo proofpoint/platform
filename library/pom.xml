@@ -45,9 +45,6 @@
         <!-- Default jvm size for compiler, tests etc. -->
         <platform.build.jvmsize>1024m</platform.build.jvmsize>
 
-        <!-- define the forkmode for tests. Default is 'once' -->
-        <platform.test.fork-mode>once</platform.test.fork-mode>
-
         <!-- define the JVM size for forked tests. Defaults to build JVM size. -->
         <platform.test.jvmsize>${platform.build.jvmsize}</platform.test.jvmsize>
 
@@ -241,7 +238,6 @@
                             <sun.jnu.encoding>${project.build.sourceEncoding}</sun.jnu.encoding>
                             <java.awt.headless>true</java.awt.headless>
                         </systemPropertyVariables>
-                        <forkMode>${platform.test.fork-mode}</forkMode>
                         <runOrder>random</runOrder>
                         <argLine>
                             ${argLine}
