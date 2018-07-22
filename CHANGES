@@ -1,3 +1,44 @@
+Platform 1.83
+
+* HttpClient
+
+  We modified HttpClient to avoid allocating a large byte array by buffering
+  response data in chunks.
+
+  We added BasicAuthRequestFilter, a request filter which performs basic
+  authentication.
+
+* Stats
+
+  We replaced the implementation of QuantileDigest with a more
+  memory-efficient one.
+
+  We fixed a thread safety issue in the Distribution copy constructor.
+
+* Configuration
+
+  We added ConditionalModule.installModuleIf() which conditionally installs
+  a Guice module based on configuration.
+
+* JSON
+
+  We improved the format of JsonCodec parsing exception messages.
+
+  We added JsonCodec.toJsonWithLengthLimit().
+
+* We added ThreadLocalCache, a ThreadLocal cache with a maximum cache size per
+  thread.
+
+* We added MoreFutures.unwrapCompletionException().
+
+* We added TempFile for use with try-with-resources.
+
+* We changed ServiceDescriptorBuilder to generate a UUID in the build() call.
+  Unless the ID is explicitly set each build() call will return a unique ID.
+
+* We removed the platform.test.fork-mode Maven property as the Surefire
+  parameter it controlled is deprecated.
+
 Platform 1.82
 
 * HttpClient
