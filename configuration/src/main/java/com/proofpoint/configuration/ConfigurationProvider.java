@@ -15,13 +15,17 @@
  */
 package com.proofpoint.configuration;
 
-import com.google.inject.Inject;
 import com.google.inject.Key;
 
+import javax.inject.Inject;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * @deprecated Will no longer be public.
+ */
+@Deprecated
 public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
 {
     private final Key<T> key;
@@ -29,6 +33,10 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
     private final String prefix;
     private ConfigurationFactory configurationFactory;
 
+    /**
+     * @deprecated Will no longer be public.
+     */
+    @Deprecated
     public ConfigurationProvider(Key<T> key, Class<T> configClass, String prefix)
     {
         requireNonNull(key, "key is null");

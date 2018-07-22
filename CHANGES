@@ -20,6 +20,9 @@ Platform 1.83
   We added ConditionalModule.installModuleIf() which conditionally installs
   a Guice module based on configuration.
 
+  ConfigurationProvider has been marked as deprecated. It will no longer be
+  public.
+
 * JSON
 
   We improved the format of JsonCodec parsing exception messages.
