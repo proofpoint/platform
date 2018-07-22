@@ -85,6 +85,7 @@
         <dep.javax-servlet.version>3.1.0</dep.javax-servlet.version>
         <dep.jackson.version>2.9.6</dep.jackson.version>
         <dep.jersey.version>2.25.1</dep.jersey.version>
+        <dep.jmh.version>1.13</dep.jmh.version>
     </properties>
 
     <scm>
@@ -1016,6 +1017,19 @@
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>annotations</artifactId>
                 <version>2.0.3</version>
+            </dependency>
+
+            <!-- jmh -->
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-core</artifactId>
+                <version>${dep.jmh.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-generator-annprocess</artifactId>
+                <version>${dep.jmh.version}</version>
             </dependency>
 
             <!-- Testing -->
