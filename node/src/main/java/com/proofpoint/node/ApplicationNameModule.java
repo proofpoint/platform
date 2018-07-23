@@ -19,7 +19,7 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public class ApplicationNameModule implements Module
 {
@@ -27,7 +27,7 @@ public class ApplicationNameModule implements Module
 
     public ApplicationNameModule(String applicationName)
     {
-        this.applicationName = checkNotNull(applicationName, "applicationName is null");
+        this.applicationName = requireNonNull(applicationName, "applicationName is null");
     }
 
     @Override

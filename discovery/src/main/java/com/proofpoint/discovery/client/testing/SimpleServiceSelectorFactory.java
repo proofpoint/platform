@@ -22,7 +22,7 @@ import com.proofpoint.discovery.client.ServiceSelectorConfig;
 import com.proofpoint.discovery.client.ServiceSelectorFactory;
 import com.proofpoint.node.NodeInfo;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public class SimpleServiceSelectorFactory implements ServiceSelectorFactory
 {
@@ -32,8 +32,8 @@ public class SimpleServiceSelectorFactory implements ServiceSelectorFactory
     @Inject
     public SimpleServiceSelectorFactory(DiscoveryLookupClient lookupClient, NodeInfo nodeInfo)
     {
-        checkNotNull(lookupClient, "client is null");
-        checkNotNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(lookupClient, "client is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
 
         this.lookupClient = lookupClient;
         this.nodeInfo = nodeInfo;
@@ -42,8 +42,8 @@ public class SimpleServiceSelectorFactory implements ServiceSelectorFactory
     @Override
     public ServiceSelector createServiceSelector(String type, ServiceSelectorConfig selectorConfig)
     {
-        checkNotNull(type, "type is null");
-        checkNotNull(selectorConfig, "selectorConfig is null");
+        requireNonNull(type, "type is null");
+        requireNonNull(selectorConfig, "selectorConfig is null");
 
         return new SimpleServiceSelector(type, selectorConfig, nodeInfo, lookupClient);
     }

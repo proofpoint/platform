@@ -6,7 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public abstract class AbstractEventClient
         implements EventClient
@@ -16,7 +16,7 @@ public abstract class AbstractEventClient
     public final <T> ListenableFuture<Void> post(T... event)
             throws IllegalArgumentException
     {
-        checkNotNull(event, "event is null");
+        requireNonNull(event, "event is null");
         return post(Arrays.asList(event));
     }
 
@@ -24,10 +24,10 @@ public abstract class AbstractEventClient
     public final <T> ListenableFuture<Void> post(final Iterable<T> events)
             throws IllegalArgumentException
     {
-        checkNotNull(events, "events is null");
+        requireNonNull(events, "events is null");
         try {
             for (T event : events) {
-                checkNotNull(event, "event is null");
+                requireNonNull(event, "event is null");
                 postEvent(event);
             }
         }

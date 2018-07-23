@@ -31,9 +31,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient.DEFAULT_DELAY;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -53,12 +53,12 @@ public final class ServiceDescriptorsUpdater
 
     public ServiceDescriptorsUpdater(ServiceDescriptorsListener target, String type, ServiceSelectorConfig selectorConfig, NodeInfo nodeInfo, DiscoveryLookupClient discoveryClient, ScheduledExecutorService executor)
     {
-        checkNotNull(target, "target is null");
-        checkNotNull(type, "type is null");
-        checkNotNull(selectorConfig, "selectorConfig is null");
-        checkNotNull(nodeInfo, "nodeInfo is null");
-        checkNotNull(discoveryClient, "discoveryClient is null");
-        checkNotNull(executor, "executor is null");
+        requireNonNull(target, "target is null");
+        requireNonNull(type, "type is null");
+        requireNonNull(selectorConfig, "selectorConfig is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(discoveryClient, "discoveryClient is null");
+        requireNonNull(executor, "executor is null");
 
         this.target = target;
         this.type = type;

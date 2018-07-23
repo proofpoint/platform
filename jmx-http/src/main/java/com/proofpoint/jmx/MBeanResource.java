@@ -31,6 +31,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
+import static java.util.Objects.requireNonNull;
+
 @Path("/admin/jmx/mbean")
 @AccessDoesNotRequireAuthentication
 public class MBeanResource
@@ -64,7 +66,7 @@ public class MBeanResource
     public MBeanRepresentation getMBean(@PathParam("objectName") ObjectName objectName)
             throws JMException
     {
-        Preconditions.checkNotNull(objectName, "objectName is null");
+        requireNonNull(objectName, "objectName is null");
         return new MBeanRepresentation(mbeanServer, objectName, objectMapper);
     }
 
@@ -74,7 +76,7 @@ public class MBeanResource
     public Object getMBean(@PathParam("objectName") ObjectName objectName, @PathParam("attributeName") String attributeName)
             throws JMException
     {
-        Preconditions.checkNotNull(objectName, "objectName is null");
+        requireNonNull(objectName, "objectName is null");
         return mbeanServer.getAttribute(objectName, attributeName);
     }
 }

@@ -58,7 +58,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 @SuppressFBWarnings(value = "DM_EXIT", justification = "Need to return specific exit codes")
 public class Main
@@ -684,7 +684,7 @@ public class Main
             public KillStatus(int exitCode, String msg)
             {
                 this.exitCode = exitCode;
-                this.msg = checkNotNull(msg, "msg is null");
+                this.msg = requireNonNull(msg, "msg is null");
             }
         }
 

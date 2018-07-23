@@ -20,10 +20,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Character.forDigit;
 import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * An RFC-3986-compatible HTTP URI builder
@@ -67,14 +67,14 @@ public class HttpUriBuilder
 
     public static HttpUriBuilder uriBuilderFrom(URI uri)
     {
-        checkNotNull(uri, "uri is null");
+        requireNonNull(uri, "uri is null");
 
         return new HttpUriBuilder(uri);
     }
 
     public HttpUriBuilder scheme(String scheme)
     {
-        checkNotNull(scheme, "scheme is null");
+        requireNonNull(scheme, "scheme is null");
 
         this.scheme = scheme;
         return this;
@@ -82,7 +82,7 @@ public class HttpUriBuilder
 
     public HttpUriBuilder host(String host)
     {
-        checkNotNull(host, "host is null");
+        requireNonNull(host, "host is null");
         checkArgument(!host.startsWith("["), "host starts with a bracket");
         checkArgument(!host.endsWith("]"), "host ends with a bracket");
         if (host.contains(":")) {
@@ -107,7 +107,7 @@ public class HttpUriBuilder
 
     public HttpUriBuilder hostAndPort(HostAndPort hostAndPort)
     {
-        checkNotNull(hostAndPort, "hostAndPort is null");
+        requireNonNull(hostAndPort, "hostAndPort is null");
         this.host = bracketedHostString(hostAndPort);
         this.port = hostAndPort.hasPort() ? hostAndPort.getPort() : -1;
         return this;
@@ -118,7 +118,7 @@ public class HttpUriBuilder
      */
     public HttpUriBuilder replacePath(String path)
     {
-        checkNotNull(path, "path is null");
+        requireNonNull(path, "path is null");
 
         if (!path.equals("") && !path.startsWith("/")) {
             path = "/" + path;
@@ -136,7 +136,7 @@ public class HttpUriBuilder
      */
     public HttpUriBuilder appendPath(String path)
     {
-        checkNotNull(path, "path is null");
+        requireNonNull(path, "path is null");
 
         StringBuilder builder = new StringBuilder(this.path);
         if (!this.path.endsWith("/")) {
@@ -161,7 +161,7 @@ public class HttpUriBuilder
 
     public HttpUriBuilder replaceParameter(String name, Iterable<String> values)
     {
-        checkNotNull(name, "name is null");
+        requireNonNull(name, "name is null");
 
         params.removeAll(name);
         addParameter(name, values);
@@ -176,7 +176,7 @@ public class HttpUriBuilder
 
     public HttpUriBuilder addParameter(String name, Iterable<String> values)
     {
-        checkNotNull(name, "name is null");
+        requireNonNull(name, "name is null");
 
         if (Iterables.isEmpty(values)) {
             params.put(name, null);

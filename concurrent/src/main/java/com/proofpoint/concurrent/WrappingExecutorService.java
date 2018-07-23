@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  * An abstract {@code ExecutorService} that allows subclasses to
@@ -48,7 +48,7 @@ abstract class WrappingExecutorService implements ExecutorService {
   private final ExecutorService delegate;
 
   protected WrappingExecutorService(ExecutorService delegate) {
-    this.delegate = checkNotNull(delegate);
+      this.delegate = requireNonNull(delegate);
   }
 
   /**
@@ -98,7 +98,7 @@ abstract class WrappingExecutorService implements ExecutorService {
 
   @Override
   public final <T> Future<T> submit(Callable<T> task) {
-    return delegate.submit(wrapTask(checkNotNull(task)));
+    return delegate.submit(wrapTask(requireNonNull(task)));
   }
 
   @Override

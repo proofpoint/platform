@@ -40,10 +40,10 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.http.client.JsonBodyGenerator.jsonBodyGenerator;
 import static com.proofpoint.http.client.Request.Builder.prepareDelete;
 import static com.proofpoint.http.client.Request.Builder.preparePut;
+import static java.util.Objects.requireNonNull;
 
 public class HttpDiscoveryAnnouncementClient implements DiscoveryAnnouncementClient
 {
@@ -58,9 +58,9 @@ public class HttpDiscoveryAnnouncementClient implements DiscoveryAnnouncementCli
             JsonCodec<Announcement> announcementCodec,
             @ForDiscoveryClient HttpClient httpClient)
     {
-        checkNotNull(nodeInfo, "nodeInfo is null");
-        checkNotNull(announcementCodec, "announcementCodec is null");
-        checkNotNull(httpClient, "httpClient is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(announcementCodec, "announcementCodec is null");
+        requireNonNull(httpClient, "httpClient is null");
 
         this.nodeInfo = nodeInfo;
         this.announcementCodec = announcementCodec;
@@ -70,7 +70,7 @@ public class HttpDiscoveryAnnouncementClient implements DiscoveryAnnouncementCli
     @Override
     public ListenableFuture<Duration> announce(Set<ServiceAnnouncement> services)
     {
-        checkNotNull(services, "services is null");
+        requireNonNull(services, "services is null");
 
         Builder builder;
         final boolean servicesEmpty = services.isEmpty();

@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Guarantees that no more than maxPermits of tasks will be run concurrently.
@@ -55,8 +55,8 @@ public class AsyncSemaphore<T>
     {
         checkArgument(maxPermits > 0, "must have at least one permit");
         this.maxPermits = maxPermits;
-        this.submitExecutor = checkNotNull(submitExecutor, "submitExecutor is null");
-        this.submitter = checkNotNull(submitter, "submitter is null");
+        this.submitExecutor = requireNonNull(submitExecutor, "submitExecutor is null");
+        this.submitter = requireNonNull(submitter, "submitter is null");
     }
 
     public ListenableFuture<?> submit(T task)
@@ -126,7 +126,7 @@ public class AsyncSemaphore<T>
 
         private QueuedTask(T task)
         {
-            this.task = checkNotNull(task, "task is null");
+            this.task = requireNonNull(task, "task is null");
         }
 
         public T getTask()

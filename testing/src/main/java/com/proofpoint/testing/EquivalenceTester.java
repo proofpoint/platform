@@ -46,6 +46,7 @@ import static com.proofpoint.testing.EquivalenceTester.EquivalenceFailureType.NO
 import static com.proofpoint.testing.EquivalenceTester.EquivalenceFailureType.NOT_LESS_THAN;
 import static com.proofpoint.testing.EquivalenceTester.EquivalenceFailureType.NOT_REFLEXIVE;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Equivalence tester streamlining tests of {@link #equals(Object)} and {@link #hashCode} methods. Using this tester makes it
@@ -433,7 +434,7 @@ public final class EquivalenceTester
 
         public ElementCheckFailure(EquivalenceFailureType type, int primaryClassNumber, int primaryElementNumber, Object primaryObject)
         {
-            Preconditions.checkNotNull(type, "type is null");
+            requireNonNull(type, "type is null");
             this.type = type;
             this.primaryClassNumber = primaryClassNumber;
             this.primaryElementNumber = primaryElementNumber;

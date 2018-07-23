@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.Objects.requireNonNull;
 
 public class ServiceDescriptor
 {
@@ -46,7 +47,7 @@ public class ServiceDescriptor
             @JsonProperty("state") ServiceState state,
             @JsonProperty("properties") Map<String, String> properties)
     {
-        Preconditions.checkNotNull(properties, "properties is null");
+        requireNonNull(properties, "properties is null");
 
         this.id = id;
         this.nodeId = nodeId;
@@ -140,7 +141,7 @@ public class ServiceDescriptor
 
     public static ServiceDescriptorBuilder serviceDescriptor(String type)
     {
-        Preconditions.checkNotNull(type, "type is null");
+        requireNonNull(type, "type is null");
         return new ServiceDescriptorBuilder(type);
     }
 
@@ -162,14 +163,14 @@ public class ServiceDescriptor
 
         public ServiceDescriptorBuilder setId(UUID id)
         {
-            Preconditions.checkNotNull(id, "id is null");
+            requireNonNull(id, "id is null");
             this.id = id;
             return this;
         }
 
         public ServiceDescriptorBuilder setNodeInfo(NodeInfo nodeInfo)
         {
-            Preconditions.checkNotNull(nodeInfo, "nodeInfo is null");
+            requireNonNull(nodeInfo, "nodeInfo is null");
             this.nodeId = nodeInfo.getNodeId();
             this.pool = nodeInfo.getPool();
             return this;
@@ -177,7 +178,7 @@ public class ServiceDescriptor
 
         public ServiceDescriptorBuilder setNodeId(String nodeId)
         {
-            Preconditions.checkNotNull(nodeId, "nodeId is null");
+            requireNonNull(nodeId, "nodeId is null");
             this.nodeId = nodeId;
             return this;
         }
@@ -185,36 +186,36 @@ public class ServiceDescriptor
 
         public ServiceDescriptorBuilder setPool(String pool)
         {
-            Preconditions.checkNotNull(pool, "pool is null");
+            requireNonNull(pool, "pool is null");
             this.pool = pool;
             return this;
         }
 
         public ServiceDescriptorBuilder setLocation(String location)
         {
-            Preconditions.checkNotNull(location, "location is null");
+            requireNonNull(location, "location is null");
             this.location = location;
             return this;
         }
 
         public ServiceDescriptorBuilder setState(ServiceState state)
         {
-            Preconditions.checkNotNull(state, "state is null");
+            requireNonNull(state, "state is null");
             this.state = state;
             return this;
         }
 
         public ServiceDescriptorBuilder addProperty(String key, String value)
         {
-            Preconditions.checkNotNull(key, "key is null");
-            Preconditions.checkNotNull(value, "value is null");
+            requireNonNull(key, "key is null");
+            requireNonNull(value, "value is null");
             properties.put(key, value);
             return this;
         }
 
         public ServiceDescriptorBuilder addProperties(Map<String, String> properties)
         {
-            Preconditions.checkNotNull(properties, "properties is null");
+            requireNonNull(properties, "properties is null");
             this.properties.putAll(properties);
             return this;
         }

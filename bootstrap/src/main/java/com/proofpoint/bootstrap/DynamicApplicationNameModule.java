@@ -20,7 +20,7 @@ import com.google.inject.Binder;
 import com.proofpoint.configuration.AbstractConfigurationAwareModule;
 import com.proofpoint.node.ApplicationNameModule;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 class DynamicApplicationNameModule<T> extends AbstractConfigurationAwareModule
 {
@@ -29,8 +29,8 @@ class DynamicApplicationNameModule<T> extends AbstractConfigurationAwareModule
 
     DynamicApplicationNameModule(Class<T> configClass, Function<T, String> applicationNameFunction)
     {
-        this.configClass = checkNotNull(configClass, "configClass is null");
-        this.applicationNameFunction = checkNotNull(applicationNameFunction, "applicationNameFunction is null");
+        this.configClass = requireNonNull(configClass, "configClass is null");
+        this.applicationNameFunction = requireNonNull(applicationNameFunction, "applicationNameFunction is null");
     }
 
     @Override

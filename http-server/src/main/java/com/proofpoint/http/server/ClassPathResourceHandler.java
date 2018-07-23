@@ -33,6 +33,8 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.List;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Serves files from a given folder on the classpath through jetty.
  * Intended to serve a couple of static files e.g. for javascript or HTML.
@@ -60,9 +62,9 @@ public class ClassPathResourceHandler
 
     public ClassPathResourceHandler(String baseUri, String classPathResourceBase, List<String> welcomeFiles)
     {
-        Preconditions.checkNotNull(baseUri, "baseUri is null");
-        Preconditions.checkNotNull(classPathResourceBase, "classPathResourceBase is null");
-        Preconditions.checkNotNull(welcomeFiles, "welcomeFiles is null");
+        requireNonNull(baseUri, "baseUri is null");
+        requireNonNull(classPathResourceBase, "classPathResourceBase is null");
+        requireNonNull(welcomeFiles, "welcomeFiles is null");
 
         baseUri = baseUri.startsWith("/") ? baseUri : '/' + baseUri;
         baseUri = baseUri.endsWith("/") ? baseUri.substring(baseUri.length() - 1) : baseUri;

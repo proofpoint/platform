@@ -22,9 +22,9 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
 import static com.proofpoint.reporting.ReportedBean.GET_PREVIOUS_BUCKET;
+import static java.util.Objects.requireNonNull;
 
 class BucketedReportedBeanAttribute implements ReportedBeanAttribute
 {
@@ -34,7 +34,7 @@ class BucketedReportedBeanAttribute implements ReportedBeanAttribute
 
     BucketedReportedBeanAttribute(Object holder, ReportedBeanAttribute delegate)
     {
-        this.holder = checkNotNull(holder, "holder is null");
+        this.holder = requireNonNull(holder, "holder is null");
         this.delegate = delegate;
         name = delegate.getName();
     }

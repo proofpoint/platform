@@ -22,8 +22,8 @@ import org.eclipse.jetty.server.Response;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Math.max;
+import static java.util.Objects.requireNonNull;
 
 public class StatsRecordingHandler
         implements RequestLog
@@ -33,8 +33,8 @@ public class StatsRecordingHandler
 
     public StatsRecordingHandler(RequestStats stats, DetailedRequestStats detailedRequestStats)
     {
-        this.stats = checkNotNull(stats, "stats is null");
-        this.detailedRequestStats = checkNotNull(detailedRequestStats, "detailedRequestStats is null");
+        this.stats = requireNonNull(stats, "stats is null");
+        this.detailedRequestStats = requireNonNull(detailedRequestStats, "detailedRequestStats is null");
     }
 
     @Override

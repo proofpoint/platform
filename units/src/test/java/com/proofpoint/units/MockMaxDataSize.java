@@ -16,7 +16,7 @@ package com.proofpoint.units;
 import javax.validation.Payload;
 import java.lang.annotation.Annotation;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("ClassExplicitlyAnnotation")
 class MockMaxDataSize
@@ -26,7 +26,7 @@ class MockMaxDataSize
 
     public MockMaxDataSize(DataSize dataSize)
     {
-        this.dataSize = checkNotNull(dataSize, "dataSize is null");
+        this.dataSize = requireNonNull(dataSize, "dataSize is null");
     }
 
     @Override
