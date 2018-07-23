@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
@@ -43,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import static com.proofpoint.http.client.JsonBodyGenerator.jsonBodyGenerator;
 import static com.proofpoint.http.client.Request.Builder.prepareDelete;
 import static com.proofpoint.http.client.Request.Builder.preparePut;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 public class HttpDiscoveryAnnouncementClient implements DiscoveryAnnouncementClient
@@ -115,7 +115,7 @@ public class HttpDiscoveryAnnouncementClient implements DiscoveryAnnouncementCli
     private static String getBodyForError(Response response)
     {
         try {
-            return CharStreams.toString(new InputStreamReader(response.getInputStream(), Charsets.UTF_8));
+            return CharStreams.toString(new InputStreamReader(response.getInputStream(), UTF_8));
         }
         catch (IOException e) {
             return "(error getting body)";

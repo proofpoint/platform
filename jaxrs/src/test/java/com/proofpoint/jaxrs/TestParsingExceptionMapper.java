@@ -38,10 +38,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.Charsets.UTF_8;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.StaticBodyGenerator.createStaticBodyGenerator;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
@@ -138,7 +138,7 @@ public class TestParsingExceptionMapper
         return Request.builder()
                 .setUri(server.getBaseUrl().resolve(resource))
                 .setHeader("Content-Type", "application/json")
-                .setBodySource(createStaticBodyGenerator(body, UTF_8))
+                .setBodySource(createStaticBodyGenerator(body, StandardCharsets.UTF_8))
                 .setMethod(GET)
                 .build();
     }

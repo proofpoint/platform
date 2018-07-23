@@ -15,7 +15,6 @@
  */
 package com.proofpoint.launcher;
 
-import com.google.common.base.Charsets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.BufferedReader;
@@ -29,6 +28,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.concurrent.locks.LockSupport;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -98,7 +98,7 @@ class PidFile implements PidStatusSource
         // have not yet found a way to call fcntl(F_GETLK) from Java.
         try {
             pidChannel.truncate(0);
-            pidChannel.write(ByteBuffer.wrap((Integer.toString(Processes.getpid()) + "\n").getBytes(Charsets.US_ASCII)));
+            pidChannel.write(ByteBuffer.wrap((Integer.toString(Processes.getpid()) + "\n").getBytes(US_ASCII)));
         }
         catch (IOException e) {
             throw new RuntimeException("Cannot write to pid file: " + e);

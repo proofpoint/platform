@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
@@ -53,6 +52,7 @@ import static com.proofpoint.http.client.StaticBodyGenerator.createStaticBodyGen
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.testing.Assertions.assertContains;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -240,7 +240,7 @@ public class TestHttpServerProvider
             throws Exception
     {
         File file = File.createTempFile("auth", ".properties", tempDir);
-        Files.write("user: password", file, Charsets.UTF_8);
+        Files.write("user: password", file, UTF_8);
 
         config.setUserAuthFile(file.getAbsolutePath());
 

@@ -8,8 +8,8 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.net.MediaType.JSON_UTF_8;
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
 import static com.proofpoint.http.client.FullJsonResponseHandler.JsonResponse;
@@ -51,7 +51,7 @@ public class TestFullJsonResponseHandler
         JsonResponse<User> response = handler.handle(null, mockResponse().contentType(JSON_UTF_8).body(json).build());
 
         assertTrue(response.hasValue());
-        assertEquals(response.getJsonBytes(), json.getBytes(UTF_8));
+        assertEquals(response.getJsonBytes(), json.getBytes(StandardCharsets.UTF_8));
         assertEquals(response.getJson(), json);
         assertEquals(response.getValue().getName(), user.getName());
         assertEquals(response.getValue().getAge(), user.getAge());
@@ -96,7 +96,7 @@ public class TestFullJsonResponseHandler
             assertEquals(e.getMessage(), "Response does not contain a JSON value");
             assertEquals(e.getCause(), response.getException());
 
-            assertEquals(response.getJsonBytes(), json.getBytes(UTF_8));
+            assertEquals(response.getJsonBytes(), json.getBytes(StandardCharsets.UTF_8));
             assertEquals(response.getJson(), json);
 
             assertEquals(response.getResponseBytes(), response.getJsonBytes());
@@ -114,7 +114,7 @@ public class TestFullJsonResponseHandler
         assertNull(response.getJson());
         assertNull(response.getJsonBytes());
 
-        assertEquals(response.getResponseBytes(), "hello".getBytes(UTF_8));
+        assertEquals(response.getResponseBytes(), "hello".getBytes(StandardCharsets.UTF_8));
         assertEquals(response.getResponseBody(), "hello");
     }
 
@@ -128,7 +128,7 @@ public class TestFullJsonResponseHandler
         assertNull(response.getJson());
         assertNull(response.getJsonBytes());
 
-        assertEquals(response.getResponseBytes(), "hello".getBytes(UTF_8));
+        assertEquals(response.getResponseBytes(), "hello".getBytes(StandardCharsets.UTF_8));
         assertEquals(response.getResponseBody(), "hello");
 
         assertTrue(response.getHeaders().isEmpty());
@@ -142,7 +142,7 @@ public class TestFullJsonResponseHandler
 
         assertTrue(response.hasValue());
         assertEquals(response.getJson(), json);
-        assertEquals(response.getJsonBytes(), json.getBytes(UTF_8));
+        assertEquals(response.getJsonBytes(), json.getBytes(StandardCharsets.UTF_8));
         assertNull(response.getValue().getName());
         assertEquals(response.getValue().getAge(), 0);
 

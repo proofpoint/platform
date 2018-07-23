@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import com.proofpoint.units.DataSize;
@@ -35,6 +34,7 @@ import java.security.Principal;
 import java.util.Collections;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.testng.Assert.assertEquals;
@@ -148,7 +148,7 @@ public abstract class AbstractTestRequestLog
         logger.log(request, response);
         stopLogger();
 
-        String actual = Files.asCharSource(file, Charsets.UTF_8).read();
+        String actual = Files.asCharSource(file, UTF_8).read();
         String expected = getExpectedLogLine(timestamp, "9.9.9.9", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
         assertEquals(actual, expected);
     }

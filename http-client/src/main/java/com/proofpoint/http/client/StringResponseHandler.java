@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -27,8 +26,10 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 
+import static com.google.common.io.ByteStreams.toByteArray;
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 import static com.proofpoint.http.client.ResponseHandlerUtils.propagate;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class StringResponseHandler implements ResponseHandler<StringResponse, RuntimeException>
 {
@@ -61,14 +62,14 @@ public class StringResponseHandler implements ResponseHandler<StringResponse, Ru
                         response.getStatusCode(),
                         response.getStatusMessage(),
                         response.getHeaders(),
-                        new String(ByteStreams.toByteArray(response.getInputStream()), mediaType.charset().or(Charsets.UTF_8)));
+                        new String(ByteStreams.toByteArray(response.getInputStream()), mediaType.charset().or(UTF_8)));
             }
 
             return new StringResponse(
                     response.getStatusCode(),
                     response.getStatusMessage(),
                     response.getHeaders(),
-                    new String(ByteStreams.toByteArray(response.getInputStream()), Charsets.UTF_8));
+                    new String(toByteArray(response.getInputStream()), UTF_8));
         }
         catch (IOException e) {
             throw Throwables.propagate(e);

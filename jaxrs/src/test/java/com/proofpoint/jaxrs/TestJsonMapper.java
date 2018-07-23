@@ -15,7 +15,6 @@
  */
 package com.proofpoint.jaxrs;
 
-import com.google.common.base.Charsets;
 import com.google.common.net.HttpHeaders;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.ObjectMapperProvider;
@@ -23,6 +22,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 
 import javax.ws.rs.core.MultivaluedMap;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TestJsonMapper
     extends AbstractMapperTest<JsonMapper>
@@ -37,7 +38,7 @@ public class TestJsonMapper
     protected void assertEncodedProperly(byte[] encoded, MultivaluedMap<String, Object> headers, String expected)
     {
         JsonCodec<String> jsonCodec = JsonCodec.jsonCodec(String.class);
-        String json = new String(encoded, Charsets.UTF_8);
+        String json = new String(encoded, UTF_8);
         Assert.assertTrue(!json.contains("<"));
         Assert.assertTrue(!json.contains(">"));
         Assert.assertTrue(!json.contains("'"));

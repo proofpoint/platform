@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import com.proofpoint.discovery.client.ServiceDescriptor.ServiceDescriptorBuilder;
@@ -27,9 +26,11 @@ import org.testng.annotations.Test;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.google.common.io.Resources.getResource;
 import static com.proofpoint.discovery.client.ServiceDescriptor.serviceDescriptor;
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
@@ -48,7 +49,7 @@ public class TestServiceDescriptor
                 "location",
                 ServiceState.RUNNING, ImmutableMap.of("a", "apple", "b", "banana"));
 
-        String json = Resources.toString(Resources.getResource("service-descriptor.json"), Charsets.UTF_8);
+        String json = Resources.toString(getResource("service-descriptor.json"), UTF_8);
         ServiceDescriptor actual = serviceDescriptorCodec.fromJson(json);
 
         assertDescriptorEquals(expected, actual);

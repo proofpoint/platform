@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
@@ -34,6 +33,7 @@ import java.util.Map;
 import static com.proofpoint.tracetoken.TraceTokenManager.addTraceTokenProperties;
 import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
 
 public class TestJsonEventSerializer
@@ -74,7 +74,7 @@ public class TestJsonEventSerializer
         FixedDummyEventClass event = TestingUtils.getEvents().get(0);
         eventSerializer.serialize(event, traceToken, jsonGenerator);
 
-        String json = out.toString(Charsets.UTF_8.name());
+        String json = out.toString(UTF_8.name());
         assertEquals(new ObjectMapper().readValue(json, Object.class), expectedEventJson, "JSON encoding " + json);
     }
 
@@ -92,7 +92,7 @@ public class TestJsonEventSerializer
         FixedDummyEventClass event = TestingUtils.getEvents().get(0);
         eventSerializer.serialize(event, (TraceToken) null, jsonGenerator);
 
-        String json = out.toString(Charsets.UTF_8.name());
+        String json = out.toString(UTF_8.name());
         assertEquals(new ObjectMapper().readValue(json, Object.class), expectedEventJson, "JSON encoding " + json);
     }
 
@@ -108,7 +108,7 @@ public class TestJsonEventSerializer
         FixedDummyEventClass event = TestingUtils.getEvents().get(0);
         eventSerializer.serialize(event, "sample-trace-token", jsonGenerator);
 
-        String json = out.toString(Charsets.UTF_8.name());
+        String json = out.toString(UTF_8.name());
         assertEquals(new ObjectMapper().readValue(json, Object.class), expectedEventJson, "JSON encoding " + json);
     }
 
@@ -126,7 +126,7 @@ public class TestJsonEventSerializer
         FixedDummyEventClass event = TestingUtils.getEvents().get(0);
         eventSerializer.serialize(event, (String) null, jsonGenerator);
 
-        String json = out.toString(Charsets.UTF_8.name());
+        String json = out.toString(UTF_8.name());
         assertEquals(new ObjectMapper().readValue(json, Object.class), expectedEventJson, "JSON encoding " + json);
     }
 

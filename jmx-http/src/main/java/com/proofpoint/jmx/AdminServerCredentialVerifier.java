@@ -15,7 +15,6 @@
  */
 package com.proofpoint.jmx;
 
-import com.google.common.base.Charsets;
 import com.proofpoint.http.server.HttpServerConfig;
 
 import javax.inject.Inject;
@@ -23,6 +22,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.util.Base64;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
@@ -62,7 +62,7 @@ public class AdminServerCredentialVerifier
             unauthorized();
         }
 
-        String credentials = new String(decoder.decode(authHeader.substring("Basic ".length())), Charsets.UTF_8);
+        String credentials = new String(decoder.decode(authHeader.substring("Basic ".length())), UTF_8);
         int index = credentials.indexOf(':');
         if (index < 0 || !username.equals(credentials.substring(0, index)) || !password.equals(credentials.substring(index + 1))) {
             unauthorized();

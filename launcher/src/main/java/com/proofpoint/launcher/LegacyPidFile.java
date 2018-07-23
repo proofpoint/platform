@@ -15,8 +15,6 @@
  */
 package com.proofpoint.launcher;
 
-import com.google.common.base.Charsets;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 
 public class LegacyPidFile implements PidStatusSource
@@ -38,7 +37,7 @@ public class LegacyPidFile implements PidStatusSource
     @Override
     public PidStatus getStatus()
     {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pidFilePath), Charsets.US_ASCII)))
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pidFilePath), US_ASCII)))
         {
             String line = reader.readLine();
             if (line != null) {

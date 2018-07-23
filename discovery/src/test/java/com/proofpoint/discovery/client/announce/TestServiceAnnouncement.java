@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import com.proofpoint.json.JsonCodec;
@@ -24,12 +23,14 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
+import static com.google.common.io.Resources.getResource;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncementError;
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static com.proofpoint.json.JsonCodec.mapJsonCodec;
 import static com.proofpoint.testing.Assertions.assertContains;
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
@@ -107,7 +108,7 @@ public class TestServiceAnnouncement
                 .build();
         Map<String, Object> actual = objectCodec.fromJson(serviceAnnouncementCodec.toJson(serviceAnnouncement));
 
-        String json = Resources.toString(Resources.getResource("service-announcement.json"), Charsets.UTF_8);
+        String json = Resources.toString(getResource("service-announcement.json"), UTF_8);
         Map<String, Object> expected = objectCodec.fromJson(json);
 
         // set id in expected
