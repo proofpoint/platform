@@ -15,7 +15,6 @@
  */
 package com.proofpoint.launcher;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airlift.command.Arguments;
@@ -58,6 +57,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 @SuppressFBWarnings(value = "DM_EXIT", justification = "Need to return specific exit codes")
@@ -402,7 +402,7 @@ public class Main
             }
             catch (FileNotFoundException ignore) {
                 // Fall back to jvm.config
-                try (BufferedReader jvmReader = new BufferedReader(new InputStreamReader(new FileInputStream(jvmConfigPath), Charsets.UTF_8))) {
+                try (BufferedReader jvmReader = new BufferedReader(new InputStreamReader(new FileInputStream(jvmConfigPath), UTF_8))) {
                     String line;
                     boolean allowSpaces = false;
                     while ((line = jvmReader.readLine()) != null) {

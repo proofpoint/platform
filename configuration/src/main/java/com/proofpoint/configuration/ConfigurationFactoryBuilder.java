@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.google.common.base.Charsets.UTF_8;
 import static java.lang.String.format;
 
 public final class ConfigurationFactoryBuilder
@@ -71,7 +71,7 @@ public final class ConfigurationFactoryBuilder
             }
         };
 
-        try (Reader reader = new InputStreamReader(new FileInputStream(path), UTF_8)) {
+        try (Reader reader = new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8)) {
             properties.load(reader);
         }
 

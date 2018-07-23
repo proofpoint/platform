@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
@@ -65,6 +64,7 @@ import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.http.server.HttpServerBinder.httpServerBinder;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
@@ -255,7 +255,7 @@ public class TestHttpServerModule
             response.setStatus(responseStatusCode);
 
             if (responseBody != null) {
-                response.getOutputStream().write(responseBody.getBytes(Charsets.UTF_8));
+                response.getOutputStream().write(responseBody.getBytes(UTF_8));
             }
         }
     }

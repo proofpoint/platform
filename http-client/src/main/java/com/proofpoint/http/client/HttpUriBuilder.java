@@ -3,7 +3,6 @@ package com.proofpoint.http.client;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Ascii;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
@@ -22,6 +21,7 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Character.forDigit;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
@@ -266,7 +266,7 @@ public class HttpUriBuilder
     {
         StringBuilder builder = new StringBuilder();
 
-        ByteBuffer buffer = Charsets.UTF_8.encode(input);
+        ByteBuffer buffer = UTF_8.encode(input);
         while (buffer.remaining() > 0) {
             byte b = buffer.get();
 
@@ -312,7 +312,7 @@ public class HttpUriBuilder
         }
 
         try {
-            return Charsets.UTF_8.newDecoder()
+            return UTF_8.newDecoder()
                     .onMalformedInput(CodingErrorAction.REPORT)
                     .decode(ByteBuffer.wrap(out.toByteArray()))
                     .toString();

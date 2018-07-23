@@ -35,9 +35,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static com.google.common.base.Charsets.UTF_8;
 import static com.proofpoint.http.client.Request.Builder.preparePost;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static java.lang.String.format;
@@ -116,7 +116,7 @@ public class HttpEventClient
 
             try {
                 InputStream inputStream = response.getInputStream();
-                String responseBody = CharStreams.toString(new InputStreamReader(inputStream, UTF_8));
+                String responseBody = CharStreams.toString(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                 log.debug("Posting event to %s failed: status_code=%d status_line=%s body=%s", request.getUri(), statusCode, response.getStatusMessage(), responseBody);
             }
             catch (IOException bodyError) {

@@ -16,7 +16,6 @@
 package com.proofpoint.event.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
@@ -44,6 +43,7 @@ import static com.proofpoint.tracetoken.TraceTokenManager.addTraceTokenPropertie
 import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
 
 public abstract class AbstractTestJsonEventWriter
@@ -295,7 +295,7 @@ public abstract class AbstractTestJsonEventWriter
 
         writeEvents(events, token, out);
 
-        String json = out.toString(Charsets.UTF_8.name());
+        String json = out.toString(UTF_8.name());
         assertEquals(new ObjectMapper().readValue(json, Object.class), expected, "JSON encoding " + json);
     }
 
