@@ -37,10 +37,10 @@ import java.util.Set;
 
 import static com.google.common.collect.Iterables.getFirst;
 import static com.google.common.collect.Maps.newTreeMap;
+import static com.proofpoint.configuration.TypeParameterUtils.getTypeParameters;
 import static com.proofpoint.event.client.AnnotationUtils.findAnnotatedMethods;
 import static com.proofpoint.event.client.EventDataType.getEventDataType;
 import static com.proofpoint.event.client.EventFieldMetadata.ContainerType;
-import static com.proofpoint.configuration.TypeParameterUtils.getTypeParameters;
 
 final class EventTypeMetadata<T>
 {

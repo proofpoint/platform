@@ -24,7 +24,6 @@ import com.proofpoint.units.MinDuration;
 import javax.validation.constraints.AssertFalse;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-
 import java.math.BigDecimal;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;

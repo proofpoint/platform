@@ -16,11 +16,9 @@
 package com.proofpoint.audit;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.auto.value.AutoValue;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
-import com.proofpoint.audit.TestFileAuditLogger.TestingRecord;
 import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.json.JsonModule;
 import org.testng.annotations.Test;

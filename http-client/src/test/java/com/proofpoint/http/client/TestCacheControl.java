@@ -1,6 +1,5 @@
 package com.proofpoint.http.client;
 
-import com.proofpoint.http.client.CacheControl;
 import org.testng.annotations.Test;
 
 import java.util.List;

@@ -37,7 +37,6 @@ import com.google.inject.Provider;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement.ServiceAnnouncementBuilder;
 import com.proofpoint.http.server.HttpServerInfo;
-import sun.management.LazyCompositeData;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;

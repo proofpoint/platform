@@ -2,7 +2,6 @@ package com.proofpoint.http.client.balancing;
 
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.testing.ConfigAssertions;
-import com.proofpoint.testing.ValidationAssertions;
 import com.proofpoint.units.Duration;
 import com.proofpoint.units.MaxDuration;
 import com.proofpoint.units.MinDuration;
@@ -13,7 +12,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
 import static com.proofpoint.testing.ValidationAssertions.assertValidates;

@@ -17,7 +17,6 @@ package com.proofpoint.http.server;
 
 import com.google.common.io.ByteStreams;
 import com.proofpoint.tracetoken.TraceToken;
-import com.proofpoint.tracetoken.TraceTokenManager;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

@@ -21,7 +21,6 @@ import com.google.common.collect.Table;
 import com.google.inject.Injector;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.Gauge;
-import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.stats.MaxGauge;
 import org.testng.annotations.Test;
 import org.weakref.jmx.Flatten;

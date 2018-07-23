@@ -38,14 +38,12 @@ import org.weakref.jmx.testing.TestingMBeanModule;
 import java.net.URI;
 import java.util.Map;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseHandler;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 
 public class TestVersionResource
 {

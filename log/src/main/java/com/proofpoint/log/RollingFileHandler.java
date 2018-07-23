@@ -5,7 +5,6 @@ import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.encoder.EncoderBase;
 import com.proofpoint.units.DataSize;
 
-import java.io.IOException;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 

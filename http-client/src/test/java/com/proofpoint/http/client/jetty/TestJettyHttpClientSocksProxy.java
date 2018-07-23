@@ -1,15 +1,7 @@
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.collect.ImmutableList;
-import com.proofpoint.http.client.AbstractHttpClientTest;
-import com.proofpoint.http.client.HttpClientConfig;
-import com.proofpoint.http.client.HttpRequestFilter;
-import com.proofpoint.http.client.Request;
-import com.proofpoint.http.client.ResponseHandler;
-import com.proofpoint.http.client.TestingRequestFilter;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 import java.io.IOException;
 

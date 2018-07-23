@@ -23,10 +23,8 @@ import com.proofpoint.node.NodeInfo;
 import org.testng.annotations.Test;
 
 import static com.proofpoint.testing.Assertions.assertGreaterThanOrEqual;
-import static com.proofpoint.testing.Assertions.assertNotEquals;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 public class TestTestingNodeModule

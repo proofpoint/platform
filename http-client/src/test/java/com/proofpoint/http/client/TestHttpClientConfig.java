@@ -33,8 +33,6 @@ import static com.proofpoint.configuration.testing.ConfigAssertions.assertRecord
 import static com.proofpoint.configuration.testing.ConfigAssertions.recordDefaults;
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE;
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE_PASSWORD;
-import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_TRUST_STORE;
-import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_TRUST_STORE_PASSWORD;
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
 
 public class TestHttpClientConfig

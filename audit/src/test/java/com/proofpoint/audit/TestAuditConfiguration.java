@@ -2,7 +2,6 @@ package com.proofpoint.audit;
 
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.testing.ConfigAssertions;
-import com.proofpoint.log.LoggingConfiguration;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 import org.testng.annotations.Test;

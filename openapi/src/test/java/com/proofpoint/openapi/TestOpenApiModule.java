@@ -10,27 +10,26 @@ import com.proofpoint.http.server.testing.TestingAdminHttpServer;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
-import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.openapi.testapi.TestingResource;
+import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.testing.Closeables;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseHandler;
-import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
-import static com.proofpoint.http.server.testing.TestingAdminHttpServerModule.initializesMainServletTestingAdminHttpServerModule;
-import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
-import static com.proofpoint.json.JsonCodec.mapJsonCodec;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Map;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
+import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseHandler;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
+import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
+import static com.proofpoint.http.server.testing.TestingAdminHttpServerModule.initializesMainServletTestingAdminHttpServerModule;
+import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
+import static com.proofpoint.json.JsonCodec.mapJsonCodec;
 import static com.proofpoint.testing.Assertions.assertContains;
 import static org.testng.Assert.assertEquals;
 

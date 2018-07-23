@@ -19,7 +19,6 @@ import com.google.inject.Inject;
 
 import javax.annotation.Nullable;
 import javax.management.InstanceAlreadyExistsException;
-import javax.management.MalformedObjectNameException;
 
 import static java.util.Objects.requireNonNull;
 
