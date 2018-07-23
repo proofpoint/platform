@@ -20,7 +20,7 @@ import com.proofpoint.node.NodeInfo;
 
 import java.util.concurrent.ScheduledExecutorService;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public class CachingServiceSelectorFactory implements ServiceSelectorFactory
 {
@@ -31,9 +31,9 @@ public class CachingServiceSelectorFactory implements ServiceSelectorFactory
     @Inject
     public CachingServiceSelectorFactory(DiscoveryLookupClient lookupClient, @ForDiscoveryClient ScheduledExecutorService executor, NodeInfo nodeInfo)
     {
-        checkNotNull(lookupClient, "client is null");
-        checkNotNull(executor, "executor is null");
-        checkNotNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(lookupClient, "client is null");
+        requireNonNull(executor, "executor is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
 
         this.lookupClient = lookupClient;
         this.executor = executor;
@@ -43,8 +43,8 @@ public class CachingServiceSelectorFactory implements ServiceSelectorFactory
     @Override
     public ServiceSelector createServiceSelector(String type, ServiceSelectorConfig selectorConfig)
     {
-        checkNotNull(type, "type is null");
-        checkNotNull(selectorConfig, "selectorConfig is null");
+        requireNonNull(type, "type is null");
+        requireNonNull(selectorConfig, "selectorConfig is null");
 
         CachingServiceSelector serviceSelector = new CachingServiceSelector(type, selectorConfig, nodeInfo);
         ServiceDescriptorsUpdater updater = new ServiceDescriptorsUpdater(serviceSelector, type, selectorConfig, nodeInfo, lookupClient, executor);

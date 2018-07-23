@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 final class ReflectionUtils
 {
@@ -40,8 +40,8 @@ final class ReflectionUtils
     public static Object invoke(Object target, Method method)
             throws MBeanException, ReflectionException
     {
-        checkNotNull(target, "target is null");
-        checkNotNull(method, "method is null");
+        requireNonNull(target, "target is null");
+        requireNonNull(method, "method is null");
 
         try {
             Object result = method.invoke(target);

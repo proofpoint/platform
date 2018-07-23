@@ -29,7 +29,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.concurrent.locks.LockSupport;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("FieldCanBeLocal")
 class PidFile implements PidStatusSource
@@ -49,7 +49,7 @@ class PidFile implements PidStatusSource
 
     PidFile(String pidFilePath)
     {
-        checkNotNull(pidFilePath, "pidFilePath is null");
+        requireNonNull(pidFilePath, "pidFilePath is null");
 
         if (!new File(pidFilePath).getParentFile().mkdirs()) {
             // ignore failure

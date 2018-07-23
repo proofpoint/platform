@@ -54,8 +54,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Entry point for an application built using the platform codebase.
@@ -198,7 +198,7 @@ public class Bootstrap
         }
 
         this.modules = ImmutableList.<Module>builder()
-                .add(checkNotNull(applicationNameModule, "applicationNameModule is null"))
+                .add(requireNonNull(applicationNameModule, "applicationNameModule is null"))
                 .add(new LifeCycleModule())
                 .addAll(modules)
                 .build();
@@ -257,7 +257,7 @@ public class Bootstrap
     public Bootstrap withApplicationDefaults(Map<String, String> applicationDefaults)
     {
         checkState(this.applicationDefaults == null, "applicationDefaults already specified");
-        this.applicationDefaults = checkNotNull(applicationDefaults, "applicationDefaults is null");
+        this.applicationDefaults = requireNonNull(applicationDefaults, "applicationDefaults is null");
         return this;
     }
 
@@ -493,7 +493,7 @@ public class Bootstrap
 
         private StaticBootstrapBeforeModules(String applicationName)
         {
-            this.applicationName = checkNotNull(applicationName, "applicationName is null");
+            this.applicationName = requireNonNull(applicationName, "applicationName is null");
         }
 
         @Override
@@ -510,8 +510,8 @@ public class Bootstrap
 
         private DynamicBootstrapBeforeModules(Class<T> configClass, Function<T, String> applicationNameFunction)
         {
-            this.configClass = checkNotNull(configClass, "configClass is null");
-            this.applicationNameFunction = checkNotNull(applicationNameFunction, "applicationNameFunction is null");
+            this.configClass = requireNonNull(configClass, "configClass is null");
+            this.applicationNameFunction = requireNonNull(applicationNameFunction, "applicationNameFunction is null");
         }
 
         @Override

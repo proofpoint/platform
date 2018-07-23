@@ -36,12 +36,12 @@ import java.net.URI;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient.DEFAULT_DELAY;
 import static com.proofpoint.http.client.HttpStatus.NOT_MODIFIED;
 import static com.proofpoint.http.client.HttpStatus.OK;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 public class HttpDiscoveryLookupClient implements DiscoveryLookupClient
 {
@@ -56,9 +56,9 @@ public class HttpDiscoveryLookupClient implements DiscoveryLookupClient
             @ForDiscoveryClient HttpClient httpClient,
             ServiceInventory serviceInventory)
     {
-        checkNotNull(nodeInfo, "nodeInfo is null");
-        checkNotNull(serviceDescriptorsCodec, "serviceDescriptorsCodec is null");
-        checkNotNull(httpClient, "httpClient is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(serviceDescriptorsCodec, "serviceDescriptorsCodec is null");
+        requireNonNull(httpClient, "httpClient is null");
         // serviceInventory injected only to ensure it is constructed first and feeds
         // the list of discovery servers into httpClient before we use httpClient
 
@@ -77,28 +77,28 @@ public class HttpDiscoveryLookupClient implements DiscoveryLookupClient
     @Override
     public ListenableFuture<ServiceDescriptors> getServices(String type)
     {
-        checkNotNull(type, "type is null");
+        requireNonNull(type, "type is null");
         return lookup(type, null, null);
     }
 
     @Override
     public ListenableFuture<ServiceDescriptors> getServices(String type, String pool)
     {
-        checkNotNull(type, "type is null");
-        checkNotNull(pool, "pool is null");
+        requireNonNull(type, "type is null");
+        requireNonNull(pool, "pool is null");
         return lookup(type, pool, null);
     }
 
     @Override
     public ListenableFuture<ServiceDescriptors> refreshServices(ServiceDescriptors serviceDescriptors)
     {
-        checkNotNull(serviceDescriptors, "serviceDescriptors is null");
+        requireNonNull(serviceDescriptors, "serviceDescriptors is null");
         return lookup(serviceDescriptors.getType(), serviceDescriptors.getPool(), serviceDescriptors);
     }
 
     private ListenableFuture<ServiceDescriptors> lookup(final String type, final String pool, final ServiceDescriptors serviceDescriptors)
     {
-        checkNotNull(type, "type is null");
+        requireNonNull(type, "type is null");
 
         URI uri = URI.create("v1/service/" + type + "/");
         if (pool != null) {

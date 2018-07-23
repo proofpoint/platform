@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -60,7 +61,7 @@ public final class Duration implements Comparable<Duration>
         Preconditions.checkArgument(!Double.isInfinite(value), "value is infinite");
         Preconditions.checkArgument(!Double.isNaN(value), "value is not a number");
         Preconditions.checkArgument(value >= 0, "value is negative");
-        Preconditions.checkNotNull(unit, "unit is null");
+        requireNonNull(unit, "unit is null");
 
         this.value = value;
         this.unit = unit;
@@ -83,13 +84,13 @@ public final class Duration implements Comparable<Duration>
 
     public double getValue(TimeUnit timeUnit)
     {
-        Preconditions.checkNotNull(timeUnit, "timeUnit is null");
+        requireNonNull(timeUnit, "timeUnit is null");
         return value * (millisPerTimeUnit(this.unit) * 1.0 / millisPerTimeUnit(timeUnit));
     }
 
     public long roundTo(TimeUnit timeUnit)
     {
-        Preconditions.checkNotNull(timeUnit, "timeUnit is null");
+        requireNonNull(timeUnit, "timeUnit is null");
         double rounded = Math.floor(getValue(timeUnit) + 0.5d);
         Preconditions.checkArgument(rounded <= Long.MAX_VALUE,
                 "size is too large to be represented in requested unit as a long");
@@ -121,7 +122,7 @@ public final class Duration implements Comparable<Duration>
 
     public String toString(TimeUnit timeUnit)
     {
-        Preconditions.checkNotNull(timeUnit, "timeUnit is null");
+        requireNonNull(timeUnit, "timeUnit is null");
         double magnitude = getValue(timeUnit);
         String timeUnitAbbreviation = timeUnitToString(timeUnit);
         return String.format(Locale.ENGLISH, "%.2f%s", magnitude, timeUnitAbbreviation);
@@ -131,7 +132,7 @@ public final class Duration implements Comparable<Duration>
     public static Duration valueOf(String duration)
             throws IllegalArgumentException
     {
-        Preconditions.checkNotNull(duration, "duration is null");
+        requireNonNull(duration, "duration is null");
         Preconditions.checkArgument(!duration.isEmpty(), "duration is empty");
 
         Matcher matcher = PATTERN.matcher(duration);
@@ -178,7 +179,7 @@ public final class Duration implements Comparable<Duration>
 
     public static TimeUnit valueOfTimeUnit(String timeUnitString)
     {
-        Preconditions.checkNotNull(timeUnitString, "timeUnitString is null");
+        requireNonNull(timeUnitString, "timeUnitString is null");
         switch (timeUnitString) {
             case "ns":
                 return NANOSECONDS;
@@ -201,7 +202,7 @@ public final class Duration implements Comparable<Duration>
 
     public static String timeUnitToString(TimeUnit timeUnit)
     {
-        Preconditions.checkNotNull(timeUnit, "timeUnit is null");
+        requireNonNull(timeUnit, "timeUnit is null");
         switch (timeUnit) {
             case NANOSECONDS:
                 return "ns";

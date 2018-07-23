@@ -15,9 +15,9 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.base.Preconditions;
-
 import java.lang.annotation.Annotation;
+
+import static java.util.Objects.requireNonNull;
 
 class ServiceTypeImpl
         implements ServiceType
@@ -26,7 +26,7 @@ class ServiceTypeImpl
 
     ServiceTypeImpl(String value)
     {
-        Preconditions.checkNotNull(value, "value is null");
+        requireNonNull(value, "value is null");
         this.value = value;
     }
 

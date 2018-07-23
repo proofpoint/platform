@@ -39,6 +39,7 @@ import java.util.Set;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.proofpoint.configuration.TypeParameterUtils.getTypeParameters;
+import static java.util.Objects.requireNonNull;
 
 public class ConfigurationMetadata<T>
 {
@@ -408,9 +409,9 @@ public class ConfigurationMetadata<T>
 
         private InjectionPointMetaData(Class<?> configClass, String property, Method setter, @Nullable MapClasses mapClasses, boolean current)
         {
-            Preconditions.checkNotNull(configClass);
-            Preconditions.checkNotNull(property);
-            Preconditions.checkNotNull(setter);
+            requireNonNull(configClass);
+            requireNonNull(property);
+            requireNonNull(setter);
             Preconditions.checkArgument(!property.isEmpty());
 
             this.configClass = configClass;
@@ -499,11 +500,11 @@ public class ConfigurationMetadata<T>
         private AttributeMetadata(Class<?> configClass, String name, String description, boolean securitySensitive, @Nullable MapClasses mapClasses, Method getter,
                 InjectionPointMetaData injectionPoint, Set<InjectionPointMetaData> legacyInjectionPoints)
         {
-            Preconditions.checkNotNull(configClass);
-            Preconditions.checkNotNull(name);
-            Preconditions.checkNotNull(getter);
-            Preconditions.checkNotNull(injectionPoint);
-            Preconditions.checkNotNull(legacyInjectionPoints);
+            requireNonNull(configClass);
+            requireNonNull(name);
+            requireNonNull(getter);
+            requireNonNull(injectionPoint);
+            requireNonNull(legacyInjectionPoints);
 
             this.configClass = configClass;
             this.name = name;
@@ -602,8 +603,8 @@ public class ConfigurationMetadata<T>
 
         AttributeMetaDataBuilder(Class<?> configClass, String name, boolean securitySensitive, @Nullable MapClasses mapClasses)
         {
-            Preconditions.checkNotNull(configClass);
-            Preconditions.checkNotNull(name);
+            requireNonNull(configClass);
+            requireNonNull(name);
             Preconditions.checkArgument(!name.isEmpty());
 
             this.configClass = configClass;
@@ -614,21 +615,21 @@ public class ConfigurationMetadata<T>
 
         public void setDescription(String description)
         {
-            Preconditions.checkNotNull(description);
+            requireNonNull(description);
 
             this.description = description;
         }
 
         public void setGetter(Method getter)
         {
-            Preconditions.checkNotNull(getter);
+            requireNonNull(getter);
 
             this.getter = getter;
         }
 
         public void addInjectionPoint(InjectionPointMetaData injectionPointMetaData)
         {
-            Preconditions.checkNotNull(injectionPointMetaData);
+            requireNonNull(injectionPointMetaData);
 
             if (injectionPointMetaData.isLegacy()) {
                 this.legacyInjectionPoints.add(injectionPointMetaData);

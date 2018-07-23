@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, DiscoveryLookupClient
 {
@@ -53,31 +53,31 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
     @Inject
     public InMemoryDiscoveryClient(NodeInfo nodeInfo)
     {
-        checkNotNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
         this.nodeInfo = nodeInfo;
         maxAge = DEFAULT_DELAY;
     }
 
     public InMemoryDiscoveryClient(NodeInfo nodeInfo, Duration maxAge)
     {
-        checkNotNull(nodeInfo, "nodeInfo is null");
-        checkNotNull(maxAge, "maxAge is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(maxAge, "maxAge is null");
         this.nodeInfo = nodeInfo;
         this.maxAge = maxAge;
     }
 
     public ServiceDescriptor addDiscoveredService(ServiceDescriptor serviceDescriptor)
     {
-        checkNotNull(serviceDescriptor, "serviceDescriptor is null");
+        requireNonNull(serviceDescriptor, "serviceDescriptor is null");
 
         return discovered.put(serviceDescriptor.getId(), serviceDescriptor);
     }
 
     public ServiceDescriptor addDiscoveredService(String type, String pool, String uri)
     {
-        checkNotNull(type, "type is null");
-        checkNotNull(pool, "pool is null");
-        checkNotNull(uri, "uri is null");
+        requireNonNull(type, "type is null");
+        requireNonNull(pool, "pool is null");
+        requireNonNull(uri, "uri is null");
 
         String nodeId = UUID.randomUUID().toString();
         Map<String, String> properties = new HashMap<>();
@@ -100,7 +100,7 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
 
     public ServiceDescriptor remove(UUID uuid)
     {
-        checkNotNull(uuid, "uuid is null");
+        requireNonNull(uuid, "uuid is null");
 
         return discovered.remove(uuid);
     }
@@ -108,7 +108,7 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
     @Override
     public CheckedFuture<Duration, DiscoveryException> announce(Set<ServiceAnnouncement> services)
     {
-        checkNotNull(services, "services is null");
+        requireNonNull(services, "services is null");
 
         ImmutableSet.Builder<ServiceDescriptor> builder = ImmutableSet.builder();
         for (ServiceAnnouncement service : services) {
@@ -128,7 +128,7 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
     @Override
     public CheckedFuture<ServiceDescriptors, DiscoveryException> getServices(String type)
     {
-        checkNotNull(type, "type is null");
+        requireNonNull(type, "type is null");
 
         ImmutableList.Builder<ServiceDescriptor> builder = ImmutableList.builder();
         for (ServiceDescriptor serviceDescriptor : this.announcements.get()) {
@@ -147,8 +147,8 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
     @Override
     public CheckedFuture<ServiceDescriptors, DiscoveryException> getServices(String type, String pool)
     {
-        checkNotNull(type, "type is null");
-        checkNotNull(pool, "pool is null");
+        requireNonNull(type, "type is null");
+        requireNonNull(pool, "pool is null");
 
         ImmutableList.Builder<ServiceDescriptor> builder = ImmutableList.builder();
         for (ServiceDescriptor serviceDescriptor : this.announcements.get()) {
@@ -167,7 +167,7 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
     @Override
     public CheckedFuture<ServiceDescriptors, DiscoveryException> refreshServices(ServiceDescriptors serviceDescriptors)
     {
-        checkNotNull(serviceDescriptors, "serviceDescriptors is null");
+        requireNonNull(serviceDescriptors, "serviceDescriptors is null");
 
         return getServices(serviceDescriptors.getType(), serviceDescriptors.getPool());
     }

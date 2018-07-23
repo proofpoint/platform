@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public class SimpleServiceSelector implements ServiceSelector
 {
@@ -44,9 +44,9 @@ public class SimpleServiceSelector implements ServiceSelector
 
     public SimpleServiceSelector(String type, ServiceSelectorConfig selectorConfig, NodeInfo nodeInfo, DiscoveryLookupClient lookupClient)
     {
-        checkNotNull(type, "type is null");
-        checkNotNull(selectorConfig, "selectorConfig is null");
-        checkNotNull(lookupClient, "client is null");
+        requireNonNull(type, "type is null");
+        requireNonNull(selectorConfig, "selectorConfig is null");
+        requireNonNull(lookupClient, "client is null");
 
         this.type = type;
         this.pool = firstNonNull(selectorConfig.getPool(), nodeInfo.getPool());

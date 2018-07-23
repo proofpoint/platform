@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public class CachingServiceSelector
         implements ServiceSelector, ServiceDescriptorsListener
@@ -33,9 +33,9 @@ public class CachingServiceSelector
 
     public CachingServiceSelector(String type, ServiceSelectorConfig selectorConfig, NodeInfo nodeInfo)
     {
-        checkNotNull(type, "type is null");
-        checkNotNull(selectorConfig, "selectorConfig is null");
-        checkNotNull(nodeInfo, "nodeInfo is null");
+        requireNonNull(type, "type is null");
+        requireNonNull(selectorConfig, "selectorConfig is null");
+        requireNonNull(nodeInfo, "nodeInfo is null");
 
         this.type = type;
         this.pool = firstNonNull(selectorConfig.getPool(), nodeInfo.getPool());
@@ -62,7 +62,7 @@ public class CachingServiceSelector
     @Override
     public void updateServiceDescriptors(Iterable<ServiceDescriptor> newDescriptors)
     {
-        serviceDescriptors.set(ImmutableList.copyOf(checkNotNull(newDescriptors)));
+        serviceDescriptors.set(ImmutableList.copyOf(requireNonNull(newDescriptors)));
     }
 
 }

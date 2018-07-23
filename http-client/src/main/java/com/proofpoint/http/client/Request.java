@@ -28,7 +28,7 @@ import java.util.Objects;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 @Beta
 public class Request
@@ -45,8 +45,8 @@ public class Request
     }
     public Request(URI uri, String method, ListMultimap<String, String> headers, @Nullable BodySource bodySource, boolean followRedirects)
     {
-        checkNotNull(uri, "uri is null");
-        checkNotNull(method, "method is null");
+        requireNonNull(uri, "uri is null");
+        requireNonNull(method, "method is null");
 
         this.uri = validateUri(uri);
         this.method = method;

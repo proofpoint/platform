@@ -48,6 +48,7 @@ import static com.proofpoint.testing.EquivalenceTester.EquivalenceFailureType.NO
 import static com.proofpoint.testing.EquivalenceTester.EquivalenceFailureType.NOT_REFLEXIVE;
 import static com.proofpoint.testing.EquivalenceTester.comparisonTester;
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
+import static java.util.Objects.requireNonNull;
 import static org.testng.Assert.assertEquals;
 import static org.testng.FileAssert.fail;
 
@@ -128,7 +129,7 @@ public class TestEquivalenceTester
         @Override
         public int compareTo(ComparableNotReflexive that)
         {
-            Preconditions.checkNotNull(that, "that is null");
+            requireNonNull(that, "that is null");
             return this == that ? 1 : -1;
         }
     }
@@ -206,7 +207,7 @@ public class TestEquivalenceTester
         @Override
         public int compareTo(ComparableNotSymmetric that)
         {
-            Preconditions.checkNotNull(that, "that is null");
+            requireNonNull(that, "that is null");
             if (id >= that.id) {
                 return 0;
             }

@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -24,6 +23,8 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
+import static java.util.Objects.requireNonNull;
+
 @Deprecated
 public class HttpServiceSelectorImpl implements HttpServiceSelector
 {
@@ -31,7 +32,7 @@ public class HttpServiceSelectorImpl implements HttpServiceSelector
 
     public HttpServiceSelectorImpl(ServiceSelector serviceSelector)
     {
-        Preconditions.checkNotNull(serviceSelector, "serviceSelector is null");
+        requireNonNull(serviceSelector, "serviceSelector is null");
         this.serviceSelector = serviceSelector;
     }
 

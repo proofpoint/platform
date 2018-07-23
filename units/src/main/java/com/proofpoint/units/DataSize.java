@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.lang.Math.floor;
+import static java.util.Objects.requireNonNull;
 
 @Beta
 public class DataSize
@@ -51,7 +52,7 @@ public class DataSize
         Preconditions.checkArgument(!Double.isInfinite(size), "size is infinite");
         Preconditions.checkArgument(!Double.isNaN(size), "size is not a number");
         Preconditions.checkArgument(size >= 0, "size is negative");
-        Preconditions.checkNotNull(unit, "unit is null");
+        requireNonNull(unit, "unit is null");
 
         this.value = size;
         this.unit = unit;
@@ -89,7 +90,7 @@ public class DataSize
 
     public DataSize convertTo(Unit unit)
     {
-        Preconditions.checkNotNull(unit, "unit is null");
+        requireNonNull(unit, "unit is null");
         return new DataSize(getValue(unit), unit);
     }
 
@@ -122,7 +123,7 @@ public class DataSize
     public static DataSize valueOf(String size)
             throws IllegalArgumentException
     {
-        Preconditions.checkNotNull(size, "size is null");
+        requireNonNull(size, "size is null");
         Preconditions.checkArgument(!size.isEmpty(), "size is empty");
 
         Matcher matcher = PATTERN.matcher(size);

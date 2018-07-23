@@ -24,7 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public class LegacyPidFile implements PidStatusSource
 {
@@ -32,7 +32,7 @@ public class LegacyPidFile implements PidStatusSource
 
     public LegacyPidFile(String pidFilePath)
     {
-        this.pidFilePath = checkNotNull(pidFilePath, "pidFilePath is null");
+        this.pidFilePath = requireNonNull(pidFilePath, "pidFilePath is null");
     }
 
     @Override
