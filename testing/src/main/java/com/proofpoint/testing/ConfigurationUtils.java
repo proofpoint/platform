@@ -1,11 +1,11 @@
 package com.proofpoint.testing;
 
-import static com.google.common.collect.Maps.fromProperties;
-import static com.google.common.io.Resources.getResource;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
+
+import static com.google.common.collect.Maps.fromProperties;
+import static com.google.common.io.Resources.getResource;
 
 public final class ConfigurationUtils
 {

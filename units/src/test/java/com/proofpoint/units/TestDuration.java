@@ -17,7 +17,6 @@ package com.proofpoint.units;
 
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.testing.EquivalenceTester;
-import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 

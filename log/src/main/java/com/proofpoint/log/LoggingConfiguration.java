@@ -21,8 +21,6 @@ import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 
-import java.nio.file.Path;
-
 public class LoggingConfiguration
 {
     private boolean consoleEnabled = true;

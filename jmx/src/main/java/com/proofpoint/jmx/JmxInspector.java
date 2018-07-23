@@ -17,7 +17,6 @@ package com.proofpoint.jmx;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Injector;

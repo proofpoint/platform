@@ -15,11 +15,8 @@
  */
 package com.proofpoint.http.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.tracetoken.TraceToken;
-
-import javax.inject.Inject;
 
 import static com.proofpoint.http.client.Request.Builder.fromRequest;
 import static com.proofpoint.json.JsonCodec.jsonCodec;

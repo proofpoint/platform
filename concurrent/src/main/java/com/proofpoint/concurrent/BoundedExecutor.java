@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.proofpoint.log.Logger;
 
 import javax.annotation.concurrent.ThreadSafe;
-
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;

@@ -22,7 +22,6 @@ import com.google.common.reflect.TypeToken;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;

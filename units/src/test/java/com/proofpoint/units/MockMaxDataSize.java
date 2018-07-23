@@ -13,10 +13,7 @@
  */
 package com.proofpoint.units;
 
-import com.proofpoint.units.MaxDataSize;
-
 import javax.validation.Payload;
-
 import java.lang.annotation.Annotation;
 
 import static com.google.common.base.Preconditions.checkNotNull;

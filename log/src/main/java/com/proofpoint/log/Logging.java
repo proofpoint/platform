@@ -55,8 +55,6 @@ import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
 import static com.proofpoint.log.Level.fromJulLevel;
-import static com.proofpoint.units.DataSize.Unit.BYTE;
-import static com.proofpoint.units.DataSize.Unit.GIGABYTE;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;

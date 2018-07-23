@@ -16,7 +16,6 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.CreationException;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.proofpoint.bootstrap.LifeCycleManager;

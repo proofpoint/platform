@@ -15,8 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import java.util.Map;
-
 import static java.util.Objects.requireNonNull;
 
 public class NamedReportBinder

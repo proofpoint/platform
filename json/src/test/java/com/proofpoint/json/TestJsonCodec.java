@@ -23,7 +23,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.proofpoint.json.JsonCodec.*;
+import static com.proofpoint.json.JsonCodec.jsonCodec;
+import static com.proofpoint.json.JsonCodec.listJsonCodec;
+import static com.proofpoint.json.JsonCodec.mapJsonCodec;
 import static com.proofpoint.testing.Assertions.assertContains;
 import static com.proofpoint.testing.Assertions.assertNotContains;
 import static org.testng.Assert.assertFalse;

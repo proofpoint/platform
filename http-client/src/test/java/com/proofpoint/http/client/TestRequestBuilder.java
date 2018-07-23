@@ -23,7 +23,6 @@ import java.net.URI;
 import static com.proofpoint.http.client.Request.Builder.fromRequest;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.Request.Builder.preparePut;
-import static com.proofpoint.http.client.StaticBodyGenerator.createStaticBodyGenerator;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;

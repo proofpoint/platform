@@ -30,7 +30,6 @@ import static com.google.inject.Scopes.SINGLETON;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
-import static com.proofpoint.reporting.HealthBinder.healthBinder;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 public class ReportingClientModule

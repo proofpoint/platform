@@ -19,8 +19,6 @@ import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
 import com.google.inject.util.Types;
 
-import java.lang.reflect.Method;
-
 import static java.util.Objects.requireNonNull;
 
 /**

@@ -16,7 +16,6 @@
 package com.proofpoint.reporting;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 import com.proofpoint.reporting.ReportException.Reason;
 
@@ -29,7 +28,6 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.proofpoint.reporting.AnnotationUtils.findAnnotatedMethods;
 import static com.proofpoint.reporting.AnnotationUtils.isFlatten;

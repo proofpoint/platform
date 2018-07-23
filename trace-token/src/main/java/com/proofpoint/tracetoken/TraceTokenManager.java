@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Thread.currentThread;
 import static java.util.Objects.requireNonNull;
 

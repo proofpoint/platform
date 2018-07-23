@@ -35,16 +35,13 @@ import com.proofpoint.node.NodeInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.management.MalformedObjectNameException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.proofpoint.http.client.testing.BodySourceTester.writeBodySourceTo;
 import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;

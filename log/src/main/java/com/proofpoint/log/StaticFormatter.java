@@ -12,7 +12,6 @@ import java.util.Locale;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MILLI_OF_SECOND;
