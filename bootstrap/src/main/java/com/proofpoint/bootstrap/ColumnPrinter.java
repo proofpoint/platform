@@ -28,8 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class ColumnPrinter
 {
-    private final List<List<String>> data = Lists.newArrayList();
-    private final List<String> columnNames = Lists.newArrayList();
+    private final List<List<String>> data = new ArrayList<>();
+    private final List<String> columnNames = new ArrayList<>();
     private int margin;
 
     private static final int DEFAULT_MARGIN = 2;
@@ -106,7 +106,7 @@ class ColumnPrinter
      */
     private List<String> generate()
     {
-        List<String> lines = Lists.newArrayList();
+        List<String> lines = new ArrayList<>();
         StringBuilder workStr = new StringBuilder();
 
         List<AtomicInteger> columnWidths = getColumnWidths();
@@ -163,7 +163,7 @@ class ColumnPrinter
 
     private List<Iterator<String>> getDataIterators()
     {
-        List<Iterator<String>> dataIterators = Lists.newArrayList();
+        List<Iterator<String>> dataIterators = new ArrayList<>();
         for (List<String> valueList : data) {
             dataIterators.add(valueList.iterator());
         }
@@ -172,7 +172,7 @@ class ColumnPrinter
 
     private List<AtomicInteger> getColumnWidths()
     {
-        List<AtomicInteger> columnWidths = Lists.newArrayList();
+        List<AtomicInteger> columnWidths = new ArrayList<>();
         for (String columnName : columnNames) {
             columnWidths.add(new AtomicInteger(columnName.length()));
         }

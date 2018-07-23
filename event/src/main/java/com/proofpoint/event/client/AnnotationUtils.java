@@ -18,9 +18,8 @@ package com.proofpoint.event.client;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 class AnnotationUtils
 {
@@ -37,7 +36,7 @@ class AnnotationUtils
      */
     public static Collection<Method> findAnnotatedMethods(Class<?> clazz, Class<? extends Annotation> annotation)
     {
-        Collection<Method> result = newArrayList();
+        Collection<Method> result = new ArrayList<>();
 
         // gather all publicly available methods, including those declared in a parent
         for (Method method : clazz.getMethods()) {

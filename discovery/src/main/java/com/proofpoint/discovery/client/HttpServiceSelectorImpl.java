@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class HttpServiceSelectorImpl implements HttpServiceSelector
             return ImmutableList.of();
         }
 
-        List<URI> httpUri = Lists.newArrayList();
+        List<URI> httpUri = new ArrayList<>();
         for (ServiceDescriptor serviceDescriptor : serviceDescriptors) {
             String https = serviceDescriptor.getProperties().get("https");
             if (https != null) {

@@ -54,13 +54,13 @@ import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.event.client.EventTypeMetadata.getValidEventTypeMetaDataSet;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
@@ -145,7 +145,7 @@ public class TestHttpEventClient
     {
         client = newEventClient(ImmutableSet.of(baseUri));
 
-        List<Future<Void>> futures = newArrayList();
+        List<Future<Void>> futures = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
             futures.add(client.post(TestingUtils.getEvents()));
         }

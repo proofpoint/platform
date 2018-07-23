@@ -22,6 +22,7 @@ import com.google.common.util.concurrent.Futures;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +40,6 @@ import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
@@ -422,12 +422,12 @@ public class SerialScheduledExecutorService
 
     private void elapseTime(long quantum, @Nullable TestingTicker ticker)
     {
-        List<SerialScheduledFuture<?>> toRequeue = newArrayList();
+        List<SerialScheduledFuture<?>> toRequeue = new ArrayList<>();
 
         // Redirect where the external interface queues up tasks to a temporary
         // collection. This allows the scheduled tasks to schedule future tasks.
         Collection<SerialScheduledFuture<?>> originalTasks = tasks;
-        tasks = newArrayList();
+        tasks = new ArrayList<>();
         try {
             SerialScheduledFuture<?> current;
             while ((current = futureTasks.poll()) != null) {

@@ -27,6 +27,7 @@ import com.google.inject.spi.TypeListener;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -38,7 +39,7 @@ import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
  */
 public class LifeCycleModule implements Module
 {
-    private final List<Object> injectedInstances = Lists.newArrayList();
+    private final List<Object> injectedInstances = new ArrayList<>();
     private final LifeCycleMethodsMap lifeCycleMethodsMap = new LifeCycleMethodsMap();
     private final AtomicReference<LifeCycleManager> lifeCycleManagerRef = new AtomicReference<>(null);
 

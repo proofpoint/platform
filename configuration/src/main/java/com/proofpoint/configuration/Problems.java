@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.ConfigurationException;
 import com.google.inject.spi.Message;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -27,8 +28,8 @@ import static java.util.Collections.emptyList;
 
 class Problems
 {
-    private final List<Message> errors = Lists.newArrayList();
-    private final List<Message> warnings = Lists.newArrayList();
+    private final List<Message> errors = new ArrayList<>();
+    private final List<Message> warnings = new ArrayList<>();
     private final Monitor monitor;
 
     public interface Monitor

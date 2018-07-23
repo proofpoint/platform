@@ -21,7 +21,6 @@ package com.proofpoint.testing;
  * Licensed under Apache License, Version 2.0
  */
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.proofpoint.testing.EquivalenceTester.ElementCheckFailure;
 import com.proofpoint.testing.EquivalenceTester.PairCheckFailure;
