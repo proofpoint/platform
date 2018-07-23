@@ -30,13 +30,14 @@ import com.proofpoint.tracetoken.TraceToken;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import static com.google.common.collect.Iterables.getFirst;
-import static com.google.common.collect.Maps.newTreeMap;
 import static com.proofpoint.configuration.TypeParameterUtils.getTypeParameters;
 import static com.proofpoint.event.client.AnnotationUtils.findAnnotatedMethods;
 import static com.proofpoint.event.client.EventDataType.getEventDataType;
@@ -66,7 +67,7 @@ final class EventTypeMetadata<T>
 
     public static <T> EventTypeMetadata<T> getEventTypeMetadata(Class<T> eventClass)
     {
-        return new EventTypeMetadata<>(eventClass, Lists.<String>newArrayList(), Maps.<Class<?>, EventTypeMetadata<?>>newHashMap(), false);
+        return new EventTypeMetadata<>(eventClass, new ArrayList<>(), Maps.<Class<?>, EventTypeMetadata<?>>newHashMap(), false);
     }
 
     private final Class<T> eventClass;
@@ -97,7 +98,7 @@ final class EventTypeMetadata<T>
 
         // build event field metadata
         Multimap<EventFieldMapping, EventFieldMetadata> specialFields = ArrayListMultimap.create();
-        Map<String, EventFieldMetadata> fields = newTreeMap();
+        Map<String, EventFieldMetadata> fields = new TreeMap<>();
 
         for (Method method : findAnnotatedMethods(eventClass, EventField.class)) {
             // validate method

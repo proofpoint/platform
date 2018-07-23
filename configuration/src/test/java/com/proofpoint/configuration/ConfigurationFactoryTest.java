@@ -467,7 +467,7 @@ public class ConfigurationFactoryTest
     @Test
     public void testDefunctPropertyInConfigThrows()
     {
-        Map<String, String> properties = Maps.newTreeMap();
+        Map<String, String> properties = new TreeMap<>();
         properties.put("string-value", "this is a");
         properties.put("defunct-value", "this shouldn't work");
         TestMonitor monitor = new TestMonitor();
@@ -839,7 +839,7 @@ public class ConfigurationFactoryTest
     @Test
     public void testDefunctPropertyInMapValueConfigThrows()
     {
-        Map<String, String> properties = Maps.newTreeMap();
+        Map<String, String> properties = new TreeMap<>();
         properties.put("map-a.k.string-value", "this is a");
         properties.put("map-a.k.defunct-value", "this shouldn't work");
         TestMonitor monitor = new TestMonitor();

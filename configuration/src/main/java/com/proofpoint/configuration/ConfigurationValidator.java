@@ -27,6 +27,7 @@ import com.google.inject.spi.PrivateElements;
 import com.google.inject.spi.ProviderInstanceBinding;
 
 import javax.inject.Provider;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -59,7 +60,7 @@ public class ConfigurationValidator
 
     public List<Message> validate(Iterable<? extends Module> modules)
     {
-        final List<Message> messages = Lists.newArrayList();
+        final List<Message> messages = new ArrayList<>();
 
 
         for (String error : configurationFactory.getInitialErrors()) {

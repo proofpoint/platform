@@ -21,11 +21,11 @@ package com.proofpoint.testing;
  * Licensed under Apache License, Version 2.0
  */
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -67,7 +67,7 @@ public final class EquivalenceTester
 
     public static class EquivalenceCheck<T>
     {
-        private final List<List<T>> equivalenceClasses = newArrayList();
+        private final List<List<T>> equivalenceClasses = new ArrayList<>();
 
         private EquivalenceCheck()
         {
