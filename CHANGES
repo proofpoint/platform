@@ -59,7 +59,12 @@ Platform 1.83
 * We changed ServiceDescriptorBuilder to generate a UUID in the build() call.
   Unless the ID is explicitly set each build() call will return a unique ID.
 
-* We removed the platform.test.fork-mode Maven property as the Surefire
+* Maven
+
+  We added dependencyManagement entries for assertj-core, assertj-guava,
+  assertj-joda-time, and assertj-db.
+
+  We removed the platform.test.fork-mode Maven property as the Surefire
   parameter it controlled is deprecated.
 
 * Maven plugin upgrades
