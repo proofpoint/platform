@@ -26,5 +26,6 @@ public class OpenApiModule implements Module
     public void configure(Binder binder)
     {
         jaxrsBinder(binder).bindAdmin(OpenApiResource.class);
+        jaxrsBinder(binder).bindAdmin(OpenApiAdminResource.class);
     }
 }
