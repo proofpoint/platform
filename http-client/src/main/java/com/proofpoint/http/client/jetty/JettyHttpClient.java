@@ -1,6 +1,5 @@
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -74,6 +73,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -156,7 +156,7 @@ public class JettyHttpClient
 
     public JettyHttpClient(HttpClientConfig config, Iterable<? extends HttpRequestFilter> requestFilters)
     {
-        this(config, Optional.absent(), requestFilters);
+        this(config, Optional.empty(), requestFilters);
     }
 
     public JettyHttpClient(HttpClientConfig config, JettyIoPool jettyIoPool, Iterable<? extends HttpRequestFilter> requestFilters)
@@ -236,13 +236,14 @@ public class JettyHttpClient
             httpClient.getProxyConfiguration().getProxies().add(new Socks4Proxy(socksProxy.getHost(), socksProxy.getPortOrDefault(1080)));
         }
 
-        JettyIoPool pool = jettyIoPool.orNull();
-        if (pool == null) {
-            pool = new JettyIoPool("anonymous" + nameCounter.incrementAndGet(), new JettyIoPoolConfig());
-            anonymousPool = pool;
+        JettyIoPool pool;
+        if (jettyIoPool.isPresent()) {
+            pool = jettyIoPool.get();
+            anonymousPool = null;
         }
         else {
-            anonymousPool = null;
+            pool = new JettyIoPool("anonymous" + nameCounter.incrementAndGet(), new JettyIoPoolConfig());
+            anonymousPool = pool;
         }
 
         name = pool.getName();
