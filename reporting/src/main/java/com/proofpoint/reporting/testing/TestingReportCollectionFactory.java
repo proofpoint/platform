@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting.testing;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Ticker;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
@@ -28,11 +27,12 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-import static com.google.common.base.Optional.fromNullable;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
@@ -275,10 +275,10 @@ public class TestingReportCollectionFactory
 
         public synchronized <T> void put(@Nullable String name, Class<T> aClass, T value)
         {
-            ClassToInstanceMap<Object> instanceMap = nameMap.get(fromNullable(name));
+            ClassToInstanceMap<Object> instanceMap = nameMap.get(ofNullable(name));
             if (instanceMap == null) {
                 instanceMap = MutableClassToInstanceMap.create();
-                nameMap.put(fromNullable(name), instanceMap);
+                nameMap.put(ofNullable(name), instanceMap);
             }
             if (instanceMap.putInstance(aClass, value) != null) {
                 String message = "Duplicate ReportCollection for " + aClass.toString();
@@ -292,7 +292,7 @@ public class TestingReportCollectionFactory
         @SuppressWarnings("unchecked")
         public synchronized <T> T get(@Nullable String name, Class<T> aClass)
         {
-            ClassToInstanceMap<Object> instanceMap = nameMap.get(fromNullable(name));
+            ClassToInstanceMap<Object> instanceMap = nameMap.get(ofNullable(name));
             if (instanceMap == null) {
                 return null;
             }
