@@ -20,7 +20,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.proofpoint.event.client.EventField.EventFieldMapping;
@@ -31,6 +30,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,7 +66,7 @@ final class EventTypeMetadata<T>
 
     public static <T> EventTypeMetadata<T> getEventTypeMetadata(Class<T> eventClass)
     {
-        return new EventTypeMetadata<>(eventClass, new ArrayList<>(), Maps.<Class<?>, EventTypeMetadata<?>>newHashMap(), false);
+        return new EventTypeMetadata<>(eventClass, new ArrayList<>(), new HashMap<>(), false);
     }
 
     private final Class<T> eventClass;
