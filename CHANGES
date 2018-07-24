@@ -16,6 +16,9 @@ Platform 1.83
   We added BasicAuthRequestFilter, a request filter which performs basic
   authentication.
 
+  [Bug] Request now correctly validates the URI scheme and that a URI with
+  a scheme has a host.
+
 * Stats
 
   We replaced the implementation of QuantileDigest with a more
@@ -47,6 +50,8 @@ Platform 1.83
 * We added MoreFutures.unwrapCompletionException().
 
 * We added TempFile for use with try-with-resources.
+
+* We added EventDataType.INSTANT to support fields of type java.time.Instant
 
 * We changed ServiceDescriptorBuilder to generate a UUID in the build() call.
   Unless the ID is explicitly set each build() call will return a unique ID.
