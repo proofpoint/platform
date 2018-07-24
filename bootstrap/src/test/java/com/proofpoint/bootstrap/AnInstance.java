@@ -15,7 +15,7 @@
  */
 package com.proofpoint.bootstrap;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 
 public class AnInstance
 {

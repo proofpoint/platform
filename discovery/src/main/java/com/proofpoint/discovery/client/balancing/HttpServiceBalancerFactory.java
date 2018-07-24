@@ -16,7 +16,6 @@
 package com.proofpoint.discovery.client.balancing;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 import com.proofpoint.discovery.client.DiscoveryLookupClient;
 import com.proofpoint.discovery.client.ForDiscoveryClient;
 import com.proofpoint.discovery.client.ServiceDescriptorsUpdater;
@@ -29,6 +28,7 @@ import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
 
+import javax.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 

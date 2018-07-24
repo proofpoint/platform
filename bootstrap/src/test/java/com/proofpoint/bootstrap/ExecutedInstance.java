@@ -15,8 +15,7 @@
  */
 package com.proofpoint.bootstrap;
 
-import com.google.inject.Inject;
-
+import javax.inject.Inject;
 import java.util.concurrent.CountDownLatch;
 
 public class ExecutedInstance extends Executed

@@ -15,7 +15,6 @@
  */
 package com.proofpoint.testing;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 

@@ -15,8 +15,7 @@
  */
 package com.proofpoint.log;
 
-import com.google.inject.Inject;
-
+import javax.inject.Inject;
 import java.util.IllegalFormatException;
 
 import static java.lang.String.format;

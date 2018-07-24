@@ -18,7 +18,6 @@ package com.proofpoint.event.client;
 import com.google.common.io.CharStreams;
 import com.google.common.net.MediaType;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.inject.Inject;
 import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
@@ -31,6 +30,7 @@ import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
 import org.weakref.jmx.Flatten;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;

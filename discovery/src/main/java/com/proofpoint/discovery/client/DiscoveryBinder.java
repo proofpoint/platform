@@ -16,9 +16,7 @@
 package com.proofpoint.discovery.client;
 
 import com.google.inject.Binder;
-import com.google.inject.Inject;
 import com.google.inject.Key;
-import com.google.inject.Provider;
 import com.google.inject.multibindings.Multibinder;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
@@ -28,6 +26,8 @@ import com.proofpoint.http.client.balancing.BalancingHttpClientBindingBuilder;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 

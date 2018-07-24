@@ -17,9 +17,10 @@ package com.proofpoint.jaxrs;
 
 import com.google.common.base.Supplier;
 import com.google.inject.Key;
-import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+
+import javax.inject.Provider;
 
 import static com.google.inject.Scopes.SINGLETON;
 
@@ -59,19 +60,19 @@ public class LinkedInjectionProviderBindingBuilder<T>
     }
 
     public void toProvider(
-            Class<? extends javax.inject.Provider<? extends Supplier<? extends T>>> providerType)
+            Class<? extends Provider<? extends Supplier<? extends T>>> providerType)
     {
         injectionProviderBinder.addBinding(type).toProvider(providerType).in(SINGLETON);
     }
 
     public void toProvider(
-            TypeLiteral<? extends javax.inject.Provider<? extends Supplier<? extends T>>> providerType)
+            TypeLiteral<? extends Provider<? extends Supplier<? extends T>>> providerType)
     {
         injectionProviderBinder.addBinding(type).toProvider(providerType).in(SINGLETON);
     }
 
     public void toProvider(
-            Key<? extends javax.inject.Provider<? extends Supplier<? extends T>>> providerKey)
+            Key<? extends Provider<? extends Supplier<? extends T>>> providerKey)
     {
         injectionProviderBinder.addBinding(type).toProvider(providerKey).in(SINGLETON);
     }

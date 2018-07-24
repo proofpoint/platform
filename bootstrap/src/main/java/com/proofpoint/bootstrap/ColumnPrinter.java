@@ -15,8 +15,6 @@
  */
 package com.proofpoint.bootstrap;
 
-import com.google.common.collect.Lists;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;

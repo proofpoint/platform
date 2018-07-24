@@ -17,7 +17,6 @@ package com.proofpoint.http.server.testing;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.inject.Inject;
 import com.proofpoint.http.server.ClientAddressExtractor;
 import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerConfig;
@@ -28,6 +27,7 @@ import com.proofpoint.http.server.TheAdminServlet;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.stats.SparseTimeStat;
 
+import javax.inject.Inject;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;

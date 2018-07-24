@@ -21,11 +21,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.inject.Inject;
 import com.proofpoint.reporting.Gauge;
 import com.proofpoint.reporting.HealthCheck;
 import org.weakref.jmx.Flatten;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;

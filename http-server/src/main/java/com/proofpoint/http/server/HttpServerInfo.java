@@ -16,10 +16,10 @@
 package com.proofpoint.http.server;
 
 import com.google.common.net.InetAddresses;
-import com.google.inject.Inject;
 import com.proofpoint.node.NodeInfo;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;

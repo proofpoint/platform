@@ -15,9 +15,8 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.inject.Inject;
-
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.management.InstanceAlreadyExistsException;
 
 import static java.util.Objects.requireNonNull;
