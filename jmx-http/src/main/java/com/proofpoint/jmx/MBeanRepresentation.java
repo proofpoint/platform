@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 import javax.management.Attribute;
 import javax.management.Descriptor;
@@ -61,7 +60,7 @@ public class MBeanRepresentation
         //
         // Attributes
         //
-        LinkedHashMap<String, MBeanAttributeInfo> attributeInfos = Maps.newLinkedHashMap();
+        LinkedHashMap<String, MBeanAttributeInfo> attributeInfos =new LinkedHashMap<>();
         for (MBeanAttributeInfo attributeInfo : mbeanInfo.getAttributes()) {
             attributeInfos.put(attributeInfo.getName(), attributeInfo);
         }

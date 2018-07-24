@@ -19,13 +19,12 @@ import com.google.common.collect.ImmutableMap;
 
 import javax.management.InstanceAlreadyExistsException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static com.google.common.collect.Maps.newConcurrentMap;
 
 class HealthBeanRegistry
 {
-    private final ConcurrentMap<String, HealthBeanAttribute> healthAttributes = newConcurrentMap();
+    private final ConcurrentMap<String, HealthBeanAttribute> healthAttributes = new ConcurrentHashMap<>();
 
     Map<String, HealthBeanAttribute> getHealthAttributes()
     {

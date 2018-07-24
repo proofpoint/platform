@@ -25,13 +25,13 @@ import javax.management.ObjectName;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static com.google.common.collect.Maps.newConcurrentMap;
 import static com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo.registrationInfo;
 import static java.util.Objects.requireNonNull;
 
@@ -40,8 +40,8 @@ class ReportedBeanRegistry
     private static final Pattern QUOTED_PATTERN = Pattern.compile("\"(.*)\"");
     private static final Pattern BACKQUOTE_PATTERN = Pattern.compile("\\\\(.)");
 
-    private final ConcurrentMap<Reference, RegistrationInfo> reportedBeans = newConcurrentMap();
-    private final ConcurrentMap<ObjectName, ReportedBean> legacyReportedBeans = newConcurrentMap();
+    private final ConcurrentMap<Reference, RegistrationInfo> reportedBeans = new ConcurrentHashMap<>();
+    private final ConcurrentMap<ObjectName, ReportedBean> legacyReportedBeans = new ConcurrentHashMap<>();
 
     Collection<RegistrationInfo> getReportedBeans()
     {

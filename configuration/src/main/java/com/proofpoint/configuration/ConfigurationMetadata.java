@@ -19,8 +19,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.inject.ConfigurationException;
 import com.google.inject.spi.Message;
@@ -33,6 +31,8 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +84,7 @@ public class ConfigurationMetadata<T>
             problems.addError("Config class [%s] is abstract", configClass.getName());
         }
 
-        this.defunctConfig = Sets.newHashSet();
+        this.defunctConfig = new HashSet<>();
         if (configClass.isAnnotationPresent(DefunctConfig.class)) {
             final DefunctConfig defunctConfig = configClass.getAnnotation(DefunctConfig.class);
             if (defunctConfig.value().length < 1) {
@@ -264,7 +264,7 @@ public class ConfigurationMetadata<T>
 
     private Map<String, AttributeMetadata> buildAttributeMetadata(Class<T> configClass)
     {
-        Map<String, AttributeMetadata> attributes = Maps.newHashMap();
+        Map<String, AttributeMetadata> attributes = new HashMap<>();
         for (Method configMethod : findConfigMethods(configClass)) {
             configMethod.setAccessible(true);
             AttributeMetadata attribute = buildAttributeMetadata(configClass, configMethod);
@@ -597,7 +597,7 @@ public class ConfigurationMetadata<T>
         private String description = null;
         private Method getter = null;
         private InjectionPointMetaData injectionPoint = null;
-        private final Set<InjectionPointMetaData> legacyInjectionPoints = Sets.newHashSet();
+        private final Set<InjectionPointMetaData> legacyInjectionPoints = new HashSet<>();
         private final boolean securitySensitive;
         private final MapClasses mapClasses;
 
@@ -735,7 +735,7 @@ public class ConfigurationMetadata<T>
 
     private Set<InjectionPointMetaData> findLegacySetters(Class<?> configClass, String propertyName, String attributeName)
     {
-        Set<InjectionPointMetaData> setters = Sets.newHashSet();
+        Set<InjectionPointMetaData> setters = new HashSet<>();
 
         String setterName = "set" + attributeName;
 

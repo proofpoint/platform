@@ -17,7 +17,6 @@ package com.proofpoint.configuration;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.inject.Binder;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
@@ -527,7 +526,7 @@ public class ConfigurationFactoryTest
     @Test
     public void testNoCoerceValueThrows()
     {
-        Map<String, String> properties = Maps.newHashMap();
+        Map<String, String> properties = new HashMap<>();
         properties.put("string-value", "has a value");
         properties.put("int-value", "not a number");
         TestMonitor monitor = new TestMonitor();
@@ -545,7 +544,7 @@ public class ConfigurationFactoryTest
     @Test
     public void testNoCoerceBoolValueThrows()
     {
-        Map<String, String> properties = Maps.newHashMap();
+        Map<String, String> properties = new HashMap<>();
         properties.put("string-value", "has a value");
         properties.put("boolean-value", "not a boolean");
         TestMonitor monitor = new TestMonitor();
@@ -563,7 +562,7 @@ public class ConfigurationFactoryTest
     @Test
     public void testSuccessfulBeanValidation()
     {
-        Map<String, String> properties = Maps.newHashMap();
+        Map<String, String> properties = new HashMap<>();
         properties.put("string-value", "has a value");
         properties.put("int-value", "50");
         TestMonitor monitor = new TestMonitor();
@@ -857,7 +856,7 @@ public class ConfigurationFactoryTest
     @Test
     public void testSuccessfulMapValueBeanValidation()
     {
-        Map<String, String> properties = Maps.newHashMap();
+        Map<String, String> properties = new HashMap<>();
         properties.put("map-a.k.string-value", "has a value");
         properties.put("map-a.k.int-value", "50");
         TestMonitor monitor = new TestMonitor();
@@ -873,7 +872,7 @@ public class ConfigurationFactoryTest
     @Test
     public void testFailedMapValueBeanValidation()
     {
-        Map<String, String> properties = Maps.newHashMap();
+        Map<String, String> properties = new HashMap<>();
         // string-value left at invalid default
         properties.put("map-a.k.int-value", "5000");  // out of range
         TestMonitor monitor = new TestMonitor();
