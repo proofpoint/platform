@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.MediaType;
@@ -29,6 +28,7 @@ import com.proofpoint.json.ObjectMapperProvider;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 import static com.proofpoint.http.client.ResponseHandlerUtils.propagate;
@@ -36,14 +36,8 @@ import static com.proofpoint.http.client.ResponseHandlerUtils.propagate;
 public class SmileResponseHandler<T> implements ResponseHandler<T, RuntimeException>
 {
     private static final MediaType MEDIA_TYPE_SMILE = MediaType.create("application", "x-jackson-smile");
-    private static final Supplier<ObjectMapper> OBJECT_MAPPER_SUPPLIER = Suppliers.memoize(new Supplier<ObjectMapper>()
-    {
-        @Override
-        public ObjectMapper get()
-        {
-            return new ObjectMapperProvider().get();
-        }
-    });
+    private static final Supplier<ObjectMapper> OBJECT_MAPPER_SUPPLIER = Suppliers.memoize(
+            () -> new ObjectMapperProvider().get())::get;
 
     public static <T> SmileResponseHandler<T> createSmileResponseHandler(JsonCodec<T> jsonCodec)
     {

@@ -1,6 +1,5 @@
 package com.proofpoint.jaxrs;
 
-import com.google.common.base.Supplier;
 import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -34,6 +33,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;

@@ -15,12 +15,12 @@
  */
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.proofpoint.http.client.DynamicBodySource;
+import com.proofpoint.http.client.DynamicBodySource.Writer;
 import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
 import com.proofpoint.http.client.HttpClientConfig;
 import com.proofpoint.http.client.HttpRequestFilter;
@@ -47,13 +47,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.Request.Builder.preparePut;
@@ -139,39 +139,31 @@ public class TestStressJetty
             throws Exception
     {
         final URI uri = baseURI.resolve("/road/to/nowhere?query");
-        Supplier<Request> requestSupplier = new Supplier<Request>()
-        {
-            @Override
-            public Request get()
-            {
-                return preparePut()
-                        .setUri(uri)
-                        .setBodySource(new InputStreamBodySource(new InputStream()
-                        {
-                            AtomicInteger invocation = new AtomicInteger(0);
+        Supplier<Request> requestSupplier = () -> preparePut()
+                .setUri(uri)
+                .setBodySource(new InputStreamBodySource(new InputStream()
+                {
+                    AtomicInteger invocation = new AtomicInteger(0);
 
-                            @Override
-                            public int read()
-                            {
-                                throw new UnsupportedOperationException();
-                            }
+                    @Override
+                    public int read()
+                    {
+                        throw new UnsupportedOperationException();
+                    }
 
-                            @Override
-                            public int read(byte[] b)
-                                    throws IOException
-                            {
-                                if (invocation.getAndIncrement() < 100) {
-                                    Arrays.fill(b, 0, 1000, (byte) 0);
-                                    return 1000;
-                                }
-                                else {
-                                    return -1;
-                                }
-                            }
-                        }))
-                        .build();
-            }
-        };
+                    @Override
+                    public int read(byte[] b)
+                    {
+                        if (invocation.getAndIncrement() < 100) {
+                            Arrays.fill(b, 0, 1000, (byte) 0);
+                            return 1000;
+                        }
+                        else {
+                            return -1;
+                        }
+                    }
+                }))
+                .build();
 
         assertSimultaneousRequests(requestSupplier);
     }
@@ -183,28 +175,20 @@ public class TestStressJetty
         URI uri = baseURI.resolve("/road/to/nowhere?query");
         Request request = preparePut()
                 .setUri(uri)
-                .setBodySource(new DynamicBodySource()
+                .setBodySource((DynamicBodySource) out -> new Writer()
                 {
-                    @Override
-                    public Writer start(final OutputStream out)
-                            throws Exception
-                    {
-                        return new Writer()
-                        {
-                            AtomicInteger invocation = new AtomicInteger(0);
+                    AtomicInteger invocation = new AtomicInteger(0);
 
-                            @Override
-                            public void write()
-                                    throws IOException
-                            {
-                                if (invocation.getAndIncrement() < 100) {
-                                    out.write(new byte[1000]);
-                                }
-                                else {
-                                    out.close();
-                                }
-                            }
-                        };
+                    @Override
+                    public void write()
+                            throws IOException
+                    {
+                        if (invocation.getAndIncrement() < 100) {
+                            out.write(new byte[1000]);
+                        }
+                        else {
+                            out.close();
+                        }
                     }
                 })
                 .build();
@@ -264,14 +248,12 @@ public class TestStressJetty
     {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-                throws ServletException, IOException
         {
             resp.setStatus(HttpServletResponse.SC_OK);
         }
 
         @Override
         protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-                throws ServletException, IOException
         {
             resp.setStatus(HttpServletResponse.SC_OK);
         }
