@@ -53,6 +53,11 @@ Platform 1.83
 
 * Maven
 
+  We added Modernizer as an extended checker. It may be disabled by setting
+  the platform.check.skip-modernizer Maven property to true. Warnings may
+  be turned into build failures by setting the platform.check.fail-modernizer
+  maven property to true.
+
   We added dependencyManagement entries for assertj-core, assertj-guava,
   assertj-joda-time, and assertj-db.
 

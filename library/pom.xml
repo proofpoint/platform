@@ -66,6 +66,7 @@
         <!-- extended checks -->
         <platform.check.skip-findbugs>${platform.check.skip-extended}</platform.check.skip-findbugs>
         <platform.check.skip-jacoco>${platform.check.skip-extended}</platform.check.skip-jacoco>
+        <platform.check.skip-modernizer>${platform.check.skip-extended}</platform.check.skip-modernizer>
 
         <platform.check.fail-all>true</platform.check.fail-all>
         <platform.check.fail-basic>${platform.check.fail-all}</platform.check.fail-basic>
@@ -77,6 +78,7 @@
 
         <!-- extended checks -->
         <platform.check.fail-findbugs>false</platform.check.fail-findbugs>
+        <platform.check.fail-modernizer>false</platform.check.fail-modernizer>
 
         <dep.jetty.version>9.3.24.v20180605</dep.jetty.version>
         <dep.guice.version>4.2.0</dep.guice.version>
@@ -440,6 +442,25 @@
                 </plugin>
 
                 <plugin>
+                    <groupId>org.gaul</groupId>
+                    <artifactId>modernizer-maven-plugin</artifactId>
+                    <version>1.5.0</version>
+                    <configuration>
+                        <skip>${platform.check.skip-modernizer}</skip>
+                        <failOnViolations>${platform.check.fail-modernizer}</failOnViolations>
+                        <javaVersion>${project.build.targetJdk}</javaVersion>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>modernizer</id>
+                            <goals>
+                                <goal>modernizer</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.5.1</version>
@@ -521,6 +542,11 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.gaul</groupId>
+                <artifactId>modernizer-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

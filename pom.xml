@@ -14,6 +14,10 @@
         <relativePath>library/pom.xml</relativePath>
     </parent>
 
+    <properties>
+        <platform.check.fail-modernizer>true</platform.check.fail-modernizer>
+    </properties>
+
     <inceptionYear>2010</inceptionYear>
     <organization>
         <name>Proofpoint, Inc.</name>
