@@ -357,7 +357,8 @@ public class Bootstrap
         }
 
         // Validate configuration
-        ConfigurationValidator configurationValidator = new ConfigurationValidator(configurationFactory);
+        // If explicit bindings are not required, unused properties will not trigger errors
+        ConfigurationValidator configurationValidator = new ConfigurationValidator(configurationFactory, requireExplicitBindings);
         List<Message> messages = configurationValidator.validate(modules);
 
         // Log effective configuration
