@@ -78,12 +78,12 @@ public final class ConfigurationFactoryBuilder
     }
 
     /**
-     +     * Loads properties from the given file
-     +     *
-     +     * @param path file path
-     +     * @return self
-     +     * @throws java.io.IOException errors
-     +     */
+     * Optionally loads properties from the given file
+     *
+     * @param path file path
+     * @return self
+     * @throws java.io.IOException errors
+     */
     public ConfigurationFactoryBuilder withOptionalFile(@Nullable final String path)
             throws IOException
     {
