@@ -45,6 +45,9 @@ Platform 1.83
 
 * We added EventDataType.INSTANT to support fields of type java.time.Instant
 
+* We deprecated the TestingNodeModule constructors taking a Guava Optional
+  in favor of newly created constructors taking a java.util.Optional.
+
 * We changed ServiceDescriptorBuilder to generate a UUID in the build() call.
   Unless the ID is explicitly set each build() call will return a unique ID.
 
