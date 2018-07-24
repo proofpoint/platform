@@ -22,7 +22,6 @@ import com.proofpoint.json.ObjectMapperProvider;
 import com.proofpoint.tracetoken.TraceTokenManager;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
-import org.joda.time.format.ISODateTimeFormat;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -31,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static org.testng.Assert.assertEquals;
 
 public class TestFileAuditLogger
@@ -72,7 +72,7 @@ public class TestFileAuditLogger
         TraceTokenManager.clearRequestToken();
         handler.audit(new AutoValue_TestFileAuditLogger_TestingRecord("foovalue"));
         String actual = Files.asCharSource(file, UTF_8).read();
-        assertEquals(actual, "{\"time\":\"" + dateTimeSupplier.get().toString(ISODateTimeFormat.dateTime().withZoneUTC()) + "\"," +
+        assertEquals(actual, "{\"time\":\"" + ISO_INSTANT.format(dateTimeSupplier.get()) + "\"," +
                 "\"type\":\"com.proofpoint.audit.TestFileAuditLogger.TestingRecord\",\"foo\":\"foovalue\"}\n");
     }
 
@@ -84,7 +84,7 @@ public class TestFileAuditLogger
             TraceTokenManager.createAndRegisterNewRequestToken("property", "value");
             handler.audit(new AutoValue_TestFileAuditLogger_TestingRecord("foovalue"));
             String actual = Files.asCharSource(file, UTF_8).read();
-            assertEquals(actual, "{\"time\":\"" + dateTimeSupplier.get().toString(ISODateTimeFormat.dateTime().withZoneUTC()) + "\"," +
+            assertEquals(actual, "{\"time\":\"" + ISO_INSTANT.format(dateTimeSupplier.get()) + "\"," +
                     "\"type\":\"com.proofpoint.audit.TestFileAuditLogger.TestingRecord\"," +
                     "\"traceToken\":{\"id\":\"" + TraceTokenManager.getCurrentTraceToken().get("id") + "\",\"property\":\"value\"}," +
                     "\"foo\":\"foovalue\"}\n");

@@ -15,9 +15,9 @@
  */
 package com.proofpoint.audit;
 
-import org.joda.time.DateTime;
+import java.time.Instant;
 
 interface DateTimeSupplier
 {
-    DateTime get();
+    Instant get();
 }
