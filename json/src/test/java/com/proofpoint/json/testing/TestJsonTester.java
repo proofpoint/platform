@@ -19,10 +19,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +62,7 @@ public class TestJsonTester
     @Test
     public void testEncodeDateTime()
     {
-        assertJsonEncode(new DateTime(1376344694123L), "2013-08-12T21:58:14.123Z");
+        assertJsonEncode(Instant.ofEpochMilli(1376344694123L), "2013-08-12T21:58:14.123Z");
     }
 
     @Test(expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "JSON encoding \\{\r?\n" +
