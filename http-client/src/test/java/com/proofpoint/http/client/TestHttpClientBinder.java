@@ -17,7 +17,6 @@ package com.proofpoint.http.client;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
@@ -29,6 +28,7 @@ import org.testng.annotations.Test;
 import org.weakref.jmx.Managed;
 import org.weakref.jmx.testing.TestingMBeanModule;
 
+import javax.inject.Inject;
 import javax.inject.Qualifier;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;

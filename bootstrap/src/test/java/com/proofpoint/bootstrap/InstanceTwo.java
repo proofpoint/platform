@@ -15,10 +15,9 @@
  */
 package com.proofpoint.bootstrap;
 
-import com.google.inject.Inject;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 
 public class InstanceTwo
 {

@@ -15,11 +15,11 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.proofpoint.log.Logger;
 import org.eclipse.jetty.security.HashLoginService;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import java.io.IOException;
 
 import static com.google.common.base.Strings.isNullOrEmpty;

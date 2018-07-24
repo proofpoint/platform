@@ -17,7 +17,6 @@ package com.proofpoint.json.isolated;
 
 import com.google.inject.Binder;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.proofpoint.json.JsonCodec;
@@ -26,6 +25,7 @@ import com.proofpoint.json.JsonModule;
 import com.proofpoint.json.Person;
 import org.testng.annotations.Test;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 

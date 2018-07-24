@@ -17,12 +17,12 @@ package com.proofpoint.jmx;
 
 import com.google.common.base.Throwables;
 import com.google.common.net.HostAndPort;
-import com.google.inject.Inject;
 import com.proofpoint.log.Logger;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;

@@ -18,7 +18,6 @@ package com.proofpoint.discovery.client;
 import com.google.common.io.ByteStreams;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.inject.Inject;
 import com.proofpoint.http.client.CacheControl;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
@@ -31,6 +30,7 @@ import com.proofpoint.node.NodeInfo;
 import com.proofpoint.units.Duration;
 import org.weakref.jmx.Flatten;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.CancellationException;

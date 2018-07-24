@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
-import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
@@ -36,6 +35,7 @@ import com.proofpoint.reporting.ReportingModule;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import javax.inject.Provider;
 import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

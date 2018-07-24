@@ -16,7 +16,6 @@
 package com.proofpoint.bootstrap;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import javax.annotation.PostConstruct;

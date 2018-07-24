@@ -15,12 +15,13 @@
  */
 package com.proofpoint.discovery.client.testing;
 
-import com.google.inject.Inject;
 import com.proofpoint.discovery.client.DiscoveryLookupClient;
 import com.proofpoint.discovery.client.ServiceSelector;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
 import com.proofpoint.discovery.client.ServiceSelectorFactory;
 import com.proofpoint.node.NodeInfo;
+
+import javax.inject.Inject;
 
 import static java.util.Objects.requireNonNull;
 

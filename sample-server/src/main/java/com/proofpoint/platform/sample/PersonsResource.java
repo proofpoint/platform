@@ -16,9 +16,9 @@
 package com.proofpoint.platform.sample;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 import com.proofpoint.platform.sample.PersonStore.StoreEntry;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;

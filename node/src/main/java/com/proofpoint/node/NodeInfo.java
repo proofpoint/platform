@@ -17,10 +17,10 @@ package com.proofpoint.node;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.InetAddresses;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.weakref.jmx.Managed;
 
+import javax.inject.Inject;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;

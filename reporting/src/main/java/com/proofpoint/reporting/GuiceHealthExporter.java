@@ -15,9 +15,9 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+import javax.inject.Inject;
 import javax.management.InstanceAlreadyExistsException;
 import java.util.Set;
 

@@ -16,7 +16,6 @@
 package com.proofpoint.discovery.client.balancing;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
@@ -24,6 +23,7 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
 
+import javax.inject.Inject;
 import java.util.Map;
 
 import static java.lang.String.format;

@@ -18,13 +18,13 @@ package com.proofpoint.jmx;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.net.HostAndPort;
-import com.google.inject.Inject;
 import com.proofpoint.log.Logger;
 import sun.management.Agent;
 import sun.management.jmxremote.ConnectorBootstrap;
 import sun.rmi.server.UnicastRef;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;

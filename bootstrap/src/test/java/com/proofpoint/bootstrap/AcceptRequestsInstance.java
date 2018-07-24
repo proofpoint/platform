@@ -15,9 +15,8 @@
  */
 package com.proofpoint.bootstrap;
 
-import com.google.inject.Inject;
-
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 
 public class AcceptRequestsInstance
 {

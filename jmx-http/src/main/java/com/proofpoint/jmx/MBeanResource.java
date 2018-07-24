@@ -16,11 +16,10 @@
 package com.proofpoint.jmx;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Inject;
 import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 
+import javax.inject.Inject;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;

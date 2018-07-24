@@ -16,9 +16,9 @@
 package com.proofpoint.reporting;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.Inject;
 import com.proofpoint.reporting.ReportException.Reason;
 
+import javax.inject.Inject;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MalformedObjectNameException;

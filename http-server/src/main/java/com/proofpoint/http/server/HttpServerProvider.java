@@ -19,7 +19,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig.LogFormat;
@@ -29,6 +28,7 @@ import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 
 import javax.annotation.Nullable;
+import javax.inject.Provider;
 import javax.management.MBeanServer;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;

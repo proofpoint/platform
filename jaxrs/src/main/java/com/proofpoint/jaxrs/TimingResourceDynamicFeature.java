@@ -24,11 +24,11 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.inject.Inject;
 import com.proofpoint.reporting.ReportExporter;
 import com.proofpoint.stats.SparseTimeStat;
 
 import javax.annotation.concurrent.GuardedBy;
+import javax.inject.Inject;
 import javax.ws.rs.Path;
 import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.container.ResourceInfo;

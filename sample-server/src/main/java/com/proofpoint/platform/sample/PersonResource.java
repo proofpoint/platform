@@ -15,8 +15,7 @@
  */
 package com.proofpoint.platform.sample;
 
-import com.google.inject.Inject;
-
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;

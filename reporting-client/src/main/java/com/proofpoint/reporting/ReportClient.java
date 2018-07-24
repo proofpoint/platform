@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
-import com.google.inject.Inject;
 import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
@@ -32,6 +31,7 @@ import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 
+import javax.inject.Inject;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.Iterator;
