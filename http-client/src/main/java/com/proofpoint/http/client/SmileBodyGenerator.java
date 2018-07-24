@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.annotations.Beta;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.ObjectMapperProvider;
@@ -28,19 +27,14 @@ import com.proofpoint.json.ObjectMapperProvider;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.function.Supplier;
 
 @Beta
 public class SmileBodyGenerator<T>
         extends StaticBodyGenerator
 {
-    private static final Supplier<ObjectMapper> OBJECT_MAPPER_SUPPLIER = Suppliers.memoize(new Supplier<ObjectMapper>()
-    {
-        @Override
-        public ObjectMapper get()
-        {
-            return new ObjectMapperProvider().get();
-        }
-    });
+    private static final Supplier<ObjectMapper> OBJECT_MAPPER_SUPPLIER = Suppliers.memoize(
+            () -> new ObjectMapperProvider().get())::get;
 
     public static <T> SmileBodyGenerator<T> smileBodyGenerator(JsonCodec<T> jsonCodec, T instance)
     {

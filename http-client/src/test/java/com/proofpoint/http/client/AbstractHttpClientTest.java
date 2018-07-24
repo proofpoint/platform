@@ -84,6 +84,7 @@ import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.units.Duration.nanosSince;
 import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -1519,13 +1520,13 @@ public abstract class AbstractHttpClientTest
                 Socket connectionSocket = serverSocket.accept();
                 this.connectionSocket.set(connectionSocket);
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream(), "UTF-8"));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream(), UTF_8));
                 String line;
                 do {
                     line = reader.readLine();
                 } while (!line.isEmpty());
 
-                OutputStreamWriter writer = new OutputStreamWriter(connectionSocket.getOutputStream(), "UTF-8");
+                OutputStreamWriter writer = new OutputStreamWriter(connectionSocket.getOutputStream(), UTF_8);
                 writer.write("HTTP/1.1 200 OK\r\n" +
                         "Content-Type: application/octet-stream\r\n" +
                         "Content-Length: 100000000\r\n" +

@@ -17,7 +17,6 @@ package com.proofpoint.testing;
 
 import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableList;
-import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.Futures;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -332,9 +331,9 @@ public class SerialScheduledExecutorService
         {
             if (delayed instanceof SerialScheduledFuture) {
                 SerialScheduledFuture other = (SerialScheduledFuture) delayed;
-                return Longs.compare(this.remainingDelayNanos, other.remainingDelayNanos);
+                return Long.compare(this.remainingDelayNanos, other.remainingDelayNanos);
             }
-            return Longs.compare(remainingDelayNanos, delayed.getDelay(NANOSECONDS));
+            return Long.compare(remainingDelayNanos, delayed.getDelay(NANOSECONDS));
         }
 
         @Override

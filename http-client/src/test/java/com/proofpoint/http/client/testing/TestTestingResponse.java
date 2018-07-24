@@ -14,7 +14,6 @@ import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,7 @@ import java.util.function.Function;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.ByteStreams.toByteArray;
 import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
 
 public class TestTestingResponse
@@ -160,15 +160,13 @@ public class TestTestingResponse
 
     @Test
     public void testBuilderJson()
-            throws UnsupportedEncodingException
     {
         assertResponse(mockResponse().jsonBody(new JsonClass()).build(),
-                HttpStatus.OK, ImmutableListMultimap.of("Content-Type", "application/json"), "{\"foo\":\"bar\"}".getBytes("utf-8"));
+                HttpStatus.OK, ImmutableListMultimap.of("Content-Type", "application/json"), "{\"foo\":\"bar\"}".getBytes(UTF_8));
     }
 
     @Test
     public void testBuilderJsonNull()
-            throws UnsupportedEncodingException
     {
         assertResponse(mockResponse().jsonBody(null).build(),
                 HttpStatus.OK, ImmutableListMultimap.of("Content-Type", "application/json"), new byte[] { 'n', 'u', 'l', 'l'});
