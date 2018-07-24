@@ -164,6 +164,52 @@ public class TestOpenApiModule
 
     }
 
+    @Test
+    public void testOpenApiAdminJson()
+    {
+        Object expected = ImmutableMap.of(
+                "openapi", "3.0.1",
+                "paths", ImmutableMap.of(
+                        "/admin/jstack", ImmutableMap.of(
+                                "get", ImmutableMap.of(
+                                        "operationId", "get",
+                                        "responses", ImmutableMap.of(
+                                                "default", ImmutableMap.of(
+                                                        "description", "default response",
+                                                        "content", ImmutableMap.of(
+                                                                "text/plain", ImmutableMap.of(
+                                                                        "schema", ImmutableMap.of("type", "string")))))
+                                        )),
+                        "/admin/wadl", ImmutableMap.of(
+                                "get", ImmutableMap.of(
+                                        "operationId", "getWadl",
+                                        "responses", ImmutableMap.of(
+                                                "default", ImmutableMap.of(
+                                                        "description", "default response",
+                                                        "content", ImmutableMap.of(
+                                                                "application/vnd.sun.wadl+xml", ImmutableMap.of(),
+                                                                "application/xml", ImmutableMap.of())))
+                                        ))
+                )
+        );
+        Object response = client.execute(
+                prepareGet().setUri(uriForOpenSpec("/admin/openapi-admin.json")).build(),
+                createJsonResponseHandler(MAP_CODEC));
+        assertEquals(response, expected);
+    }
+
+    @Test
+    public void testOpenApiAdminYaml()
+    {
+        StringResponse response = client.execute(
+                prepareGet().setUri(uriForOpenSpec("/admin/openapi-admin.yaml")).build(),
+                createStringResponseHandler());
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getHeader("Content-Type"), "application/yaml");
+        assertContains(response.getBody(), "/admin/jstack:");
+        assertContains(response.getBody(), "/admin/wadl:");
+    }
+
     private URI uriForOpenSpec(String specLocation)
     {
         return server.getBaseUrl().resolve(specLocation);
