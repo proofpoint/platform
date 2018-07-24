@@ -357,7 +357,7 @@ public class Bootstrap
         }
 
         // Validate configuration
-        ConfigurationValidator configurationValidator = new ConfigurationValidator(configurationFactory);
+        ConfigurationValidator configurationValidator = new ConfigurationValidator(configurationFactory, requireExplicitBindings);
         List<Message> messages = configurationValidator.validate(modules);
 
         // Log effective configuration

@@ -203,6 +203,40 @@ public class TestBootstrap
     }
 
     @Test
+    public void testFailOnUnusedConfig()
+            throws Exception
+    {
+        System.setProperty("config", Resources.getResource("unused-config.properties").getFile());
+
+        Bootstrap bootstrap = bootstrapApplication("test-application")
+                .doNotInitializeLogging()
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .quiet();
+
+        try {
+            bootstrap.initialize();
+            fail("should not allow unknown configuration properties");
+        }
+        catch (CreationException e) {
+            assertContains(e.getErrorMessages().iterator().next().getMessage(), "Configuration property 'property2' was not used");
+        }
+    }
+
+    @Test
+    public void testIgnoreUnusedConfig()
+            throws Exception
+    {
+        System.setProperty("config", Resources.getResource("unused-config.properties").getFile());
+
+        Injector injector = bootstrapApplication("test-application")
+                .doNotInitializeLogging()
+                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .quiet()
+                .requireExplicitBindings(false)
+                .initialize();
+    }
+
+    @Test
     public void testMissingRequiredConfig()
             throws Exception
     {
