@@ -15,12 +15,13 @@
  */
 package com.proofpoint.node.testing;
 
-import com.google.common.base.Optional;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.NodeInfo;
 import org.testng.annotations.Test;
+
+import java.util.Optional;
 
 import static com.proofpoint.testing.Assertions.assertGreaterThanOrEqual;
 import static org.testng.Assert.assertEquals;
@@ -77,7 +78,7 @@ public class TestTestingNodeModule
     @Test
     public void testTestingNodeAbsentEnvironment()
     {
-        Injector injector = Guice.createInjector(new TestingNodeModule(Optional.<String>absent()), new ApplicationNameModule("test-application"));
+        Injector injector = Guice.createInjector(new TestingNodeModule(Optional.empty()), new ApplicationNameModule("test-application"));
         NodeInfo nodeInfo = injector.getInstance(NodeInfo.class);
 
         assertNotNull(nodeInfo);

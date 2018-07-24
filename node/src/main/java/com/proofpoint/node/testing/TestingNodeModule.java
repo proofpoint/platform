@@ -15,7 +15,6 @@
  */
 package com.proofpoint.node.testing;
 
-import com.google.common.base.Optional;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
@@ -25,6 +24,7 @@ import com.proofpoint.node.NodeInfo;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -44,17 +44,34 @@ public class TestingNodeModule
 
     public TestingNodeModule()
     {
-        this(Optional.absent());
+        this(Optional.empty());
     }
 
     public TestingNodeModule(Optional<String> environment)
+    {
+        this(environment.orElse("test" + nextId.getAndIncrement()));
+    }
+
+    /**
+     * @deprecated Use {@link #TestingNodeModule(java.util.Optional)}
+     */
+    @Deprecated
+    public TestingNodeModule(com.google.common.base.Optional<String> environment)
     {
         this(environment.or("test" + nextId.getAndIncrement()));
     }
 
     public TestingNodeModule(String environment)
     {
-        this(environment, Optional.absent());
+        this(environment, Optional.empty());
+    }
+
+    /**
+     * @deprecated Use {@link #TestingNodeModule(String, java.util.Optional)}
+     */
+    @Deprecated
+    public TestingNodeModule(String environment, com.google.common.base.Optional<String> pool) {
+        this(environment, Optional.ofNullable(pool.orNull()));
     }
 
     public TestingNodeModule(String environment, Optional<String> pool)
