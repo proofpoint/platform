@@ -15,15 +15,15 @@
  */
 package com.proofpoint.audit;
 
-import org.joda.time.DateTime;
+import java.time.Instant;
 
 public class TestingDateTimeSupplier implements DateTimeSupplier
 {
     private long curTime = System.currentTimeMillis();
 
     @Override
-    public DateTime get()
+    public Instant get()
     {
-        return new DateTime(curTime);
+        return Instant.ofEpochMilli(curTime);
     }
 }

@@ -15,14 +15,14 @@
  */
 package com.proofpoint.audit;
 
-import org.joda.time.DateTime;
+import java.time.Instant;
 
 class SystemDateTimeSupplier
     implements DateTimeSupplier
 {
     @Override
-    public DateTime get()
+    public Instant get()
     {
-        return new DateTime();
+        return Instant.now();
     }
 }

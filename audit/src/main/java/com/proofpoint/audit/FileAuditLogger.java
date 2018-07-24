@@ -21,9 +21,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.auto.value.AutoValue;
 import com.proofpoint.tracetoken.TraceToken;
-import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 import static com.proofpoint.audit.FileAuditLogger.AuditWrapper.auditWrapper;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
@@ -58,7 +58,7 @@ final class FileAuditLogger<T> implements AuditLogger<T>
     abstract static class AuditWrapper
     {
         @JsonProperty
-        public abstract DateTime getTime();
+        public abstract Instant getTime();
 
         @JsonProperty
         public abstract String getType();
@@ -70,7 +70,7 @@ final class FileAuditLogger<T> implements AuditLogger<T>
         @JsonUnwrapped
         public abstract Object getObject();
 
-        public static AuditWrapper auditWrapper(DateTime time, String type, Object object) {
+        public static AuditWrapper auditWrapper(Instant time, String type, Object object) {
             return new AutoValue_FileAuditLogger_AuditWrapper(time, type, getCurrentTraceToken(), object);
         }
     }
