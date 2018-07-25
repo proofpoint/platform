@@ -38,6 +38,12 @@ public final class Duration implements Comparable<Duration>
 {
     private static final Pattern PATTERN = Pattern.compile("^\\s*(\\d+(?:\\.\\d+)?)\\s*([a-zA-Z]+)\\s*$");
 
+    // We iterate over the TIME_UNITS constant in convertToMostSuccinctTimeUnit()
+    // instead of TimeUnit.values() as the latter results in non-trivial amount of memory
+    // allocation when that method is called in a tight loop. The reason is that the values()
+    // call allocates a new array at each call.
+    private static final TimeUnit[] TIME_UNITS = TimeUnit.values();
+
     public static Duration nanosSince(long start)
     {
         return succinctNanos(System.nanoTime() - start);
@@ -100,7 +106,7 @@ public final class Duration implements Comparable<Duration>
     public Duration convertToMostSuccinctTimeUnit()
     {
         TimeUnit unitToUse = NANOSECONDS;
-        for (TimeUnit unitToTest : TimeUnit.values()) {
+        for (TimeUnit unitToTest : TIME_UNITS) {
             // since time units are powers of ten, we can get rounding errors here, so fuzzy match
             if (getValue(unitToTest) > 0.9999) {
                 unitToUse = unitToTest;

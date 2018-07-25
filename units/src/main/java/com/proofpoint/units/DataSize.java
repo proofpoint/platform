@@ -34,6 +34,12 @@ public class DataSize
 {
     private static final Pattern PATTERN = Pattern.compile("^\\s*(\\d+(?:\\.\\d+)?)\\s*([a-zA-Z]+)\\s*$");
 
+    // We iterate over the DATASIZE_UNITS constant in convertToMostSuccinctDataSize()
+    // instead of Unit.values() as the latter results in non-trivial amount of memory
+    // allocation when that method is called in a tight loop. The reason is that the values()
+    // call allocates a new array at each call.
+    private static final Unit[] DATASIZE_UNITS = Unit.values();
+
     public static DataSize succinctBytes(long bytes)
     {
         return succinctDataSize(bytes, Unit.BYTE);
@@ -97,7 +103,7 @@ public class DataSize
     public DataSize convertToMostSuccinctDataSize()
     {
         Unit unitToUse = Unit.BYTE;
-        for (Unit unitToTest : Unit.values()) {
+        for (Unit unitToTest : DATASIZE_UNITS) {
             if (getValue(unitToTest) >= 1.0) {
                 unitToUse = unitToTest;
             }
