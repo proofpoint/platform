@@ -274,11 +274,10 @@ public class Bootstrap
     }
 
     /**
-     * Set whether properties in configuration files must be consumed by
-     * configuration.
+     * Set the policy on Guice implicit bindings.
      *
-     * @param requireExplicitBindings true if properties in configuration
-     * files must be consumed. Default true.
+     * @param requireExplicitBindings true if bindings must be listed in a Module in
+     * order to be injected. Default true.
      * @return the object, for chaining method calls.
      */
     public Bootstrap requireExplicitBindings(boolean requireExplicitBindings)
