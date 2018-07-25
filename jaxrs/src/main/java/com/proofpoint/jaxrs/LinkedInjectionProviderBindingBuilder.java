@@ -15,12 +15,13 @@
  */
 package com.proofpoint.jaxrs;
 
-import com.google.common.base.Supplier;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 
 import javax.inject.Provider;
+
+import java.util.function.Supplier;
 
 import static com.google.inject.Scopes.SINGLETON;
 

@@ -15,11 +15,11 @@
  */
 package com.proofpoint.jaxrs;
 
-import com.google.common.base.Supplier;
 import com.proofpoint.http.server.ClientAddressExtractor;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import java.util.function.Supplier;
 
 class ClientInfoSupplier
     implements Supplier<ClientInfo>

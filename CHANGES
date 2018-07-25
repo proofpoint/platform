@@ -37,6 +37,10 @@ Platform 1.83
 
   We added JsonCodec.toJsonWithLengthLimit().
 
+* We extended the JaxrsBinder.bindInjectionProvider() DSL to accept a
+  java.util.function.Supplier, not just its subclass
+  com.google.common.base.Supplier.
+
 * We added ThreadLocalCache, a ThreadLocal cache with a maximum cache size per
   thread.
 
