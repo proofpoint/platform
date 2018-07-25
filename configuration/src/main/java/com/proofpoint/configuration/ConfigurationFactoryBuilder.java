@@ -20,7 +20,11 @@ import com.google.inject.spi.Message;
 import com.proofpoint.configuration.Problems.Monitor;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
