@@ -1,5 +1,10 @@
 Platform 1.84
 
+* HttpClient
+
+  - We deprecated RuntimeIOException and made it a subclass of
+    UncheckedIOException. Users should switch the former to the latter.
+
 * Logging
 
   We added an in-memory buffer to reduce locking contention around logging.
