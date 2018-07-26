@@ -588,7 +588,7 @@ public class TestMoreFutures
         assertTrue(rootFuture.isCancelled());
     }
 
-    @Test(enabled = false) // intermittently fails per https://github.com/airlift/airlift/issues/447
+    @Test
     public void testTimeout()
             throws Exception
     {
