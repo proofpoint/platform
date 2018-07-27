@@ -20,9 +20,9 @@ import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.ObjectMapperProvider;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static com.google.common.base.Throwables.propagate;
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static org.testng.Assert.assertEquals;
 
@@ -49,7 +49,7 @@ public class JsonTester
             assertEquals(new ObjectMapper().readValue(json, Object.class), expected, builder.toString());
         }
         catch (IOException e) {
-            throw propagate(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -65,7 +65,7 @@ public class JsonTester
             json = new ObjectMapperProvider().get().writeValueAsString(value);
         }
         catch (IOException e) {
-            throw propagate(e);
+            throw new UncheckedIOException(e);
         }
         return codec.fromJson(json);
     }

@@ -34,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipException;
 
-import static com.google.common.base.Throwables.propagate;
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
@@ -274,7 +274,7 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
             mapper.writeTo(jsonStructure, Object.class, null, null, null, headers, outputStream);
         }
         catch (IOException e) {
-            throw propagate(e);
+            throw new UncheckedIOException(e);
         }
 
         return new ByteArrayInputStream(outputStream.toByteArray());

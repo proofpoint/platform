@@ -14,13 +14,13 @@ import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.ByteStreams.toByteArray;
 import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -222,7 +222,7 @@ public class TestTestingResponse
             assertEquals(toByteArray(response.getInputStream()), body);
         }
         catch (IOException e) {
-            propagate(e);
+            throw new UncheckedIOException(e);
         }
     }
 
