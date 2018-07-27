@@ -16,13 +16,13 @@ import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Map;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Throwables.propagate;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -216,7 +216,7 @@ public class TestingResponse
                 bytes = new ObjectMapperProvider().get().writeValueAsBytes(entity);
             }
             catch (JsonProcessingException e) {
-                throw propagate(e);
+                throw new UncheckedIOException(e);
             }
             return this;
         }

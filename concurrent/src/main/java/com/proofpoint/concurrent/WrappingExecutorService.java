@@ -16,7 +16,6 @@
 
 package com.proofpoint.concurrent;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ForwardingExecutorService;
 
@@ -30,6 +29,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static com.google.common.base.Throwables.throwIfUnchecked;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -70,7 +70,8 @@ abstract class WrappingExecutorService implements ExecutorService {
         try {
           wrapped.call();
         } catch (Exception e) {
-          Throwables.propagate(e);
+          throwIfUnchecked(e);
+          throw new RuntimeException(e);
         }
       }
     };

@@ -35,7 +35,6 @@ import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.net.HttpHeaders.ETAG;
 import static com.proofpoint.discovery.client.ServiceState.RUNNING;
 import static com.proofpoint.discovery.client.ServiceState.STOPPED;
@@ -157,7 +156,7 @@ public class TestHttpDiscoveryLookupClient
             fail("Expected ExecutionException");
         }
         catch (InterruptedException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         catch (ExecutionException e) {
             assertInstanceOf(e.getCause(), DiscoveryException.class);
@@ -190,9 +189,6 @@ public class TestHttpDiscoveryLookupClient
             future.get();
             fail("Expected ExecutionException");
         }
-        catch (InterruptedException e) {
-            throw propagate(e);
-        }
         catch (ExecutionException e) {
             assertInstanceOf(e.getCause(), DiscoveryException.class);
             assertSame(e.getCause().getCause(), testingException);
@@ -210,9 +206,6 @@ public class TestHttpDiscoveryLookupClient
         try {
             future.get();
             fail("Expected ExecutionException");
-        }
-        catch (InterruptedException e) {
-            throw propagate(e);
         }
         catch (ExecutionException e) {
             assertInstanceOf(e.getCause(), DiscoveryException.class);
@@ -235,9 +228,6 @@ public class TestHttpDiscoveryLookupClient
         try {
             future.get();
             fail("Expected ExecutionException");
-        }
-        catch (InterruptedException e) {
-            throw propagate(e);
         }
         catch (ExecutionException e) {
             assertInstanceOf(e.getCause(), DiscoveryException.class);

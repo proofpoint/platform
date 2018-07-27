@@ -15,11 +15,9 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.base.Throwables;
-
 import java.util.concurrent.ExecutionException;
 
-import static com.google.common.base.Throwables.propagate;
+import static com.google.common.base.Throwables.throwIfUnchecked;
 
 public class SyncToAsyncWrapperClient
     implements HttpClient
@@ -46,10 +44,10 @@ public class SyncToAsyncWrapperClient
           }
           catch (InterruptedException e) {
               Thread.currentThread().interrupt();
-              throw propagate(e);
+              throw new RuntimeException(e);
           }
           catch (ExecutionException e) {
-              Throwables.propagateIfPossible(e.getCause());
+              throwIfUnchecked(e.getCause());
 
               if (e.getCause() instanceof Exception) {
                   // the HTTP client and ResponseHandler interface enforces this
@@ -57,7 +55,7 @@ public class SyncToAsyncWrapperClient
               }
 
               // e.getCause() is some direct subclass of throwable
-              throw propagate(e.getCause());
+              throw new RuntimeException(e.getCause());
           }
     }
 

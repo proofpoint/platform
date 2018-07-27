@@ -65,7 +65,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Throwables.getStackTraceAsString;
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.base.Throwables.propagateIfPossible;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.net.HttpHeaders.ACCEPT_ENCODING;
@@ -1502,7 +1501,7 @@ public abstract class AbstractHttpClientTest
                 assertTrue(completed.await(10, SECONDS), "LargeResponseServer completed");
             }
             catch (InterruptedException e) {
-                throw propagate(e);
+                throw new RuntimeException(e);
             }
         }
 
