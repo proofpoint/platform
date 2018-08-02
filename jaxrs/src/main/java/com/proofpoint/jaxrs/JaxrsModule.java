@@ -42,7 +42,6 @@ import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.servlet.ServletProperties;
 
-import javax.annotation.Nullable;
 import javax.servlet.Servlet;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Application;
@@ -94,7 +93,6 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
         jaxrsBinder(binder).bind(InRotationResource.class);
         jaxrsBinder(binder).bind(LivenessResource.class);
-        jaxrsBinder(binder).bindAdmin(WadlResource.class);
 
         bindConfig(binder).to(JaxrsConfig.class);
 
@@ -106,10 +104,9 @@ public class JaxrsModule
     ResourceConfig createResourceConfig(
             Application application,
             @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap,
-            WadlResource wadlResource,
             JaxrsConfig jaxrsConfig)
     {
-        return commonJaxrsModule.createResourceConfig(application, supplierMap, wadlResource, jaxrsConfig);
+        return commonJaxrsModule.createResourceConfig(application, supplierMap, jaxrsConfig);
     }
 
     @Provides
@@ -166,7 +163,7 @@ public class JaxrsModule
         @Provides
         ResourceConfig createResourceConfig(Application application, @JaxrsInjectionProvider final Map<Class<?>, Supplier<?>> supplierMap)
         {
-            return commonJaxrsModule.createResourceConfig(application, supplierMap, null, new JaxrsConfig());
+            return commonJaxrsModule.createResourceConfig(application, supplierMap, new JaxrsConfig());
         }
     }
 
@@ -200,7 +197,6 @@ public class JaxrsModule
         ResourceConfig createResourceConfig(
                 Application application,
                 @JaxrsInjectionProvider Map<Class<?>, Supplier<?>> supplierMap,
-                @Nullable WadlResource wadlResource,
                 JaxrsConfig jaxrsConfig)
         {
             ResourceConfig config = ResourceConfig.forApplication(application);
@@ -219,9 +215,6 @@ public class JaxrsModule
                 {
                     ServiceLocator locator = container.getApplicationHandler().getServiceLocator();
                     locatorReference.set(locator);
-                    if (wadlResource != null) {
-                        wadlResource.setLocator(locator);
-                    }
                 }
 
                 @Override

@@ -1,5 +1,7 @@
 Platform 1.83
 
+* We removed the /admin/wadl resource from the admin port.
+
 * HttpClient
 
   We modified HttpClient to avoid allocating a large byte array by buffering
