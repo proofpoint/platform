@@ -6,6 +6,8 @@ Platform 1.83
   "/admin/openapi-admin.yaml" resources on the admin port, returning the Open
   API Specification (OAS) description of the admin port's protocol.
 
+* We removed the /admin/wadl resource from the admin port.
+
 * HttpClient
 
   We modified HttpClient to avoid allocating a large byte array by buffering
