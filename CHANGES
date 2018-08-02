@@ -39,6 +39,10 @@ Platform 1.83
 * We removed the platform.test.fork-mode Maven property as the Surefire
   parameter it controlled is deprecated.
 
+* Maven plugin upgrades
+
+  - maven-compiler-plugin to 3.8.0 (was 3.5.1)
+
 Platform 1.82
 
 * HttpClient
