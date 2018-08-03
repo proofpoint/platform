@@ -1,5 +1,7 @@
 Platform 1.83
 
+* We removed the /admin/wadl resource from the admin port.
+
 * HttpClient
 
   We modified HttpClient to avoid allocating a large byte array by buffering
@@ -38,6 +40,12 @@ Platform 1.83
 
 * We removed the platform.test.fork-mode Maven property as the Surefire
   parameter it controlled is deprecated.
+
+* Maven plugin upgrades
+
+  - findbugs-maven-plugin to 3.0.5 (was 3.0.3)
+  - maven-compiler-plugin to 3.8.0 (was 3.5.1)
+  - maven-jar-plugin to 3.1.0 (was 2.6)
 
 Platform 1.82
 
