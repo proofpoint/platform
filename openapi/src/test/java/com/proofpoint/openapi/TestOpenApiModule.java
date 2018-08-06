@@ -179,16 +179,6 @@ public class TestOpenApiModule
                                                         "content", ImmutableMap.of(
                                                                 "text/plain", ImmutableMap.of(
                                                                         "schema", ImmutableMap.of("type", "string")))))
-                                        )),
-                        "/admin/wadl", ImmutableMap.of(
-                                "get", ImmutableMap.of(
-                                        "operationId", "getWadl",
-                                        "responses", ImmutableMap.of(
-                                                "default", ImmutableMap.of(
-                                                        "description", "default response",
-                                                        "content", ImmutableMap.of(
-                                                                "application/vnd.sun.wadl+xml", ImmutableMap.of(),
-                                                                "application/xml", ImmutableMap.of())))
                                         ))
                 )
         );
@@ -207,7 +197,6 @@ public class TestOpenApiModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getHeader("Content-Type"), "application/yaml");
         assertContains(response.getBody(), "/admin/jstack:");
-        assertContains(response.getBody(), "/admin/wadl:");
     }
 
     private URI uriForOpenSpec(String specLocation)
