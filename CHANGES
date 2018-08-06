@@ -3,6 +3,8 @@ Platform 1.84
 * Library Upgrades
 
   - Base docker image to 8u171-jdk (was 8u162-jdk)
+  - mockito to 2.21.0 (was 2.2.28)˚
+    - Added MockitoSession for strict mocking
 
 Platform 1.83
 
