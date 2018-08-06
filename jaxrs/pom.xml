@@ -172,7 +172,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.5.10</version>
+            <version>1.8.15</version>
         </dependency>
 
         <!-- for testing -->

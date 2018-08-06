@@ -28,7 +28,8 @@ import net.bytebuddy.description.type.TypeDescription.ForLoadedType;
 import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ParameterDefinition;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default;
+import net.bytebuddy.dynamic.loading.ClassInjector;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.dynamic.scaffold.InstrumentedType;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.FixedValue;
@@ -153,15 +154,32 @@ class TimingWrapper
         }
 
         try {
+            ClassLoadingStrategy<ClassLoader> strategy;
+            if (ClassInjector.UsingLookup.isAvailable()) {
+                // Java 9 and above
+                Class<?> methodHandles = Class.forName("java.lang.invoke.MethodHandles");
+                Object lookup = methodHandles.getMethod("lookup").invoke(null);
+                Method privateLookupIn = methodHandles.getMethod("privateLookupIn",
+                        Class.class,
+                        Class.forName("java.lang.invoke.MethodHandles$Lookup"));
+                Object privateLookup = privateLookupIn.invoke(null, TimingWrapper.class, lookup);
+                strategy = ClassLoadingStrategy.UsingLookup.of(privateLookup);
+            } else if (ClassInjector.UsingReflection.isAvailable()) {
+                // Java 8
+                strategy = ClassLoadingStrategy.Default.INJECTION;
+            } else {
+                throw new IllegalStateException("No code generation strategy available");
+            }
+
             return typeDefinition.defineMethod("getKeyNames", KEYNAMES_MAP_TYPE, STATIC, PACKAGE_PRIVATE)
                     .intercept(FixedValue.value(keyNamesBuilder.build()))
                     .make()
-                    .load(TimingWrapper.class.getClassLoader(), Default.INJECTION)
+                    .load(TimingWrapper.class.getClassLoader(), strategy)
                     .getLoaded()
                     .getDeclaredConstructor(jaxRsSingletonClass)
                     .newInstance(jaxRsSingleton);
         }
-        catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
