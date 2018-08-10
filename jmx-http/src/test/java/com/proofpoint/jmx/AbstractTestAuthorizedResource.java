@@ -26,19 +26,29 @@ import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.server.testing.TestingAdminHttpServer;
 import com.proofpoint.testing.Closeables;
+import org.mockito.ArgumentCaptor;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.annotation.Priority;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
-
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.ext.Provider;
 import java.net.URI;
+import java.security.Principal;
 
 import static com.google.inject.util.Modules.override;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
+import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -47,6 +57,32 @@ import static org.testng.Assert.assertEquals;
 
 public abstract class AbstractTestAuthorizedResource
 {
+    private static final SecurityContext SECURITY_CONTEXT = new SecurityContext()
+    {
+        @Override
+        public Principal getUserPrincipal()
+        {
+            return null;
+        }
+
+        @Override
+        public boolean isUserInRole(String role)
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isSecure()
+        {
+            return false;
+        }
+
+        @Override
+        public String getAuthenticationScheme()
+        {
+            return "testing scheme";
+        }
+    };
     protected final HttpClient client = new JettyHttpClient();
     protected Module jmxHttpModule;
     protected LifeCycleManager lifeCycleManager;
@@ -67,10 +103,11 @@ public abstract class AbstractTestAuthorizedResource
     public final void setupAuthorization()
     {
         verifier = mock(AdminServerCredentialVerifier.class);
-        jmxHttpModule = override(new JmxHttpModule())
-                .with(binder -> {
-                    binder.bind(AdminServerCredentialVerifier.class).toInstance(verifier);
-                });
+        jmxHttpModule = binder -> {
+            binder.install(override(new JmxHttpModule())
+                            .with(b -> b.bind(AdminServerCredentialVerifier.class).toInstance(verifier)));
+            jaxrsBinder(binder).bindAdmin(SecurityContextRequestFilter.class);
+        };
         lifeCycleManager = null;
         server = null;
     }
@@ -116,8 +153,10 @@ public abstract class AbstractTestAuthorizedResource
                 });
 
 
-        verify(verifier).authenticate("authHeader");
+        ArgumentCaptor<SecurityContext> captor = ArgumentCaptor.forClass(SecurityContext.class);
+        verify(verifier).authenticate(captor.capture(), eq("authHeader"));
         verifyNoMoreInteractions(verifier);
+        assertEquals(captor.getValue().getAuthenticationScheme(), "testing scheme");
         assertActionTaken(response);
     }
 
@@ -126,7 +165,7 @@ public abstract class AbstractTestAuthorizedResource
             throws Exception
     {
         createServer();
-        doThrow(new WebApplicationException(FORBIDDEN.getStatusCode())).when(verifier).authenticate(anyString());
+        doThrow(new WebApplicationException(FORBIDDEN.getStatusCode())).when(verifier).authenticate(any(), anyString());
 
         StatusResponse response = client.execute(
                 createRequestBuilder()
@@ -136,8 +175,10 @@ public abstract class AbstractTestAuthorizedResource
 
         assertEquals(response.getStatusCode(), FORBIDDEN.getStatusCode());
 
-        verify(verifier).authenticate("authHeader");
+        ArgumentCaptor<SecurityContext> captor = ArgumentCaptor.forClass(SecurityContext.class);
+        verify(verifier).authenticate(captor.capture(), eq("authHeader"));
         verifyNoMoreInteractions(verifier);
+        assertEquals(captor.getValue().getAuthenticationScheme(), "testing scheme");
         assertActionNotTaken();
     }
 
@@ -145,5 +186,17 @@ public abstract class AbstractTestAuthorizedResource
     protected URI uriFor(String path)
     {
         return server.getBaseUrl().resolve(path);
+    }
+
+    @Provider
+    @Priority(Priorities.AUTHENTICATION)
+    public static class SecurityContextRequestFilter
+        implements ContainerRequestFilter
+    {
+        @Override
+        public void filter(ContainerRequestContext requestContext)
+        {
+            requestContext.setSecurityContext(SECURITY_CONTEXT);
+        }
     }
 }
