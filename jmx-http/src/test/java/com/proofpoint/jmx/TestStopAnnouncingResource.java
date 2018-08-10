@@ -21,61 +21,45 @@ import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.discovery.client.StaticDiscoveryModule;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
-import com.proofpoint.http.client.HttpClient;
+import com.proofpoint.http.client.Request.Builder;
+import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
-import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.server.testing.TestingAdminHttpServer;
 import com.proofpoint.http.server.testing.TestingAdminHttpServerModule;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
-import com.proofpoint.testing.Closeables;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.weakref.jmx.testing.TestingMBeanModule;
-
-import javax.ws.rs.WebApplicationException;
-import java.net.URI;
 
 import static com.google.inject.util.Modules.override;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.preparePut;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.testng.Assert.assertEquals;
 
 public class TestStopAnnouncingResource
+        extends AbstractTestAuthorizedResource
 {
-    private final HttpClient client = new JettyHttpClient();
-
-    private LifeCycleManager lifeCycleManager;
-    private TestingAdminHttpServer server;
     private Announcer announcer;
-    private AdminServerCredentialVerifier verifier;
     private Module discoveryModule;
 
     @BeforeMethod
     public void setup()
-            throws Exception
     {
         announcer = mock(Announcer.class);
         discoveryModule = override(new TestingDiscoveryModule())
                 .with(binder -> binder.bind(Announcer.class).toInstance(announcer));
-        verifier = mock(AdminServerCredentialVerifier.class);
-        lifeCycleManager = null;
-        server = null;
     }
 
-    private void createServer()
+    @Override
+    protected void createServer()
             throws Exception
     {
         Injector injector = bootstrapTest()
@@ -87,10 +71,7 @@ public class TestStopAnnouncingResource
                         new ReportingModule(),
                         new TestingMBeanModule(),
                         discoveryModule,
-                        override(new JmxHttpModule())
-                                .with(binder -> {
-                                    binder.bind(AdminServerCredentialVerifier.class).toInstance(verifier);
-                                })
+                        jmxHttpModule
                 )
                 .initialize();
 
@@ -98,60 +79,24 @@ public class TestStopAnnouncingResource
         server = injector.getInstance(TestingAdminHttpServer.class);
     }
 
-    @AfterMethod(alwaysRun = true)
-    public void teardown()
-            throws Exception
+    @Override
+    protected Builder createRequestBuilder()
     {
-        if (lifeCycleManager != null) {
-            lifeCycleManager.stop();
-        }
+        return preparePut()
+                .setUri(uriFor("/admin/stop-announcing"));
     }
 
-    @AfterClass(alwaysRun = true)
-    public void teardownClass()
+    @Override
+    protected void assertActionTaken(Response response)
     {
-        Closeables.closeQuietly(client);
-    }
-
-    @Test
-    public void testStopAnnouncing()
-            throws Exception
-    {
-        createServer();
-
-        StatusResponse response = client.execute(
-                preparePut()
-                        .setUri(uriFor("/admin/stop-announcing"))
-                        .addHeader("Authorization", "authHeader")
-                        .build(),
-                createStatusResponseHandler());
-
         assertEquals(response.getStatusCode(), NO_CONTENT.getStatusCode());
-
-        verify(verifier).authenticate("authHeader");
-        verifyNoMoreInteractions(verifier);
         verify(announcer).destroy();
         verifyNoMoreInteractions(announcer);
     }
 
-    @Test
-    public void testFailAuthentication()
-            throws Exception
+    @Override
+    protected void assertActionNotTaken()
     {
-        createServer();
-        doThrow(new WebApplicationException(FORBIDDEN.getStatusCode())).when(verifier).authenticate(anyString());
-
-        StatusResponse response = client.execute(
-                preparePut()
-                        .setUri(uriFor("/admin/stop-announcing"))
-                        .addHeader("Authorization", "authHeader")
-                        .build(),
-                createStatusResponseHandler());
-
-        assertEquals(response.getStatusCode(), FORBIDDEN.getStatusCode());
-
-        verify(verifier).authenticate("authHeader");
-        verifyNoMoreInteractions(verifier);
         verifyNoMoreInteractions(announcer);
     }
 
@@ -163,20 +108,11 @@ public class TestStopAnnouncingResource
         createServer();
 
         StatusResponse response = client.execute(
-                preparePut()
-                        .setUri(uriFor("/admin/stop-announcing"))
+                createRequestBuilder()
                         .addHeader("Authorization", "authHeader")
                         .build(),
                 createStatusResponseHandler());
 
         assertEquals(response.getStatusCode(), NO_CONTENT.getStatusCode());
-
-        verify(verifier).authenticate("authHeader");
-        verifyNoMoreInteractions(verifier);
-    }
-
-    private URI uriFor(String path)
-    {
-        return server.getBaseUrl().resolve(path);
     }
 }
