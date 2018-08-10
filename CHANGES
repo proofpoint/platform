@@ -1,5 +1,9 @@
 Platform 1.84
 
+* Logging
+
+  We added an in-memory buffer to reduce locking contention around logging.
+
 * Library Upgrades
 
   - Base docker image to 8u171-jdk (was 8u162-jdk)

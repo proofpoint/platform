@@ -37,12 +37,6 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
     }
 
     @Override
-    protected void stopLogger()
-    {
-        ((JsonRequestLog) logger).stop();
-    }
-
-    @Override
     protected String getExpectedLogLine(long timestamp, String clientAddr, String method, String pathQuery, String user, String agent, int responseCode, long requestSize, long responseSize, long timeToLastByte)
     {
         return String.format("{\"time\":\"%s\",\"traceToken\":\"%s\",\"sourceIp\":\"%s\"," +

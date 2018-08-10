@@ -71,6 +71,7 @@ public class TestFileAuditLogger
     {
         TraceTokenManager.clearRequestToken();
         handler.audit(new AutoValue_TestFileAuditLogger_TestingRecord("foovalue"));
+        factory.close();
         String actual = Files.asCharSource(file, UTF_8).read();
         assertEquals(actual, "{\"time\":\"" + ISO_INSTANT.format(dateTimeSupplier.get()) + "\"," +
                 "\"type\":\"com.proofpoint.audit.TestFileAuditLogger.TestingRecord\",\"foo\":\"foovalue\"}\n");
@@ -83,6 +84,7 @@ public class TestFileAuditLogger
         try {
             TraceTokenManager.createAndRegisterNewRequestToken("property", "value");
             handler.audit(new AutoValue_TestFileAuditLogger_TestingRecord("foovalue"));
+            factory.close();
             String actual = Files.asCharSource(file, UTF_8).read();
             assertEquals(actual, "{\"time\":\"" + ISO_INSTANT.format(dateTimeSupplier.get()) + "\"," +
                     "\"type\":\"com.proofpoint.audit.TestFileAuditLogger.TestingRecord\"," +

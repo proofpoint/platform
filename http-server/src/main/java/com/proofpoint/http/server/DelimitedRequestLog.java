@@ -63,9 +63,7 @@ class DelimitedRequestLog
         long currentTime = currentTimeMillisProvider.getCurrentTimeMillis();
         HttpRequestEvent event = createHttpRequestEvent(request, response, currentTime, clientAddressExtractor);
 
-        synchronized (appender) {
-            appender.doAppend(event);
-        }
+        appender.doAppend(event);
     }
 
     @Override
