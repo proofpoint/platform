@@ -19,6 +19,8 @@ import com.proofpoint.http.server.HttpServerConfig;
 import org.testng.annotations.Test;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.SecurityContext;
+import java.security.Principal;
 import java.util.Base64;
 
 import static org.testng.Assert.assertEquals;
@@ -28,13 +30,100 @@ public class TestAdminServerCredentialVerifier
 {
     private static final AdminServerConfig ADMIN_SERVER_CONFIG = new AdminServerConfig().setUsername("foo").setPassword("bar");
     private static final HttpServerConfig HTTP_SERVER_CONFIG = new HttpServerConfig().setHttpsEnabled(true);
+    private static final SecurityContext SECURITY_CONTEXT_DENY = new SecurityContext()
+    {
+        @Override
+        public Principal getUserPrincipal()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isUserInRole(String role)
+        {
+            if ("server.admin".equals(role)) {
+                return false;
+            }
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isSecure()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getAuthenticationScheme()
+        {
+            throw new UnsupportedOperationException();
+        }
+    };
+    private static final SecurityContext SECURITY_CONTEXT_OPTIONAL = new SecurityContext()
+    {
+        @Override
+        public Principal getUserPrincipal()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isUserInRole(String role)
+        {
+            if ("server.admin".equals(role)) {
+                return true;
+            }
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isSecure()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getAuthenticationScheme()
+        {
+            return "none";
+        }
+    };
+    private static final SecurityContext SECURITY_CONTEXT_ALLOW = new SecurityContext()
+    {
+        @Override
+        public Principal getUserPrincipal()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isUserInRole(String role)
+        {
+            if ("server.admin".equals(role)) {
+                return true;
+            }
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isSecure()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getAuthenticationScheme()
+        {
+            return "testing";
+        }
+    };
 
     @Test
     public void testHttpsDisabled()
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, new HttpServerConfig().setHttpsEnabled(false))
-                    .authenticate(null);
+                    .authenticate(SECURITY_CONTEXT_ALLOW, null);
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {
@@ -47,7 +136,7 @@ public class TestAdminServerCredentialVerifier
     {
         try {
             new AdminServerCredentialVerifier(new AdminServerConfig(), HTTP_SERVER_CONFIG)
-                    .authenticate(null);
+                    .authenticate(SECURITY_CONTEXT_DENY, null);
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {
@@ -56,11 +145,18 @@ public class TestAdminServerCredentialVerifier
     }
 
     @Test
+    public void testNoPasswordConfiguredContextAllows()
+    {
+        new AdminServerCredentialVerifier(new AdminServerConfig(), HTTP_SERVER_CONFIG)
+                .authenticate(SECURITY_CONTEXT_ALLOW, null);
+    }
+
+    @Test
     public void testNoAuthentication()
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                    .authenticate(null);
+                    .authenticate(SECURITY_CONTEXT_DENY, null);
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {
@@ -69,10 +165,37 @@ public class TestAdminServerCredentialVerifier
     }
 
     @Test
-    public void testSuccess()
+    public void testOptionalAuthenticationContextIgnored()
+    {
+        try {
+            new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
+                    .authenticate(SECURITY_CONTEXT_OPTIONAL, null);
+            fail("Expected WebApplicationException");
+        }
+        catch (WebApplicationException e) {
+            assertEquals(e.getResponse().getStatus(), 401);
+        }
+    }
+
+    @Test
+    public void testContextAuthentication()
     {
         new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                .authenticate("Basic " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
+                .authenticate(SECURITY_CONTEXT_ALLOW, null);
+    }
+
+    @Test
+    public void testPasswordAuthentication()
+    {
+        new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
+                .authenticate(SECURITY_CONTEXT_DENY, "Basic " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
+    }
+
+    @Test
+    public void testPasswordAuthenticationWithOptionalAuthenticationContext()
+    {
+        new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
+                .authenticate(SECURITY_CONTEXT_OPTIONAL, "Basic " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
     }
 
     @Test
@@ -80,7 +203,7 @@ public class TestAdminServerCredentialVerifier
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                    .authenticate("Basic " + Base64.getEncoder().encodeToString("bad:bar".getBytes()));
+                    .authenticate(SECURITY_CONTEXT_DENY, "Basic " + Base64.getEncoder().encodeToString("bad:bar".getBytes()));
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {
@@ -93,7 +216,7 @@ public class TestAdminServerCredentialVerifier
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                    .authenticate("Basic " + Base64.getEncoder().encodeToString("foo:bad".getBytes()));
+                    .authenticate(SECURITY_CONTEXT_DENY, "Basic " + Base64.getEncoder().encodeToString("foo:bad".getBytes()));
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {
@@ -106,7 +229,7 @@ public class TestAdminServerCredentialVerifier
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                    .authenticate("Digest " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
+                    .authenticate(SECURITY_CONTEXT_DENY, "Digest " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {
@@ -119,7 +242,7 @@ public class TestAdminServerCredentialVerifier
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                    .authenticate("Digest " + Base64.getEncoder().encodeToString("foo".getBytes()));
+                    .authenticate(SECURITY_CONTEXT_DENY, "Digest " + Base64.getEncoder().encodeToString("foo".getBytes()));
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {

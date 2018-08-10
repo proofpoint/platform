@@ -20,6 +20,7 @@ import com.proofpoint.http.server.HttpServerConfig;
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.Base64;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -43,7 +44,7 @@ public class AdminServerCredentialVerifier
         httpsEnabled = requireNonNull(httpServerConfig, "httpServerConfig is null").isHttpsEnabled();
     }
 
-    public void authenticate(String authHeader)
+    public void authenticate(SecurityContext securityContext, String authHeader)
     {
         if (!httpsEnabled) {
             throw new WebApplicationException(Response.status(FORBIDDEN)
@@ -51,6 +52,11 @@ public class AdminServerCredentialVerifier
                     .entity("HTTPS not enabled")
                     .build());
         }
+
+        if (securityContext.isUserInRole("server.admin") && !"none".equals(securityContext.getAuthenticationScheme())) {
+            return;
+        }
+
         if (username == null || password == null) {
             throw new WebApplicationException(Response.status(FORBIDDEN)
                     .header("Content-Type", "text/plain")

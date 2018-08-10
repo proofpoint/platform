@@ -23,6 +23,8 @@ import com.proofpoint.log.Logger;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.SecurityContext;
 
 import static java.util.Objects.requireNonNull;
 
@@ -47,9 +49,9 @@ public class StopAnnouncingResource
     }
 
     @PUT
-    public void stopAnnouncing(@HeaderParam("Authorization") String authHeader)
+    public void stopAnnouncing(@Context SecurityContext securityContext, @HeaderParam("Authorization") String authHeader)
     {
-        adminServerCredentialVerifier.authenticate(authHeader);
+        adminServerCredentialVerifier.authenticate(securityContext, authHeader);
 
         if (announcer != null) {
             log.info("Received shutdown request. Stopping discovery announcer.");
