@@ -52,6 +52,11 @@ public class AdminServerCredentialVerifier
                     .entity("HTTPS not enabled")
                     .build());
         }
+
+        if (securityContext.isUserInRole("server.admin") && !"none".equals(securityContext.getAuthenticationScheme())) {
+            return;
+        }
+
         if (username == null || password == null) {
             throw new WebApplicationException(Response.status(FORBIDDEN)
                     .header("Content-Type", "text/plain")

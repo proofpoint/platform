@@ -1,5 +1,8 @@
 Platform 1.84
 
+* The "/admin/stop-announcing" resource on the admin port now accepts the
+  "server.admin" role in the SecurityContext for authorization.
+
 * JSON
 
   - We no longer write an explicit null value when serializing an empty
