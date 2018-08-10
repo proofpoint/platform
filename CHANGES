@@ -1,5 +1,8 @@
 Platform 1.84
 
+* The "/admin/stop-announcing" resource on the admin port now accepts the
+  "server.admin" role in the SecurityContext for authorization.
+
 * Library Upgrades
 
   - Base docker image to 8u171-jdk (was 8u162-jdk)
