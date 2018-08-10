@@ -33,12 +33,6 @@ public class TestDelimitedRequestLog extends AbstractTestRequestLog
     }
 
     @Override
-    protected void stopLogger()
-    {
-        ((DelimitedRequestLog)logger).stop();
-    }
-
-    @Override
     protected String getExpectedLogLine(long timestamp, String clientAddr, String method, String pathQuery, String user, String agent, int responseCode, long requestSize, long responseSize, long timeToLastByte)
     {
         return String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\n",

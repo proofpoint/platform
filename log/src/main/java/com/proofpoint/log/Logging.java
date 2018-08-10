@@ -16,6 +16,7 @@
 package com.proofpoint.log;
 
 import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.AsyncAppenderBase;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.rolling.RollingFileAppender;
@@ -55,6 +56,7 @@ import java.util.logging.LogRecord;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
 import static com.proofpoint.log.Level.fromJulLevel;
+import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -75,6 +77,7 @@ public class Logging
 
     private static final String TEMP_FILE_EXTENSION = ".tmp";
     private static final String LOG_FILE_EXTENSION = ".log";
+    private static final FileSize BUFFER_SIZE_IN_BYTES = new FileSize(new DataSize(1, MEGABYTE).toBytes());
 
     private static Logging instance;
 
@@ -232,12 +235,18 @@ public class Logging
         fileAppender.setContext(context);
         fileAppender.setFile(logPath);
         fileAppender.setAppend(true);
+        fileAppender.setBufferSize(BUFFER_SIZE_IN_BYTES);
         fileAppender.setEncoder(encoder);
         fileAppender.setRollingPolicy(rollingPolicy);
 
+        AsyncAppenderBase<T> asyncAppender = new AsyncAppenderBase<>();
+        asyncAppender.setContext(context);
+        asyncAppender.addAppender(fileAppender);
+
         rollingPolicy.start();
         fileAppender.start();
-        return fileAppender;
+        asyncAppender.start();
+        return asyncAppender;
     }
 
     public Level getRootLevel()
