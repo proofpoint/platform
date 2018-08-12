@@ -1,5 +1,15 @@
 Platform 1.84
 
+* JSON
+
+  - We no longer write an explicit null value when serializing an empty
+    value of type Optional.
+
+* HttpClient
+
+  - We deprecated RuntimeIOException and made it a subclass of
+    UnchecedIOException. Users should switch the former to the latter.
+
 * Library Upgrades
 
   - Base docker image to 8u171-jdk (was 8u162-jdk)

@@ -16,7 +16,6 @@
 package com.proofpoint.event.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.CharStreams;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -61,6 +60,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.event.client.EventTypeMetadata.getValidEventTypeMetaDataSet;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
@@ -93,7 +93,8 @@ public class TestHttpEventClient
             client.post(new FixedDummyEventClass("host", new DateTime(), UUID.randomUUID(), 1, "foo")).get();
         }
         catch (ExecutionException e) {
-            throw Throwables.propagate(e.getCause());
+            throwIfUnchecked(e.getCause());
+            throw new RuntimeException(e.getCause());
         }
     }
 

@@ -1,6 +1,5 @@
 package com.proofpoint.concurrent;
 
-import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -8,9 +7,11 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.proofpoint.units.Duration;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -21,19 +22,62 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Throwables.propagateIfInstanceOf;
+import static com.google.common.base.Throwables.propagateIfPossible;
+import static com.google.common.base.Throwables.throwIfInstanceOf;
 import static com.google.common.collect.Iterables.isEmpty;
+import static com.google.common.util.concurrent.Futures.catchingAsync;
+import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
+import static com.google.common.util.concurrent.Futures.immediateFuture;
+import static com.google.common.util.concurrent.Futures.withTimeout;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public final class MoreFutures
 {
     private MoreFutures() { }
+
+    /**
+     * Cancels the destination Future if the source Future is cancelled.
+     */
+    public static <X, Y> void propagateCancellation(ListenableFuture<? extends X> source, ListenableFuture<? extends Y> destination, boolean mayInterruptIfRunning)
+    {
+        source.addListener(() -> {
+            if (source.isCancelled()) {
+                destination.cancel(mayInterruptIfRunning);
+            }
+        }, directExecutor());
+    }
+
+    /**
+     * Mirrors all results of the source Future to the destination Future.
+     *
+     * This also propagates cancellations from the destination Future back to the source Future.
+     */
+    public static <T> void mirror(ListenableFuture<? extends T> source, SettableFuture<? super T> destination, boolean mayInterruptIfRunning)
+    {
+        Futures.addCallback(source, new FutureCallback<T>()
+        {
+            @Override
+            public void onSuccess(@Nullable T result)
+            {
+                destination.set(result);
+            }
+
+            @Override
+            public void onFailure(Throwable t)
+            {
+                destination.setException(t);
+            }
+        });
+        propagateCancellation(destination, source, mayInterruptIfRunning);
+    }
 
     /**
      * Attempts to unwrap a throwable that has been wrapped in a {@link CompletionException}.
@@ -125,8 +169,8 @@ public final class MoreFutures
         }
         catch (ExecutionException e) {
             Throwable cause = e.getCause() == null ? e : e.getCause();
-            propagateIfInstanceOf(cause, exceptionType);
-            throw Throwables.propagate(cause);
+            propagateIfPossible(cause, exceptionType);
+            throw new RuntimeException(cause);
         }
     }
 
@@ -184,13 +228,29 @@ public final class MoreFutures
         }
         catch (ExecutionException e) {
             Throwable cause = e.getCause() == null ? e : e.getCause();
-            propagateIfInstanceOf(cause, exceptionType);
-            throw Throwables.propagate(cause);
+            propagateIfPossible(cause, exceptionType);
+            throw new RuntimeException(cause);
         }
         catch (TimeoutException expected) {
             // expected
         }
         return Optional.empty();
+    }
+
+    /**
+     * Creates a future that completes when the first future completes either normally
+     * or exceptionally. Cancellation of the future propagates to the supplied futures.
+     */
+    public static <V> ListenableFuture<V> whenAnyComplete(Iterable<? extends ListenableFuture<? extends V>> futures)
+    {
+        requireNonNull(futures, "futures is null");
+        checkArgument(!isEmpty(futures), "futures is empty");
+
+        ExtendedSettableFuture<V> firstCompletedFuture = ExtendedSettableFuture.create();
+        for (ListenableFuture<? extends V> future : futures) {
+            firstCompletedFuture.setAsync(future);
+        }
+        return firstCompletedFuture;
     }
 
     /**
@@ -271,7 +331,24 @@ public final class MoreFutures
      * when the timeout expires.  If the timeout occurs or the returned CompletableFuture
      * is canceled, the supplied future will be canceled.
      */
-    public static <T> CompletableFuture<T> addTimeout(CompletableFuture<T> future, ValueSupplier<T> onTimeout, Duration timeout, ScheduledExecutorService executorService)
+    public static <T> ListenableFuture<T> addTimeout(ListenableFuture<T> future, Callable<T> onTimeout, Duration timeout, ScheduledExecutorService executorService)
+    {
+        return catchingAsync(withTimeout(future, timeout.toMillis(), MILLISECONDS, executorService), TimeoutException.class, timeoutException -> {
+            try {
+                return immediateFuture(onTimeout.call());
+            }
+            catch (Throwable throwable) {
+                return immediateFailedFuture(throwable);
+            }
+        });
+    }
+
+    /**
+     * Returns a new future that is completed when the supplied future completes or
+     * when the timeout expires.  If the timeout occurs or the returned CompletableFuture
+     * is canceled, the supplied future will be canceled.
+     */
+    public static <T> CompletableFuture<T> addTimeout(CompletableFuture<T> future, Callable<T> onTimeout, Duration timeout, ScheduledExecutorService executorService)
     {
         requireNonNull(future, "future is null");
         requireNonNull(onTimeout, "timeoutValue is null");
@@ -365,10 +442,36 @@ public final class MoreFutures
         return future;
     }
 
-    public interface ValueSupplier<T>
+    public static <T> void addExceptionCallback(ListenableFuture<T> result, Consumer<Throwable> exceptionCallback)
     {
-        T get()
-                throws Exception;
+        Futures.addCallback(result, new FutureCallback<T>() {
+            @Override
+            public void onSuccess(@Nullable T result)
+            {
+            }
+
+            @Override
+            public void onFailure(Throwable t)
+            {
+                exceptionCallback.accept(t);
+            }
+        });
+    }
+
+    public static <T> void addExceptionCallback(ListenableFuture<T> result, Runnable exceptionCallback)
+    {
+        Futures.addCallback(result, new FutureCallback<T>() {
+            @Override
+            public void onSuccess(@Nullable T result)
+            {
+            }
+
+            @Override
+            public void onFailure(Throwable t)
+            {
+                exceptionCallback.run();
+            }
+        });
     }
 
     private static class UnmodifiableCompletableFuture<V>
@@ -429,10 +532,10 @@ public final class MoreFutures
             implements Runnable
     {
         private final UnmodifiableCompletableFuture<T> settableFuture;
-        private final ValueSupplier<T> timeoutValue;
+        private final Callable<T> timeoutValue;
         private final WeakReference<CompletableFuture<T>> futureReference;
 
-        public TimeoutFutureTask(UnmodifiableCompletableFuture<T> settableFuture, ValueSupplier<T> timeoutValue, CompletableFuture<T> future)
+        public TimeoutFutureTask(UnmodifiableCompletableFuture<T> settableFuture, Callable<T> timeoutValue, CompletableFuture<T> future)
         {
             this.settableFuture = settableFuture;
             this.timeoutValue = timeoutValue;
@@ -452,12 +555,12 @@ public final class MoreFutures
 
             // run the timeout task and set the result into the future
             try {
-                T result = timeoutValue.get();
+                T result = timeoutValue.call();
                 settableFuture.internalComplete(result);
             }
             catch (Throwable t) {
                 settableFuture.internalCompleteExceptionally(t);
-                propagateIfInstanceOf(t, RuntimeException.class);
+                throwIfInstanceOf(t, RuntimeException.class);
             }
 
             // cancel the original future, if it still exists

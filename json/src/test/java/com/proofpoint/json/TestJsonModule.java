@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -101,7 +102,7 @@ public class TestJsonModule
     public void testFieldDetection()
             throws Exception
     {
-        Map<String, Object> actual = objectMapper.readValue(objectMapper.writeValueAsString(CAR), Map.class);
+        Map<String, Object> actual = createCarMap();
 
         // notes is not annotated so should not be included
         // color is null so should not be included
@@ -112,7 +113,7 @@ public class TestJsonModule
     public void testDateTimeRendered()
             throws Exception
     {
-        Map<String, Object> actual = objectMapper.readValue(objectMapper.writeValueAsString(CAR), Map.class);
+        Map<String, Object> actual = createCarMap();
 
         assertEquals(actual.get("purchased"), ISODateTimeFormat.dateTime().print(CAR.getPurchased()));
     }
@@ -133,13 +134,19 @@ public class TestJsonModule
     public void testIgnoreUnknownFields()
             throws Exception
     {
-        Map<String, Object> data = new HashMap<>(objectMapper.readValue(objectMapper.writeValueAsString(CAR), Map.class));
+        Map<String, Object> data = new HashMap<>(createCarMap());
 
         // add an unknown field
         data.put("unknown", "bogus");
 
         // Jackson should deserialize the object correctly with the extra unknown data
         assertEquals(objectMapper.readValue(objectMapper.writeValueAsString(data), Car.class), CAR);
+    }
+
+    private Map<String, Object> createCarMap()
+            throws IOException
+    {
+        return objectMapper.readValue(objectMapper.writeValueAsString(CAR), new TypeReference<Object>() {});
     }
 
     public static class Car
@@ -378,7 +385,8 @@ public class TestJsonModule
             if (token == JsonToken.VALUE_STRING) {
                 return new SuperDuperNameList(jp.getText(), null);
             }
-            throw context.mappingException(handledType());
+            context.handleUnexpectedToken(handledType(), jp);
+            throw JsonMappingException.from(jp, null);
         }
     }
 

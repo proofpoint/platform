@@ -49,7 +49,7 @@ import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Throwables.propagate;
+import static com.google.common.base.Throwables.throwIfUnchecked;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.util.Objects.requireNonNull;
 
@@ -124,7 +124,7 @@ public class ReportCollectionFactory
             objectName = ObjectName.getInstance(name);
         }
         catch (MalformedObjectNameException e) {
-            throw propagate(e);
+            throw new RuntimeException(e);
         }
         int index = objectName.getDomain().length();
         if (name.charAt(index++) != ':') {
@@ -349,7 +349,8 @@ public class ReportCollectionFactory
                 return constructor.newInstance();
             }
             catch (Exception e) {
-                throw propagate(e);
+                throwIfUnchecked(e);
+                throw new RuntimeException(e);
             }
         };
     }

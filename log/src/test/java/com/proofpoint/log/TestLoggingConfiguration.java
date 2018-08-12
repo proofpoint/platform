@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
+@SuppressWarnings("deprecation")
 public class TestLoggingConfiguration
 {
     @Test

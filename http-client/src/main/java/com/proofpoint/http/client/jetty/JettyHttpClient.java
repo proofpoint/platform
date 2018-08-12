@@ -87,7 +87,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Throwables.propagate;
+import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
 import static com.proofpoint.units.DataSize.Unit.KILOBYTE;
@@ -268,7 +268,8 @@ public class JettyHttpClient
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            throw propagate(e);
+            throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
 
         this.requestFilters = ImmutableList.copyOf(requestFilters);
@@ -1081,7 +1082,8 @@ public class JettyHttpClient
                 writer = dynamicBodySource.start(new DynamicBodySourceOutputStream(chunks));
             }
             catch (Exception e) {
-                throw propagate(e);
+                throwIfUnchecked(e);
+                throw new RuntimeException(e);
             }
 
             return new DynamicBodySourceIterator(chunks, writer, bytesWritten, traceToken);
@@ -1167,7 +1169,8 @@ public class JettyHttpClient
                                 writer.write();
                             }
                             catch (Exception e) {
-                                throw propagate(e);
+                                throwIfUnchecked(e);
+                                throw new RuntimeException(e);
                             }
                             chunk = chunks.poll();
                         }
@@ -1190,7 +1193,8 @@ public class JettyHttpClient
                         ((AutoCloseable)writer).close();
                     }
                     catch (Exception e) {
-                        throw propagate(e);
+                        throwIfUnchecked(e);
+                        throw new RuntimeException(e);
                     }
                 }
             }

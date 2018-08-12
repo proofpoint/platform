@@ -12,8 +12,8 @@ import org.testng.annotations.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.net.MediaType.JSON_UTF_8;
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
 import static com.proofpoint.http.client.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -125,7 +125,7 @@ public class TestSmileResponseHandler
             new ObjectMapper(new SmileFactory()).writeValue(outputStream, value);
         }
         catch (IOException e) {
-            throw propagate(e);
+            throw new UncheckedIOException(e);
         }
         return mockResponse()
                 .status(status)

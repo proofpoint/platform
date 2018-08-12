@@ -220,7 +220,7 @@ public class JsonMapper
 
         ObjectWriter writer;
         if (rootType != null) {
-            writer = objectMapper.writerWithType(rootType);
+            writer = objectMapper.writerFor(rootType);
         }
         else {
             writer = objectMapper.writer();
