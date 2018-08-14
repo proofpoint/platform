@@ -38,7 +38,7 @@
         <project.rpm.username>${project.artifactId}</project.rpm.username>
         <project.docker.project>dev-docker-local</project.docker.project>
         <project.docker.name>%a</project.docker.name>
-        <project.docker.from>docker.io/openjdk:8u171-jdk</project.docker.from>
+        <project.docker.from>docker.io/openjdk:8u181-jdk</project.docker.from>
         <project.docker.uid>1000</project.docker.uid>
         <project.docker.verbose>false</project.docker.verbose>
 
