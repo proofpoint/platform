@@ -24,7 +24,6 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.spi.Message;
 import com.proofpoint.configuration.ConfigurationFactoryTest.AnnotatedSetter;
-import com.proofpoint.testing.FileUtils;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -37,6 +36,8 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.io.MoreFiles.deleteRecursively;
+import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static com.proofpoint.testing.Assertions.assertContainsAllOf;
 import static org.testng.Assert.assertEquals;
@@ -79,7 +80,7 @@ public class TestConfigurationFactoryBuilder
     public void teardown()
             throws IOException
     {
-        FileUtils.deleteRecursively(tempDir);
+        deleteRecursively(tempDir.toPath(), ALLOW_INSECURE);
     }
 
     private static Injector createInjector(ConfigurationFactory configurationFactory, Module module)

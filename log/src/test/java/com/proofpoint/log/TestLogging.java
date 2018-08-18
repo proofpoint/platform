@@ -16,7 +16,6 @@
 package com.proofpoint.log;
 
 import com.google.common.io.Files;
-import com.proofpoint.testing.FileUtils;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -27,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.io.Files.createTempDir;
+import static com.google.common.io.MoreFiles.deleteRecursively;
+import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -47,7 +48,7 @@ public class TestLogging
     public void tearDown()
             throws IOException
     {
-        FileUtils.deleteRecursively(tempDir);
+        deleteRecursively(tempDir.toPath(), ALLOW_INSECURE);
     }
 
     @Test

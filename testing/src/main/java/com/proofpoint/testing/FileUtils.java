@@ -17,10 +17,14 @@ package com.proofpoint.testing;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
+import com.google.common.io.RecursiveDeleteOption;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
@@ -34,6 +38,10 @@ public class FileUtils
     {
     }
 
+    /**
+     * @deprecated Use {@link java.nio.file.Files#isSymbolicLink(Path)}
+     */
+    @Deprecated
     public static boolean isSymbolicLink(File file)
     {
         try {
@@ -50,6 +58,10 @@ public class FileUtils
         }
     }
 
+    /**
+     * @deprecated Use {@link com.google.common.io.MoreFiles#listFiles(Path)}
+     */
+    @Deprecated
     public static ImmutableList<File> listFiles(File dir)
     {
         File[] files = dir.listFiles();
@@ -59,6 +71,10 @@ public class FileUtils
         return ImmutableList.copyOf(files);
     }
 
+    /**
+     * @deprecated Use {@link java.nio.file.Files#newDirectoryStream(Path, Filter)} or something like that.
+     */
+    @Deprecated
     public static ImmutableList<File> listFiles(File dir, FilenameFilter filter)
     {
         File[] files = dir.listFiles(filter);
@@ -68,11 +84,19 @@ public class FileUtils
         return ImmutableList.copyOf(files);
     }
 
+    /**
+     * @deprecated Use {@link java.nio.file.Files#createTempDirectory(String, FileAttribute[])}
+     */
+    @Deprecated
     public static File createTempDir(String prefix)
     {
         return createTempDir(new File(System.getProperty("java.io.tmpdir")), prefix);
     }
 
+    /**
+     * @deprecated Use {@link java.nio.file.Files#createTempDirectory(Path, String, FileAttribute[])}
+     */
+    @Deprecated
     public static File createTempDir(File parentDir, String prefix)
     {
         String baseName = "";
@@ -92,6 +116,11 @@ public class FileUtils
                 + baseName + "0 to " + baseName + (TEMP_DIR_ATTEMPTS - 1) + ')');
     }
 
+    /**
+     * @deprecated Use {@link com.google.common.io.MoreFiles#deleteDirectoryContents(Path, RecursiveDeleteOption...)}
+     * with {@link com.google.common.io.RecursiveDeleteOption#ALLOW_INSECURE}
+     */
+    @Deprecated
     public static boolean deleteDirectoryContents(File directory)
     {
         checkArgument(directory.isDirectory(), "Not a directory: %s", directory);
@@ -108,6 +137,11 @@ public class FileUtils
         return success;
     }
 
+    /**
+     * @deprecated Use {@link com.google.common.io.MoreFiles#deleteRecursively(Path, RecursiveDeleteOption...)}
+     * with {@link com.google.common.io.RecursiveDeleteOption#ALLOW_INSECURE}
+     */
+    @Deprecated
     public static boolean deleteRecursively(File file)
     {
         boolean success = true;

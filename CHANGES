@@ -2,6 +2,8 @@ Platform 1.85
 
 * We refactored the tests for the sample and skeleton servers to use AssertJ.
 
+* We deprecated several methods in FileUtils.
+
 * Maven plugin upgrades
 
   - maven-javadoc-plugin to 3.0.1 (was 2.9)
