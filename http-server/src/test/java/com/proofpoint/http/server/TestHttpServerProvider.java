@@ -30,7 +30,6 @@ import com.proofpoint.http.server.testing.TestingHttpServer;
 import com.proofpoint.log.Logging;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
-import com.proofpoint.testing.FileUtils;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.server.RequestLog;
 import org.testng.annotations.AfterMethod;
@@ -45,6 +44,8 @@ import java.net.ConnectException;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.io.MoreFiles.deleteRecursively;
+import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
 import static com.google.common.io.Resources.getResource;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.Request.Builder.preparePut;
@@ -118,7 +119,7 @@ public class TestHttpServerProvider
             }
         }
         finally {
-            FileUtils.deleteRecursively(tempDir);
+            deleteRecursively(tempDir.toPath(), ALLOW_INSECURE);
         }
     }
 

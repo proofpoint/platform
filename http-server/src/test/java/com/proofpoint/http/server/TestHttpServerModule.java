@@ -38,7 +38,6 @@ import com.proofpoint.log.Logging;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
-import com.proofpoint.testing.FileUtils;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
@@ -57,6 +56,8 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static com.google.common.io.MoreFiles.deleteRecursively;
+import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
@@ -100,7 +101,7 @@ public class TestHttpServerModule
         catch (Exception ignored) {
         }
 
-        FileUtils.deleteRecursively(tempDir);
+        deleteRecursively(tempDir.toPath(), ALLOW_INSECURE);
     }
 
     @Test
