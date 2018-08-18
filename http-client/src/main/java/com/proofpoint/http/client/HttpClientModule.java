@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
@@ -48,7 +47,10 @@ import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static java.util.Objects.requireNonNull;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
-@Beta
+/**
+ * @deprecated Will no longer be public.
+ */
+@Deprecated
 public class HttpClientModule
         implements Module
 {
@@ -58,11 +60,19 @@ public class HttpClientModule
     private final Binder rootBinder;
     protected Binder binder;
 
+    /**
+     * @deprecated Will be removed.
+     */
+    @Deprecated
     protected HttpClientModule(String name, Class<? extends Annotation> annotation)
     {
         this(name, annotation, null);
     }
 
+    /**
+     * @deprecated Will become package private.
+     */
+    @Deprecated
     protected HttpClientModule(String name, Class<? extends Annotation> annotation, Binder rootBinder)
     {
         this.name = requireNonNull(name, "name is null");
@@ -101,6 +111,10 @@ public class HttpClientModule
         }
     }
 
+    /**
+     * @deprecated Will no longer be public
+     */
+    @Deprecated
     public void addAlias(Class<? extends Annotation> alias)
     {
         binder.bind(HttpClient.class).annotatedWith(alias).to(Key.get(HttpClient.class, annotation));
@@ -177,12 +191,12 @@ public class HttpClientModule
             this.annotation = annotation;
         }
 
-        public void addClient(JettyHttpClient client)
+        void addClient(JettyHttpClient client)
         {
             clients.add(client);
         }
 
-        public boolean isDestroyed()
+        boolean isDestroyed()
         {
             return destroyed.get();
         }
@@ -206,7 +220,7 @@ public class HttpClientModule
             destroyed.set(true);
         }
 
-        public JettyIoPool get()
+        JettyIoPool get()
         {
             if (pool == null) {
                 JettyIoPoolConfig config = injector.getInstance(keyFromNullable(JettyIoPoolConfig.class, annotation));
