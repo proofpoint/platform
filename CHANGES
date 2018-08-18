@@ -4,6 +4,8 @@ Platform 1.85
 
 * We deprecated several methods in FileUtils.
 
+* We deprecated HttpClientModule. This is an internal class.
+
 * Maven plugin upgrades
 
   - maven-javadoc-plugin to 3.0.1 (was 2.9)
