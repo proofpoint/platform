@@ -273,13 +273,13 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.9</version>
+                    <version>3.0.1</version>
                     <configuration>
                         <quiet>true</quiet>
                         <source>${project.build.targetJdk}</source>
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <maxmemory>${platform.build.jvmsize}</maxmemory>
-                        <additionalparam>-Xdoclint:${platform.javadoc.lint}</additionalparam>
+                        <additionalOptions>-Xdoclint:${platform.javadoc.lint}</additionalOptions>
                     </configuration>
                     <executions>
                         <execution>
