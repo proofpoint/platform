@@ -3,6 +3,11 @@ Platform 1.85
 * We added the "errorprone-compiler" Maven profile for compiling with the
   "Error Prone" compiler.
 
+* We added dependency-scope-maven-plugin as a basic check. It may be disabled
+  by setting the platform.check.skip-dependency-scope Maven property to true.
+  Build failures may be turned into warnings by setting the
+  platform.check.fail-dependency-scope Maven property to false.
+
 * We refactored the tests for the sample and skeleton servers to use AssertJ.
 
 * We deprecated several methods in FileUtils.
