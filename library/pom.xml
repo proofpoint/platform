@@ -62,6 +62,7 @@
         <!-- basic checks -->
         <platform.check.skip-enforcer>${platform.check.skip-basic}</platform.check.skip-enforcer>
         <platform.check.skip-duplicate-finder>${platform.check.skip-basic}</platform.check.skip-duplicate-finder>
+        <platform.check.skip-dependency-scope>${platform.check.skip-basic}</platform.check.skip-dependency-scope>
 
         <!-- extended checks -->
         <platform.check.skip-findbugs>${platform.check.skip-extended}</platform.check.skip-findbugs>
@@ -75,6 +76,7 @@
         <!-- basic checks -->
         <platform.check.fail-enforcer>${platform.check.fail-basic}</platform.check.fail-enforcer>
         <platform.check.fail-duplicate-finder>${platform.check.fail-basic}</platform.check.fail-duplicate-finder>
+        <platform.check.fail-dependency-scope>${platform.check.fail-basic}</platform.check.fail-dependency-scope>
 
         <!-- extended checks -->
         <platform.check.fail-findbugs>false</platform.check.fail-findbugs>
@@ -378,6 +380,23 @@
                 </plugin>
 
                 <plugin>
+                    <groupId>com.hubspot.maven.plugins</groupId>
+                    <artifactId>dependency-scope-maven-plugin</artifactId>
+                    <version>0.8</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <skip>${platform.check.skip-dependency-scope}</skip>
+                                <fail>${platform.check.fail-dependency-scope}</fail>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>findbugs-maven-plugin</artifactId>
                     <version>3.0.5</version>
@@ -537,6 +556,11 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>com.hubspot.maven.plugins</groupId>
+                <artifactId>dependency-scope-maven-plugin</artifactId>
             </plugin>
 
             <plugin>
