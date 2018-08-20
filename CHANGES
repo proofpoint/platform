@@ -9,6 +9,10 @@ Platform 1.85
 
 * We deprecated HttpClientModule. This is an internal class.
 
+* Library Upgrades
+
+  - slf4j to 1.7.25 (was 1.7.16)
+
 * Maven plugin upgrades
 
   - maven-enforcer-plugin to 3.0.0-M1 (was 1.4.1)
