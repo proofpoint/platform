@@ -6,6 +6,26 @@ Platform 1.87
   platform.check.skip-spotbugs Maven property. Failing the build on SpotBugs
   errors may be enabled with the platform.check.fail-spotbugs property.
 
+  This required an incompatible change. Previously the dependency
+  com.google.code.findbugs:jsr305 was banned, with projects requiring the JSR
+  305 annotations depending on com.google.code.findbugs:findbugs-annotations.
+  Now the findbugs-annotations dependency is banned and projects requiring the
+  JSR 305 annotations must have the dependency:
+
+    <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <optional>true</optional>
+    </dependency>
+
+  Projects requiring the FindBugs annotations must have the dependency:
+
+    <dependency>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-annotations</artifactId>
+        <optional>true</optional>
+    </dependency>
+
 Platform 1.86
 
 * Configuration

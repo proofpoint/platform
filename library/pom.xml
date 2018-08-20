@@ -158,12 +158,8 @@
                                     <exclude>com.google.collections:google-collections</exclude>
                                     <!-- but not the badly numbered ones... -->
                                     <exclude>com.google.guava:guava</exclude>
-                                    <!-- Clashes with com.google.code.findbugs:annotations and having both jars -->
-                                    <!-- as a dependency then clashes with the dependency checker (because it -->
-                                    <!-- is not very good at handling annotations). Use the annotations jar -->
-                                    <!-- instead which has all jsr305 annotations and the additional findbugs -->
-                                    <!-- stuff. -->
-                                    <exclude>com.google.code.findbugs:jsr305</exclude>
+                                    <!-- Contains FindBugs annotations, JSR-305 and JCIP annotations -->
+                                    <exclude>com.google.code.findbugs:annotations</exclude>
                                     <!-- Use the official version at javax.servlet:javax.servlet-api -->
                                     <exclude>org.eclipse.jetty.orbit:javax.servlet</exclude>
                                     <!-- removed -->
@@ -1083,10 +1079,18 @@
                 <version>${dep.jetty.version}</version>
             </dependency>
 
+            <!-- FindBugs / SpotBugs -->
+            <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-annotations</artifactId>
+                <version>3.1.6</version>
+            </dependency>
+
+            <!-- JSR-305 -->
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
-                <artifactId>annotations</artifactId>
-                <version>2.0.3</version>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
             </dependency>
 
             <!-- jmh -->
