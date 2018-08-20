@@ -1,3 +1,11 @@
+Platform 1.87
+
+* Maven
+
+  We replaced FindBugs with SpotBugs. SpotBugs may be disabled through the
+  platform.check.skip-spotbugs Maven property. Failing the build on SpotBugs
+  errors may be enabled with the platform.check.fail-spotbugs property.
+
 Platform 1.86
 
 * Configuration

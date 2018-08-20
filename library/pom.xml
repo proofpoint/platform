@@ -65,7 +65,7 @@
         <platform.check.skip-dependency-scope>${platform.check.skip-basic}</platform.check.skip-dependency-scope>
 
         <!-- extended checks -->
-        <platform.check.skip-findbugs>${platform.check.skip-extended}</platform.check.skip-findbugs>
+        <platform.check.skip-spotbugs>${platform.check.skip-extended}</platform.check.skip-spotbugs>
         <platform.check.skip-jacoco>${platform.check.skip-extended}</platform.check.skip-jacoco>
         <platform.check.skip-modernizer>${platform.check.skip-extended}</platform.check.skip-modernizer>
 
@@ -79,7 +79,7 @@
         <platform.check.fail-dependency-scope>${platform.check.fail-basic}</platform.check.fail-dependency-scope>
 
         <!-- extended checks -->
-        <platform.check.fail-findbugs>false</platform.check.fail-findbugs>
+        <platform.check.fail-spotbugs>false</platform.check.fail-spotbugs>
         <platform.check.fail-modernizer>false</platform.check.fail-modernizer>
 
         <dep.jetty.version>9.3.24.v20180605</dep.jetty.version>
@@ -398,13 +398,20 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>findbugs-maven-plugin</artifactId>
-                    <version>3.0.5</version>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>3.1.6</version>
+                    <dependencies>
+                      <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>3.1.7</version>
+                      </dependency>
+                    </dependencies>
                     <configuration>
-                        <skip>${platform.check.skip-findbugs}</skip>
+                        <skip>${platform.check.skip-spotbugs}</skip>
                         <jvmArgs>-Xmx${platform.build.jvmsize}</jvmArgs>
-                        <failOnError>${platform.check.fail-findbugs}</failOnError>
+                        <failOnError>${platform.check.fail-spotbugs}</failOnError>
                     </configuration>
                     <executions>
                         <execution>
@@ -565,8 +572,8 @@
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
             </plugin>
 
             <plugin>
