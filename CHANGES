@@ -1,5 +1,8 @@
 Platform 1.85
 
+* We added the "errorprone-compiler" Maven profile for compiling with the
+  "Error Prone" compiler.
+
 * We refactored the tests for the sample and skeleton servers to use AssertJ.
 
 * We deprecated several methods in FileUtils.
