@@ -11,6 +11,7 @@ Platform 1.85
 
 * Maven plugin upgrades
 
+  - maven-enforcer-plugin to 3.0.0-M1 (was 1.4.1)
   - maven-javadoc-plugin to 3.0.1 (was 2.9)
 
 Platform 1.84
