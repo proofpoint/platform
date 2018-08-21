@@ -357,6 +357,10 @@
                             <ignoredResource>javac.sh</ignoredResource>
                         </ignoredResourcePatterns>
 
+                        <ignoredClassPatterns>
+                            <ignoredClassPattern>module-info</ignoredClassPattern>
+                        </ignoredClassPatterns>
+
                         <ignoredDependencies>
                             <!-- jRuby complete isn't very safe, but we only use it in the rack project -->
                             <dependency>
