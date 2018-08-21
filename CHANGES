@@ -8,6 +8,9 @@ Platform 1.85
   Build failures may be turned into warnings by setting the
   platform.check.fail-dependency-scope Maven property to false.
 
+* We configured the Maven duplicate finder to ignore Java 9 module-info.class
+  files.
+
 * We refactored the tests for the sample and skeleton servers to use AssertJ.
 
 * We deprecated several methods in FileUtils.
