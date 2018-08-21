@@ -16,6 +16,7 @@ Platform 1.85
 
 * Library Upgrades
 
+  - javax.ws.rs-api to 2.1 (was 2.0.1)
   - slf4j to 1.7.25 (was 1.7.16)
 
 * Maven plugin upgrades
