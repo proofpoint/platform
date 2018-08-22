@@ -24,6 +24,7 @@ import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.server.testing.TestingHttpServer;
 import com.proofpoint.http.server.testing.TestingHttpServerModule;
+import com.proofpoint.jaxrs.JaxrsModule;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
@@ -35,10 +36,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.weakref.jmx.testing.TestingMBeanModule;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.JsonBodyGenerator.jsonBodyGenerator;
@@ -49,7 +48,6 @@ import static com.proofpoint.http.client.Request.Builder.preparePost;
 import static com.proofpoint.http.client.Request.Builder.preparePut;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
-import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
 import static com.proofpoint.json.JsonCodec.mapJsonCodec;
 import static com.proofpoint.platform.sample.Person.createPerson;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -85,7 +83,7 @@ public class TestServer
                         new TestingNodeModule(),
                         new TestingHttpServerModule(),
                         new JsonModule(),
-                        explicitJaxrsModule(),
+                        new JaxrsModule(),
                         new ReportingModule(),
                         new TestingMBeanModule(),
                         new MainModule()
@@ -114,7 +112,6 @@ public class TestServer
 
     @Test
     public void testEmpty()
-            throws Exception
     {
         Map<String, Object> response = client.execute(
                 prepareGet().setUri(uriFor("/v1/person")).build(),
@@ -125,7 +122,6 @@ public class TestServer
 
     @Test
     public void testGetAll()
-            throws Exception
     {
         store.put("bar", createPerson("bar@example.com", "Mr Bar"));
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
@@ -143,7 +139,6 @@ public class TestServer
 
     @Test
     public void testGetNotFound()
-            throws Exception
     {
         URI requestUri = uriFor("/v1/person/foo");
 
@@ -156,7 +151,6 @@ public class TestServer
 
     @Test
     public void testGetSingle()
-            throws Exception
     {
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
@@ -173,7 +167,6 @@ public class TestServer
 
     @Test
     public void testPutAdd()
-            throws Exception
     {
         StringResponse response = client.execute(
                 preparePut()
@@ -191,7 +184,6 @@ public class TestServer
     }
     @Test
     public void testPutReplace()
-            throws Exception
     {
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
@@ -212,7 +204,6 @@ public class TestServer
 
     @Test
     public void testDelete()
-            throws Exception
     {
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
@@ -232,7 +223,6 @@ public class TestServer
 
     @Test
     public void testDeleteMissing()
-            throws Exception
     {
         StringResponse response = client.execute(
                 prepareDelete()
@@ -246,7 +236,6 @@ public class TestServer
 
     @Test
     public void testPostNotAllowed()
-            throws IOException, ExecutionException, InterruptedException
     {
         StatusResponse response = client.execute(
                 preparePost()
