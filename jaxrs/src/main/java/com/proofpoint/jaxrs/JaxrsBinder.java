@@ -55,7 +55,7 @@ import static java.util.Objects.requireNonNull;
  *     jaxrsBinder(binder).bindInjectionProvider(InjectedContextObject.class).to(InjectedContextObjectSupplier.class);</pre>
  *
  * Binds a provider of JAX-RS {@link javax.ws.rs.core.Context} annotated
- * parameters. On the service port, a {@code @Context InjectedCntextObject}
+ * parameters. On the service port, a {@code @Context InjectedContextObject}
  * parameter will be obtained from the singleton
  * {@code InjectedContextObjectSupplier}, which must implement
  * {@code Supplier<InjectedContextObject>}.
