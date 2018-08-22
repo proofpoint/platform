@@ -21,6 +21,7 @@ import com.proofpoint.audit.AuditLogModule;
 import com.proofpoint.discovery.client.DiscoveryModule;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.http.server.HttpServerModule;
+import com.proofpoint.jaxrs.JaxrsModule;
 import com.proofpoint.jmx.JmxHttpModule;
 import com.proofpoint.jmx.JmxModule;
 import com.proofpoint.json.JsonModule;
@@ -32,14 +33,12 @@ import com.proofpoint.reporting.ReportingModule;
 import org.weakref.jmx.guice.MBeanModule;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
-import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
 
 public class Main
 {
     private static final Logger log = Logger.get(Main.class);
 
     public static void main(String[] args)
-            throws Exception
     {
         try {
             Injector injector = bootstrapApplication("skeleton")
@@ -48,7 +47,7 @@ public class Main
                             new DiscoveryModule(),
                             new HttpServerModule(),
                             new JsonModule(),
-                            explicitJaxrsModule(),
+                            new JaxrsModule(),
                             new MBeanModule(),
                             new JmxModule(),
                             new JmxHttpModule(),

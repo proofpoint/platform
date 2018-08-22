@@ -7,6 +7,7 @@ import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.server.testing.TestingHttpServer;
 import com.proofpoint.http.server.testing.TestingHttpServerModule;
+import com.proofpoint.jaxrs.JaxrsModule;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
@@ -22,7 +23,6 @@ import java.net.URI;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
-import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.testng.Assert.assertEquals;
 
@@ -42,7 +42,7 @@ public class TestServer
                         new TestingNodeModule(),
                         new TestingHttpServerModule(),
                         new JsonModule(),
-                        explicitJaxrsModule(),
+                        new JaxrsModule(),
                         new ReportingModule(),
                         new TestingMBeanModule(),
                         new MainModule()
@@ -70,7 +70,6 @@ public class TestServer
 
     @Test
     public void testNothing()
-            throws Exception
     {
         StatusResponse response = client.execute(
                 prepareGet().setUri(uriFor("/nothing")).build(),
