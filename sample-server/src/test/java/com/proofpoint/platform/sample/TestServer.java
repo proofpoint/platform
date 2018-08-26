@@ -35,10 +35,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.weakref.jmx.testing.TestingMBeanModule;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.JsonBodyGenerator.jsonBodyGenerator;
@@ -58,8 +56,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestServer
 {
@@ -114,18 +111,16 @@ public class TestServer
 
     @Test
     public void testEmpty()
-            throws Exception
     {
         Map<String, Object> response = client.execute(
                 prepareGet().setUri(uriFor("/v1/person")).build(),
                 createJsonResponseHandler(mapCodec, OK.getStatusCode()));
 
-        assertEquals(response, ImmutableMap.of());
+        assertThat(response).isEmpty();
     }
 
     @Test
     public void testGetAll()
-            throws Exception
     {
         store.put("bar", createPerson("bar@example.com", "Mr Bar"));
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
@@ -138,12 +133,11 @@ public class TestServer
         Object actual = client.execute(
                 prepareGet().setUri(uriFor("/v1/person")).build(),
                 createJsonResponseHandler(mapCodec, OK.getStatusCode()));
-        assertEquals(actual, expected);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     public void testGetNotFound()
-            throws Exception
     {
         URI requestUri = uriFor("/v1/person/foo");
 
@@ -151,12 +145,11 @@ public class TestServer
                 prepareGet().setUri(requestUri).build(),
                 createStatusResponseHandler());
 
-        assertEquals(response.getStatusCode(), NOT_FOUND.getStatusCode());
+        assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND.getStatusCode());
     }
 
     @Test
     public void testGetSingle()
-            throws Exception
     {
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
@@ -168,12 +161,11 @@ public class TestServer
                 prepareGet().setUri(requestUri).build(),
                 createJsonResponseHandler(mapCodec, OK.getStatusCode()));
 
-        assertEquals(actual, expected);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     public void testPutAdd()
-            throws Exception
     {
         StringResponse response = client.execute(
                 preparePut()
@@ -183,15 +175,14 @@ public class TestServer
                         .build(),
                 createStringResponseHandler());
 
-        assertEquals(response.getStatusCode(), CREATED.getStatusCode());
-        assertNull(response.getHeader(CONTENT_TYPE));
-        assertEquals(response.getBody(), "");
+        assertThat(response.getStatusCode()).isEqualTo(CREATED.getStatusCode());
+        assertThat(response.getHeader(CONTENT_TYPE)).isNull();
+        assertThat(response.getBody()).isEmpty();
 
-        assertEquals(store.get("foo"), createPerson("foo@example.com", "Mr Foo"));
+        assertThat(store.get("foo")).isEqualTo(createPerson("foo@example.com", "Mr Foo"));
     }
     @Test
     public void testPutReplace()
-            throws Exception
     {
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
@@ -203,16 +194,15 @@ public class TestServer
                         .build(),
                 createStringResponseHandler());
 
-        assertEquals(response.getStatusCode(), NO_CONTENT.getStatusCode());
-        assertNull(response.getHeader(CONTENT_TYPE));
-        assertEquals(response.getBody(), "");
+        assertThat(response.getStatusCode()).isEqualTo(NO_CONTENT.getStatusCode());
+        assertThat(response.getHeader(CONTENT_TYPE)).isNull();
+        assertThat(response.getBody()).isEmpty();
 
-        assertEquals(store.get("foo"), createPerson("foo@example.com", "Mr Foo"));
+        assertThat(store.get("foo")).isEqualTo(createPerson("foo@example.com", "Mr Foo"));
     }
 
     @Test
     public void testDelete()
-            throws Exception
     {
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
@@ -223,16 +213,15 @@ public class TestServer
                         .build(),
                 createStringResponseHandler());
 
-        assertEquals(response.getStatusCode(), NO_CONTENT.getStatusCode());
-        assertNull(response.getHeader(CONTENT_TYPE));
-        assertEquals(response.getBody(), "");
+        assertThat(response.getStatusCode()).isEqualTo(NO_CONTENT.getStatusCode());
+        assertThat(response.getHeader(CONTENT_TYPE)).isNull();
+        assertThat(response.getBody()).isEmpty();
 
-        assertNull(store.get("foo"));
+        assertThat(store.get("foo")).isNull();
     }
 
     @Test
     public void testDeleteMissing()
-            throws Exception
     {
         StringResponse response = client.execute(
                 prepareDelete()
@@ -241,12 +230,11 @@ public class TestServer
                         .build(),
                 createStringResponseHandler());
 
-        assertEquals(response.getStatusCode(), NOT_FOUND.getStatusCode());
+        assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND.getStatusCode());
     }
 
     @Test
     public void testPostNotAllowed()
-            throws IOException, ExecutionException, InterruptedException
     {
         StatusResponse response = client.execute(
                 preparePost()
@@ -256,9 +244,9 @@ public class TestServer
                         .build(),
                 createStatusResponseHandler());
 
-        assertEquals(response.getStatusCode(), NOT_ALLOWED);
+        assertThat(response.getStatusCode()).isEqualTo(NOT_ALLOWED);
 
-        assertNull(store.get("foo"));
+        assertThat(store.get("foo")).isNull();
     }
 
     private URI uriFor(String path)

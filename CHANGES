@@ -1,3 +1,7 @@
+Platform 1.85
+
+* We refactored the tests for the sample and skeleton servers to use AssertJ.
+
 Platform 1.84
 
 * The "/admin/stop-announcing" resource on the admin port now accepts the
