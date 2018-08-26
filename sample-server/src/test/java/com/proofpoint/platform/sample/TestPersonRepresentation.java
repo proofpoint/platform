@@ -30,7 +30,7 @@ import static com.proofpoint.json.testing.JsonTester.decodeJson;
 import static com.proofpoint.platform.sample.Person.createPerson;
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
 import static com.proofpoint.testing.ValidationAssertions.assertValidates;
-import static org.testng.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestPersonRepresentation
 {
@@ -48,7 +48,7 @@ public class TestPersonRepresentation
     public void testJsonDecode()
     {
         PersonRepresentation personRepresentation = assertValidates(decodeJson(codec, jsonStructure));
-        assertEquals(personRepresentation.toPerson(), createPerson("foo@example.com", "Mr Foo"));
+        assertThat(personRepresentation.toPerson()).isEqualTo(createPerson("foo@example.com", "Mr Foo"));
     }
 
     @Test

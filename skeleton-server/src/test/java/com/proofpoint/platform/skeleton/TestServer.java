@@ -24,7 +24,7 @@ import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static org.testng.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestServer
 {
@@ -75,7 +75,7 @@ public class TestServer
                 prepareGet().setUri(uriFor("/nothing")).build(),
                 createStatusResponseHandler());
 
-        assertEquals(response.getStatusCode(), NOT_FOUND.getStatusCode());
+        assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND.getStatusCode());
     }
 
     private URI uriFor(String path)

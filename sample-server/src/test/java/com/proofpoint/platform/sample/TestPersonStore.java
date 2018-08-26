@@ -15,20 +15,16 @@
  */
 package com.proofpoint.platform.sample;
 
-import com.google.common.collect.Iterables;
 import com.proofpoint.platform.sample.PersonStore.StoreEntry;
 import com.proofpoint.testing.TestingTicker;
 import com.proofpoint.units.Duration;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.platform.sample.Person.createPerson;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestPersonStore
 {
@@ -38,12 +34,11 @@ public class TestPersonStore
     public void testStartsEmpty()
     {
         PersonStore store = new PersonStore(new StoreConfig(), ticker);
-        assertTrue(store.getAll().isEmpty());
+        assertThat(store.getAll()).isEmpty();
     }
 
     @Test
     public void testTtl()
-            throws InterruptedException
     {
         StoreConfig config = new StoreConfig();
         config.setTtl(new Duration(1, TimeUnit.MILLISECONDS));
@@ -51,7 +46,7 @@ public class TestPersonStore
         PersonStore store = new PersonStore(config, ticker);
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
         ticker.elapseTime(2, TimeUnit.MILLISECONDS);
-        Assert.assertNull(store.get("foo"));
+        assertThat(store.get("foo")).isNull();
     }
 
     @Test
@@ -60,8 +55,8 @@ public class TestPersonStore
         PersonStore store = new PersonStore(new StoreConfig(), ticker);
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
-        assertEquals(createPerson("foo@example.com", "Mr Foo"), store.get("foo"));
-        assertEquals(store.getAll().size(), 1);
+        assertThat(store.get("foo")).isEqualTo(createPerson("foo@example.com", "Mr Foo"));
+        assertThat(store.getAll()).hasSize(1);
     }
 
     @Test
@@ -71,8 +66,8 @@ public class TestPersonStore
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
         store.put("foo", createPerson("foo@example.com", "Mr Bar"));
 
-        assertEquals(createPerson("foo@example.com", "Mr Bar"), store.get("foo"));
-        assertEquals(store.getAll().size(), 1);
+        assertThat(store.get("foo")).isEqualTo(createPerson("foo@example.com", "Mr Bar"));
+        assertThat(store.getAll()).hasSize(1);
     }
 
     @Test
@@ -82,8 +77,8 @@ public class TestPersonStore
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
         store.delete("foo");
 
-        assertNull(store.get("foo"));
-        assertTrue(store.getAll().isEmpty());
+        assertThat(store.get("foo")).isNull();
+        assertThat(store.getAll()).isEmpty();
     }
 
     @Test
@@ -93,12 +88,12 @@ public class TestPersonStore
         store.put("foo", createPerson("foo@example.com", "Mr Foo"));
 
         store.delete("foo");
-        assertTrue(store.getAll().isEmpty());
-        assertNull(store.get("foo"));
+        assertThat(store.getAll()).isEmpty();
+        assertThat(store.get("foo")).isNull();
 
         store.delete("foo");
-        assertTrue(store.getAll().isEmpty());
-        assertNull(store.get("foo"));
+        assertThat(store.getAll()).isEmpty();
+        assertThat(store.get("foo")).isNull();
     }
 
     @Test
@@ -110,12 +105,16 @@ public class TestPersonStore
         store.put("bar", createPerson("bar@example.com", "Mr Bar"));
 
         Collection<StoreEntry> entries = store.getAll();
-        assertEquals(entries.size(), 2);
+        assertThat(entries).hasSize(2);
 
-        StoreEntry fooEntry = Iterables.find(entries, input -> input.getId().equals("foo"));
-        assertEquals(fooEntry.getPerson(), createPerson("foo@example.com", "Mr Foo"));
+        assertThat(entries)
+                .filteredOn("id", "foo")
+                .extracting("person")
+                .containsExactly(createPerson("foo@example.com", "Mr Foo"));
 
-        StoreEntry barEntry = Iterables.find(entries, input -> input.getId().equals("bar"));
-        assertEquals(barEntry.getPerson(), createPerson("bar@example.com", "Mr Bar"));
+        assertThat(entries)
+                .filteredOn("id", "bar")
+                .extracting("person")
+                .containsExactly(createPerson("bar@example.com", "Mr Bar"));
     }
 }
