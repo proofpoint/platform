@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
@@ -53,7 +52,6 @@ import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.servi
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.json.JsonBinder.jsonBinder;
 
-@Beta
 public class JmxHttpModule implements Module
 {
     @Override

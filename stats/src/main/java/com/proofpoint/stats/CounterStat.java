@@ -17,7 +17,6 @@ package com.proofpoint.stats;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.Beta;
 import com.proofpoint.reporting.Prometheus;
 import com.proofpoint.stats.DecayCounter.DecayCounterSnapshot;
 import org.weakref.jmx.Flatten;
@@ -29,7 +28,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import static com.proofpoint.reporting.PrometheusType.COUNTER;
 import static java.util.Objects.requireNonNull;
 
-@Beta
 public class CounterStat
 {
     private final AtomicLong count = new AtomicLong(0);

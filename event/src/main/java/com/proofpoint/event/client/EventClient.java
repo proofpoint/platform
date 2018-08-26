@@ -15,10 +15,8 @@
  */
 package com.proofpoint.event.client;
 
-import com.google.common.annotations.Beta;
 import com.google.common.util.concurrent.ListenableFuture;
 
-@Beta
 public interface EventClient
 {
     @SuppressWarnings("unchecked")

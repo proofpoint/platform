@@ -17,7 +17,6 @@ package com.proofpoint.units;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 
@@ -28,7 +27,6 @@ import java.util.regex.Pattern;
 import static java.lang.Math.floor;
 import static java.util.Objects.requireNonNull;
 
-@Beta
 public class DataSize
         implements Comparable<DataSize>
 {

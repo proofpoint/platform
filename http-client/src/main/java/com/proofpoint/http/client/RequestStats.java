@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.annotations.Beta;
 import com.proofpoint.stats.DistributionStat;
 import com.proofpoint.stats.TimeStat;
 import com.proofpoint.units.Duration;
@@ -23,7 +22,6 @@ import org.weakref.jmx.Nested;
 
 import javax.inject.Inject;
 
-@Beta
 public class RequestStats
 {
     private final TimeStat requestTime;
