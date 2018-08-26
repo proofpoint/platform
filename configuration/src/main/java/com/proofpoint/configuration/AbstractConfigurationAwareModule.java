@@ -13,7 +13,6 @@
  */
 package com.proofpoint.configuration;
 
-import com.google.common.annotations.Beta;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 
@@ -21,7 +20,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
 import static java.util.Objects.requireNonNull;
 
-@Beta
 public abstract class AbstractConfigurationAwareModule
         implements ConfigurationAwareModule
 {

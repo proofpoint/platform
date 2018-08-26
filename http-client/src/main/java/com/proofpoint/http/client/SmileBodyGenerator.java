@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.google.common.annotations.Beta;
 import com.google.common.base.Suppliers;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.ObjectMapperProvider;
@@ -29,7 +28,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
-@Beta
 public class SmileBodyGenerator<T>
         extends StaticBodyGenerator
 {

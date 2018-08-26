@@ -15,10 +15,8 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.annotations.Beta;
 import com.proofpoint.json.JsonCodec;
 
-@Beta
 public class JsonBodyGenerator<T> extends StaticBodyGenerator
 {
     public static <T> JsonBodyGenerator<T> jsonBodyGenerator(JsonCodec<T> jsonCodec, T instance)

@@ -13,7 +13,6 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.annotations.Beta;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.proofpoint.units.Duration;
@@ -30,7 +29,6 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.ws.rs.core.Response.status;
 
-@Beta
 public class AsyncResponseHandler
 {
     private final AsyncResponse asyncResponse;

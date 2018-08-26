@@ -15,11 +15,8 @@
  */
 package com.proofpoint.http.client.balancing;
 
-import com.google.common.annotations.Beta;
-
 import java.net.URI;
 
-@Beta
 public interface HttpServiceAttempt
 {
     URI getUri();

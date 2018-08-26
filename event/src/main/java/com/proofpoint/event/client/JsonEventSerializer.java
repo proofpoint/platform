@@ -17,7 +17,6 @@ package com.proofpoint.event.client;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
-import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
@@ -34,7 +33,6 @@ import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
 import static java.util.Objects.requireNonNull;
 
-@Beta
 public class JsonEventSerializer
 {
     private final NodeInfo nodeinfo;

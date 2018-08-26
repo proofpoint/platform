@@ -15,8 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.annotations.Beta;
-
 import java.net.URI;
 
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
@@ -24,7 +22,6 @@ import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
 /**
  * An RFC-3986-compatible HTTP URI builder for path-only relative URIs
  */
-@Beta
 public class RelativeUriBuilder
 {
     private static final URI STARTING_URI = URI.create("http://invalid.invalid");
