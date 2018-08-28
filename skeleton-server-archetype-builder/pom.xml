@@ -128,7 +128,7 @@
   <parent>
       <groupId>com.proofpoint.platform</groupId>
       <artifactId>library</artifactId>
-      <version>1.24</version>
+      <version>1.85</version>
   </parent>
 
   <inceptionYear>2010</inceptionYear>
