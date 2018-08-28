@@ -17,9 +17,25 @@ package com.proofpoint.http.client;
 
 public interface ResponseHandler<T, E extends Exception>
 {
+    /**
+     * Map an exception that was thrown during processing of a request.
+     *
+     * @param request The request
+     * @param exception The exception that was thrown
+     * @return The value to return to the caller
+     * @throws E The exception to propagate to the caller
+     */
     T handleException(Request request, Exception exception)
             throws E;
 
+    /**
+     * Convert a response into a return value.
+     *
+     * @param request The request
+     * @param response The response
+     * @return The value to return to the caller
+     * @throws E The exception to propagate to the caller
+     */
     T handle(Request request, Response response)
             throws E;
 }
