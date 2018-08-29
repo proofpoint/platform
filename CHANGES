@@ -1,5 +1,12 @@
 Platform 1.85
 
+* We added support for Sealights under Docker
+
+  If the project has a .build-docker file and the SL_TOKEN_FILE environment
+  variable is set, then sl-test-listener.jar, buildSessionId.txt, and the
+  token file that is the value of that environment variable are placed in
+  the created Docker container.
+
 * We added the "errorprone-compiler" Maven profile for compiling with the
   "Error Prone" compiler.
 
