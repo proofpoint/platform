@@ -29,6 +29,7 @@ import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.tracetoken.TraceTokenScope;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.Duration;
+import org.eclipse.jetty.client.AbstractConnectionPool;
 import org.eclipse.jetty.client.DuplexConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
@@ -51,7 +52,7 @@ import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
-import org.eclipse.jetty.util.ArrayQueue;
+import org.eclipse.jetty.util.BlockingArrayQueue;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.Sweeper;
@@ -1091,7 +1092,7 @@ public class JettyHttpClient
         @Override
         public Iterator<ByteBuffer> iterator()
         {
-            final Queue<ByteBuffer> chunks = new ArrayQueue<>(4, 64);
+            final Queue<ByteBuffer> chunks = new BlockingArrayQueue<>(4, 64);
 
             Writer writer;
             try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
