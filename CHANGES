@@ -1,3 +1,14 @@
+Platform 1.86
+
+* Configuration
+
+  We created ConfigBinder.bindConfig() with the same interface as
+  ConfigurationModule.bindConfig().
+
+  We marked some of the EDSL methods of ConfigurationModule.bindConfig()
+  as deprecated. We also deprecated some of the constructors that should
+  not have been public.
+
 Platform 1.85
 
 * We added support for Sealights under Docker
