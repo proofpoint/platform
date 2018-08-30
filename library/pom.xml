@@ -277,7 +277,7 @@
                         <source>${project.build.targetJdk}</source>
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <maxmemory>${platform.build.jvmsize}</maxmemory>
-                        <additionalOptions>-Xdoclint:${platform.javadoc.lint}</additionalOptions>
+                        <doclint>${platform.javadoc.lint}</doclint>
                     </configuration>
                     <executions>
                         <execution>
