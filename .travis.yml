@@ -17,5 +17,7 @@ cache:
   directories:
     - $HOME/.m2/repository
 
+install: true
+
 script:
   - mvn test -P ci -B javadoc:javadoc
