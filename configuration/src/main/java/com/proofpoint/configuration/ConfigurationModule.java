@@ -16,7 +16,6 @@
 package com.proofpoint.configuration;
 
 import com.google.inject.Binder;
-import com.google.inject.Key;
 import com.google.inject.Module;
 
 import java.lang.annotation.Annotation;
@@ -46,6 +45,10 @@ public class ConfigurationModule
 
     public static class AnnotatedBindingBuilder extends PrefixBindingBuilder
     {
+        /**
+         * @deprecated Will no longer be public.
+         */
+        @Deprecated
         public AnnotatedBindingBuilder(Binder binder)
         {
             super(binder, null, null);
@@ -62,46 +65,43 @@ public class ConfigurationModule
         }
     }
 
-    public static class PrefixBindingBuilder extends ConfigBindingBuilder
+    /**
+     * @deprecated Use {@link ConfigBinder.PrefixBindingBuilder}
+     */
+    @Deprecated
+    public static class PrefixBindingBuilder
+            extends ConfigBinder.PrefixBindingBuilder
     {
+        /**
+         * @deprecated Will no longer be public.
+         */
+        @Deprecated
         public PrefixBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, Annotation annotation)
         {
-            super(binder, annotationType, annotation, null);
+            super(binder, annotationType, annotation);
         }
 
+        @Override
         public ConfigBindingBuilder prefixedWith(String prefix)
         {
             return new ConfigBindingBuilder(binder, annotationType, annotation, prefix);
         }
     }
 
+    /**
+     * @deprecated Use {@link ConfigBinder.ConfigBindingBuilder}
+     */
+    @Deprecated
     public static class ConfigBindingBuilder
+        extends ConfigBinder.ConfigBindingBuilder
     {
-        protected final Binder binder;
-        protected final Class<? extends Annotation> annotationType;
-        protected final Annotation annotation;
-        protected final String prefix;
-
+        /**
+         * @deprecated Will no longer be public.
+         */
+        @Deprecated
         public ConfigBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, Annotation annotation, String prefix)
         {
-            this.binder = binder;
-            this.annotationType = annotationType;
-            this.annotation = annotation;
-            this.prefix = prefix;
-        }
-
-        public <T> void to(Class<T> configClass) {
-            Key<T> key;
-            if (annotationType != null) {
-                key = Key.get(configClass, annotationType);
-            } else if(annotation != null) {
-                key = Key.get(configClass, annotation);
-            } else {
-                key = Key.get(configClass);
-            }
-
-            ConfigurationProvider<T> configurationProvider = new ConfigurationProvider<T>(key, configClass, prefix);
-            binder.bind(key).toProvider(configurationProvider);
+            super(binder, annotationType, annotation, prefix);
         }
     }
 }
