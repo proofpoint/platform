@@ -20,4 +20,4 @@ cache:
 install: true
 
 script:
-  - mvn test -P ci -B javadoc:javadoc
+  - mvn -P ci -B install
