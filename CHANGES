@@ -26,6 +26,11 @@ Platform 1.87
         <optional>true</optional>
     </dependency>
 
+* HttpClient
+
+  We removed support for setting the configuration property
+  "http-client.max-requests-queued-per-destination" to "0".
+
 Platform 1.86
 
 * Configuration

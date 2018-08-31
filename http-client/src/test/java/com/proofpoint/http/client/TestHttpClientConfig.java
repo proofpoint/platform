@@ -32,6 +32,7 @@ import static com.proofpoint.configuration.testing.ConfigAssertions.recordDefaul
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE;
 import static com.proofpoint.http.client.HttpClientConfig.JAVAX_NET_SSL_KEY_STORE_PASSWORD;
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
+import static com.proofpoint.testing.ValidationAssertions.assertValidates;
 import static com.proofpoint.units.DataSize.Unit.MEGABYTE;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -106,10 +107,11 @@ public class TestHttpClientConfig
     @Test
     public void testValidations()
     {
+        assertValidates(new HttpClientConfig().setMaxRequestsQueuedPerDestination(1).setMaxConnectionsPerServer(1));
         assertFailsValidation(new HttpClientConfig().setConnectTimeout(null), "connectTimeout", "may not be null", NotNull.class);
         assertFailsValidation(new HttpClientConfig().setIdleTimeout(null), "idleTimeout", "may not be null", NotNull.class);
         assertFailsValidation(new HttpClientConfig().setMaxConnectionsPerServer(0), "maxConnectionsPerServer", "must be greater than or equal to 1", Min.class);
-        assertFailsValidation(new HttpClientConfig().setMaxRequestsQueuedPerDestination(-1), "maxRequestsQueuedPerDestination", "must be greater than or equal to 0", Min.class);
+        assertFailsValidation(new HttpClientConfig().setMaxRequestsQueuedPerDestination(0), "maxRequestsQueuedPerDestination", "must be greater than or equal to 1", Min.class);
         assertFailsValidation(new HttpClientConfig().setMaxContentLength(null), "maxContentLength", "may not be null", NotNull.class);
     }
 }

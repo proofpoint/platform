@@ -31,10 +31,8 @@ import com.proofpoint.units.DataSize;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.client.DuplexConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.client.HttpRequest;
-import org.eclipse.jetty.client.Origin;
 import org.eclipse.jetty.client.PoolingHttpDestination;
 import org.eclipse.jetty.client.Socks4Proxy;
 import org.eclipse.jetty.client.api.ContentProvider;
@@ -44,7 +42,6 @@ import org.eclipse.jetty.client.api.Response.Listener;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.http.HttpConnectionOverHTTP;
-import org.eclipse.jetty.client.http.HttpDestinationOverHTTP;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.client.util.InputStreamContentProvider;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
@@ -198,23 +195,8 @@ public class JettyHttpClient
             sslContextFactory.setTrustStorePassword(config.getTrustStorePassword());
         }
 
-        if (config.getMaxRequestsQueuedPerDestination() == 0) {
-            httpClient = new HttpClient(
-                    new HttpClientTransportOverHTTP(2)
-                    {
-                        @Override
-                        public HttpDestination newHttpDestination(Origin origin)
-                        {
-                            return new LimitQueuedToAvailableConnectionsHttpDestination(config.getMaxConnectionsPerServer(), getHttpClient(), origin);
-                        }
-                    },
-                    sslContextFactory);
-            httpClient.setMaxRequestsQueuedPerDestination(config.getMaxConnectionsPerServer());
-        }
-        else {
-            httpClient = new HttpClient(new HttpClientTransportOverHTTP(2), sslContextFactory);
-            httpClient.setMaxRequestsQueuedPerDestination(config.getMaxRequestsQueuedPerDestination());
-        }
+        httpClient = new HttpClient(new HttpClientTransportOverHTTP(2), sslContextFactory);
+        httpClient.setMaxRequestsQueuedPerDestination(config.getMaxRequestsQueuedPerDestination());
         httpClient.setMaxConnectionsPerDestination(config.getMaxConnectionsPerServer());
 
         // disable cookies
@@ -1576,34 +1558,6 @@ public class JettyHttpClient
                         .forEach(listener -> processor.process(distribution, listener, now));
                 return distribution;
             });
-        }
-    }
-
-    private static class LimitQueuedToAvailableConnectionsHttpDestination
-            extends HttpDestinationOverHTTP
-    {
-        private final Object lock = new Object();
-        private final int limit;
-
-        LimitQueuedToAvailableConnectionsHttpDestination(int limit, HttpClient httpClient, Origin origin)
-        {
-            super(httpClient, origin);
-            this.limit = limit;
-        }
-
-        @Override
-        protected boolean enqueue(Queue<HttpExchange> queue, HttpExchange exchange)
-        {
-            synchronized (lock) {
-                int connectionCount = getConnectionPool().getActiveConnections().size();
-                int size = queue.size();
-                if (size + connectionCount >= limit)
-                {
-                    return false;
-                }
-
-                return super.enqueue(queue, exchange);
-            }
         }
     }
 }
