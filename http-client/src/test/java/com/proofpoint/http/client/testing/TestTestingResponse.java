@@ -183,6 +183,7 @@ public class TestTestingResponse
                 HttpStatus.BAD_REQUEST, ImmutableListMultimap.of("conTeNt-tyPE", "foo/bar"), new byte[] { '[', '"', 'n', 'e', -61, -87, '"', ']'});
     }
 
+    @SuppressWarnings("ReturnValueIgnored")
     @Test(dataProvider = "bodyMethodPossibleCombinations", expectedExceptions = IllegalStateException.class)
     public void testBuilderMultipleBodiesThrowsException(Function<Builder, Builder> firstBody, Function<Builder, Builder> secondBody)
     {
