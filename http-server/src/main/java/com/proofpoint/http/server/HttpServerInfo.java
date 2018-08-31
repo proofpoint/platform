@@ -17,6 +17,7 @@ package com.proofpoint.http.server;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.InetAddresses;
+import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 
 import javax.annotation.Nullable;
@@ -74,6 +75,7 @@ public class HttpServerInfo
                 adminUri = buildUri("http", InetAddresses.toUriString(nodeInfo.getInternalIp()), port(adminChannel));
                 adminExternalUri = buildUri("http", nodeInfo.getExternalAddress(), adminUri.getPort());
             }
+            Logger.get("Bootstrap").info("Admin service on %s", adminUri);
         }
         else {
             adminChannel = null;

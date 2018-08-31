@@ -1,3 +1,7 @@
+Platform 1.86
+
+* We now log the admin URI to the bootstrap log.
+
 Platform 1.85
 
 * We added support for Sealights under Docker
