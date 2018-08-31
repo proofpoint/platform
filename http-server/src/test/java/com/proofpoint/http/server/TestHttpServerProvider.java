@@ -22,15 +22,14 @@ import com.google.common.net.InetAddresses;
 import com.proofpoint.bootstrap.LifeCycleConfig;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
-import com.proofpoint.http.client.HttpClientConfig;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.server.testing.TestingHttpServer;
+import com.proofpoint.log.Level;
 import com.proofpoint.log.Logging;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
-import com.proofpoint.units.Duration;
 import org.eclipse.jetty.server.RequestLog;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -40,9 +39,9 @@ import org.testng.annotations.Test;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.Base64;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 import static com.google.common.io.MoreFiles.deleteRecursively;
 import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
@@ -52,11 +51,13 @@ import static com.proofpoint.http.client.Request.Builder.preparePut;
 import static com.proofpoint.http.client.StaticBodyGenerator.createStaticBodyGenerator;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
+import static com.proofpoint.log.Logging.resetLogTesters;
 import static com.proofpoint.testing.Assertions.assertContains;
 import static com.proofpoint.testing.Assertions.assertNotEquals;
 import static com.proofpoint.testing.Closeables.closeQuietly;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.mockito.Matchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
@@ -64,7 +65,6 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 public class TestHttpServerProvider
 {
@@ -74,6 +74,7 @@ public class TestHttpServerProvider
     private File tempDir;
     private NodeInfo nodeInfo;
     private HttpServerConfig config;
+    private List<String> infoLogMessages;
     private HttpServerInfo httpServerInfo;
     private LifeCycleManager lifeCycleManager;
     private DelimitedRequestLog requestLog;
@@ -102,6 +103,12 @@ public class TestHttpServerProvider
                 .setNodeExternalAddress("localhost")
                 .setNodeInternalHostname("localhost")
         );
+        infoLogMessages = new ArrayList<>();
+        Logging.addLogTester("Bootstrap", ((level, message, thrown) -> {
+            if (level == Level.INFO) {
+                infoLogMessages.add(message);
+            }
+        }));
         httpServerInfo = new HttpServerInfo(config, nodeInfo);
         lifeCycleManager = new LifeCycleManager(ImmutableList.of(), null, new LifeCycleConfig());
     }
@@ -111,6 +118,7 @@ public class TestHttpServerProvider
             throws Exception
     {
         closeChannels(httpServerInfo);
+        resetLogTesters();
         if (originalTrustStore != null) {
             System.setProperty(JAVAX_NET_SSL_TRUST_STORE, originalTrustStore);
         }
@@ -152,13 +160,14 @@ public class TestHttpServerProvider
         assertEquals(httpServerInfo.getAdminUri().getScheme(), "http");
 
         assertNotEquals(httpServerInfo.getHttpUri().getPort(), httpServerInfo.getAdminUri().getPort());
+        assertThat(infoLogMessages).containsExactly("Admin service on " + httpServerInfo.getAdminUri().toString());
     }
 
     @Test
     public void testHttpDisabled()
-            throws Exception
     {
         closeChannels(httpServerInfo);
+        infoLogMessages.clear();
 
         config.setHttpEnabled(false);
         httpServerInfo = new HttpServerInfo(config, nodeInfo);
@@ -176,13 +185,14 @@ public class TestHttpServerProvider
         assertEquals(httpServerInfo.getAdminUri().getScheme(), httpServerInfo.getAdminExternalUri().getScheme());
         assertEquals(httpServerInfo.getAdminUri().getPort(), httpServerInfo.getAdminExternalUri().getPort());
         assertEquals(httpServerInfo.getAdminUri().getScheme(), "http");
+        assertThat(infoLogMessages).containsExactly("Admin service on " + httpServerInfo.getAdminUri().toString());
     }
 
     @Test
     public void testAdminDisabled()
-            throws Exception
     {
         closeChannels(httpServerInfo);
+        infoLogMessages.clear();
 
         config.setAdminEnabled(false);
         httpServerInfo = new HttpServerInfo(config, nodeInfo);
@@ -200,13 +210,14 @@ public class TestHttpServerProvider
         assertNull(httpServerInfo.getAdminUri());
         assertNull(httpServerInfo.getAdminExternalUri());
         assertNull(httpServerInfo.getAdminChannel());
+        assertThat(infoLogMessages).isEmpty();
     }
 
     @Test
     public void testHttpsEnabled()
-            throws Exception
     {
         closeChannels(httpServerInfo);
+        infoLogMessages.clear();
 
         config.setHttpsEnabled(true);
         httpServerInfo = new HttpServerInfo(config, nodeInfo);
@@ -233,6 +244,7 @@ public class TestHttpServerProvider
 
         assertNotEquals(httpServerInfo.getHttpUri().getPort(), httpServerInfo.getHttpsUri().getPort());
         assertNotEquals(httpServerInfo.getHttpUri().getPort(), httpServerInfo.getAdminUri().getPort());
+        assertThat(infoLogMessages).containsExactly("Admin service on " + httpServerInfo.getAdminUri().toString());
     }
 
     @Test
@@ -332,7 +344,7 @@ public class TestHttpServerProvider
             throws Exception
     {
         File file = File.createTempFile("auth", ".properties", tempDir);
-        Files.write("user: password", file, UTF_8);
+        Files.asCharSink(file, UTF_8).write("user: password");
 
         config.setUserAuthFile(file.getAbsolutePath());
 
