@@ -170,7 +170,6 @@ public class ReportExporter
             }
         }
         catch (IllegalAccessException | InvocationTargetException e) {
-            throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
     }

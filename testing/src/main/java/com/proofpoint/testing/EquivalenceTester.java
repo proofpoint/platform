@@ -98,7 +98,7 @@ public final class EquivalenceTester
             }
         }
 
-        @SuppressWarnings({"ObjectEqualsNull"})
+        @SuppressWarnings({"ObjectEqualsNull", "SelfEquals"})
         @SuppressFBWarnings({"EC_NULL_ARG","RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"})
         private List<ElementCheckFailure> checkEquivalence()
         {

@@ -97,7 +97,7 @@ public class TestDuration
     @Test
     public void testEquivalence()
     {
-        EquivalenceTester.<Duration>comparisonTester()
+        EquivalenceTester.comparisonTester()
                 .addLesserGroup(generateTimeBucket(0))
                 .addGreaterGroup(generateTimeBucket(1))
                 .addGreaterGroup(generateTimeBucket(123352))

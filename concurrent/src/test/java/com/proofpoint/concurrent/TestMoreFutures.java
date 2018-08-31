@@ -695,6 +695,7 @@ public class TestMoreFutures
         assertFailure(() -> checkSuccess(null, "msg"), expect(NullPointerException.class, "future is null"));
     }
 
+    @SuppressWarnings("ReturnValueIgnored")
     private static void assertGetUncheckedListenable(Function<ListenableFuture<Object>, Object> getter)
             throws Exception
     {
