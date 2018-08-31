@@ -1326,52 +1326,6 @@ public abstract class AbstractHttpClientTest
         }
     }
 
-    @Test
-    public void testAllConnectionsUsed()
-            throws Exception
-    {
-        final Request request = prepareGet()
-                .setUri(uriBuilderFrom(baseURI).addParameter("latch").build())
-                .build();
-        final ClientTester clientTester = clientTester(createClientConfig()
-                .setMaxConnectionsPerServer(2)
-                .setMaxRequestsQueuedPerDestination(0));
-        final AtomicBoolean sawJettyDump = new AtomicBoolean();
-
-        ExecutorService executor = newFixedThreadPool(3, threadsNamed("test-use-connections"));
-        final CountDownLatch countDownLatch = new CountDownLatch(2);
-
-        // The logging test is unfortunately specific to the Jetty implementation
-        Logging.addLogTester(JettyHttpClient.class, (level, message, thrown) -> {
-            if (message.matches("(?s).*Jetty dump:.*")) {
-                sawJettyDump.set(true);
-            }
-        });
-
-        for (int i = 0; i < 2; ++i) {
-            executor.submit(() -> {
-                clientTester.executeRequest(request, createStatusResponseHandler());
-                countDownLatch.countDown();
-                return null;
-            });
-        }
-
-        Thread.sleep(100);
-        try {
-            clientTester.executeRequest(request, createStatusResponseHandler());
-            fail("expected RejectedExecutionException");
-        }
-        catch (RejectedExecutionException ignored) {
-        }
-
-        assertTrue(sawJettyDump.get(), "Saw dump in log");
-
-        servlet.countDown();
-        countDownLatch.await();
-        Thread.sleep(100);
-        clientTester.executeRequest(request, createStatusResponseHandler());
-    }
-
     private void executeRequest(FakeServer fakeServer, HttpClientConfig config)
             throws Exception
     {

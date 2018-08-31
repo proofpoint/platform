@@ -105,7 +105,7 @@ public class HttpClientConfig
         return this;
     }
 
-    @Min(0)
+    @Min(1)
     public int getMaxRequestsQueuedPerDestination()
     {
         return maxRequestsQueuedPerDestination;
