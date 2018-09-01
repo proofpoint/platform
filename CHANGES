@@ -1,5 +1,19 @@
 Platform 1.86
 
+* Configuration
+
+  We created ConfigBinder.bindConfig() with a slightly different interface
+  than ConfigurationModule.bindConfig(). It looks like:
+
+      bindConfig(binder).bind(FooConfig.class)
+          .annotatedWith(Qualifer.class)
+          .prefixedWith("prefix");
+
+  We deprecated ConfigurationModule.bindConfig().
+
+  We also deprecated the constructors in the ConfigurationModule.bindConfig()
+  EDSL as they should not have been public.
+
 * We now log the admin URI to the bootstrap log.
 
 * Maven plugin upgrades

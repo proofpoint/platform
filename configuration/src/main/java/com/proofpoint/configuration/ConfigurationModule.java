@@ -16,8 +16,9 @@
 package com.proofpoint.configuration;
 
 import com.google.inject.Binder;
-import com.google.inject.Key;
 import com.google.inject.Module;
+import com.proofpoint.configuration.ConfigBinder.AnnotatedConfigBindingBuilder;
+import com.proofpoint.configuration.ConfigBinder.PrefixConfigBindingBuilder;
 
 import java.lang.annotation.Annotation;
 
@@ -39,6 +40,10 @@ public class ConfigurationModule
         binder.bind(ConfigurationFactory.class).toInstance(configurationFactory);
     }
 
+    /**
+     * @deprecated Use the {@link ConfigBinder#bindConfig(Binder)} EDSL.
+     */
+    @Deprecated
     public static AnnotatedBindingBuilder bindConfig(Binder binder)
     {
         return new AnnotatedBindingBuilder(binder.skipSources(ConfigurationModule.class));
@@ -46,6 +51,10 @@ public class ConfigurationModule
 
     public static class AnnotatedBindingBuilder extends PrefixBindingBuilder
     {
+        /**
+         * @deprecated Will no longer be public.
+         */
+        @Deprecated
         public AnnotatedBindingBuilder(Binder binder)
         {
             super(binder, null, null);
@@ -64,6 +73,10 @@ public class ConfigurationModule
 
     public static class PrefixBindingBuilder extends ConfigBindingBuilder
     {
+        /**
+         * @deprecated Will no longer be public.
+         */
+        @Deprecated
         public PrefixBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, Annotation annotation)
         {
             super(binder, annotationType, annotation, null);
@@ -82,6 +95,10 @@ public class ConfigurationModule
         protected final Annotation annotation;
         protected final String prefix;
 
+        /**
+         * @deprecated Will no longer be public.
+         */
+        @Deprecated
         public ConfigBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, Annotation annotation, String prefix)
         {
             this.binder = binder;
@@ -91,17 +108,19 @@ public class ConfigurationModule
         }
 
         public <T> void to(Class<T> configClass) {
-            Key<T> key;
+            AnnotatedConfigBindingBuilder<T> annotatedConfigBindingBuilder = ConfigBinder.bindConfig(binder).bind(configClass);
+            PrefixConfigBindingBuilder prefixConfigBindingBuilder;
             if (annotationType != null) {
-                key = Key.get(configClass, annotationType);
+                prefixConfigBindingBuilder = annotatedConfigBindingBuilder.annotatedWith(annotationType);
             } else if(annotation != null) {
-                key = Key.get(configClass, annotation);
+                prefixConfigBindingBuilder = annotatedConfigBindingBuilder.annotatedWith(annotation);
             } else {
-                key = Key.get(configClass);
+                prefixConfigBindingBuilder = annotatedConfigBindingBuilder;
             }
 
-            ConfigurationProvider<T> configurationProvider = new ConfigurationProvider<T>(key, configClass, prefix);
-            binder.bind(key).toProvider(configurationProvider);
+            if (prefix != null) {
+                prefixConfigBindingBuilder.prefixedWith(prefix);
+            }
         }
     }
 }
