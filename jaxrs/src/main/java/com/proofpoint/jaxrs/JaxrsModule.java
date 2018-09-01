@@ -33,6 +33,7 @@ import com.proofpoint.reporting.LivenessResource;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -170,7 +171,7 @@ public class JaxrsModule
     private static class CommonJaxrsModule
             implements Module
     {
-        private final AtomicReference<ServiceLocator> locatorReference = new AtomicReference<>();
+        private final AtomicReference<InjectionManager> injectionManagerReference = new AtomicReference<>();
 
         @Override
         public void configure(Binder binder)
@@ -213,8 +214,8 @@ public class JaxrsModule
                 @Override
                 public void onStartup(Container container)
                 {
-                    ServiceLocator locator = container.getApplicationHandler().getServiceLocator();
-                    locatorReference.set(locator);
+                    InjectionManager injectionManager = container.getApplicationHandler().getInjectionManager();
+                    injectionManagerReference.set(injectionManager);
                 }
 
                 @Override
@@ -241,7 +242,7 @@ public class JaxrsModule
                 @SuppressWarnings("unchecked")
                 private <T> void bindSupplier(Class<T> type, Supplier<?> supplier)
                 {
-                    bindFactory(new InjectionProviderFactory<>(type, (Supplier<T>) supplier, locatorReference)).to(type);
+                    bindFactory(new InjectionProviderFactory<>(type, (Supplier<T>) supplier, injectionManagerReference)).to(type);
                 }
             });
 
@@ -318,28 +319,28 @@ public class JaxrsModule
         private static class InjectionProviderFactory<T> implements Factory<T>
         {
             private final Supplier<? extends T> supplier;
-            private final AtomicReference<ServiceLocator> locatorReference;
+            private final AtomicReference<InjectionManager> injectionManagerReference;
 
-            InjectionProviderFactory(Class<T> type, Supplier<? extends T> supplier, AtomicReference<ServiceLocator> locatorReference)
+            InjectionProviderFactory(Class<T> type, Supplier<? extends T> supplier, AtomicReference<InjectionManager> injectionManagerReference)
             {
                 this.supplier = supplier;
-                this.locatorReference = locatorReference;
+                this.injectionManagerReference = injectionManagerReference;
             }
 
             @Override
             public T provide()
             {
                 T object = supplier.get();
-                ServiceLocator locator = locatorReference.get();
-                locator.inject(object);
-                locator.postConstruct(object);
+                InjectionManager injectionManager = injectionManagerReference.get();
+                injectionManager.inject(object);
+                // Cannot postconstruct. https://github.com/eclipse-ee4j/jersey/issues/3924
                 return object;
             }
 
             @Override
             public void dispose(T o)
             {
-                locatorReference.get().preDestroy(o);
+                injectionManagerReference.get().preDestroy(o);
             }
         }
     }

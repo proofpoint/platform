@@ -15,7 +15,6 @@
  */
 package com.proofpoint.jaxrs;
 
-import jersey.repackaged.com.google.common.collect.Lists;
 import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.model.ModelProcessor;
 import org.glassfish.jersey.server.model.ResourceModel;
@@ -29,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
+import java.util.ArrayList;
 import java.util.List;
 
 @Provider
@@ -41,7 +41,7 @@ public class DisallowOptionsModelProcessor
      * Creates new instance.
      */
     public DisallowOptionsModelProcessor() {
-        methodList = Lists.newArrayList();
+        methodList = new ArrayList<>();
         methodList.add(new ModelProcessorUtil.Method(HttpMethod.OPTIONS, MediaType.WILDCARD_TYPE, MediaType.WILDCARD_TYPE,
                 GenericOptionsInflector.class));
     }
