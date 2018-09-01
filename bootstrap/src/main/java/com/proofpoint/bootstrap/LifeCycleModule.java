@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.inject.matcher.Matchers.any;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 
 /**
  * Guice module for binding the LifeCycle manager
@@ -47,7 +47,7 @@ public class LifeCycleModule implements Module
     {
         binder.disableCircularProxies();
 
-        bindConfig(binder).to(LifeCycleConfig.class);
+        bindConfig(binder).bind(LifeCycleConfig.class);
 
         binder.bindListener(any(), new TypeListener()
         {

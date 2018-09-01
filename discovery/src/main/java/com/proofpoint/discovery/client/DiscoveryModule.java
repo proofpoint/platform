@@ -43,7 +43,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
 import static com.proofpoint.json.JsonCodecBinder.jsonCodecBinder;
@@ -65,13 +65,13 @@ public class DiscoveryModule
     {
         // bind service inventory
         binder.bind(ServiceInventory.class).asEagerSingleton();
-        bindConfig(binder).to(ServiceInventoryConfig.class);
+        bindConfig(binder).bind(ServiceInventoryConfig.class);
         binder.bind(DiscoveryAddressLookup.class).in(Scopes.SINGLETON);
 
-        bindConfig(binder).annotatedWith(ForDiscoveryClient.class).prefixedWith("service-balancer.discovery").to(HttpServiceBalancerConfig.class);
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(ForDiscoveryClient.class).prefixedWith("service-balancer.discovery");
 
         // for legacy configurations
-        bindConfig(binder).to(DiscoveryClientConfig.class);
+        bindConfig(binder).bind(DiscoveryClientConfig.class);
 
         // bind discovery client and dependencies
         binder.bind(DiscoveryLookupClient.class).to(HttpDiscoveryLookupClient.class).in(Scopes.SINGLETON);

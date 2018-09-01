@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static java.util.Objects.requireNonNull;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
@@ -82,7 +82,7 @@ public class HttpClientModule
 
     void withPrivateIoThreadPool()
     {
-        bindConfig(binder).annotatedWith(annotation).prefixedWith(name).to(JettyIoPoolConfig.class);
+        bindConfig(binder).bind(JettyIoPoolConfig.class).annotatedWith(annotation).prefixedWith(name);
         binder.bind(JettyIoPoolManager.class).annotatedWith(annotation).toInstance(new JettyIoPoolManager(name, annotation));
     }
 
@@ -92,10 +92,10 @@ public class HttpClientModule
         this.binder = requireNonNull(binder, "binder is null");
 
         // bind the configuration
-        bindConfig(binder).annotatedWith(annotation).prefixedWith(name).to(HttpClientConfig.class);
+        bindConfig(binder).bind(HttpClientConfig.class).annotatedWith(annotation).prefixedWith(name);
 
         // Shared thread pool
-        bindConfig(rootBinder).to(JettyIoPoolConfig.class);
+        bindConfig(rootBinder).bind(JettyIoPoolConfig.class);
         rootBinder.bind(JettyIoPoolManager.class).to(SharedJettyIoPoolManager.class).in(Scopes.SINGLETON);
 
         // bind the client

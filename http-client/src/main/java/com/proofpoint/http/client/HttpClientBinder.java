@@ -37,7 +37,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static java.util.Objects.requireNonNull;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
@@ -160,7 +160,7 @@ public class HttpClientBinder
         requireNonNull(baseUris, "baseUris is null");
         checkArgument(!baseUris.isEmpty(), "baseUris is empty");
 
-        bindConfig(binder).annotatedWith(annotation).prefixedWith("service-client." + annotation.getSimpleName()).to(HttpServiceBalancerConfig.class);
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(annotation).prefixedWith("service-client." + annotation.getSimpleName());
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
                 .toProvider(new StaticHttpServiceBalancerProvider(annotation.getSimpleName(), baseUris, Key.get(HttpServiceBalancerConfig.class, annotation)));
@@ -192,7 +192,7 @@ public class HttpClientBinder
     private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Class<? extends Annotation> annotation)
     {
         HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
-        bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
+        bindConfig(privateBinder).bind(BalancingHttpClientConfig.class).prefixedWith(name);
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
         reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
@@ -223,7 +223,7 @@ public class HttpClientBinder
         requireNonNull(baseUris, "baseUris is null");
         checkArgument(!baseUris.isEmpty(), "baseUris is empty");
 
-        bindConfig(binder).annotatedWith(annotation).prefixedWith("service-client." + serviceName).to(HttpServiceBalancerConfig.class);
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(annotation).prefixedWith("service-client." + serviceName);
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
                 .toProvider(new StaticHttpServiceBalancerProvider(serviceName, baseUris, Key.get(HttpServiceBalancerConfig.class, annotation)));
@@ -256,7 +256,7 @@ public class HttpClientBinder
     private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Annotation annotation, String serviceName)
     {
         HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
-        bindConfig(privateBinder).prefixedWith(name).to(BalancingHttpClientConfig.class);
+        bindConfig(privateBinder).bind(BalancingHttpClientConfig.class).prefixedWith(name);
         privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
         privateBinder.expose(HttpClient.class).annotatedWith(annotation);
         reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withNamePrefix("HttpClient." + serviceName);

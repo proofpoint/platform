@@ -26,7 +26,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
@@ -78,7 +78,7 @@ public class TestConfigurationInspector
         Map<String, String> properties = new TreeMap<>();
         properties.put("string-value", "some value");
         properties.put("boolean-value", "true");
-        inspect(properties, null, null, null, binder -> bindConfig(binder).to(AnnotatedSetter.class))
+        inspect(properties, null, null, null, binder -> bindConfig(binder).bind(AnnotatedSetter.class))
                 .component("ConfigurationFactoryTest$AnnotatedSetter")
                 .value("BooleanValue", "boolean-value", "false", "true", "")
                 .value("StringValue", "string-value", "null", "some value", "")
@@ -95,8 +95,8 @@ public class TestConfigurationInspector
         properties.put("prefix.boolean-value", "false");
         inspect(properties, null, null, null,
                 binder -> {
-                    bindConfig(binder).to(AnnotatedSetter.class);
-                    bindConfig(binder).annotatedWith(Prefixed.class).prefixedWith("prefix").to(AnnotatedSetter.class);
+                    bindConfig(binder).bind(AnnotatedSetter.class);
+                    bindConfig(binder).bind(AnnotatedSetter.class).annotatedWith(Prefixed.class).prefixedWith("prefix");
                 })
                 .component("ConfigurationFactoryTest$AnnotatedSetter")
                 .value("BooleanValue", "boolean-value", "false", "true", "")
@@ -122,7 +122,7 @@ public class TestConfigurationInspector
                 "string-value", TEST_DEFAULTING_MODULE,
                 "boolean-value", TEST_DEFAULTING_MODULE
         );
-        inspect(properties, null, moduleDefaults, moduleDefaultSource, binder -> bindConfig(binder).to(AnnotatedSetter.class))
+        inspect(properties, null, moduleDefaults, moduleDefaultSource, binder -> bindConfig(binder).bind(AnnotatedSetter.class))
                 .component("ConfigurationFactoryTest$AnnotatedSetter")
                 .value("BooleanValue", "boolean-value", "true", "false", "")
                 .value("StringValue", "string-value", "some default value", "some value", "")
@@ -140,7 +140,7 @@ public class TestConfigurationInspector
                 "string-value", "some default value",
                 "boolean-value", "true"
         );
-        inspect(properties, applicationDefaults, null, null, binder -> bindConfig(binder).to(AnnotatedSetter.class))
+        inspect(properties, applicationDefaults, null, null, binder -> bindConfig(binder).bind(AnnotatedSetter.class))
                 .component("ConfigurationFactoryTest$AnnotatedSetter")
                 .value("BooleanValue", "boolean-value", "true", "false", "")
                 .value("StringValue", "string-value", "some default value", "some value", "")
@@ -165,7 +165,7 @@ public class TestConfigurationInspector
                 "string-value", TEST_DEFAULTING_MODULE,
                 "boolean-value", TEST_DEFAULTING_MODULE
         );
-        inspect(properties, applicationDefaults, moduleDefaults, moduleDefaultSource, binder -> bindConfig(binder).to(AnnotatedSetter.class))
+        inspect(properties, applicationDefaults, moduleDefaults, moduleDefaultSource, binder -> bindConfig(binder).bind(AnnotatedSetter.class))
                 .component("ConfigurationFactoryTest$AnnotatedSetter")
                 .value("BooleanValue", "boolean-value", "true", "false", "")
                 .value("StringValue", "string-value", "some default value", "some value", "")
@@ -177,7 +177,7 @@ public class TestConfigurationInspector
     {
         Map<String, String> properties = new TreeMap<>();
         properties.put("value", "some value");
-        inspect(properties, null, null, null, binder -> bindConfig(binder).to(SetterSensitiveClass.class))
+        inspect(properties, null, null, null, binder -> bindConfig(binder).bind(SetterSensitiveClass.class))
                 .component("ConfigurationMetadataTest$SetterSensitiveClass")
                 .value("Value", "value", "[REDACTED]", "[REDACTED]", "description")
                 .end();
@@ -195,7 +195,7 @@ public class TestConfigurationInspector
         Map<String, ConfigurationDefaultingModule> moduleDefaultSource = ImmutableMap.of(
                 "value", TEST_DEFAULTING_MODULE
         );
-        inspect(properties, null, moduleDefaults, moduleDefaultSource, binder -> bindConfig(binder).to(SetterSensitiveClass.class))
+        inspect(properties, null, moduleDefaults, moduleDefaultSource, binder -> bindConfig(binder).bind(SetterSensitiveClass.class))
                 .component("ConfigurationMetadataTest$SetterSensitiveClass")
                 .value("Value", "value", "[REDACTED]", "[REDACTED]", "description")
                 .end();
@@ -210,7 +210,7 @@ public class TestConfigurationInspector
         Map<String, String> applicationDefaults = ImmutableMap.of(
                 "value", "some default value"
         );
-        inspect(properties, applicationDefaults, null, null, binder -> bindConfig(binder).to(SetterSensitiveClass.class))
+        inspect(properties, applicationDefaults, null, null, binder -> bindConfig(binder).bind(SetterSensitiveClass.class))
                 .component("ConfigurationMetadataTest$SetterSensitiveClass")
                 .value("Value", "value", "[REDACTED]", "[REDACTED]", "description")
                 .end();
@@ -222,7 +222,7 @@ public class TestConfigurationInspector
         Map<String, String> properties = new TreeMap<>();
         properties.put("map-a.a", "this is a");
         properties.put("map-a.b", "this is b");
-        inspect(properties, null, null, null, binder -> bindConfig(binder).to(LegacyMapConfigPresent.class))
+        inspect(properties, null, null, null, binder -> bindConfig(binder).bind(LegacyMapConfigPresent.class))
                 .component("ConfigurationFactoryTest$LegacyMapConfigPresent")
                 .value("MapA[a]", "map-a.a", "-- n/a --", "this is a", "")
                 .value("MapA[b]", "map-a.b", "-- n/a --", "this is b", "")
@@ -238,7 +238,7 @@ public class TestConfigurationInspector
         properties.put("map-a.k1.string-b", "this is b");
         properties.put("map-a.k2.string-value", "this is k2 a");
         properties.put("map-a.k2.string-b", "this is k2 b");
-        inspect(properties, null, null, null, binder -> bindConfig(binder).to(LegacyMapValueConfigPresent.class))
+        inspect(properties, null, null, null, binder -> bindConfig(binder).bind(LegacyMapValueConfigPresent.class))
                 .component("ConfigurationFactoryTest$LegacyMapValueConfigPresent")
                 .value("MapA[k1]StringA", "map-a.k1.string-a", "defaultA", "this is a", "")
                 .value("MapA[k1]StringB", "map-a.k1.string-b", "defaultB", "this is b", "")
@@ -256,7 +256,7 @@ public class TestConfigurationInspector
         inspect(properties, null, null, null,
                 binder -> {
                     PrivateBinder privateBinder = binder.newPrivateBinder();
-                    bindConfig(privateBinder).to(AnnotatedSetter.class);
+                    bindConfig(privateBinder).bind(AnnotatedSetter.class);
                 })
                 .component("ConfigurationFactoryTest$AnnotatedSetter")
                 .value("BooleanValue", "boolean-value", "false", "true", "")

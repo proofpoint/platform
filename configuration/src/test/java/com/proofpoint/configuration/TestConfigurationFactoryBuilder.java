@@ -38,7 +38,7 @@ import java.util.Map;
 
 import static com.google.common.io.MoreFiles.deleteRecursively;
 import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.testing.Assertions.assertContainsAllOf;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
@@ -180,7 +180,7 @@ public class TestConfigurationFactoryBuilder
                 @Override
                 public void configure(Binder binder)
                 {
-                    bindConfig(binder).to(AnnotatedSetter.class);
+                    bindConfig(binder).bind(AnnotatedSetter.class);
                 }
             });
 
@@ -217,7 +217,7 @@ public class TestConfigurationFactoryBuilder
                 @Override
                 public void configure(Binder binder)
                 {
-                    bindConfig(binder).to(AnnotatedSetter.class);
+                    bindConfig(binder).bind(AnnotatedSetter.class);
                 }
             });
 
@@ -254,7 +254,7 @@ public class TestConfigurationFactoryBuilder
                 @Override
                 public void configure(Binder binder)
                 {
-                    bindConfig(binder).to(AnnotatedSetter.class);
+                    bindConfig(binder).bind(AnnotatedSetter.class);
                 }
             });
 
@@ -294,7 +294,7 @@ public class TestConfigurationFactoryBuilder
                 @Override
                 public void configure(Binder binder)
                 {
-                    bindConfig(binder).to(AnnotatedSetter.class);
+                    bindConfig(binder).bind(AnnotatedSetter.class);
                 }
             });
 

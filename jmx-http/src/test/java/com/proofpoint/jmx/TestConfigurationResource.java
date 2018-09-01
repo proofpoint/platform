@@ -47,7 +47,7 @@ import java.util.Map.Entry;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseHandler;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
@@ -76,7 +76,7 @@ public class TestConfigurationResource
                         new TestingMBeanModule(),
                         new JmxHttpModule(),
                         new TestingDiscoveryModule(),
-                        binder -> bindConfig(binder).to(TestingConfig.class)
+                        binder -> bindConfig(binder).bind(TestingConfig.class)
                 )
                 .setRequiredConfigurationProperties(ImmutableMap.of(
                         "testing.duration", "3m",

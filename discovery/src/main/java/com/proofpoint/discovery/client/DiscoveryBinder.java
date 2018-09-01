@@ -34,7 +34,7 @@ import java.net.URI;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.inject.Scopes.SINGLETON;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncementError;
@@ -68,7 +68,7 @@ public class DiscoveryBinder
     public void bindSelector(ServiceType serviceType)
     {
         requireNonNull(serviceType, "serviceType is null");
-        bindConfig(binder).annotatedWith(serviceType).prefixedWith("discovery." + serviceType.value()).to(ServiceSelectorConfig.class);
+        bindConfig(binder).bind(ServiceSelectorConfig.class).annotatedWith(serviceType).prefixedWith("discovery." + serviceType.value());
         binder.bind(ServiceSelector.class).annotatedWith(serviceType).toProvider(new ServiceSelectorProvider(serviceType.value())).in(SINGLETON);
     }
 
@@ -81,7 +81,7 @@ public class DiscoveryBinder
     public void bindHttpBalancer(ServiceType serviceType)
     {
         requireNonNull(serviceType, "serviceType is null");
-        bindConfig(binder).annotatedWith(serviceType).prefixedWith("service-balancer." + serviceType.value()).to(HttpServiceBalancerConfig.class);
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(serviceType).prefixedWith("service-balancer." + serviceType.value());
         binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType).toProvider(new HttpServiceBalancerProvider(serviceType.value())).in(SINGLETON);
     }
 
