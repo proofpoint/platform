@@ -39,6 +39,10 @@ Platform 1.86
   - Guava to 26.0-jre (was 25.0-jre)
     Removed several deprecated Futures methods which implicitly used
     directExecutor(). Code must explicitly pass directExecutor().
+  - Jersey to 2.27 (was 2.25.1)
+    Injected context objects, returned from a supplier bound with
+    JaxrsBinder.bindInjectionProvider(), will no longer have @PostConstruct
+    methods called.
 
 * Maven plugin upgrades
 
