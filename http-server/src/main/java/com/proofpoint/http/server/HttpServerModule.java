@@ -24,7 +24,7 @@ import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 
 import javax.servlet.Filter;
 
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
@@ -74,8 +74,8 @@ public class HttpServerModule
         newExporter(binder).export(HttpServer.class).withGeneratedName();
         reportBinder(binder).bindReportCollection(DetailedRequestStats.class).withNamePrefix("HttpServer");
 
-        bindConfig(binder).to(HttpServerConfig.class);
-        bindConfig(binder).to(InternalNetworkConfig.class);
+        bindConfig(binder).bind(HttpServerConfig.class);
+        bindConfig(binder).bind(InternalNetworkConfig.class);
 
         binder.bind(AnnouncementHttpServerInfo.class).to(LocalAnnouncementHttpServerInfo.class).in(Scopes.SINGLETON);
     }

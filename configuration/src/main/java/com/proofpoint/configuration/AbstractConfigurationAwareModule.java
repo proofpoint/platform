@@ -17,7 +17,7 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static java.util.Objects.requireNonNull;
 
 public abstract class AbstractConfigurationAwareModule
@@ -47,13 +47,13 @@ public abstract class AbstractConfigurationAwareModule
 
     protected synchronized <T> T buildConfigObject(Class<T> configClass)
     {
-        bindConfig(binder).to(configClass);
+        bindConfig(binder).bind(configClass);
         return configurationFactory.build(configClass);
     }
 
     protected synchronized <T> T buildConfigObject(Class<T> configClass, String prefix)
     {
-        bindConfig(binder).prefixedWith(prefix).to(configClass);
+        bindConfig(binder).bind(configClass).prefixedWith(prefix);
         return configurationFactory.build(configClass, prefix);
     }
 

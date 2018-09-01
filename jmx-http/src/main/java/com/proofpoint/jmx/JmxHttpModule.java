@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.google.inject.Scopes.SINGLETON;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
@@ -69,7 +69,7 @@ public class JmxHttpModule implements Module
         jaxrsBinder(binder).bindAdmin(ConfigurationResource.class);
         jaxrsBinder(binder).bindAdmin(VersionResource.class);
         jaxrsBinder(binder).bindAdmin(StopAnnouncingResource.class);
-        bindConfig(binder).to(AdminServerConfig.class);
+        bindConfig(binder).bind(AdminServerConfig.class);
         binder.bind(AdminServerCredentialVerifier.class).in(SINGLETON);
 
         ServiceAnnouncementBuilder serviceAnnouncementBuilder = serviceAnnouncement("jmx-http");

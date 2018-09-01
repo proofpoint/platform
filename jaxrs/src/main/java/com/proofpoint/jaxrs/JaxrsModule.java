@@ -58,7 +58,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.Scopes.SINGLETON;
 import static com.google.inject.multibindings.MapBinder.newMapBinder;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.reporting.HealthBinder.healthBinder;
 
@@ -94,7 +94,7 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(InRotationResource.class);
         jaxrsBinder(binder).bind(LivenessResource.class);
 
-        bindConfig(binder).to(JaxrsConfig.class);
+        bindConfig(binder).bind(JaxrsConfig.class);
 
         binder.bind(ShutdownMonitor.class).in(SINGLETON);
         healthBinder(binder).export(ShutdownMonitor.class);

@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.google.inject.Scopes.SINGLETON;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.testing.Assertions.assertContains;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -118,7 +118,7 @@ public class TestBootstrap
         System.setProperty("config", Resources.getResource("simple-config.properties").getFile());
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .quiet()
                 .initialize();
 
@@ -135,7 +135,7 @@ public class TestBootstrap
 
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .quiet()
                 .initialize();
 
@@ -152,7 +152,7 @@ public class TestBootstrap
         System.setProperty("property", "value");
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .quiet()
                 .initialize();
 
@@ -168,7 +168,7 @@ public class TestBootstrap
         System.setProperty("property", "system property value");
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .quiet()
                 .initialize();
 
@@ -181,7 +181,7 @@ public class TestBootstrap
             throws Exception
     {
         Injector injector = bootstrapTest()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .setRequiredConfigurationProperty("property", "required value")
                 .initialize();
 
@@ -194,7 +194,7 @@ public class TestBootstrap
             throws Exception
     {
         Injector injector = bootstrapTest()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .setRequiredConfigurationProperties(ImmutableMap.of("property", "required value"))
                 .initialize();
 
@@ -207,7 +207,7 @@ public class TestBootstrap
             throws Exception
     {
         UnitTestBootstrap bootstrap = bootstrapTest()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .setRequiredConfigurationProperty("unknown", "required value");
 
         try {
@@ -227,7 +227,7 @@ public class TestBootstrap
         System.setProperty("property", "system property value");
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .setRequiredConfigurationProperty("other-property", "value")
                 .initialize();
 
@@ -242,7 +242,7 @@ public class TestBootstrap
         System.setProperty("config", Resources.getResource("simple-config.properties").getFile());
         System.setProperty("property", "system property value");
         Injector injector = bootstrapTest()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .initialize();
 
         SimpleConfig simpleConfig = injector.getInstance(SimpleConfig.class);
@@ -256,7 +256,7 @@ public class TestBootstrap
         System.setProperty("config", Resources.getResource("simple-config.properties").getFile());
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .withApplicationDefaults(ImmutableMap.of(
                         "property", "default value",
                         "other-property", "other default value"
@@ -275,7 +275,7 @@ public class TestBootstrap
         System.setProperty("config", Resources.getResource("simple-config.properties").getFile());
         Injector injector = bootstrapApplication("test-application")
                 .doNotInitializeLogging()
-                .withModules(binder -> bindConfig(binder).to(SimpleConfig.class), new ConfigurationDefaultingModule()
+                .withModules(binder -> bindConfig(binder).bind(SimpleConfig.class), new ConfigurationDefaultingModule()
                 {
                     @Override
                     public Map<String, String> getConfigurationDefaults()
@@ -303,7 +303,7 @@ public class TestBootstrap
             throws Exception
     {
         UnitTestBootstrap bootstrap = bootstrapTest()
-                .withModules(binder -> bindConfig(binder).to(SimpleConfig.class), new ConfigurationDefaultingModule()
+                .withModules(binder -> bindConfig(binder).bind(SimpleConfig.class), new ConfigurationDefaultingModule()
                 {
                     @Override
                     public Map<String, String> getConfigurationDefaults()
@@ -356,7 +356,7 @@ public class TestBootstrap
             throws Exception
     {
         Injector injector = bootstrapTest()
-                .withModules(binder -> bindConfig(binder).to(SimpleConfig.class), new ConfigurationDefaultingModule()
+                .withModules(binder -> bindConfig(binder).bind(SimpleConfig.class), new ConfigurationDefaultingModule()
                 {
                     @Override
                     public Map<String, String> getConfigurationDefaults()
@@ -423,7 +423,7 @@ public class TestBootstrap
             throws Exception
     {
         Injector injector = bootstrapTest()
-                .withModules((Module) binder -> bindConfig(binder).to(SimpleConfig.class))
+                .withModules((Module) binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .initialize();
 
         injector.getInstance(SimpleConfig.class).setProperty("changed");
@@ -448,7 +448,7 @@ public class TestBootstrap
 
             Injector injector = bootstrapTest()
                     .withModules((Module) binder -> {
-                        bindConfig(binder).to(ContainsDeprecatedConfig.class);
+                        bindConfig(binder).bind(ContainsDeprecatedConfig.class);
                         binder.bind(UsesDeprecatedConfig2.class);
                     })
                     .setRequiredConfigurationProperty("property", "value")
@@ -612,7 +612,7 @@ public class TestBootstrap
                 SimpleConfig::getProperty)
                 .doNotInitializeLogging()
                 .withModules(new NodeModule(),
-                        binder -> bindConfig(binder).to(SimpleConfig.class))
+                        binder -> bindConfig(binder).bind(SimpleConfig.class))
                 .quiet()
                 .setRequiredConfigurationProperties(ImmutableMap.of(
                         "node.environment", "test",

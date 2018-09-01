@@ -18,11 +18,11 @@ package com.proofpoint.jmx;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
-import com.proofpoint.configuration.ConfigurationModule;
 
 import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
 
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 public class JmxModule
@@ -34,7 +34,7 @@ public class JmxModule
         binder.disableCircularProxies();
 
         binder.bind(MBeanServer.class).toInstance(ManagementFactory.getPlatformMBeanServer());
-        ConfigurationModule.bindConfig(binder).to(JmxConfig.class);
+        bindConfig(binder).bind(JmxConfig.class);
 
         newExporter(binder).export(StackTraceMBean.class).withGeneratedName();
         binder.bind(StackTraceMBean.class).in(Scopes.SINGLETON);

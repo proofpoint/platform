@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.google.inject.Scopes.SINGLETON;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
-import static com.proofpoint.configuration.ConfigurationModule.bindConfig;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
@@ -44,7 +44,7 @@ public class ReportingClientModule
         binder.bind(ReportClient.class).in(SINGLETON);
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);
-        bindConfig(binder).to(ReportClientConfig.class);
+        bindConfig(binder).bind(ReportClientConfig.class);
     }
 
     @Provides

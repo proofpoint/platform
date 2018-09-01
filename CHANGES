@@ -9,7 +9,23 @@ Platform 1.86
           .annotatedWith(Qualifer.class)
           .prefixedWith("prefix");
 
-  We deprecated ConfigurationModule.bindConfig().
+  We deprecated ConfigurationModule.bindConfig(). To migrate, use IDEA
+  "Find/Replace Structurally..." with the following patterns:
+
+    com.proofpoint.configuration.ConfigurationModule.bindConfig($b$).to($c$)
+    com.proofpoint.configuration.ConfigBinder.bindConfig($b$).bind($c$)
+
+    com.proofpoint.configuration.ConfigurationModule.bindConfig($b$).annotatedWith($a$).to($c$)
+    com.proofpoint.configuration.ConfigBinder.bindConfig($b$).bind($c$).annotatedWith($a$)
+
+    com.proofpoint.configuration.ConfigurationModule.bindConfig($b$).prefixedWith($p$).to($c$)
+    com.proofpoint.configuration.ConfigBinder.bindConfig($b$).bind($c$).prefixedWith($p$)
+
+    com.proofpoint.configuration.ConfigurationModule.bindConfig($b$).annotatedWith($a$).prefixedWith($p$).to($c$)
+    com.proofpoint.configuration.ConfigBinder.bindConfig($b$).bind($c$).annotatedWith($a$).prefixedWith($p$)
+
+  Then in each modified file optimize imports, statically import bindConfig(),
+  and optimize imports again.
 
   We also deprecated the constructors in the ConfigurationModule.bindConfig()
   EDSL as they should not have been public.

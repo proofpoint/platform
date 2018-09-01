@@ -18,7 +18,6 @@ package com.proofpoint.configuration;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
-import com.google.inject.Binder;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -27,6 +26,7 @@ import com.google.inject.Module;
 import com.google.inject.PrivateBinder;
 import com.google.inject.Scopes;
 import com.google.inject.spi.Message;
+import com.proofpoint.configuration.ConfigBinder.PrefixConfigBindingBuilder;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -37,10 +37,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.google.inject.name.Names.named;
+import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
- public class TestConfig
+public class TestConfig
 {
     private ImmutableMap<String,String> properties;
 
@@ -91,16 +92,11 @@ import static org.testng.Assert.fail;
     @Test
     public void testPrivateBinder()
     {
-        Module module = new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                PrivateBinder privateBinder = binder.newPrivateBinder();
-                privateBinder.install(createModule(Config1.class, null));
-                privateBinder.bind(ExposeConfig.class).in(Scopes.SINGLETON);
-                privateBinder.expose(ExposeConfig.class);
-            }
+        Module module = binder -> {
+            PrivateBinder privateBinder = binder.newPrivateBinder();
+            privateBinder.install(createModule(Config1.class, null));
+            privateBinder.bind(ExposeConfig.class).in(Scopes.SINGLETON);
+            privateBinder.expose(ExposeConfig.class);
         };
         Injector injector = createInjector(properties, module);
         verifyConfig(injector.getInstance(ExposeConfig.class).config1);
@@ -109,22 +105,16 @@ import static org.testng.Assert.fail;
     @Test
     public void testPrivateBinderDifferentPrefix()
     {
-        Module module = new Module()
-        {
-            @Override
-            public void configure(Binder binder)
-            {
-                PrivateBinder privateBinder = binder.newPrivateBinder();
-                privateBinder.install(createModule(Config1.class, null));
-                privateBinder.bind(ExposeConfig.class).annotatedWith(named("no-prefix")).to(ExposeConfig.class).in(Scopes.SINGLETON);
-                privateBinder.expose(Key.get(ExposeConfig.class, named("no-prefix")));
+        Module module = binder -> {
+            PrivateBinder privateBinder = binder.newPrivateBinder();
+            privateBinder.install(createModule(Config1.class, null));
+            privateBinder.bind(ExposeConfig.class).annotatedWith(named("no-prefix")).to(ExposeConfig.class).in(Scopes.SINGLETON);
+            privateBinder.expose(Key.get(ExposeConfig.class, named("no-prefix")));
 
-                privateBinder = binder.newPrivateBinder();
-                privateBinder.install(createModule(Config1.class, "prefix"));
-                privateBinder.bind(ExposeConfig.class).annotatedWith(named("prefix")).to(ExposeConfig.class).in(Scopes.SINGLETON);
-                privateBinder.expose(Key.get(ExposeConfig.class, named("prefix")));
-            }
-
+            privateBinder = binder.newPrivateBinder();
+            privateBinder.install(createModule(Config1.class, "prefix"));
+            privateBinder.bind(ExposeConfig.class).annotatedWith(named("prefix")).to(ExposeConfig.class).in(Scopes.SINGLETON);
+            privateBinder.expose(Key.get(ExposeConfig.class, named("prefix")));
         };
         properties = ImmutableMap.<String, String>builder()
                 .putAll(properties)
@@ -178,18 +168,16 @@ import static org.testng.Assert.fail;
 
     private static <T> Module createModule(final Class<T> configClass, final String prefix)
     {
-        return new Module() {
-            @Override
-            public void configure(Binder binder)
-            {
-                ConfigurationModule.bindConfig(binder).prefixedWith(prefix).to(configClass);
+        return binder -> {
+            PrefixConfigBindingBuilder<T> builder = bindConfig(binder).bind(configClass);
+            if (prefix != null) {
+                builder.prefixedWith(prefix);
             }
         };
     }
 
     @BeforeMethod
     protected void setUp()
-            throws Exception
     {
         properties = ImmutableMap.<String, String>builder()
             .put("stringOption", "a string")
