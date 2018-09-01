@@ -17,9 +17,13 @@ package com.proofpoint.configuration;
 
 import com.google.inject.Key;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -28,9 +32,10 @@ import static java.util.Objects.requireNonNull;
 @Deprecated
 public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
 {
-    private final Key<T> key;
+    private final AtomicReference<Key<T>> key = new AtomicReference<>();
     private final Class<T> configClass;
-    private final String prefix;
+    private final AtomicReference<String> prefix = new AtomicReference<>();
+    private final AtomicBoolean built = new AtomicBoolean();
     private ConfigurationFactory configurationFactory;
 
     /**
@@ -42,9 +47,17 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
         requireNonNull(key, "key is null");
         requireNonNull(configClass, "configClass is null");
 
-        this.key = key;
+        this.key.set(key);
         this.configClass = configClass;
-        this.prefix = prefix;
+        this.prefix.set(prefix);
+    }
+
+    ConfigurationProvider(Class<T> configClass)
+    {
+        requireNonNull(configClass, "configClass is null");
+
+        key.set(Key.get(configClass));
+        this.configClass = configClass;
     }
 
     @Override
@@ -61,7 +74,13 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
 
     public Key<T> getKey()
     {
-        return key;
+        return key.get();
+    }
+
+    void setKey(Key<T> key)
+    {
+        checkState(!built.get(), "Provider has already produced an instance");
+        this.key.set(key);
     }
 
     public Class<T> getConfigClass()
@@ -69,9 +88,16 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
         return configClass;
     }
 
+    @Nullable
     public String getPrefix()
     {
-        return prefix;
+        return prefix.get();
+    }
+
+    void setPrefix(String prefix)
+    {
+        checkState(!built.get(), "Provider has already produced an instance");
+        this.prefix.set(prefix);
     }
 
     public ConfigurationMetadata<T> getConfigurationMetadata() {
@@ -83,7 +109,8 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
     {
         requireNonNull(configurationFactory, "configurationFactory is null");
 
-        return configurationFactory.build(configClass, prefix, key);
+        built.set(true);
+        return configurationFactory.build(configClass, prefix.get(), key.get());
     }
 
     @Override
@@ -102,6 +129,6 @@ public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
             return false;
         }
         final ConfigurationProvider other = (ConfigurationProvider) obj;
-        return Objects.equals(this.configClass, other.configClass) && Objects.equals(this.prefix, other.prefix);
+        return Objects.equals(this.configClass, other.configClass) && Objects.equals(this.prefix.get(), other.prefix.get());
     }
 }
