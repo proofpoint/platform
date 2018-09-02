@@ -11,6 +11,7 @@ Platform 1.86
   - maven-clean-plugin to 3.1.0 (was 3.0.0)
   - maven-resources-plugin to 3.1.0 (was 2.7)
   - maven-source-plugin to 3.0.1 (was 3.0.0)
+  - modernizer-maven-plugin to 1.6.0 (was 1.5.0)
 
 Platform 1.85
 
