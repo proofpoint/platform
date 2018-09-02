@@ -15,6 +15,7 @@ Platform 1.86
   - maven-site-plugin to 3.7.1 (was 3.5.1)
   - maven-source-plugin to 3.0.1 (was 3.0.0)
   - modernizer-maven-plugin to 1.6.0 (was 1.5.0)
+  - rpm-maven-plugin to 2.2.0 (was 2.1.5)
 
 Platform 1.85
 
