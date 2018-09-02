@@ -5,6 +5,7 @@ Platform 1.86
 * Maven plugin upgrades
 
   - build-helper-maven-plugin to 3.0.0 (was 1.10)
+  - maven-assembly-plugin to 3.1.0 (was 2.6)
   - maven-clean-plugin to 3.1.0 (was 3.0.0)
   - maven-resources-plugin to 3.1.0 (was 2.7)
 
