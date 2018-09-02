@@ -30,6 +30,12 @@ Platform 1.86
   We also deprecated the constructors in the ConfigurationModule.bindConfig()
   EDSL as they should not have been public.
 
+* HttpClient
+
+  The HttpServiceBalancer used by the BalancingHttpClient now accepts multiple
+  copies of the same destination URI, weighting it appropriately when
+  balancing requests.
+
 * We now log the admin URI to the bootstrap log.
 
 * We added a dependencyManagement section for guava-testlib to the library pom.

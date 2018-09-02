@@ -17,6 +17,7 @@ package com.proofpoint.discovery.client.balancing;
 
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.testing.ConfigAssertions;
+import com.proofpoint.discovery.client.balancing.StaticHttpServiceConfig.UriMultiset;
 import org.testng.annotations.Test;
 
 import java.net.URI;
@@ -30,7 +31,7 @@ public class TestStaticHttpServiceConfig
     public void testDefaults()
     {
         ConfigAssertions.assertRecordedDefaults(ConfigAssertions.recordDefaults(StaticHttpServiceConfig.class)
-                .setUris(StaticHttpServiceConfig.UriSet.of()));
+                .setUris(UriMultiset.of()));
     }
 
     @Test
@@ -41,7 +42,7 @@ public class TestStaticHttpServiceConfig
                 .build();
 
         StaticHttpServiceConfig expected = new StaticHttpServiceConfig()
-                .setUris(StaticHttpServiceConfig.UriSet.of(URI.create("http://10.20.30.40:4111"), URI.create("http://50.60.70.80:9125")));
+                .setUris(UriMultiset.of(URI.create("http://10.20.30.40:4111"), URI.create("http://50.60.70.80:9125")));
 
         ConfigAssertions.assertFullMapping(properties, expected);
     }

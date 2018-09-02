@@ -16,7 +16,8 @@
 package com.proofpoint.discovery.client.balancing;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.Multiset;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceDescriptorsUpdater;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
@@ -30,12 +31,12 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.net.URI;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
+import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -56,7 +57,6 @@ public class TestHttpServiceBalancerListenerAdapter
 
     @BeforeMethod
     protected void setUp()
-            throws Exception
     {
         executor = new ScheduledThreadPoolExecutor(10, daemonThreadsNamed("Discovery-%s"));
         nodeInfo = new NodeInfo("environment");
@@ -72,7 +72,6 @@ public class TestHttpServiceBalancerListenerAdapter
 
     @AfterMethod
     public void tearDown()
-            throws Exception
     {
         executor.shutdownNow();
     }
@@ -85,14 +84,13 @@ public class TestHttpServiceBalancerListenerAdapter
 
     @Test
     public void testStartedEmpty()
-            throws Exception
     {
         updater.start();
 
-        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
+        ArgumentCaptor<Multiset> captor = ArgumentCaptor.forClass(Multiset.class);
         verify(httpServiceBalancer).updateHttpUris(captor.capture());
 
-        assertEquals(captor.getValue(), ImmutableSet.of());
+        assertEquals(captor.getValue(), ImmutableMultiset.of());
     }
 
     @Test
@@ -108,7 +106,6 @@ public class TestHttpServiceBalancerListenerAdapter
 
     @Test
     public void testStartedWithServices()
-            throws Exception
     {
         discoveryClient.addDiscoveredService(APPLE_1_SERVICE);
         discoveryClient.addDiscoveredService(APPLE_2_SERVICE);
@@ -117,9 +114,9 @@ public class TestHttpServiceBalancerListenerAdapter
 
         updater.start();
 
-        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
+        ArgumentCaptor<Multiset> captor = ArgumentCaptor.forClass(Multiset.class);
         verify(httpServiceBalancer).updateHttpUris(captor.capture());
 
-        assertEquals(captor.getValue(), ImmutableSet.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-b.example.com")));
+        assertEqualsIgnoreOrder(captor.getValue(), ImmutableMultiset.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-b.example.com")));
     }
 }

@@ -18,7 +18,7 @@ package com.proofpoint.discovery.client;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMultiset;
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerListenerAdapter;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.json.JsonCodec;
@@ -114,7 +114,7 @@ public class ServiceInventory
         discoveryListener = new HttpServiceBalancerListenerAdapter(discoveryBalancer);
 
         if (discoveryServiceURI != null) {
-            discoveryBalancer.updateHttpUris(ImmutableSet.of(discoveryServiceURI));
+            discoveryBalancer.updateHttpUris(ImmutableMultiset.of(discoveryServiceURI));
         }
         else {
             try {
