@@ -463,7 +463,7 @@
                 <plugin>
                     <groupId>org.gaul</groupId>
                     <artifactId>modernizer-maven-plugin</artifactId>
-                    <version>1.5.0</version>
+                    <version>1.6.0</version>
                     <configuration>
                         <skip>${platform.check.skip-modernizer}</skip>
                         <failOnViolations>${platform.check.fail-modernizer}</failOnViolations>
