@@ -2,6 +2,8 @@ Platform 1.86
 
 * We now log the admin URI to the bootstrap log.
 
+* We added a dependencyManagement section for guava-testlib to the library pom.
+
 * Maven plugin upgrades
 
   - build-helper-maven-plugin to 3.0.0 (was 1.10)

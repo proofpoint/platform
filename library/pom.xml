@@ -83,6 +83,7 @@
         <platform.check.fail-modernizer>false</platform.check.fail-modernizer>
 
         <dep.jetty.version>9.3.24.v20180605</dep.jetty.version>
+        <dep.guava.version>25.0-jre</dep.guava.version>
         <dep.guice.version>4.2.0</dep.guice.version>
         <dep.slf4j.version>1.7.25</dep.slf4j.version>
         <dep.logback.version>1.2.3</dep.logback.version>
@@ -900,13 +901,19 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>25.0-jre</version>
+                <version>${dep.guava.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.google.code.findbugs</groupId>
                         <artifactId>jsr305</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava-testlib</artifactId>
+                <version>${dep.guava.version}</version>
             </dependency>
 
             <dependency>
