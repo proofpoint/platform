@@ -151,9 +151,9 @@ public class HttpClientBinder
      *
      * @param name The configuration prefix. Should be lowercase hypen-separated.
      * @param annotation The binding annotation.
-     * @param baseUris The set of {@link URI} prefixes to balance across.
+     * @param baseUris The {@link URI} prefixes to balance across.
      */
-    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Class<? extends Annotation> annotation, Set<URI> baseUris)
+    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Class<? extends Annotation> annotation, Collection<URI> baseUris)
     {
         requireNonNull(name, "name is null");
         requireNonNull(annotation, "annotation is null");
@@ -214,9 +214,9 @@ public class HttpClientBinder
      * @param serviceName The name of the service being balanced.
      * Used in metrics and in the configuration prefix for the service balancer.
      * Ordinarily this is the value of the binding annotation.
-     * @param baseUris The set of {@link URI} prefixes to balance across.
+     * @param baseUris The {@link URI} prefixes to balance across.
      */
-    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Annotation annotation, String serviceName, Set<URI> baseUris)
+    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Annotation annotation, String serviceName, Collection<URI> baseUris)
     {
         requireNonNull(name, "name is null");
         requireNonNull(annotation, "annotation is null");

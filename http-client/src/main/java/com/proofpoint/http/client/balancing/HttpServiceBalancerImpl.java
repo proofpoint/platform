@@ -17,7 +17,11 @@ package com.proofpoint.http.client.balancing;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Ticker;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats.Status;
 import com.proofpoint.stats.MaxGauge;
 import com.proofpoint.units.Duration;
@@ -26,16 +30,16 @@ import org.weakref.jmx.Nested;
 import javax.annotation.concurrent.GuardedBy;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
@@ -45,9 +49,8 @@ public class HttpServiceBalancerImpl
         implements HttpServiceBalancer
 {
     private static final InstanceState INSTANCE_STATE_WORST = new InstanceState(Liveness.DEAD, Integer.MAX_VALUE);
-    private static final InstanceState INSTANCE_STATE_MISSING = new InstanceState(Liveness.ALIVE, 0);
     private static final Duration ZERO_DURATION = new Duration(0, SECONDS);
-    private final AtomicReference<Set<URI>> httpUris = new AtomicReference<>((Set<URI>) ImmutableSet.<URI>of());
+    private final AtomicReference<ImmutableMultiset<URI>> httpUris = new AtomicReference<>(ImmutableMultiset.of());
 
     @GuardedBy("uriStates")
     private final Map<URI, InstanceState> uriStates = new HashMap<>();
@@ -88,9 +91,9 @@ public class HttpServiceBalancerImpl
     }
 
     @Beta
-    public void updateHttpUris(Set<URI> newHttpUris)
+    public void updateHttpUris(Collection<URI> newHttpUris)
     {
-        httpUris.set(ImmutableSet.copyOf(newHttpUris));
+        httpUris.set(ImmutableMultiset.copyOf(newHttpUris));
     }
 
     private class HttpServiceAttemptImpl
@@ -103,8 +106,10 @@ public class HttpServiceBalancerImpl
 
         HttpServiceAttemptImpl(Set<URI> attempted)
         {
-            Set<URI> httpUris = new HashSet<>(HttpServiceBalancerImpl.this.httpUris.get());
-            httpUris.removeAll(attempted);
+            Set<URI> attemptedCopy = attempted;
+            Multiset<URI> httpUris = HttpServiceBalancerImpl.this.httpUris.get().stream()
+                    .filter(uri -> !attemptedCopy.contains(uri))
+                    .collect(Collectors.toCollection(HashMultiset::create));
 
             if (httpUris.isEmpty()) {
                 httpUris = HttpServiceBalancerImpl.this.httpUris.get();
@@ -120,18 +125,24 @@ public class HttpServiceBalancerImpl
             synchronized (uriStates) {
                 long now = ticker.read();
                 for (;;) {
-                    for (URI uri : httpUris) {
-                        InstanceState uriState = firstNonNull(uriStates.get(uri), INSTANCE_STATE_MISSING);
+                    for (Entry<URI> uriEntry : httpUris.entrySet()) {
+                        URI uri = uriEntry.getElement();
+                        InstanceState uriState = uriStates.computeIfAbsent(uri, k -> new InstanceState(Liveness.ALIVE, 0));
+                        if (uriState.weight != uriEntry.getCount()) {
+                            uriState.weight = uriEntry.getCount();
+                        }
                         if (uriState.liveness == Liveness.DEAD && uriState.deadUntil <= now) {
                             uriState.liveness = Liveness.PROBING;
                         }
                         int comparison = uriState.compareTo(bestState);
-                        if (comparison < 0) {
-                            bestState = uriState;
-                            leastUris = new ArrayList<>(ImmutableSet.of(uri));
-                        }
-                        else if (comparison == 0) {
-                            leastUris.add(uri);
+                        if (comparison <= 0) {
+                            if (comparison < 0) {
+                                bestState = uriState;
+                                leastUris = new ArrayList<>();
+                            }
+                            for (int i = uriState.weight - (uriState.concurrency % uriState.weight); i > 0; i--) {
+                                leastUris.add(uri);
+                            }
                         }
                     }
 
@@ -145,7 +156,7 @@ public class HttpServiceBalancerImpl
 
                 uri = leastUris.get(ThreadLocalRandom.current().nextInt(0, leastUris.size()));
 
-                InstanceState uriState = uriStates.computeIfAbsent(uri, k -> new InstanceState(Liveness.ALIVE, 0));
+                InstanceState uriState = uriStates.get(uri);
                 if (uriState.liveness == Liveness.PROBING && uriState.concurrency == 0) {
                     httpServiceBalancerStats.probe(uri).add(1);
                 }
@@ -238,34 +249,33 @@ public class HttpServiceBalancerImpl
     }
 
     private static class InstanceState
-        implements Comparable<InstanceState>
     {
         Liveness liveness;
+        int weight = 1;
         int concurrency;
         int numFailures = 0;
         BackoffPolicy backoffPolicy;
         Duration lastBackoff;
         long deadUntil;
 
-        public InstanceState(Liveness liveness, int concurrency)
+        InstanceState(Liveness liveness, int concurrency)
         {
             this.liveness = liveness;
             this.concurrency = concurrency;
         }
 
-        @Override
-        public int compareTo(InstanceState that)
+        int compareTo(InstanceState that)
         {
             if (liveness == Liveness.DEAD || (liveness == Liveness.PROBING && concurrency > 0)) {
                 if (that.liveness == Liveness.DEAD || (that.liveness == Liveness.PROBING && that.concurrency > 0)) {
-                    return Integer.compare(concurrency, that.concurrency);
+                    return Integer.compare(concurrency / weight, that.concurrency / that.weight);
                 }
                 return 1;
             }
             if (that.liveness == Liveness.DEAD || (that.liveness == Liveness.PROBING && that.concurrency > 0)) {
                 return -1;
             }
-            return Integer.compare(concurrency, that.concurrency);
+            return Integer.compare(concurrency / weight, that.concurrency / that.weight);
         }
     }
 

@@ -15,56 +15,57 @@
  */
 package com.proofpoint.discovery.client.balancing;
 
-import com.google.common.collect.ForwardingSet;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ForwardingMultiset;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.Multiset;
 import com.proofpoint.configuration.Config;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Collection;
+
+import static com.google.common.collect.ImmutableMultiset.toImmutableMultiset;
 
 public class StaticHttpServiceConfig
 {
-    private UriSet uris = UriSet.of();
+    private UriMultiset uris = UriMultiset.of();
 
-    public UriSet getUris()
+    public UriMultiset getUris()
     {
         return uris;
     }
 
     @Config("uri")
-    public StaticHttpServiceConfig setUris(UriSet uris)
+    public StaticHttpServiceConfig setUris(UriMultiset uris)
     {
         this.uris = uris;
         return this;
     }
 
-    public static final class UriSet extends ForwardingSet<URI>
+    public static final class UriMultiset extends ForwardingMultiset<URI>
     {
-        private final Set<URI> delegate;
+        private final Multiset<URI> delegate;
 
-        private UriSet(Set<URI> delegate)
+        private UriMultiset(Collection<URI> delegate)
         {
-            this.delegate = ImmutableSet.copyOf(delegate);
+            this.delegate = ImmutableMultiset.copyOf(delegate);
         }
 
-        public static UriSet of(URI... uris)
+        public static UriMultiset of(URI... uris)
         {
-            return new UriSet(ImmutableSet.copyOf(uris));
+            return new UriMultiset(ImmutableMultiset.copyOf(uris));
         }
 
-        public static UriSet valueOf(String string)
+        public static UriMultiset valueOf(String string)
         {
-            List<URI> uris = Arrays.stream(string.split("\\s*,\\s*"))
+            ImmutableMultiset<URI> uris = Arrays.stream(string.split("\\s*,\\s*"))
                     .map(URI::create)
-                    .collect(Collectors.toList());
-            return new UriSet(ImmutableSet.copyOf(uris));
+                    .collect(toImmutableMultiset());
+            return new UriMultiset(uris);
         }
 
         @Override
-        protected Set<URI> delegate()
+        protected Multiset<URI> delegate()
         {
             return delegate;
         }

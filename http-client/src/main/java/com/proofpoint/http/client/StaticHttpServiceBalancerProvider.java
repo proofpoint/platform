@@ -16,7 +16,9 @@
 package com.proofpoint.http.client;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multiset;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
@@ -29,6 +31,7 @@ import com.proofpoint.reporting.ReportExporter;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,16 +41,16 @@ import static java.util.Objects.requireNonNull;
 class StaticHttpServiceBalancerProvider implements Provider<HttpServiceBalancer>
 {
     private final String type;
-    private final Set<URI> baseUris;
+    private final Multiset<URI> baseUris;
     private final Key<HttpServiceBalancerConfig> balancerConfigKey;
     private ReportExporter reportExporter;
     private ReportCollectionFactory reportCollectionFactory;
     private Injector injector;
 
-    StaticHttpServiceBalancerProvider(String type, Set<URI> baseUris, Key<HttpServiceBalancerConfig> balancerConfigKey)
+    StaticHttpServiceBalancerProvider(String type, Collection<URI> baseUris, Key<HttpServiceBalancerConfig> balancerConfigKey)
     {
         this.type = requireNonNull(type, "type is null");
-        this.baseUris = ImmutableSet.copyOf(baseUris);
+        this.baseUris = ImmutableMultiset.copyOf(baseUris);
         this.balancerConfigKey = requireNonNull(balancerConfigKey, "balancerConfigKey is null");
     }
 

@@ -15,8 +15,8 @@
  */
 package com.proofpoint.discovery.client.balancing;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableMultiset.Builder;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceDescriptorsListener;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
@@ -38,7 +38,7 @@ public class HttpServiceBalancerListenerAdapter
     @Override
     public void updateServiceDescriptors(Iterable<ServiceDescriptor> newDescriptors)
     {
-        Builder<URI> builder = ImmutableSet.builder();
+        Builder<URI> builder = ImmutableMultiset.builder();
 
         for (ServiceDescriptor serviceDescriptor : newDescriptors) {
             String https = serviceDescriptor.getProperties().get("https");
