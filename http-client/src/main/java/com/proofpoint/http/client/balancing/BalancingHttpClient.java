@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.cache.CacheBuilder.newBuilder;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
 import static java.lang.String.format;
@@ -348,7 +349,7 @@ public class BalancingHttpClient
                         }
                     }
                 }
-            });
+            }, directExecutor());
         }
 
         @Override

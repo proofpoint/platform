@@ -4,6 +4,12 @@ Platform 1.86
 
 * We added a dependencyManagement section for guava-testlib to the library pom.
 
+* Library Upgrades
+
+  - Guava to 26.0-jre (was 25.0-jre)
+    Removed several deprecated Futures methods which implicitly used
+    directExecutor(). Code must explicitly pass directExecutor().
+
 * Maven plugin upgrades
 
   - build-helper-maven-plugin to 3.0.0 (was 1.10)

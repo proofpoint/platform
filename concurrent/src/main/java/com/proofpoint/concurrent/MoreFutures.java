@@ -75,7 +75,7 @@ public final class MoreFutures
             {
                 destination.setException(t);
             }
-        });
+        }, directExecutor());
         propagateCancellation(destination, source, mayInterruptIfRunning);
     }
 
@@ -368,7 +368,7 @@ public final class MoreFutures
             catch (Throwable throwable) {
                 return immediateFailedFuture(throwable);
             }
-        });
+        }, directExecutor());
     }
 
     /**
@@ -431,7 +431,7 @@ public final class MoreFutures
             {
                 future.completeExceptionally(t);
             }
-        });
+        }, directExecutor());
         return future;
     }
 
@@ -473,7 +473,7 @@ public final class MoreFutures
             {
                 exceptionCallback.accept(t);
             }
-        });
+        }, directExecutor());
     }
 
     public static <T> void addExceptionCallback(ListenableFuture<T> future, Runnable exceptionCallback)
@@ -493,7 +493,7 @@ public final class MoreFutures
             {
                 exceptionCallback.run();
             }
-        });
+        }, directExecutor());
     }
 
     private static class UnmodifiableCompletableFuture<V>
