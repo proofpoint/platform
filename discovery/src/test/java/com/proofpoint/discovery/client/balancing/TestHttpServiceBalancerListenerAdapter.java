@@ -46,6 +46,7 @@ public class TestHttpServiceBalancerListenerAdapter
 {
     private static final ServiceDescriptor APPLE_1_SERVICE = new ServiceDescriptor(UUID.randomUUID(), "node-A", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-a.example.com"));
     private static final ServiceDescriptor APPLE_2_SERVICE = new ServiceDescriptor(UUID.randomUUID(), "node-B", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-c.example.com", "https", "https://apple-b.example.com"));
+    private static final ServiceDescriptor APPLE_2_SERVICE_WEIGHTED = new ServiceDescriptor(UUID.randomUUID(), "node-B", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-c.example.com", "https", "https://apple-b.example.com", "weight", "2.5"));
     private static final ServiceDescriptor DIFFERENT_TYPE = new ServiceDescriptor(UUID.randomUUID(), "node-A", "banana", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("https", "https://banana.example.com"));
     private static final ServiceDescriptor DIFFERENT_POOL = new ServiceDescriptor(UUID.randomUUID(), "node-B", "apple", "fool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-fool.example.com"));
 
@@ -118,5 +119,21 @@ public class TestHttpServiceBalancerListenerAdapter
         verify(httpServiceBalancer).updateHttpUris(captor.capture());
 
         assertEqualsIgnoreOrder(captor.getValue(), ImmutableMultiset.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-b.example.com")));
+    }
+
+    @Test
+    public void testWeightedServices()
+    {
+        discoveryClient.addDiscoveredService(APPLE_1_SERVICE);
+        discoveryClient.addDiscoveredService(APPLE_2_SERVICE_WEIGHTED);
+        discoveryClient.addDiscoveredService(DIFFERENT_TYPE);
+        discoveryClient.addDiscoveredService(DIFFERENT_POOL);
+
+        updater.start();
+
+        ArgumentCaptor<Multiset> captor = ArgumentCaptor.forClass(Multiset.class);
+        verify(httpServiceBalancer).updateHttpUris(captor.capture());
+
+        assertEqualsIgnoreOrder(captor.getValue(), ImmutableMultiset.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-b.example.com"), URI.create("https://apple-b.example.com")));
     }
 }
