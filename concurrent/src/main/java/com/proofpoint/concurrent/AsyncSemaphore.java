@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -102,7 +103,7 @@ public class AsyncSemaphore<T>
                 queuedTask.markFailure(t);
                 releasePermit();
             }
-        });
+        }, directExecutor());
     }
 
     private ListenableFuture<?> submitTask(T task)

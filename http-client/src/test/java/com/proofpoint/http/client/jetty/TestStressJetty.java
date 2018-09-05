@@ -55,6 +55,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.Request.Builder.preparePut;
 import static org.testng.Assert.assertEquals;
@@ -237,7 +238,7 @@ public class TestStressJetty
                             completionLatch.countDown();
                         }
                     }
-                });
+                }, directExecutor());
             }
             completionLatch.await();
         }

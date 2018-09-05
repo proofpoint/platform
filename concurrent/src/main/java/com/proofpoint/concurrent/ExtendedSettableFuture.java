@@ -54,7 +54,7 @@ public final class ExtendedSettableFuture<V>
             {
                 setException(t);
             }
-        });
+        }, directExecutor());
 
         super.addListener(() -> {
             if (super.isCancelled()) {
