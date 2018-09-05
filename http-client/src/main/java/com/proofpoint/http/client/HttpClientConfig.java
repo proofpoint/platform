@@ -41,8 +41,8 @@ public class HttpClientConfig
     private Duration connectTimeout = new Duration(2, SECONDS);
     private Duration requestTimeout = null;
     private Duration idleTimeout = new Duration(1, MINUTES);
-    private int maxConnectionsPerServer = 20;
-    private int maxRequestsQueuedPerDestination = 20;
+    private int maxConnectionsPerServer = 100;
+    private int maxRequestsQueuedPerDestination = 100;
     private DataSize maxContentLength = new DataSize(16, MEGABYTE);
     private HostAndPort socksProxy;
     private String keyStorePath = System.getProperty(JAVAX_NET_SSL_KEY_STORE);
