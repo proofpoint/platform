@@ -23,6 +23,9 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
+
+import static java.lang.Double.parseDouble;
 
 public class HttpServiceBalancerListenerAdapter
         implements ServiceDescriptorsListener
@@ -41,22 +44,42 @@ public class HttpServiceBalancerListenerAdapter
         Builder<URI> builder = ImmutableMultiset.builder();
 
         for (ServiceDescriptor serviceDescriptor : newDescriptors) {
-            String https = serviceDescriptor.getProperties().get("https");
+            Map<String, String> properties = serviceDescriptor.getProperties();
+            int weight = 1;
+            String weightString = properties.get("weight");
+            if (weightString != null) {
+                try {
+                    weight = (int) parseDouble(weightString);
+                    if (weight < 0) {
+                        weight = 1;
+                    }
+                }
+                catch (NumberFormatException ignored) {
+                }
+            }
+
+            String https = properties.get("https");
+            URI uri = null;
             if (https != null) {
                 try {
-                    builder.add(new URI(https));
-                    continue;
+                    uri = new URI(https);
                 }
                 catch (URISyntaxException ignored) {
                 }
             }
 
-            String http = serviceDescriptor.getProperties().get("http");
-            if (http != null) {
+            String http = properties.get("http");
+            if (uri == null && http != null) {
                 try {
-                    builder.add(new URI(http));
+                    uri = new URI(http);
                 }
                 catch (URISyntaxException ignored) {
+                }
+            }
+
+            if (uri != null) {
+                for (int i = 0; i < weight; i++) {
+                    builder.add(uri);
                 }
             }
         }

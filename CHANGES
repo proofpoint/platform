@@ -30,7 +30,7 @@ Platform 1.86
   We also deprecated the constructors in the ConfigurationModule.bindConfig()
   EDSL as they should not have been public.
 
-* HttpClient
+* HttpClient and Discovery
 
   The HttpServiceBalancer used by the BalancingHttpClient now accepts multiple
   copies of the same destination URI, weighting it appropriately when
@@ -38,6 +38,10 @@ Platform 1.86
 
   We increased the defaults for http-client.max-connections-per-server
   and http-client.max-requests-queued-per-destination from 20 to 100.
+
+  The Discovery client now interprets a "weight" property in an service
+  descriptor as the number of copies of the destination URI to add to
+  the HttpServiceBalancer.
 
 * We now log the admin URI to the bootstrap log.
 
