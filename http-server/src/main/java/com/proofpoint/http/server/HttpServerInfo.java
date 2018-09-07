@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.InetAddresses;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
@@ -24,11 +23,9 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.channels.ServerSocketChannel;
 
 public class HttpServerInfo
 {
@@ -38,47 +35,37 @@ public class HttpServerInfo
     private final URI adminUri;
     private final URI adminExternalUri;
 
-    private final ServerSocketChannel httpChannel;
-    private final ServerSocketChannel httpsChannel;
-    private final ServerSocketChannel adminChannel;
-
     @Inject
     public HttpServerInfo(HttpServerConfig config, NodeInfo nodeInfo)
     {
         if (config.isHttpEnabled()) {
-            httpChannel = createChannel(nodeInfo.getBindIp(), config.getHttpPort(), config.getHttpAcceptQueueSize());
-            httpUri = buildUri("http", InetAddresses.toUriString(nodeInfo.getInternalIp()), port(httpChannel));
+            httpUri = buildUri("http", InetAddresses.toUriString(nodeInfo.getInternalIp()), config.getHttpPort());
             httpExternalUri = buildUri("http", nodeInfo.getExternalAddress(), httpUri.getPort());
         }
         else {
-            httpChannel = null;
             httpUri = null;
             httpExternalUri = null;
         }
 
         if (config.isHttpsEnabled()) {
-            httpsChannel = createChannel(nodeInfo.getBindIp(), config.getHttpsPort(), config.getHttpAcceptQueueSize());
-            httpsUri = buildUri("https", nodeInfo.getInternalHostname(), port(httpsChannel));
+            httpsUri = buildUri("https", nodeInfo.getInternalHostname(), config.getHttpsPort());
         }
         else {
-            httpsChannel = null;
             httpsUri = null;
         }
 
         if (config.isAdminEnabled()) {
-            adminChannel = createChannel(nodeInfo.getBindIp(), config.getAdminPort(), config.getHttpAcceptQueueSize());
             if (config.isHttpsEnabled()) {
-                adminUri = buildUri("https", nodeInfo.getInternalHostname(), port(adminChannel));
+                adminUri = buildUri("https", nodeInfo.getInternalHostname(), config.getAdminPort());
                 adminExternalUri = null;
             }
             else {
-                adminUri = buildUri("http", InetAddresses.toUriString(nodeInfo.getInternalIp()), port(adminChannel));
+                adminUri = buildUri("http", InetAddresses.toUriString(nodeInfo.getInternalIp()), config.getAdminPort());
                 adminExternalUri = buildUri("http", nodeInfo.getExternalAddress(), adminUri.getPort());
             }
             Logger.get("Bootstrap").info("Admin service on %s", adminUri);
         }
         else {
-            adminChannel = null;
             adminUri = null;
             adminExternalUri = null;
         }
@@ -114,26 +101,13 @@ public class HttpServerInfo
         return adminExternalUri;
     }
 
-    @Nullable
-    ServerSocketChannel getHttpChannel()
-    {
-        return httpChannel;
-    }
-
-    @Nullable
-    ServerSocketChannel getHttpsChannel()
-    {
-        return httpsChannel;
-    }
-
-    @Nullable
-    ServerSocketChannel getAdminChannel()
-    {
-        return adminChannel;
-    }
-
     private static URI buildUri(String scheme, String host, int port)
     {
+        // 0 means select a random port
+        if (port == 0) {
+            port = findUnusedPort();
+        }
+
         try {
             return new URI(scheme, null, host, port, null, null, null);
         }
@@ -142,28 +116,13 @@ public class HttpServerInfo
         }
     }
 
-    @VisibleForTesting
-    static int port(ServerSocketChannel channel)
+    private static int findUnusedPort()
     {
-        try {
-            return ((InetSocketAddress) channel.getLocalAddress()).getPort();
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
         }
         catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
-
-    private static ServerSocketChannel createChannel(InetAddress address, int port, int acceptQueueSize)
-    {
-        try {
-            ServerSocketChannel channel = ServerSocketChannel.open();
-            channel.socket().setReuseAddress(true);
-            channel.socket().bind(new InetSocketAddress(address, port), acceptQueueSize);
-            return channel;
-        }
-        catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
 }
