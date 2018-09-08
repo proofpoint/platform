@@ -1292,7 +1292,10 @@ public abstract class AbstractHttpClientTest
                 executeRequest(config, request, new ExceptionResponseHandler());
             }
             finally {
-                assertGreaterThan(invocation.get(), 0);
+                if (!createClientConfig().isHttp2Enabled()) {
+                    // Jetty behavior for HTTP/2 changed in 9.4.12
+                    assertGreaterThan(invocation.get(), 0);
+                }
                 assertLessThan(nanosSince(start), new Duration(1, SECONDS), "Expected request to finish quickly");
             }
         }
