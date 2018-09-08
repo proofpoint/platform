@@ -8,6 +8,10 @@ Platform 1.88
   servers. Attempting to connect to an older server will result in
   "refused_stream_error". Thus, HTTP/2 is disabled by default.
 
+* Library upgrades
+
+  - Jetty to 9.4.12 (was 9.3.24)
+
 Platform 1.87
 
 * Maven
