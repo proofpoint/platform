@@ -829,7 +829,7 @@ public class TestSerialScheduledExecutorService
         }
     }
 
-    private class TickedCounter extends Counter
+    private static class TickedCounter extends Counter
     {
 
         private final Ticker ticker;

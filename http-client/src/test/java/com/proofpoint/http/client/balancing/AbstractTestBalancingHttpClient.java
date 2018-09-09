@@ -873,7 +873,7 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
     {
     }
 
-    private class TestingLimitedRetryableSource
+    private static class TestingLimitedRetryableSource
         extends StaticBodyGenerator
         implements LimitedRetryable
     {

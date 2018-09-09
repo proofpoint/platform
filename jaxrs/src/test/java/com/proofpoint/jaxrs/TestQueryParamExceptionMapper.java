@@ -124,7 +124,7 @@ public class TestQueryParamExceptionMapper
     }
 
     @Path("/")
-    public class TestQueryParamResource
+    public static class TestQueryParamResource
     {
         @GET
         @Produces(APPLICATION_JSON)
