@@ -21,8 +21,8 @@ import com.google.common.primitives.Longs;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -550,7 +550,7 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testScheduleAtFixedRateWithLongerDelayFromWithinATask()
     {
-        List<String> collector = new LinkedList<String>();
+        List<String> collector = new ArrayList<>();
         long outerTaskDelay = TimeUnit.MINUTES.toMillis(10);
         long innerTaskDelay = TimeUnit.MINUTES.toMillis(20);
         long repeat = TimeUnit.DAYS.toMillis(10);
@@ -567,7 +567,7 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testScheduleAtFixedRateWithShorterDelayFromWithinATask()
     {
-        List<String> collector = new LinkedList<String>();
+        List<String> collector = new ArrayList<>();
         long outerTaskDelay = TimeUnit.MINUTES.toMillis(10);
         long innerTaskDelay = TimeUnit.MINUTES.toMillis(20);
         long repeat = TimeUnit.DAYS.toMillis(10);
@@ -584,7 +584,7 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testScheduleWithFixedDelayWithLongerDelayFromWithinATask()
     {
-        List<String> collector = new LinkedList<String>();
+        List<String> collector = new ArrayList<>();
         long outerTaskDelay = TimeUnit.MINUTES.toMillis(10);
         long innerTaskDelay = TimeUnit.MINUTES.toMillis(20);
         long repeat = TimeUnit.DAYS.toMillis(10);
@@ -601,7 +601,7 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testScheduleWithFixedDelayWithShorterDelayFromWithinATask()
     {
-        List<String> collector = new LinkedList<String>();
+        List<String> collector = new ArrayList<>();
         long outerTaskDelay = TimeUnit.MINUTES.toMillis(10);
         long innerTaskDelay = TimeUnit.MINUTES.toMillis(20);
         long repeat = TimeUnit.DAYS.toMillis(10);
@@ -618,7 +618,7 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testScheduleRunnableWithLongerDelayFromWithinATask()
     {
-        List<String> collector = new LinkedList<String>();
+        List<String> collector = new ArrayList<>();
         long outerTaskDelay = TimeUnit.MINUTES.toMillis(10);
         long innerTaskDelay = TimeUnit.MINUTES.toMillis(20);
 
@@ -630,7 +630,7 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testScheduleRunnableWithShorterDelayFromWithinATask()
     {
-        List<String> collector = new LinkedList<String>();
+        List<String> collector = new ArrayList<>();
         long outerTaskDelay = TimeUnit.MINUTES.toMillis(10);
         long innerTaskDelay = TimeUnit.MINUTES.toMillis(20);
 
@@ -642,7 +642,7 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testScheduleCallableWithLongerDelayFromWithinATask()
     {
-        List<String> collector = new LinkedList<String>();
+        List<String> collector = new ArrayList<>();
         long outerTaskDelay = TimeUnit.MINUTES.toMillis(10);
         long innerTaskDelay = TimeUnit.MINUTES.toMillis(20);
 
@@ -654,7 +654,7 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testScheduleCallableWithShorterDelayFromWithinATask()
     {
-        List<String> collector = new LinkedList<String>();
+        List<String> collector = new ArrayList<>();
         long outerTaskDelay = TimeUnit.MINUTES.toMillis(10);
         long innerTaskDelay = TimeUnit.MINUTES.toMillis(20);
 
