@@ -31,6 +31,7 @@ public class CustomNestedAnnotationObject extends NestedObject
     {
     }
 
+    @Override
     @CustomNested
     public SimpleObject getSimpleObject()
     {

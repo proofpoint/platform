@@ -39,187 +39,221 @@ public class SimpleObject
 
     private int notReported;
 
+    @Override
     @Reported
     public boolean isBooleanValue()
     {
         return booleanValue;
     }
 
+    @Override
     public void setBooleanValue(boolean booleanValue)
     {
         this.booleanValue = booleanValue;
     }
 
+    @Override
     @Reported
     public Boolean isBooleanBoxedValue()
     {
         return booleanBoxedValue;
     }
 
+    @Override
     public void setBooleanBoxedValue(Boolean booleanBoxedValue)
     {
         this.booleanBoxedValue = booleanBoxedValue;
     }
 
+    @Override
     @Reported
     public byte getByteValue()
     {
         return byteValue;
     }
 
+    @Override
     public void setByteValue(byte byteValue)
     {
         this.byteValue = byteValue;
     }
 
+    @Override
     @Reported
     public Byte getByteBoxedValue()
     {
         return byteBoxedValue;
     }
 
+    @Override
     public void setByteBoxedValue(Byte byteBoxedValue)
     {
         this.byteBoxedValue = byteBoxedValue;
     }
 
+    @Override
     @Reported
     public short getShortValue()
     {
         return shortValue;
     }
 
+    @Override
     public void setShortValue(short shortValue)
     {
         this.shortValue = shortValue;
     }
 
+    @Override
     @Reported
     public Short getShortBoxedValue()
     {
         return shortBoxedValue;
     }
 
+    @Override
     public void setShortBoxedValue(Short shortBoxedValue)
     {
         this.shortBoxedValue = shortBoxedValue;
     }
 
+    @Override
     @Reported
     public int getIntegerValue()
     {
         return integerValue;
     }
 
+    @Override
     public void setIntegerValue(int integerValue)
     {
         this.integerValue = integerValue;
     }
 
+    @Override
     @Reported
     public Integer getIntegerBoxedValue()
     {
         return integerBoxedValue;
     }
 
+    @Override
     public void setIntegerBoxedValue(Integer integerBoxedValue)
     {
         this.integerBoxedValue = integerBoxedValue;
     }
 
+    @Override
     @Reported
     public long getLongValue()
     {
         return longValue;
     }
 
+    @Override
     public void setLongValue(long longValue)
     {
         this.longValue = longValue;
     }
 
+    @Override
     @Reported
     public Long getLongBoxedValue()
     {
         return longBoxedValue;
     }
 
+    @Override
     public void setLongBoxedValue(Long longBoxedValue)
     {
         this.longBoxedValue = longBoxedValue;
     }
 
+    @Override
     @Reported
     public float getFloatValue()
     {
         return floatValue;
     }
 
+    @Override
     public void setFloatValue(float floatValue)
     {
         this.floatValue = floatValue;
     }
 
+    @Override
     @Reported
     public Float getFloatBoxedValue()
     {
         return floatBoxedValue;
     }
 
+    @Override
     public void setFloatBoxedValue(Float floatBoxedValue)
     {
         this.floatBoxedValue = floatBoxedValue;
     }
 
+    @Override
     @Reported
     public double getDoubleValue()
     {
         return doubleValue;
     }
 
+    @Override
     public void setDoubleValue(double doubleValue)
     {
         this.doubleValue = doubleValue;
     }
 
+    @Override
     @Reported
     public Double getDoubleBoxedValue()
     {
         return doubleBoxedValue;
     }
 
+    @Override
     public void setDoubleBoxedValue(Double doubleBoxedValue)
     {
         this.doubleBoxedValue = doubleBoxedValue;
     }
 
+    @Override
     public void setNotReported(int value)
     {
         this.notReported = value;
     }
 
+    @Override
     public int getNotReported()
     {
         return notReported;
     }
 
+    @Override
     @Reported
     public String getStringValue()
     {
         return stringValue;
     }
 
+    @Override
     public void setStringValue(String stringValue)
     {
         this.stringValue = stringValue;
     }
 
+    @Override
     @Reported
     public Object getObjectValue()
     {
         return objectValue;
     }
 
+    @Override
     public void setObjectValue(Object objectValue)
     {
         this.objectValue = objectValue;

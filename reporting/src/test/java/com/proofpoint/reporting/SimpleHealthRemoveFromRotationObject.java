@@ -16,44 +16,52 @@ public class SimpleHealthRemoveFromRotationObject
     private String notHealthCheck;
 
 
+    @Override
     @HealthCheckRemoveFromRotation("String value")
     public String getStringValue()
     {
         return stringValue;
     }
 
+    @Override
     public void setStringValue(String stringValue)
     {
         this.stringValue = stringValue;
     }
 
+    @Override
     @HealthCheckRemoveFromRotation("Object value")
     public Object getObjectValue()
     {
         return objectValue;
     }
 
+    @Override
     public void setObjectValue(Object objectValue)
     {
         this.objectValue = objectValue;
     }
 
+    @Override
     @HealthCheckRemoveFromRotation("Not Bean value")
     public String notBeanValue()
     {
         return notBeanValue;
     }
 
+    @Override
     public void setNotBeanValue(String value)
     {
         notBeanValue = value;
     }
 
+    @Override
     public void setNotHealthCheck(String value)
     {
         this.notHealthCheck = value;
     }
 
+    @Override
     public String getNotHealthCheck()
     {
         return notHealthCheck;

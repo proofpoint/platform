@@ -9,6 +9,7 @@ public class TestingClock
 {
     private long time;
 
+    @Override
     public long read()
     {
         return time;

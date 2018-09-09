@@ -102,6 +102,7 @@ public class TestEquivalenceTester
 
     static class NotReflexive
     {
+        @Override
         public boolean equals(Object that)
         {
             return that != null && that instanceof NotReflexive && this != that;
@@ -162,6 +163,7 @@ public class TestEquivalenceTester
             this.id = id;
         }
 
+        @Override
         public boolean equals(Object that)
         {
             return that != null && that instanceof NotSymmetric && id >= ((NotSymmetric) that).id;
@@ -213,6 +215,7 @@ public class TestEquivalenceTester
             return -1;
         }
 
+        @Override
         public boolean equals(Object that)
         {
             return that != null && that instanceof ComparableNotSymmetric;
@@ -242,6 +245,7 @@ public class TestEquivalenceTester
 
     static class EqualsNull
     {
+        @Override
         @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
         public boolean equals(Object that)
         {
@@ -266,6 +270,7 @@ public class TestEquivalenceTester
 
     static class EqualsNullThrowsException
     {
+        @Override
         @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
         public boolean equals(Object that)
         {
@@ -290,6 +295,7 @@ public class TestEquivalenceTester
 
     static class EqualsUnrelatedClass
     {
+        @Override
         @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
         public boolean equals(Object that)
         {
@@ -314,6 +320,7 @@ public class TestEquivalenceTester
 
     static class EqualsOtherClassThrowsException
     {
+        @Override
         @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
         public boolean equals(Object that)
         {
@@ -570,6 +577,7 @@ public class TestEquivalenceTester
             return ComparisonChain.start().compare(value, o.value).result();
         }
 
+        @Override
         @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
         public boolean equals(Object that)
         {

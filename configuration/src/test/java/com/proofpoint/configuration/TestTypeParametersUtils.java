@@ -115,11 +115,13 @@ public class TestTypeParametersUtils
             return null;
         }
 
+        @Override
         public int size()
         {
             return 0;
         }
 
+        @Override
         public Set<Entry<MapKey, MapValue>> entrySet()
         {
             return null;

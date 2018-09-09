@@ -65,6 +65,7 @@ public class TestAsyncJettyHttpClient
         return executeAsync(httpClient, request, responseHandler);
     }
 
+    @Override
     public ClientTester clientTester(final HttpClientConfig config)
     {
         return new ClientTester()

@@ -37,6 +37,7 @@ public class TestInheritance7
             extends A
             implements C, D
     {
+        @Override
         public Object getValue()
         {
             return null;

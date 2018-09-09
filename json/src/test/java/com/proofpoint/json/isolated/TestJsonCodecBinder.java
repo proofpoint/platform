@@ -48,6 +48,7 @@ public class TestJsonCodecBinder
         Injector injector = Guice.createInjector(new JsonModule(),
                 new Module()
                 {
+                    @Override
                     public void configure(Binder binder)
                     {
                         JsonCodecBinder codecBinder = jsonCodecBinder(binder);

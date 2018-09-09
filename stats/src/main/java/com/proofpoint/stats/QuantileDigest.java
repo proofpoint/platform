@@ -1273,6 +1273,7 @@ public class QuantileDigest
             return result;
         }
 
+        @Override
         public String toString()
         {
             return String.format("[count: %f, mean: %f]", count, mean);

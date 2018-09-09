@@ -149,6 +149,7 @@ enum EventDataType
 
     INSTANT(Instant.class)
             {
+                @Override
                 public void writeFieldValue(JsonGenerator jsonGenerator, Object value)
                         throws IOException
                 {
