@@ -408,11 +408,9 @@ public final class ConfigAssertions
     private static <T> T newDefaultInstance(Class<T> configClass)
     {
         try {
-            return configClass.newInstance();
+            return configClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            AssertionError error = new AssertionError(String.format("Exception creating default instance of %s", configClass.getName()));
-            error.initCause(e);
-            throw error;
+            throw new AssertionError(String.format("Exception creating default instance of %s", configClass.getName()), e);
         }
     }
 
