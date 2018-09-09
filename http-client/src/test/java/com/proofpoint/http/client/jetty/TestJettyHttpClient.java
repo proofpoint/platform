@@ -47,6 +47,7 @@ public class TestJettyHttpClient
         return httpClient.execute(request, responseHandler);
     }
 
+    @Override
     public ClientTester clientTester(final HttpClientConfig config)
     {
         return new ClientTester()

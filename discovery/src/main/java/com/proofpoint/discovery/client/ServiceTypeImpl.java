@@ -36,6 +36,7 @@ class ServiceTypeImpl
         return value;
     }
 
+    @Override
     public String toString()
     {
         if (System.getProperty("java.version").startsWith("1.")) {

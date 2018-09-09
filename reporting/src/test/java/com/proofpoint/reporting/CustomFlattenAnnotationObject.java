@@ -31,6 +31,7 @@ public class CustomFlattenAnnotationObject extends FlattenObject
     {
     }
 
+    @Override
     @CustomFlatten
     public SimpleObject getSimpleObject()
     {

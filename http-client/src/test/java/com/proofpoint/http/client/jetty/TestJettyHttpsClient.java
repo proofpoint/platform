@@ -65,6 +65,7 @@ public class TestJettyHttpsClient
         return httpClient.execute(request, responseHandler);
     }
 
+    @Override
     public ClientTester clientTester(final HttpClientConfig config)
     {
         config.setKeyStorePath(getResource("localhost.keystore").getPath())

@@ -106,6 +106,7 @@ public class RelativeUriBuilder
     }
 
     // return an RFC-3986-compatible URI
+    @Override
     public String toString()
     {
         String s = delegate.toString().substring(STARTING_URI_LENGTH);

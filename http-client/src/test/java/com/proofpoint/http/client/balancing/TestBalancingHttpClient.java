@@ -110,11 +110,13 @@ public class TestBalancingHttpClient
             checkArgument(uris.size() == responses.size(), "uris same size as responses");
         }
 
+        @Override
         public TestingHttpClient expectCall(String uri, Response response)
         {
             return expectCall(URI.create(uri), response);
         }
 
+        @Override
         public TestingHttpClient expectCall(String uri, Exception exception)
         {
             return expectCall(URI.create(uri), exception);
@@ -127,12 +129,14 @@ public class TestBalancingHttpClient
             return this;
         }
 
+        @Override
         public  TestingClient firstCallNoBodyGenerator()
         {
             skipBodyGenerator = true;
             return this;
         }
 
+        @Override
         public void assertDone()
         {
             assertEquals(uris.size(), 0, "all expected calls made");

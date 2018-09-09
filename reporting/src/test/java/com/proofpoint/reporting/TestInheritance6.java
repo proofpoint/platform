@@ -37,6 +37,7 @@ public class TestInheritance6
             extends A
             implements C5
     {
+        @Override
         public Object getValue()
         {
             return null;

@@ -33,6 +33,7 @@ public class TestInheritance5
     private static class B
         extends A
     {
+        @Override
         @Reported
         public Object getValue() { return null; }
     }
