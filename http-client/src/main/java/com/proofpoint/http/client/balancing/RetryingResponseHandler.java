@@ -24,14 +24,13 @@ import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.log.Logger;
 
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 final class RetryingResponseHandler<T, E extends Exception>
         implements ResponseHandler<T, RetryException>
 {
-    private static final Set<Integer> RETRYABLE_STATUS_CODES = ImmutableSet.of(408, 499, 500, 502, 503, 504, 598, 599);
+    private static final ImmutableSet<Integer> RETRYABLE_STATUS_CODES = ImmutableSet.of(408, 499, 500, 502, 503, 504, 598, 599);
     private static final Logger log = Logger.get(RetryingResponseHandler.class);
     private final ResponseHandler<T, E> innerHandler;
     private final RetryBudget retryBudget;

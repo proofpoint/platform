@@ -49,7 +49,7 @@ import static org.testng.Assert.assertEquals;
 
 public class TestReportScheduler
 {
-    private static final Map<String, String> EXPECTED_VERSION_TAGS = ImmutableMap.of("applicationVersion", "1.2", "platformVersion", "platform.1");
+    private static final ImmutableMap<String, String> EXPECTED_VERSION_TAGS = ImmutableMap.of("applicationVersion", "1.2", "platformVersion", "platform.1");
 
     @Mock
     private ReportCollector reportCollector;

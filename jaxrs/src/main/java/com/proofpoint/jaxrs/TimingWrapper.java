@@ -62,7 +62,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static net.bytebuddy.description.modifier.FieldManifestation.FINAL;
 import static net.bytebuddy.description.modifier.Ownership.STATIC;
@@ -75,7 +74,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 class TimingWrapper
 {
-    private static final Set<Class<?>> JAXRS_ANNOTATIONS = ImmutableSet.of(GET.class, PUT.class, POST.class, DELETE.class, HEAD.class);
+    private static final ImmutableSet<Class<?>> JAXRS_ANNOTATIONS = ImmutableSet.of(GET.class, PUT.class, POST.class, DELETE.class, HEAD.class);
     private static final Type KEYNAMES_MAP_TYPE = new TypeLiteral<Map<String, List<String>>>() {}.getType();
 
     private TimingWrapper() {}

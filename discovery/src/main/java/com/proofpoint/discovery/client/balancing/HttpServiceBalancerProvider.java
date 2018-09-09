@@ -47,7 +47,7 @@ public final class HttpServiceBalancerProvider
 {
     private static final Key<?> STATIC_HTTP_SERVICE_BALANCER_FACTORY_KEY = Key.get(StaticHttpServiceBalancerFactory.class);
     private static final Key<?> HTTP_SERVICE_BALANCER_FACTORY_KEY = Key.get(HttpServiceBalancerFactory.class);
-    private static final Set<Key<?>> BALANCER_FACTORY_KEYS = ImmutableSet.of(
+    private static final ImmutableSet<Key<?>> BALANCER_FACTORY_KEYS = ImmutableSet.of(
             STATIC_HTTP_SERVICE_BALANCER_FACTORY_KEY,
             HTTP_SERVICE_BALANCER_FACTORY_KEY
     );
