@@ -17,5 +17,5 @@ package com.proofpoint.http.client;
 
 public interface LimitedRetryable
 {
-    public boolean isRetryable();
+    boolean isRetryable();
 }

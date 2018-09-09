@@ -34,13 +34,13 @@ public class TestInheritance8
         }
     }
 
-    private static interface C
+    private interface C
     {
         @Reported
         Object getValue();
     }
 
-    private static interface D
+    private interface D
     {
         @Reported
         Object getValue();

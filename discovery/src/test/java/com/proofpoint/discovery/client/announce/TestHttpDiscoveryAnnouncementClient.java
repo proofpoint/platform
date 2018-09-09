@@ -167,6 +167,6 @@ public class TestHttpDiscoveryAnnouncementClient
         }));
         client.unannounce().get();
 
-        assertEquals(httpClient.getRequestCount(), 1);;
+        assertEquals(httpClient.getRequestCount(), 1);
     }
 }
