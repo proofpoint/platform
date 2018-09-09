@@ -28,7 +28,7 @@ import java.util.Map.Entry;
 @AutoValue
 abstract class SummaryPrometheusValue implements PrometheusValue
 {
-    private static final Map<String, String> QUANTILES = ImmutableMap.<String, String>builder()
+    private static final ImmutableMap<String, String> QUANTILES = ImmutableMap.<String, String>builder()
             .put("0", "Min")
             .put("0.5", "P50")
             .put("0.75", "P75")
@@ -37,7 +37,7 @@ abstract class SummaryPrometheusValue implements PrometheusValue
             .put("0.99", "P99")
             .put("1", "Max")
             .build();
-    private static final Map<String, String> EXTRAS = ImmutableMap.<String, String>builder()
+    private static final ImmutableMap<String, String> EXTRAS = ImmutableMap.<String, String>builder()
             .put("_sum", "Sum")
             .put("_count", "Count")
             .build();

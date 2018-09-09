@@ -39,7 +39,7 @@ import static org.testng.Assert.assertEquals;
 
 public class TestReportCollector
 {
-    private static final Map<String, String> EXPECTED_VERSION_TAGS = ImmutableMap.of("applicationVersion", "1.2", "platformVersion", "platform.1");
+    private static final ImmutableMap<String, String> EXPECTED_VERSION_TAGS = ImmutableMap.of("applicationVersion", "1.2", "platformVersion", "platform.1");
 
     private MinuteBucketIdProvider bucketIdProvider;
     private ReportedBeanRegistry reportedBeanRegistry;
