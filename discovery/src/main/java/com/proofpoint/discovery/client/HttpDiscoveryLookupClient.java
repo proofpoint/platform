@@ -162,7 +162,7 @@ public class HttpDiscoveryLookupClient implements DiscoveryLookupClient
         return DEFAULT_DELAY;
     }
 
-    private class DiscoveryResponseHandler<T> implements ResponseHandler<T, DiscoveryException>
+    private static class DiscoveryResponseHandler<T> implements ResponseHandler<T, DiscoveryException>
     {
         private final String name;
 

@@ -311,7 +311,7 @@ public class TestInputStreamBodySource
         }
     }
 
-    private abstract class InputStreamReadFunction
+    private abstract static class InputStreamReadFunction
     {
         public abstract void apply(InputStream inputStream)
                 throws IOException;
