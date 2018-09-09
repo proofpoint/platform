@@ -48,7 +48,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -133,10 +132,10 @@ public class Main
         public String auditLogPath = null;
 
         @Option(type = OptionType.GLOBAL, name = "-D", description = "Set a Java System property")
-        public final List<String> property = new LinkedList<>();
+        public final List<String> property = new ArrayList<>();
 
         final Properties systemProperties = new Properties();
-        final List<String> launcherArgs = new LinkedList<>();
+        final List<String> launcherArgs = new ArrayList<>();
         private int stopTimeoutSeconds = 60;
 
         LauncherCommand()
@@ -442,7 +441,7 @@ public class Main
                             || arg.equals("-XX:+UseParallelGC")
                             || arg.equals("-XX:+UseConcMarkSweepGC"));
 
-            List<String> javaArgs = new LinkedList<>();
+            List<String> javaArgs = new ArrayList<>();
             javaArgs.add("java");
             javaArgs.add("-server");
             if (!gcSpecified) {
@@ -729,7 +728,7 @@ public class Main
     public static class StartCommand extends LauncherCommand
     {
         @Arguments(description = "Arguments to pass to server")
-        public final List<String> args = new LinkedList<>();
+        public final List<String> args = new ArrayList<>();
 
         @Override
         public void execute()
@@ -742,7 +741,7 @@ public class Main
     public static class RunCommand extends LauncherCommand
     {
         @Arguments(description = "Arguments to pass to server")
-        public final List<String> args = new LinkedList<>();
+        public final List<String> args = new ArrayList<>();
 
         @Override
         public void execute()
@@ -755,7 +754,7 @@ public class Main
     public static class StartClientCommand extends LauncherCommand
     {
         @Arguments(description = "Arguments to pass to server")
-        public final List<String> args = new LinkedList<>();
+        public final List<String> args = new ArrayList<>();
 
         @SuppressWarnings("StaticNonFinalField")
         private static PidFile pidFile = null; // static so it doesn't destruct and drop lock when main thread exits
@@ -784,7 +783,7 @@ public class Main
     public static class RunClientCommand extends LauncherCommand
     {
         @Arguments(description = "Arguments to pass to server")
-        public final List<String> args = new LinkedList<>();
+        public final List<String> args = new ArrayList<>();
 
         @Override
         public void execute()
@@ -837,7 +836,7 @@ public class Main
     public static class RestartCommand extends LauncherCommand
     {
         @Arguments(description = "Arguments to pass to server")
-        public final List<String> args = new LinkedList<>();
+        public final List<String> args = new ArrayList<>();
 
         @Override
         public void execute()
@@ -856,7 +855,7 @@ public class Main
     public static class TryRestartCommand extends LauncherCommand
     {
         @Arguments(description = "Arguments to pass to server")
-        public final List<String> args = new LinkedList<>();
+        public final List<String> args = new ArrayList<>();
 
         @Override
         public void execute()
