@@ -392,7 +392,7 @@ public final class EquivalenceTester
         }
     }
 
-    public static enum EquivalenceFailureType {
+    public enum EquivalenceFailureType {
         EQUAL_TO_NULL("Element (%d, %d):<%s> returns true when compared to null via equals()"),
         EQUAL_NULL_EXCEPTION("Element (%d, %d):<%s> throws NullPointerException when when compared to null via equals()"),
         COMPARE_EQUAL_TO_NULL("Element (%d, %d):<%s> implements Comparable but does not throw NullPointerException when compared to null"),

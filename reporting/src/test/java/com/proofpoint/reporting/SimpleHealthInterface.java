@@ -10,9 +10,9 @@ public interface SimpleHealthInterface
 
     void setObjectValue(Object objectValue);
 
-    public String notBeanValue();
+    String notBeanValue();
 
-    public void setNotBeanValue(String value);
+    void setNotBeanValue(String value);
 
     void setNotHealthCheck(String value);
 

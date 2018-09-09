@@ -113,7 +113,7 @@ public interface StoreStats
     SparseCounterStat added(@Key("mediaType") MediaType mediaType,
                             @Key("status") Status status);
 
-    public enum Status {
+    enum Status {
         SUCCESS, FAILURE;
 
         @Override
@@ -121,7 +121,7 @@ public interface StoreStats
             return name().toLowerCase();
         }
     }
-};
+}
 
 public class MyModule
         implements Module

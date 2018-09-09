@@ -17,7 +17,7 @@ package com.proofpoint.bootstrap;
 
 public interface SimpleBase
 {
-    public void foo();
+    void foo();
 
-    public void bar();
+    void bar();
 }

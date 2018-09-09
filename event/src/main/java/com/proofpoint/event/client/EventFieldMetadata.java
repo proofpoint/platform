@@ -43,7 +43,7 @@ class EventFieldMetadata
         }
     };
 
-    public static enum ContainerType
+    public enum ContainerType
     {
         ITERABLE, MAP, MULTIMAP;
 

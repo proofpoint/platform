@@ -28,10 +28,10 @@ public interface DynamicBodySource extends BodySource
      *         is guaranteed to call {@link AutoCloseable#close()} on it.
      * @throws Exception
      */
-    public Writer start(OutputStream out)
+    Writer start(OutputStream out)
             throws Exception;
 
-    public interface Writer
+    interface Writer
     {
         /**
          * Write some data to the {@link OutputStream} specified when this was
@@ -47,7 +47,7 @@ public interface DynamicBodySource extends BodySource
          *
          * @throws Exception
          */
-        public void write()
+        void write()
                 throws Exception;
     }
 }

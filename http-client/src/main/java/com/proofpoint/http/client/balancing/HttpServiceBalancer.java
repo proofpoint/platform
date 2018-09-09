@@ -17,5 +17,5 @@ package com.proofpoint.http.client.balancing;
 
 public interface HttpServiceBalancer
 {
-    public HttpServiceAttempt createAttempt();
+    HttpServiceAttempt createAttempt();
 }

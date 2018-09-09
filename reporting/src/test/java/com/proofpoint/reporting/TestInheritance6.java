@@ -44,7 +44,7 @@ public class TestInheritance6
         }
     }
 
-    private static interface C5
+    private interface C5
     {
         @Reported
         Object getValue();

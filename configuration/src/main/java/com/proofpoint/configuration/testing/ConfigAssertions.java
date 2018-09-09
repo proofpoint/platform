@@ -393,7 +393,7 @@ public final class ConfigAssertions
         }
     }
 
-    public static interface $$RecordingConfigProxy<T>
+    public interface $$RecordingConfigProxy<T>
     {
         $$RecordedConfigData<T> $$getRecordedConfig();
     }

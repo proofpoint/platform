@@ -34,20 +34,20 @@ public class TestInheritance9
         }
     }
 
-    private static interface C
+    private interface C
         extends E
     {
         @Override
         Object getValue();
     }
 
-    private static interface E
+    private interface E
     {
         @Reported
         Object getValue();
     }
 
-    private static interface D
+    private interface D
     {
         @Reported
         Object getValue();

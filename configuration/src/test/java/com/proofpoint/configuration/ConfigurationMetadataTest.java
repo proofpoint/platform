@@ -1045,7 +1045,7 @@ public class ConfigurationMetadataTest
     {
         @Config("value")
         @ConfigDescription("description")
-        public void setValue(String value);
+        void setValue(String value);
     }
 
     public static class SetterInterfaceImpl implements SetterInterface
