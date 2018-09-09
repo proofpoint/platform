@@ -18,6 +18,7 @@ package com.proofpoint.event.client;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.google.common.io.BaseEncoding;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
@@ -25,7 +26,7 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.UUID;
+import java.security.SecureRandom;
 
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static java.util.Objects.requireNonNull;
@@ -34,6 +35,8 @@ class EventJsonSerializer<T>
         extends JsonSerializer<T>
 {
     private static final JsonCodec<TraceToken> TRACE_TOKEN_JSON_CODEC = jsonCodec(TraceToken.class).withoutPretty();
+    private static final ThreadLocal<SecureRandom> SECURE_RANDOM = ThreadLocal.withInitial(SecureRandom::new);
+    private static final BaseEncoding BASE_16 = BaseEncoding.base16();
 
     private final String token;
     private final EventTypeMetadata<T> eventTypeMetadata;
@@ -78,7 +81,7 @@ class EventJsonSerializer<T>
             eventTypeMetadata.getUuidField().writeField(jsonGenerator, event);
         }
         else {
-            jsonGenerator.writeStringField("uuid", UUID.randomUUID().toString());
+            jsonGenerator.writeStringField("uuid", randomUUID());
         }
 
         if (eventTypeMetadata.getHostField() != null) {
@@ -112,5 +115,20 @@ class EventJsonSerializer<T>
 
         jsonGenerator.writeEndObject();
         jsonGenerator.flush();
+    }
+
+    private static String randomUUID()
+    {
+        byte[] randomBytes = new byte[16];
+        SECURE_RANDOM.get().nextBytes(randomBytes);
+        randomBytes[6]  &= 0x0f;  /* clear version        */
+        randomBytes[6]  |= 0x40;  /* set to version 4     */
+        randomBytes[8]  &= 0x3f;  /* clear variant        */
+        randomBytes[8]  |= 0x80;  /* set to IETF variant  */
+        return BASE_16.encode(randomBytes,0,4) + "-" +
+                BASE_16.encode(randomBytes, 4, 2) + "-" +
+                BASE_16.encode(randomBytes, 6, 2) + "-" +
+                BASE_16.encode(randomBytes, 8, 2) + "-" +
+                BASE_16.encode(randomBytes, 10, 6);
     }
 }

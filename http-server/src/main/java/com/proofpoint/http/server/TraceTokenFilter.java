@@ -44,7 +44,7 @@ class TraceTokenFilter
 {
     private static final JsonCodec<TraceToken> TRACE_TOKEN_JSON_CODEC = jsonCodec(TraceToken.class);
     private static final Encoder BASE64_URL_ENCODER = Base64.getUrlEncoder();
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final ThreadLocal<SecureRandom> SECURE_RANDOM = ThreadLocal.withInitial(SecureRandom::new);
 
     private final ClientAddressExtractor clientAddressExtractor;
     private final String tokenPrefix;
@@ -57,7 +57,6 @@ class TraceTokenFilter
 
     @Override
     public void init(FilterConfig filterConfig)
-            throws ServletException
     {
     }
 
@@ -118,7 +117,7 @@ class TraceTokenFilter
             throws UnknownHostException
     {
         byte[] randomBytes = new byte[15];
-        SECURE_RANDOM.nextBytes(randomBytes);
+        SECURE_RANDOM.get().nextBytes(randomBytes);
         registerRequestToken(tokenPrefix
                 + encodeAddress(InetAddress.getByName(clientAddressExtractor.clientAddressFor(request)))
                 + BASE64_URL_ENCODER.encodeToString(randomBytes)
