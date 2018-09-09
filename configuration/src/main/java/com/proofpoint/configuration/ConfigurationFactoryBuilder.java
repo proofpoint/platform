@@ -20,6 +20,7 @@ import com.google.inject.spi.Message;
 import com.proofpoint.configuration.Problems.Monitor;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -78,6 +79,23 @@ public final class ConfigurationFactoryBuilder
         mergeProperties(properties);
         expectToUse.addAll(properties.stringPropertyNames());
         return this;
+    }
+
+    /**
+     * Optionally loads properties from the given file
+     *
+     * @param path file path
+     * @return self
+     * @throws java.io.IOException errors
+     */
+    public ConfigurationFactoryBuilder withOptionalFile(@Nullable final String path)
+            throws IOException
+    {
+        if (path == null || !(new File(path).exists())) {
+            return this;
+        }
+
+        return withFile(path);
     }
 
     public ConfigurationFactoryBuilder withSystemProperties()
