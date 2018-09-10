@@ -23,6 +23,7 @@ import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
 import java.util.Base64;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
@@ -188,14 +189,14 @@ public class TestAdminServerCredentialVerifier
     public void testPasswordAuthentication()
     {
         new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                .authenticate(SECURITY_CONTEXT_DENY, "Basic " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
+                .authenticate(SECURITY_CONTEXT_DENY, "Basic " + Base64.getEncoder().encodeToString("foo:bar".getBytes(UTF_8)));
     }
 
     @Test
     public void testPasswordAuthenticationWithOptionalAuthenticationContext()
     {
         new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                .authenticate(SECURITY_CONTEXT_OPTIONAL, "Basic " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
+                .authenticate(SECURITY_CONTEXT_OPTIONAL, "Basic " + Base64.getEncoder().encodeToString("foo:bar".getBytes(UTF_8)));
     }
 
     @Test
@@ -203,7 +204,7 @@ public class TestAdminServerCredentialVerifier
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                    .authenticate(SECURITY_CONTEXT_DENY, "Basic " + Base64.getEncoder().encodeToString("bad:bar".getBytes()));
+                    .authenticate(SECURITY_CONTEXT_DENY, "Basic " + Base64.getEncoder().encodeToString("bad:bar".getBytes(UTF_8)));
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {
@@ -216,7 +217,7 @@ public class TestAdminServerCredentialVerifier
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                    .authenticate(SECURITY_CONTEXT_DENY, "Basic " + Base64.getEncoder().encodeToString("foo:bad".getBytes()));
+                    .authenticate(SECURITY_CONTEXT_DENY, "Basic " + Base64.getEncoder().encodeToString("foo:bad".getBytes(UTF_8)));
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {
@@ -229,7 +230,7 @@ public class TestAdminServerCredentialVerifier
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                    .authenticate(SECURITY_CONTEXT_DENY, "Digest " + Base64.getEncoder().encodeToString("foo:bar".getBytes()));
+                    .authenticate(SECURITY_CONTEXT_DENY, "Digest " + Base64.getEncoder().encodeToString("foo:bar".getBytes(UTF_8)));
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {
@@ -242,7 +243,7 @@ public class TestAdminServerCredentialVerifier
     {
         try {
             new AdminServerCredentialVerifier(ADMIN_SERVER_CONFIG, HTTP_SERVER_CONFIG)
-                    .authenticate(SECURITY_CONTEXT_DENY, "Digest " + Base64.getEncoder().encodeToString("foo".getBytes()));
+                    .authenticate(SECURITY_CONTEXT_DENY, "Digest " + Base64.getEncoder().encodeToString("foo".getBytes(UTF_8)));
             fail("Expected WebApplicationException");
         }
         catch (WebApplicationException e) {

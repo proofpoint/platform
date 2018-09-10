@@ -25,17 +25,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 class DummyServlet
         extends HttpServlet
 {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException
+            throws IOException
     {
         resp.setStatus(HttpServletResponse.SC_OK);
         if (req.getUserPrincipal() != null) {
-            resp.getOutputStream().write(req.getUserPrincipal().getName().getBytes());
+            resp.getOutputStream().write(req.getUserPrincipal().getName().getBytes(UTF_8));
         }
         TraceToken token = getCurrentTraceToken();
         if (token != null) {
@@ -45,7 +46,7 @@ class DummyServlet
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException
+            throws IOException
     {
         resp.setStatus(HttpServletResponse.SC_OK);
         ByteStreams.copy(req.getInputStream(), resp.getOutputStream());
