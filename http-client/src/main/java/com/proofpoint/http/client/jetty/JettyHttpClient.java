@@ -1165,6 +1165,7 @@ public class JettyHttpClient
             }
 
             @Override
+            @SuppressWarnings("ReferenceEquality") // Reference equality to DONE is intentional
             protected ByteBuffer computeNext()
             {
                 ByteBuffer chunk = chunks.poll();

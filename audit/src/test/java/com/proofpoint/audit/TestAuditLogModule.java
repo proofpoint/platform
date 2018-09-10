@@ -45,6 +45,7 @@ public class TestAuditLogModule
     }
 
     @Test
+    @SuppressWarnings({"Finally", "ThrowFromFinallyBlock"})
     public void testConfigured()
             throws Exception
     {

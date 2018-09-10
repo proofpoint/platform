@@ -44,7 +44,7 @@ class StaticFormatter
             .toFormatter(Locale.US);
 
     @Override
-    @SuppressWarnings("NonSynchronizedMethodOverridesSynchronizedMethod")
+    @SuppressWarnings({"NonSynchronizedMethodOverridesSynchronizedMethod", "UnsynchronizedOverridesSynchronized"})
     public String formatMessage(LogRecord record)
     {
         return format(record);

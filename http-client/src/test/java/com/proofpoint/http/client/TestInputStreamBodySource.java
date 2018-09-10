@@ -26,6 +26,7 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+@SuppressWarnings("InputStreamSlowMultibyteRead")
 public class TestInputStreamBodySource
 {
     private boolean wasInvoked;

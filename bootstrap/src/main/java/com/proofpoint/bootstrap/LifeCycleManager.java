@@ -45,9 +45,9 @@ public final class LifeCycleManager
 {
     private final Logger log = Logger.get(getClass());
     private final AtomicReference<State> state = new AtomicReference<>(State.LATENT);
-    private final Queue<Object> managedInstances = new ConcurrentLinkedQueue<>();
-    private final Queue<Object> acceptRequestInstances = new ConcurrentLinkedQueue<>();
-    private final Queue<Object> stopTrafficInstances = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Object> managedInstances = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Object> acceptRequestInstances = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Object> stopTrafficInstances = new ConcurrentLinkedQueue<>();
     private final LifeCycleMethodsMap methodsMap;
     private final LifeCycleConfig config;
 
