@@ -76,6 +76,7 @@ final class Inet4Network
         return result;
     }
 
+    @SuppressWarnings("StringSplitter")
     public static Inet4Network fromCidr(String cidr)
     {
         String[] parts = cidr.split("/");
