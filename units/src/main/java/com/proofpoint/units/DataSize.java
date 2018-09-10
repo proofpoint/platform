@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +28,7 @@ import java.util.regex.Pattern;
 import static java.lang.Math.floor;
 import static java.util.Objects.requireNonNull;
 
+@Immutable
 public class DataSize
         implements Comparable<DataSize>
 {

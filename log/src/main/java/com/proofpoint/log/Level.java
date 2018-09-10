@@ -10,6 +10,7 @@ public enum Level
     WARN(java.util.logging.Level.WARNING),
     ERROR(java.util.logging.Level.SEVERE);
 
+    @SuppressWarnings("ImmutableEnumChecker")
     private final java.util.logging.Level julLevel;
 
     Level(java.util.logging.Level julLevel)
