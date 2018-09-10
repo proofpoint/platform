@@ -191,6 +191,7 @@ class GZipRequestWrapper
 
     }
 
+    @SuppressWarnings("JdkObsolete")
     private static class FilteringEnumeration implements Enumeration<String>
     {
         private final Enumeration<String> delegate;

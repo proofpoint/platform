@@ -51,6 +51,7 @@ import static java.util.Objects.requireNonNull;
 import static org.testng.Assert.assertEquals;
 import static org.testng.FileAssert.fail;
 
+@SuppressWarnings("EqualsHashCode")
 public class TestEquivalenceTester
 {
     @Test

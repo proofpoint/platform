@@ -136,6 +136,7 @@ public class TestStressJetty
     }
 
     @Test(enabled = false, description = "This takes about 30 seconds to run")
+    @SuppressWarnings("InputStreamSlowMultibyteRead")
     public void testSimultaneousPutsInputStreamBodySource()
             throws Exception
     {
