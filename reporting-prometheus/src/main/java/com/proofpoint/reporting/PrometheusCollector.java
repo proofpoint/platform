@@ -81,7 +81,7 @@ class PrometheusCollector
             for (PrometheusBeanAttribute attribute : registrationInfo.getReportedBean().getPrometheusAttributes()) {
                 String metricName = sanitizeMetricName(attribute.getName());
                 String name;
-                if ("" == metricName) {
+                if ("".equals(metricName)) {
                     name = nameBuilder.toString();
                 }
                 else {
