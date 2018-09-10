@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 @Path("/metrics")
@@ -61,7 +62,7 @@ public class MetricsResource
     @Produces("text/plain; version=0.0.4; charset=utf-8")
     public StreamingOutput getMetrics() {
         return output -> {
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output))) {
+            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output, UTF_8))) {
                 for (Entry<String, Collection<TaggedValue>> entry : prometheusCollector.collectData().asMap().entrySet()) {
                     boolean first = true;
 
