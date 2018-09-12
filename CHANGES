@@ -34,6 +34,8 @@ Platform 1.86
 
 * We added a dependencyManagement section for guava-testlib to the library pom.
 
+* [Bug] Specify permissions for SL_TOKEN_FILE
+
 * Library Upgrades
 
   - Guava to 26.0-jre (was 25.0-jre)
