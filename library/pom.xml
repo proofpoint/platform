@@ -1678,6 +1678,7 @@
                                                     <file>
                                                         <source>${SL_TOKEN_FILE}</source>
                                                         <destName>sl-token.txt</destName>
+                                                        <fileMode>0644</fileMode>
                                                         <outputDirectory>lib/</outputDirectory>
                                                     </file>
                                                 </files>
