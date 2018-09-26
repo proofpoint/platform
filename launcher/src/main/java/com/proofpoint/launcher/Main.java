@@ -443,7 +443,6 @@ public class Main
 
             List<String> javaArgs = new ArrayList<>();
             javaArgs.add("java");
-            javaArgs.add("-server");
             if (!gcSpecified) {
                 javaArgs.add("-XX:+UseConcMarkSweepGC");
                 javaArgs.add("-XX:+ExplicitGCInvokesConcurrent");
@@ -451,8 +450,6 @@ public class Main
             javaArgs.add("-XX:+HeapDumpOnOutOfMemoryError");
             javaArgs.add("-XX:HeapDumpPath=var");
             javaArgs.add("-XX:+AggressiveOpts");
-            javaArgs.add("-XX:+DoEscapeAnalysis");
-            javaArgs.add("-XX:+UseCompressedOops");
             if (System.getProperty("os.name").startsWith("Windows")) {
                 javaArgs.add("-XX:OnOutOfMemoryError=taskkill /f /pid %p");
             }
