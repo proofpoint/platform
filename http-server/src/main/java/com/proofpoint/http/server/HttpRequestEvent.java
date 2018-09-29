@@ -15,6 +15,7 @@
  */
 package com.proofpoint.http.server;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.proofpoint.units.Duration;
@@ -108,6 +109,7 @@ class HttpRequestEvent
     }
 
     @JsonProperty("time")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
     public Instant getTimeStamp()
     {
         return timeStamp;

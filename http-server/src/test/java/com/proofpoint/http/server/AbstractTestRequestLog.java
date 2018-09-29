@@ -83,7 +83,7 @@ public abstract class AbstractTestRequestLog
 
         timeToFirstByte = 456;
         timeToLastByte = 3453;
-        now = System.currentTimeMillis();
+        now = 1538192474453L;
         timestamp = now - timeToLastByte;
         user = "martin";
         agent = "HttpClient 4.0";
