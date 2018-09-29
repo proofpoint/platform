@@ -436,6 +436,7 @@ public class Main
                 System.exit(STATUS_CONFIG_MISSING);
             }
 
+            boolean isJava8 = System.getProperty("java.version").startsWith("1.8.");
             boolean gcSpecified = jvmConfigArgs.stream()
                     .anyMatch(arg -> arg.equals("-XX:+UseG1GC")
                             || arg.equals("-XX:+UseParallelGC")
@@ -443,13 +444,15 @@ public class Main
 
             List<String> javaArgs = new ArrayList<>();
             javaArgs.add("java");
-            if (!gcSpecified) {
+            if (isJava8 && !gcSpecified) {
                 javaArgs.add("-XX:+UseConcMarkSweepGC");
                 javaArgs.add("-XX:+ExplicitGCInvokesConcurrent");
             }
             javaArgs.add("-XX:+HeapDumpOnOutOfMemoryError");
             javaArgs.add("-XX:HeapDumpPath=var");
-            javaArgs.add("-XX:+AggressiveOpts");
+            if (isJava8) {
+                javaArgs.add("-XX:+AggressiveOpts");
+            }
             if (System.getProperty("os.name").startsWith("Windows")) {
                 javaArgs.add("-XX:OnOutOfMemoryError=taskkill /f /pid %p");
             }
@@ -468,7 +471,7 @@ public class Main
 
             javaArgs.addAll(jvmConfigArgs);
 
-            if (jvmConfigArgs.stream().noneMatch(s -> s.startsWith("-Xmx"))) {
+            if (isJava8 && jvmConfigArgs.stream().noneMatch(s -> s.startsWith("-Xmx"))) {
                 if (jvmConfigArgs.stream().noneMatch(s -> s.equals("-XX:+UnlockExperimentalVMOptions"))) {
                     javaArgs.add("-XX:+UnlockExperimentalVMOptions");
                 }
