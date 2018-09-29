@@ -31,6 +31,9 @@ Platform 1.87
   We removed support for setting the configuration property
   "http-client.max-requests-queued-per-destination" to "0".
 
+* [Bug] JSON-format http-request.log time field would omit microseconds when
+  they were ".000".
+
 Platform 1.86
 
 * Configuration

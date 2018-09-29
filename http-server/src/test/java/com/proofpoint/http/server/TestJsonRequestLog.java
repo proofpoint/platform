@@ -15,24 +15,13 @@
  */
 package com.proofpoint.http.server;
 
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
-import org.joda.time.format.ISODateTimeFormat;
-
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 
 public class TestJsonRequestLog extends AbstractTestRequestLog
 {
-    private DateTimeFormatter isoFormatter;
-
     @Override
     protected void setup(HttpServerConfig httpServerConfig)
     {
-        isoFormatter = new DateTimeFormatterBuilder()
-                .append(ISODateTimeFormat.dateHourMinuteSecondFraction())
-                .appendTimeZoneOffset("Z", true, 2, 2)
-                .toFormatter()
-                .withZoneUTC();
         logger = new JsonRequestLog(httpServerConfig, currentTimeMillisProvider, clientAddressExtractor);
     }
 
@@ -42,7 +31,7 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
         return String.format("{\"time\":\"%s\",\"traceToken\":\"%s\",\"sourceIp\":\"%s\"," +
                         "\"method\":\"%s\",\"requestUri\":\"%s\",\"username\":\"%s\",\"userAgent\":\"%s\"," +
                         "\"responseCode\":%d,\"requestSize\":%d,\"responseSize\":%d,\"timeToLastByte\":\"%d.00ms\"}\n",
-                isoFormatter.print(timestamp),
+                "2018-09-29T03:41:11.000Z",
                 getCurrentRequestToken(),
                 clientAddr,
                 method,
