@@ -40,7 +40,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 
-public class TestAnnouncer
+public class TestAnnouncerImpl
 {
     public static final Duration MAX_AGE = new Duration(1, TimeUnit.MILLISECONDS);
     private final ServiceType serviceType = serviceType("foo");
@@ -56,7 +56,7 @@ public class TestAnnouncer
         nodeInfo = new NodeInfo("test-application", new NodeConfig().setEnvironment("test").setPool("pool"));
         discoveryClient = new InMemoryDiscoveryClient(nodeInfo, MAX_AGE);
         serviceAnnouncement = ServiceAnnouncement.serviceAnnouncement(serviceType.value()).addProperty("a", "apple").build();
-        announcer = new Announcer(discoveryClient, ImmutableSet.of(serviceAnnouncement));
+        announcer = new AnnouncerImpl(discoveryClient, ImmutableSet.of(serviceAnnouncement));
     }
 
     @AfterMethod
@@ -118,7 +118,7 @@ public class TestAnnouncer
             throws Exception
     {
         discoveryClient = spy(discoveryClient);
-        announcer = new Announcer(discoveryClient, ImmutableSet.of(serviceAnnouncement));
+        announcer = new AnnouncerImpl(discoveryClient, ImmutableSet.of(serviceAnnouncement));
 
         announcer.destroy();
 

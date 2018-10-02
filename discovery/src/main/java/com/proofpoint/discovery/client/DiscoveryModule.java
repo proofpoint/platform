@@ -24,6 +24,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.proofpoint.configuration.ConfigurationDefaultingModule;
 import com.proofpoint.discovery.client.announce.Announcement;
 import com.proofpoint.discovery.client.announce.Announcer;
+import com.proofpoint.discovery.client.announce.AnnouncerImpl;
 import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
 import com.proofpoint.discovery.client.announce.HttpDiscoveryAnnouncementClient;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
@@ -83,7 +84,7 @@ public class DiscoveryModule
         httpClientBinder(binder).bindBalancingHttpClient("discovery", ForDiscoveryClient.class, Key.get(HttpServiceBalancer.class, serviceType("discovery")));
 
         // bind announcer
-        binder.bind(Announcer.class).in(Scopes.SINGLETON);
+        binder.bind(Announcer.class).to(AnnouncerImpl.class).in(Scopes.SINGLETON);
 
         // Must create a multibinder for service announcements or construction will fail if no
         // service announcements are bound, which is legal for processes that don't have public services
