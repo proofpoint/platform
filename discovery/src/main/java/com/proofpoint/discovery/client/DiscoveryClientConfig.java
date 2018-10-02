@@ -25,6 +25,7 @@ import java.net.URI;
 public class DiscoveryClientConfig
 {
     private URI discoveryServiceURI;
+    private boolean discoveryStatic;
 
     @Deprecated
     public URI getDiscoveryServiceURI()
@@ -38,6 +39,21 @@ public class DiscoveryClientConfig
     public DiscoveryClientConfig setDiscoveryServiceURI(URI uri)
     {
         this.discoveryServiceURI = uri;
+        return this;
+    }
+
+    @Deprecated
+    public boolean isDiscoveryStatic()
+    {
+        return discoveryStatic;
+    }
+
+    @Config("testing.discovery.static")
+    @ConfigDescription("Configure discovered services statically (testing only)")
+    @Deprecated
+    public DiscoveryClientConfig setDiscoveryStatic(boolean discoveryStatic)
+    {
+        this.discoveryStatic = discoveryStatic;
         return this;
     }
 }
