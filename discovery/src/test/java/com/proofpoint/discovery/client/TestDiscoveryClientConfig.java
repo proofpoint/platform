@@ -16,19 +16,23 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.ImmutableMap;
-import com.proofpoint.configuration.testing.ConfigAssertions;
 import org.testng.annotations.Test;
 
 import java.net.URI;
 import java.util.Map;
+
+import static com.proofpoint.configuration.testing.ConfigAssertions.assertFullMapping;
+import static com.proofpoint.configuration.testing.ConfigAssertions.assertRecordedDefaults;
+import static com.proofpoint.configuration.testing.ConfigAssertions.recordDefaults;
 
 public class TestDiscoveryClientConfig
 {
     @Test
     public void testDefaults()
     {
-        ConfigAssertions.assertRecordedDefaults(ConfigAssertions.recordDefaults(DiscoveryClientConfig.class)
-                .setDiscoveryServiceURI(null));
+        assertRecordedDefaults(recordDefaults(DiscoveryClientConfig.class)
+                .setDiscoveryServiceURI(null)
+                .setDiscoveryStatic(false));
     }
 
     @Test
@@ -36,11 +40,13 @@ public class TestDiscoveryClientConfig
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
                 .put("testing.discovery.uri", "fake://server")
+                .put("testing.discovery.static", "true")
                 .build();
 
         DiscoveryClientConfig expected = new DiscoveryClientConfig()
-                .setDiscoveryServiceURI(URI.create("fake://server"));
+                .setDiscoveryServiceURI(URI.create("fake://server"))
+                .setDiscoveryStatic(true);
 
-        ConfigAssertions.assertFullMapping(properties, expected);
+        assertFullMapping(properties, expected);
     }
 }

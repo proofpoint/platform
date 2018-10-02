@@ -18,15 +18,19 @@ package com.proofpoint.discovery.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
 import com.google.inject.Key;
+import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
+import com.proofpoint.configuration.AbstractConfigurationAwareModule;
+import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.ConfigurationDefaultingModule;
 import com.proofpoint.discovery.client.announce.Announcement;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.discovery.client.announce.AnnouncerImpl;
 import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
 import com.proofpoint.discovery.client.announce.HttpDiscoveryAnnouncementClient;
+import com.proofpoint.discovery.client.announce.NullAnnouncer;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerFactory;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
@@ -35,6 +39,7 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
+import com.proofpoint.units.Duration;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Provider;
@@ -51,10 +56,9 @@ import static com.proofpoint.json.JsonCodecBinder.jsonCodecBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 public class DiscoveryModule
+        extends AbstractConfigurationAwareModule
         implements ConfigurationDefaultingModule
 {
-    private HttpServiceBalancerImpl discoveryBalancer = null;
-
     @Override
     public Map<String, String> getConfigurationDefaults()
     {
@@ -62,94 +66,126 @@ public class DiscoveryModule
     }
 
     @Override
-    public void configure(Binder binder)
+    @SuppressWarnings("deprecation")
+    public void setup(Binder binder)
     {
-        // bind service inventory
-        binder.bind(ServiceInventory.class).asEagerSingleton();
-        bindConfig(binder).bind(ServiceInventoryConfig.class);
-        binder.bind(DiscoveryAddressLookup.class).in(Scopes.SINGLETON);
-
-        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(ForDiscoveryClient.class).prefixedWith("service-balancer.discovery");
-
-        // for legacy configurations
-        bindConfig(binder).bind(DiscoveryClientConfig.class);
-
-        // bind discovery client and dependencies
-        binder.bind(DiscoveryLookupClient.class).to(HttpDiscoveryLookupClient.class).in(Scopes.SINGLETON);
-        binder.bind(DiscoveryAnnouncementClient.class).to(HttpDiscoveryAnnouncementClient.class).in(Scopes.SINGLETON);
-        jsonCodecBinder(binder).bindJsonCodec(ServiceDescriptorsRepresentation.class);
-        jsonCodecBinder(binder).bindJsonCodec(Announcement.class);
-
-        // bind the http client
-        httpClientBinder(binder).bindBalancingHttpClient("discovery", ForDiscoveryClient.class, Key.get(HttpServiceBalancer.class, serviceType("discovery")));
-
-        // bind announcer
-        binder.bind(Announcer.class).to(AnnouncerImpl.class).in(Scopes.SINGLETON);
-
-        // Must create a multibinder for service announcements or construction will fail if no
-        // service announcements are bound, which is legal for processes that don't have public services
-        Multibinder.newSetBinder(binder, ServiceAnnouncement.class);
-
-        binder.bind(ServiceSelectorFactory.class).to(CachingServiceSelectorFactory.class).in(Scopes.SINGLETON);
-        binder.bind(HttpServiceBalancerFactory.class).in(Scopes.SINGLETON);
-
-        binder.bind(ScheduledExecutorService.class)
-                .annotatedWith(ForDiscoveryClient.class)
-                .toProvider(DiscoveryExecutorProvider.class)
-                .in(Scopes.SINGLETON);
-
-        newExporter(binder).export(ServiceInventory.class).withGeneratedName();
-    }
-
-
-    @Provides
-    @ServiceType("discovery")
-    public HttpServiceBalancer createHttpServiceBalancer(
-            ReportExporter reportExporter,
-            ReportCollectionFactory reportCollectionFactory,
-            @ForDiscoveryClient HttpServiceBalancerConfig config)
-    {
-        return getHttpServiceBalancerImpl(reportExporter, reportCollectionFactory, config);
-    }
-
-    @ServiceType("discovery")
-    @Provides
-    public synchronized HttpServiceBalancerImpl getHttpServiceBalancerImpl(
-            ReportExporter reportExporter,
-            ReportCollectionFactory reportCollectionFactory,
-            @ForDiscoveryClient HttpServiceBalancerConfig config)
-    {
-        if (discoveryBalancer == null) {
-            Map<String, String> tags = ImmutableMap.of("serviceType", "discovery");
-            discoveryBalancer = new HttpServiceBalancerImpl(
-                    "discovery",
-                    reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags),
-                    config
-            );
-            reportExporter.export(discoveryBalancer, false, "ServiceClient", tags);
+        if (buildConfigObject(DiscoveryClientConfig.class).isDiscoveryStatic()) {
+            binder.install(new StaticDiscoveryModule());
+            binder.bind(Announcer.class).to(NullAnnouncer.class).in(Scopes.SINGLETON);
+            bindConfig(binder).bind(ConsumeIdleTimeout.class);
+            return;
         }
-        return discoveryBalancer;
+
+        binder.install(new NonstaticDiscoveryModule());
     }
 
-    private static class DiscoveryExecutorProvider
-            implements Provider<ScheduledExecutorService>
+    private static class NonstaticDiscoveryModule
+        implements Module
     {
-        private ScheduledExecutorService executor;
+        private HttpServiceBalancerImpl discoveryBalancer = null;
 
         @Override
-        public ScheduledExecutorService get()
+        public void configure(Binder binder)
         {
-            checkState(executor == null, "provider already used");
-            executor = new ScheduledThreadPoolExecutor(5, daemonThreadsNamed("Discovery-%s"));
-            return executor;
+            // bind service inventory
+            binder.bind(ServiceInventory.class).asEagerSingleton();
+            bindConfig(binder).bind(ServiceInventoryConfig.class);
+            binder.bind(DiscoveryAddressLookup.class).in(Scopes.SINGLETON);
+
+            bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(ForDiscoveryClient.class).prefixedWith("service-balancer.discovery");
+
+            // for legacy configurations
+            bindConfig(binder).bind(DiscoveryClientConfig.class);
+
+            // bind discovery client and dependencies
+            binder.bind(DiscoveryLookupClient.class).to(HttpDiscoveryLookupClient.class).in(Scopes.SINGLETON);
+            binder.bind(DiscoveryAnnouncementClient.class).to(HttpDiscoveryAnnouncementClient.class).in(Scopes.SINGLETON);
+            jsonCodecBinder(binder).bindJsonCodec(ServiceDescriptorsRepresentation.class);
+            jsonCodecBinder(binder).bindJsonCodec(Announcement.class);
+
+            // bind the http client
+            httpClientBinder(binder).bindBalancingHttpClient("discovery", ForDiscoveryClient.class, Key.get(HttpServiceBalancer.class, serviceType("discovery")));
+
+            // bind announcer
+            binder.bind(Announcer.class).to(AnnouncerImpl.class).in(Scopes.SINGLETON);
+
+            // Must create a multibinder for service announcements or construction will fail if no
+            // service announcements are bound, which is legal for processes that don't have public services
+            Multibinder.newSetBinder(binder, ServiceAnnouncement.class);
+
+            binder.bind(ServiceSelectorFactory.class).to(CachingServiceSelectorFactory.class).in(Scopes.SINGLETON);
+            binder.bind(HttpServiceBalancerFactory.class).in(Scopes.SINGLETON);
+
+            binder.bind(ScheduledExecutorService.class)
+                    .annotatedWith(ForDiscoveryClient.class)
+                    .toProvider(DiscoveryExecutorProvider.class)
+                    .in(Scopes.SINGLETON);
+
+            newExporter(binder).export(ServiceInventory.class).withGeneratedName();
         }
 
-        @PreDestroy
-        public void destroy()
+        @Provides
+        @ServiceType("discovery")
+        public HttpServiceBalancer createHttpServiceBalancer(
+                ReportExporter reportExporter,
+                ReportCollectionFactory reportCollectionFactory,
+                @ForDiscoveryClient HttpServiceBalancerConfig config)
         {
-            if (executor != null) {
-                executor.shutdownNow();
+            return getHttpServiceBalancerImpl(reportExporter, reportCollectionFactory, config);
+        }
+
+        @ServiceType("discovery")
+        @Provides
+        public synchronized HttpServiceBalancerImpl getHttpServiceBalancerImpl(
+                ReportExporter reportExporter,
+                ReportCollectionFactory reportCollectionFactory,
+                @ForDiscoveryClient HttpServiceBalancerConfig config)
+        {
+            if (discoveryBalancer == null) {
+                Map<String, String> tags = ImmutableMap.of("serviceType", "discovery");
+                discoveryBalancer = new HttpServiceBalancerImpl(
+                        "discovery",
+                        reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags),
+                        config
+                );
+                reportExporter.export(discoveryBalancer, false, "ServiceClient", tags);
             }
+            return discoveryBalancer;
+        }
+
+        private static class DiscoveryExecutorProvider
+                implements Provider<ScheduledExecutorService>
+        {
+            private ScheduledExecutorService executor;
+
+            @Override
+            public ScheduledExecutorService get()
+            {
+                checkState(executor == null, "provider already used");
+                executor = new ScheduledThreadPoolExecutor(5, daemonThreadsNamed("Discovery-%s"));
+                return executor;
+            }
+
+            @PreDestroy
+            public void destroy()
+            {
+                if (executor != null) {
+                    executor.shutdownNow();
+                }
+            }
+        }
+    }
+
+    // Workaround needed to consume the configuration default when in static mode
+    private static class ConsumeIdleTimeout
+    {
+        public Duration getIdleTimeout()
+        {
+            return null;
+        }
+
+        @Config("discovery.http-client.idle-timeout")
+        public void setIdleTimeout(Duration timeout) {
         }
     }
 }

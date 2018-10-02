@@ -22,6 +22,7 @@ import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
+import com.proofpoint.discovery.client.announce.NullAnnouncer;
 import com.proofpoint.discovery.client.announce.StaticAnnouncementHttpServerInfoImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.json.JsonModule;
@@ -36,12 +37,11 @@ import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static com.google.inject.Key.get;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestDiscoveryModule
 {
@@ -49,7 +49,6 @@ public class TestDiscoveryModule
 
     @BeforeMethod
     public void setup()
-            throws Exception
     {
         injector = null;
     }
@@ -80,10 +79,10 @@ public class TestDiscoveryModule
                 .initialize();
 
         // should produce a discovery announcement client and a lookup client
-        assertNotNull(injector.getInstance(DiscoveryAnnouncementClient.class));
-        assertNotNull(injector.getInstance(DiscoveryLookupClient.class));
+        assertThat(injector.getInstance(DiscoveryAnnouncementClient.class)).isNotNull();
+        assertThat(injector.getInstance(DiscoveryLookupClient.class)).isNotNull();
         // should produce an Announcer
-        assertNotNull(injector.getInstance(Announcer.class));
+        assertThat(injector.getInstance(Announcer.class)).isNotNull();
     }
 
     @Test
@@ -102,8 +101,34 @@ public class TestDiscoveryModule
                 .setRequiredConfigurationProperties(ImmutableMap.of("testing.discovery.uri", "fake://server"))
                 .initialize();
 
-        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("foo"))));
-        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("bar"))));
+        assertThat(injector.getInstance(get(HttpServiceBalancer.class, serviceType("foo")))).isNotNull();
+        assertThat(injector.getInstance(get(HttpServiceBalancer.class, serviceType("bar")))).isNotNull();
+    }
+
+    @Test
+    public void testStaticBindHttpBalancer()
+            throws Exception
+    {
+        injector = bootstrapTest()
+                .withModules(
+                        new JsonModule(),
+                        new TestingNodeModule(),
+                        new ReportingModule(),
+                        new DiscoveryModule(),
+                        binder -> discoveryBinder(binder).bindHttpBalancer("foo"),
+                        binder -> discoveryBinder(binder).bindHttpBalancer("bar")
+                )
+                .setRequiredConfigurationProperties(ImmutableMap.of(
+                        "testing.discovery.static", "true",
+                        "service-balancer.foo.uri", "http://127.0.0.1/foo",
+                        "service-balancer.bar.uri", "http://127.0.0.1/bar"))
+                .initialize();
+
+        HttpServiceBalancer fooBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("foo")));
+        assertThat(fooBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/foo"));
+        HttpServiceBalancer barBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("bar")));
+        assertThat(barBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/bar"));
+        assertThat(injector.getInstance(Announcer.class)).isInstanceOf(NullAnnouncer.class);
     }
 
     @Test
@@ -123,9 +148,9 @@ public class TestDiscoveryModule
         ExecutorService executor = injector.getInstance(Key.get(ScheduledExecutorService.class, ForDiscoveryClient.class));
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
 
-        assertFalse(executor.isShutdown());
+        assertThat(executor.isShutdown()).isFalse();
         lifeCycleManager.stop();
-        assertTrue(executor.isShutdown());
+        assertThat(executor.isShutdown()).isTrue();
     }
 
     @Test(expectedExceptions = IllegalStateException.class, expectedExceptionsMessageRegExp = ".*HttpServer's HTTPS URI host \"example\" must be a FQDN.*")
