@@ -25,8 +25,8 @@ import com.proofpoint.discovery.client.DiscoveryLookupClient;
 import com.proofpoint.discovery.client.ForDiscoveryClient;
 import com.proofpoint.discovery.client.ServiceSelectorFactory;
 import com.proofpoint.discovery.client.announce.Announcer;
-import com.proofpoint.discovery.client.announce.AnnouncerImpl;
 import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
+import com.proofpoint.discovery.client.announce.NullAnnouncer;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerFactory;
 
@@ -47,7 +47,7 @@ public class TestingDiscoveryModule
         binder.bind(DiscoveryLookupClient.class).to(Key.get(InMemoryDiscoveryClient.class)).in(Scopes.SINGLETON);
 
         // bind announcer
-        binder.bind(Announcer.class).to(AnnouncerImpl.class).in(Scopes.SINGLETON);
+        binder.bind(Announcer.class).to(NullAnnouncer.class).in(Scopes.SINGLETON);
         // Must create a multibinder for service announcements or construction will fail if no
         // service announcements are bound, which is legal for processes that don't have public services
         Multibinder.newSetBinder(binder, ServiceAnnouncement.class);
