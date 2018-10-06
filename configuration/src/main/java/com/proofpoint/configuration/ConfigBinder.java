@@ -76,6 +76,24 @@ import static java.util.Objects.requireNonNull;
  *
  * May be combined with {@code .annotatedWith()}.
  *
+ * <pre>
+ *     configBinder(binder)
+ *         .bindDefaults(FooConfig.class)
+ *         .of()
+ *         .setConfigAttribute(newDefault)
+ *         .setOtherConfigAttribute(otherDefault);</pre>
+ *
+ * Modifies the default values of configuration class {@code FooConfig}
+ * (which must have already been bound elsewhere). Each configuration object
+ * constructed will have its defaults adjusted by calling the provided
+ * {@code @Config}-annotated setters with the provided non-null values.
+ * These calls will happen before any application defaults are applied.
+ *
+ * Supplying a mutable object as a default and then mutating it results
+ * in undefined behavior.
+ *
+ * May be combined with {@code .annotatedWith()}.
+ *
  */
 public final class ConfigBinder
 {
@@ -105,6 +123,14 @@ public final class ConfigBinder
         AnnotatedBindingBuilder<T> builder = binder.bind(configClass);
         builder.toProvider(configurationProvider);
         return new AnnotatedConfigBindingBuilder<>(builder, configurationProvider);
+    }
+
+    /**
+     * See the EDSL description at {@link ConfigBinder}.
+     */
+    public <T> AnnotatedConfigDefaultsBindingBuilder<T> bindDefaults(Class<T> configClass)
+    {
+        return new AnnotatedConfigDefaultsBindingBuilder<>(configClass);
     }
 
     public final static class AnnotatedConfigBindingBuilder<T>
@@ -160,11 +186,55 @@ public final class ConfigBinder
         }
     }
 
-    private <T> void bindConfigDefaults(Key<T> key, ConfigDefaults<T> configDefaults)
+    public final class AnnotatedConfigDefaultsBindingBuilder<T>
+        extends ConfigDefaultsBindingBuilder<T>
     {
-        createConfigDefaultsBinder(key).addBinding().toInstance(new ConfigDefaultsHolder<>(key, configDefaults));
+        private AnnotatedConfigDefaultsBindingBuilder(Class<T> configClass)
+        {
+            super(configClass, Key.get(configClass));
+        }
+
+        /**
+         * See the EDSL description at {@link ConfigBinder}.
+         */
+        public ConfigDefaultsBindingBuilder<T> annotatedWith(Class<? extends Annotation> annotationType)
+        {
+            requireNonNull(annotationType, "annotationType is null");
+            return new ConfigDefaultsBindingBuilder<>(configClass, Key.get(configClass, annotationType));
+        }
+
+        /**
+         * See the EDSL description at {@link ConfigBinder}.
+         */
+        public ConfigDefaultsBindingBuilder<T> annotatedWith(Annotation annotation)
+        {
+            requireNonNull(annotation, "annotation is null");
+            return new ConfigDefaultsBindingBuilder<>(configClass, Key.get(configClass, annotation));
+        }
     }
 
+    public class ConfigDefaultsBindingBuilder<T>
+    {
+        final Class<T> configClass;
+        final Key<T> configKey;
+
+        private ConfigDefaultsBindingBuilder(Class<T> configClass, Key<T> configKey)
+        {
+            this.configClass = configClass;
+            this.configKey = configKey;
+        }
+
+        /**
+         * See the EDSL description at {@link ConfigBinder}.
+         */
+        public T of() {
+            Recorder<T> recorder = new Recorder<>(configClass);
+            createConfigDefaultsBinder(configKey).addBinding().toInstance(new ConfigDefaultsHolder<>(configKey, recorder));
+            return recorder.getRecordingObject();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     private <T> Multibinder<ConfigDefaultsHolder<T>> createConfigDefaultsBinder(Key<T> key)
     {
         @SuppressWarnings("SerializableInnerClassWithNonSerializableOuterClass")

@@ -4,6 +4,7 @@ import com.google.inject.Key;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
@@ -14,13 +15,14 @@ class ConfigDefaultsHolder<T>
     private static final AtomicLong NEXT_PRIORITY = new AtomicLong();
 
     private final Key<T> configKey;
-    private final ConfigDefaults<T> configDefaults;
+    private final Recorder<T> recorder;
     private final long priority = NEXT_PRIORITY.getAndIncrement();
+    private final AtomicReference<Replayer<T>> replayer = new AtomicReference<>();
 
-    ConfigDefaultsHolder(Key<T> configKey, ConfigDefaults<T> configDefaults)
+    ConfigDefaultsHolder(Key<T> configKey, Recorder<T> recorder)
     {
         this.configKey = requireNonNull(configKey, "configKey is null");
-        this.configDefaults = requireNonNull(configDefaults, "configDefaults is null");
+        this.recorder = requireNonNull(recorder, "recorder is null");
     }
 
     public Key<T> getConfigKey()
@@ -28,9 +30,9 @@ class ConfigDefaultsHolder<T>
         return configKey;
     }
 
-    public ConfigDefaults<T> getConfigDefaults()
+    public Replayer<T> getReplayer()
     {
-        return configDefaults;
+        return replayer.updateAndGet(r -> r == null ? recorder.getReplayer() : r);
     }
 
     @Override
@@ -42,7 +44,7 @@ class ConfigDefaultsHolder<T>
     @Override
     public int hashCode()
     {
-        return Objects.hash(configDefaults, priority);
+        return Objects.hash(recorder, priority);
     }
 
     @Override
@@ -55,7 +57,7 @@ class ConfigDefaultsHolder<T>
             return false;
         }
         ConfigDefaultsHolder<?> other = (ConfigDefaultsHolder<?>) obj;
-        return Objects.equals(this.configDefaults, other.configDefaults)
+        return Objects.equals(this.recorder, other.recorder)
                 && Objects.equals(this.priority, other.priority);
     }
 
@@ -64,7 +66,7 @@ class ConfigDefaultsHolder<T>
     {
         return toStringHelper(this)
                 .add("configKey", configKey)
-                .add("configDefaults", configDefaults)
+                .add("recorder", recorder)
                 .add("priority", priority)
                 .toString();
     }

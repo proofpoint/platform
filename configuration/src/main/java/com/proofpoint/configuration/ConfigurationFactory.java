@@ -139,15 +139,14 @@ public final class ConfigurationFactory
         registeredDefaultConfigs.put(holder.getConfigKey(), holder);
     }
 
-    private <T> ConfigDefaults<T> getConfigDefaults(Key<T> key)
+    @SuppressWarnings("unchecked")
+    private <T> List<Replayer<T>> getDefaultsReplayers(Key<T> key)
     {
-        List<ConfigDefaults<T>> defaults = registeredDefaultConfigs.get(key).stream()
+        return registeredDefaultConfigs.get(key).stream()
                 .map(holder -> (ConfigDefaultsHolder<T>) holder)
                 .sorted()
-                .map(ConfigDefaultsHolder::getConfigDefaults)
+                .map(ConfigDefaultsHolder::getReplayer)
                 .collect(toList());
-
-        return ConfigDefaults.configDefaults(defaults);
     }
 
     public <T> T build(Class<T> configClass)
@@ -173,19 +172,19 @@ public final class ConfigurationFactory
             problems = new Problems();
         }
 
-        final T instance = build(configClass, prefix, false, problems);
+        T instance = build(configClass, prefix, key, false, problems);
 
         problems.throwIfHasErrors();
 
         return instance;
     }
 
-    <T> T buildDefaults(Class<T> configClass, @Nullable String prefix)
+    <T> T buildDefaults(Class<T> configClass, @Nullable Key<T> configKey, @Nullable String prefix)
     {
-        return build(configClass, prefix, true, new Problems());
+        return build(configClass, prefix, configKey, true, new Problems());
     }
 
-    private <T> T build(Class<T> configClass, String prefix, boolean isDefault, Problems problems)
+    private <T> T build(Class<T> configClass, String prefix, @Nullable Key<T> configKey, boolean isDefault, Problems problems)
     {
         requireNonNull(configClass, "configClass is null");
 
@@ -200,6 +199,12 @@ public final class ConfigurationFactory
         configurationMetadata.getProblems().throwIfHasErrors();
 
         T instance = newInstance(configurationMetadata);
+
+        if (configKey != null) {
+            for (Replayer<T> replayer : getDefaultsReplayers(configKey)) {
+                replayer.apply(instance);
+            }
+        }
 
         for (AttributeMetadata attribute : configurationMetadata.getAttributes().values()) {
             try {
@@ -527,7 +532,7 @@ public final class ConfigurationFactory
             final V value;
             if (valueIsConfigClass) {
                 try {
-                    value = build(valueClass, name + keyString, false, problems);
+                    value = build(valueClass, name + keyString, null, false, problems);
                 }
                 catch (ConfigurationException ignored) {
                     continue;

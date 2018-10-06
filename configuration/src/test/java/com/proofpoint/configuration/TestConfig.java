@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.google.inject.Binder;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -29,6 +30,8 @@ import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 import com.google.inject.spi.Message;
 import com.proofpoint.configuration.ConfigBinder.AnnotatedConfigBindingBuilder;
+import com.proofpoint.configuration.ConfigBinder.AnnotatedConfigDefaultsBindingBuilder;
+import com.proofpoint.configuration.ConfigBinder.ConfigDefaultsBindingBuilder;
 import com.proofpoint.configuration.ConfigBinder.PrefixConfigBindingBuilder;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -84,6 +87,135 @@ public class TestConfig
     public void testConfig(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
     {
         Injector injector = createInjector(prefix == null ? properties : prefix(properties), createModule(Config1.class, prefix, annotationClass, annotation));
+        verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
+    }
+
+    @Test(dataProvider = "bindArguments")
+    public void testConfigDefaults(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Injector injector = createInjector(ImmutableMap.of(), binder -> {
+            binder.install(createModule(Config1.class, prefix, annotationClass, annotation));
+            getDefaultsSetter(binder, annotationClass, annotation)
+                    .setStringOption("a string")
+                    .setBooleanOption(true)
+                    .setBoxedBooleanOption(true)
+                    .setByteOption(Byte.MAX_VALUE)
+                    .setBoxedByteOption(Byte.MAX_VALUE)
+                    .setShortOption(Short.MAX_VALUE)
+                    .setBoxedShortOption(Short.MAX_VALUE)
+                    .setIntegerOption(Integer.MAX_VALUE)
+                    .setBoxedIntegerOption(Integer.MAX_VALUE)
+                    .setLongOption(Long.MAX_VALUE)
+                    .setBoxedLongOption(Long.MAX_VALUE)
+                    .setFloatOption(Float.MAX_VALUE)
+                    .setBoxedFloatOption(Float.MAX_VALUE)
+                    .setDoubleOption(Double.MAX_VALUE)
+                    .setBoxedDoubleOption(Double.MAX_VALUE)
+                    .setMyEnumOption(MyEnum.FOO)
+                    .setValueClassOption(new ValueClass("a value class"));
+        });
+        verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
+    }
+
+    @Test(dataProvider = "bindArguments")
+    public void testPropertiesOverrideConfigDefaults(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Injector injector = createInjector(prefix == null ? properties : prefix(properties), binder -> {
+            binder.install(createModule(Config1.class, prefix, annotationClass, annotation));
+            getDefaultsSetter(binder, annotationClass, annotation)
+                    .setStringOption("default string")
+                    .setBooleanOption(false)
+                    .setBoxedBooleanOption(false)
+                    .setByteOption(Byte.MIN_VALUE)
+                    .setBoxedByteOption(Byte.MIN_VALUE)
+                    .setShortOption(Short.MIN_VALUE)
+                    .setBoxedShortOption(Short.MIN_VALUE)
+                    .setIntegerOption(Integer.MIN_VALUE)
+                    .setBoxedIntegerOption(Integer.MIN_VALUE)
+                    .setLongOption(Long.MIN_VALUE)
+                    .setBoxedLongOption(Long.MIN_VALUE)
+                    .setFloatOption(Float.MIN_VALUE)
+                    .setBoxedFloatOption(Float.MIN_VALUE)
+                    .setDoubleOption(Double.MIN_VALUE)
+                    .setBoxedDoubleOption(Double.MIN_VALUE)
+                    .setMyEnumOption(MyEnum.BAR)
+                    .setValueClassOption(new ValueClass("a default value class"));
+        });
+        verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
+    }
+
+    @Test(dataProvider = "bindArguments")
+    public void testParentModuleOverridesConfigDefaults(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Injector injector = createInjector(ImmutableMap.of(), binder -> {
+            binder.install(subBinder -> {
+                subBinder.install(createModule(Config1.class, prefix, annotationClass, annotation));
+                getDefaultsSetter(subBinder, annotationClass, annotation)
+                        .setStringOption("default string")
+                        .setBooleanOption(false)
+                        .setBoxedBooleanOption(false)
+                        .setByteOption(Byte.MIN_VALUE)
+                        .setBoxedByteOption(Byte.MIN_VALUE)
+                        .setShortOption(Short.MIN_VALUE)
+                        .setBoxedShortOption(Short.MIN_VALUE)
+                        .setIntegerOption(Integer.MIN_VALUE)
+                        .setBoxedIntegerOption(Integer.MIN_VALUE)
+                        .setLongOption(Long.MIN_VALUE)
+                        .setBoxedLongOption(Long.MIN_VALUE)
+                        .setFloatOption(Float.MIN_VALUE)
+                        .setBoxedFloatOption(Float.MIN_VALUE)
+                        .setDoubleOption(Double.MIN_VALUE)
+                        .setBoxedDoubleOption(Double.MIN_VALUE)
+                        .setMyEnumOption(MyEnum.BAR)
+                        .setValueClassOption(new ValueClass("a default value class"));
+            });
+            getDefaultsSetter(binder, annotationClass, annotation)
+                    .setStringOption("a string")
+                    .setBooleanOption(true)
+                    .setBoxedBooleanOption(true)
+                    .setByteOption(Byte.MAX_VALUE)
+                    .setBoxedByteOption(Byte.MAX_VALUE)
+                    .setShortOption(Short.MAX_VALUE)
+                    .setBoxedShortOption(Short.MAX_VALUE)
+                    .setIntegerOption(Integer.MAX_VALUE)
+                    .setBoxedIntegerOption(Integer.MAX_VALUE)
+                    .setLongOption(Long.MAX_VALUE)
+                    .setBoxedLongOption(Long.MAX_VALUE)
+                    .setFloatOption(Float.MAX_VALUE)
+                    .setBoxedFloatOption(Float.MAX_VALUE)
+                    .setDoubleOption(Double.MAX_VALUE)
+                    .setBoxedDoubleOption(Double.MAX_VALUE)
+                    .setMyEnumOption(MyEnum.FOO)
+                    .setValueClassOption(new ValueClass("a value class"));
+        });
+        verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
+    }
+
+
+    @Test(dataProvider = "bindArguments")
+    public void testApplicationDefaultsOverrideConfigDefaults(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Injector injector = createInjectorWithApplicationDefaults(prefix == null ? properties : prefix(properties), binder -> {
+            binder.install(createModule(Config1.class, prefix, annotationClass, annotation));
+            getDefaultsSetter(binder, annotationClass, annotation)
+                    .setStringOption("default string")
+                    .setBooleanOption(false)
+                    .setBoxedBooleanOption(false)
+                    .setByteOption(Byte.MIN_VALUE)
+                    .setBoxedByteOption(Byte.MIN_VALUE)
+                    .setShortOption(Short.MIN_VALUE)
+                    .setBoxedShortOption(Short.MIN_VALUE)
+                    .setIntegerOption(Integer.MIN_VALUE)
+                    .setBoxedIntegerOption(Integer.MIN_VALUE)
+                    .setLongOption(Long.MIN_VALUE)
+                    .setBoxedLongOption(Long.MIN_VALUE)
+                    .setFloatOption(Float.MIN_VALUE)
+                    .setBoxedFloatOption(Float.MIN_VALUE)
+                    .setDoubleOption(Double.MIN_VALUE)
+                    .setBoxedDoubleOption(Double.MIN_VALUE)
+                    .setMyEnumOption(MyEnum.BAR)
+                    .setValueClassOption(new ValueClass("a default value class"));
+        });
         verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
     }
 
@@ -206,6 +338,15 @@ public class TestConfig
         return Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
     }
 
+    private static Injector createInjectorWithApplicationDefaults(Map<String, String> applicationDefaults, Module module)
+    {
+        ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
+                .withApplicationDefaults(applicationDefaults)
+                .build();
+        List<Message> messages = new ConfigurationValidator(configurationFactory).validate(module);
+        return Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
+    }
+
     private static <T> Module createModule(Class<T> configClass, String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
     {
         return binder -> {
@@ -248,6 +389,22 @@ public class TestConfig
             builder.put("prefix." + entry.getKey(), entry.getValue());
         }
         return builder.build();
+    }
+
+    private Config1 getDefaultsSetter(Binder binder, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        AnnotatedConfigDefaultsBindingBuilder<Config1> annotatedBuilder = bindConfig(binder).bindDefaults(Config1.class);
+        ConfigDefaultsBindingBuilder<Config1> bindingBuilder;
+        if (annotationClass != null) {
+            bindingBuilder = annotatedBuilder.annotatedWith(annotationClass);
+        }
+        else if (annotation != null) {
+            bindingBuilder = annotatedBuilder.annotatedWith(annotation);
+        }
+        else {
+            bindingBuilder = annotatedBuilder;
+        }
+        return bindingBuilder.of();
     }
 
     private static class ExposeConfig
