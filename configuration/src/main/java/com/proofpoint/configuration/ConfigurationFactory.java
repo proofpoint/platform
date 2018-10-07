@@ -19,10 +19,13 @@ import com.google.common.annotations.Beta;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Key;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
@@ -41,6 +44,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,6 +57,7 @@ import static com.proofpoint.configuration.ConfigurationMetadata.isConfigClass;
 import static com.proofpoint.configuration.Problems.exceptionFor;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 public final class ConfigurationFactory
 {
@@ -66,6 +71,7 @@ public final class ConfigurationFactory
     private final Set<String> unusedProperties = newConcurrentHashSet();
     private final Collection<String> initialErrors;
     private final Set<ConfigurationIdentity<?>> registeredConfigs = newConcurrentHashSet();
+    private final ListMultimap<Key<?>, ConfigDefaultsHolder<?>> registeredDefaultConfigs = Multimaps.synchronizedListMultimap(ArrayListMultimap.create());
     private final LoadingCache<Class<?>, ConfigurationMetadata<?>> metadataCache = CacheBuilder.newBuilder()
             .build(new CacheLoader<Class<?>, ConfigurationMetadata<?>>()
             {
@@ -128,6 +134,21 @@ public final class ConfigurationFactory
         return ImmutableList.copyOf(registeredConfigs);
     }
 
+    <T> void registerConfigDefaults(ConfigDefaultsHolder<T> holder)
+    {
+        registeredDefaultConfigs.put(holder.getConfigKey(), holder);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> List<Replayer<T>> getDefaultsReplayers(Key<T> key)
+    {
+        return registeredDefaultConfigs.get(key).stream()
+                .map(holder -> (ConfigDefaultsHolder<T>) holder)
+                .sorted()
+                .map(ConfigDefaultsHolder::getReplayer)
+                .collect(toList());
+    }
+
     public <T> T build(Class<T> configClass)
     {
         return build(configClass, null, null);
@@ -151,19 +172,19 @@ public final class ConfigurationFactory
             problems = new Problems();
         }
 
-        final T instance = build(configClass, prefix, false, problems);
+        T instance = build(configClass, prefix, key, false, problems);
 
         problems.throwIfHasErrors();
 
         return instance;
     }
 
-    <T> T buildDefaults(Class<T> configClass, @Nullable String prefix)
+    <T> T buildDefaults(Class<T> configClass, @Nullable Key<T> configKey, @Nullable String prefix)
     {
-        return build(configClass, prefix, true, new Problems());
+        return build(configClass, prefix, configKey, true, new Problems());
     }
 
-    private <T> T build(Class<T> configClass, String prefix, boolean isDefault, Problems problems)
+    private <T> T build(Class<T> configClass, String prefix, @Nullable Key<T> configKey, boolean isDefault, Problems problems)
     {
         requireNonNull(configClass, "configClass is null");
 
@@ -178,6 +199,12 @@ public final class ConfigurationFactory
         configurationMetadata.getProblems().throwIfHasErrors();
 
         T instance = newInstance(configurationMetadata);
+
+        if (configKey != null) {
+            for (Replayer<T> replayer : getDefaultsReplayers(configKey)) {
+                replayer.apply(instance);
+            }
+        }
 
         for (AttributeMetadata attribute : configurationMetadata.getAttributes().values()) {
             try {
@@ -505,7 +532,7 @@ public final class ConfigurationFactory
             final V value;
             if (valueIsConfigClass) {
                 try {
-                    value = build(valueClass, name + keyString, false, problems);
+                    value = build(valueClass, name + keyString, null, false, problems);
                 }
                 catch (ConfigurationException ignored) {
                     continue;

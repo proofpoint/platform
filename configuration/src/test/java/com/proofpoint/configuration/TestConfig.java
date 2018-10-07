@@ -18,6 +18,8 @@ package com.proofpoint.configuration;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.google.inject.Binder;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -25,12 +27,22 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.PrivateBinder;
 import com.google.inject.Scopes;
+import com.google.inject.name.Names;
 import com.google.inject.spi.Message;
+import com.proofpoint.configuration.ConfigBinder.AnnotatedConfigBindingBuilder;
+import com.proofpoint.configuration.ConfigBinder.AnnotatedConfigDefaultsBindingBuilder;
+import com.proofpoint.configuration.ConfigBinder.ConfigDefaultsBindingBuilder;
 import com.proofpoint.configuration.ConfigBinder.PrefixConfigBindingBuilder;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import javax.inject.Inject;
+import javax.inject.Qualifier;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,143 +50,14 @@ import java.util.Map.Entry;
 
 import static com.google.inject.name.Names.named;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestConfig
 {
     private ImmutableMap<String,String> properties;
-
-    @Test
-    public void testConfig()
-    {
-        Injector injector = createInjector(properties, createModule(Config1.class, null));
-        verifyConfig(injector.getInstance(Config1.class));
-    }
-
-    @Test
-    public void testPrefixConfigTypes()
-    {
-        Injector injector = createInjector(prefix("prefix", properties), createModule(Config1.class, "prefix"));
-        verifyConfig(injector.getInstance(Config1.class));
-    }
-
-    @Test
-    public void testConfigMapSimple()
-    {
-        Map<String,String> properties = ImmutableMap.<String, String>builder()
-                    .put("map.key1", "value1")
-                    .put("map.key2", "value2")
-                    .build();
-        Injector injector = createInjector(properties, createModule(ConfigMapSimple.class, null));
-        final ConfigMapSimple mapSimple = injector.getInstance(ConfigMapSimple.class);
-        assertEquals(mapSimple.getMap(), ImmutableMap.of("key1", "value1", "key2", "value2"));
-    }
-
-    @Test
-    public void testConfigMapComplex()
-    {
-        final ImmutableSet<Integer> keys = ImmutableSet.of(1, 2, 3, 5, 8);
-        final Builder<String, String> builder = ImmutableMap.builder();
-        for (Integer key : keys) {
-            for (Entry<String, String> entry : properties.entrySet()) {
-                builder.put("map." + key + "." + entry.getKey(), entry.getValue());
-            }
-        }
-        Injector injector = createInjector(builder.build(), createModule(ConfigMapComplex.class, null));
-        final ConfigMapComplex mapComplex = injector.getInstance(ConfigMapComplex.class);
-        assertEquals(mapComplex.getMap().keySet(), keys);
-        for (Config1 config1 : mapComplex.getMap().values()) {
-            verifyConfig(config1);
-        }
-    }
-
-    @Test
-    public void testPrivateBinder()
-    {
-        Module module = binder -> {
-            PrivateBinder privateBinder = binder.newPrivateBinder();
-            privateBinder.install(createModule(Config1.class, null));
-            privateBinder.bind(ExposeConfig.class).in(Scopes.SINGLETON);
-            privateBinder.expose(ExposeConfig.class);
-        };
-        Injector injector = createInjector(properties, module);
-        verifyConfig(injector.getInstance(ExposeConfig.class).config1);
-    }
-
-    @Test
-    public void testPrivateBinderDifferentPrefix()
-    {
-        Module module = binder -> {
-            PrivateBinder privateBinder = binder.newPrivateBinder();
-            privateBinder.install(createModule(Config1.class, null));
-            privateBinder.bind(ExposeConfig.class).annotatedWith(named("no-prefix")).to(ExposeConfig.class).in(Scopes.SINGLETON);
-            privateBinder.expose(Key.get(ExposeConfig.class, named("no-prefix")));
-
-            privateBinder = binder.newPrivateBinder();
-            privateBinder.install(createModule(Config1.class, "prefix"));
-            privateBinder.bind(ExposeConfig.class).annotatedWith(named("prefix")).to(ExposeConfig.class).in(Scopes.SINGLETON);
-            privateBinder.expose(Key.get(ExposeConfig.class, named("prefix")));
-        };
-        properties = ImmutableMap.<String, String>builder()
-                .putAll(properties)
-                .put("prefix.stringOption", "a prefix string")
-                .build();
-        Injector injector = createInjector(properties, module);
-        verifyConfig(injector.getInstance(Key.get(ExposeConfig.class, named("no-prefix"))).config1);
-        assertEquals(injector.getInstance(Key.get(ExposeConfig.class, named("prefix"))).config1.getStringOption(), "a prefix string");
-    }
-
-    private static void verifyConfig(Config1 config)
-    {
-        assertEquals("a string", config.getStringOption());
-        assertEquals(true, config.getBooleanOption());
-        assertEquals(Boolean.TRUE, config.getBoxedBooleanOption());
-        assertEquals(Byte.MAX_VALUE, config.getByteOption());
-        assertEquals(Byte.valueOf(Byte.MAX_VALUE), config.getBoxedByteOption());
-        assertEquals(Short.MAX_VALUE, config.getShortOption());
-        assertEquals(Short.valueOf(Short.MAX_VALUE), config.getBoxedShortOption());
-        assertEquals(Integer.MAX_VALUE, config.getIntegerOption());
-        assertEquals(Integer.valueOf(Integer.MAX_VALUE), config.getBoxedIntegerOption());
-        assertEquals(Long.MAX_VALUE, config.getLongOption());
-        assertEquals(Long.valueOf(Long.MAX_VALUE), config.getBoxedLongOption());
-        assertEquals(Float.MAX_VALUE, config.getFloatOption(), 0);
-        assertEquals(Float.MAX_VALUE, config.getBoxedFloatOption());
-        assertEquals(Double.MAX_VALUE, config.getDoubleOption(), 0);
-        assertEquals(Double.MAX_VALUE, config.getBoxedDoubleOption());
-        assertEquals(MyEnum.FOO, config.getMyEnumOption());
-        assertEquals(config.getValueClassOption().getValue(), "a value class");
-    }
-
-    @Test
-    public void testDetectsNoConfigAnnotations()
-    {
-        try {
-            Injector injector = createInjector(Collections.<String, String>emptyMap(), createModule(ConfigWithNoAnnotations.class, null));
-            injector.getInstance(ConfigWithNoAnnotations.class);
-            fail("Expected exception due to missing @Config annotations");
-        }
-        catch (CreationException e) {
-            // do nothing
-        }
-    }
-
-    private static Injector createInjector(Map<String, String> properties, Module module)
-    {
-        ConfigurationFactory configurationFactory = new ConfigurationFactory(properties);
-        List<Message> messages = new ConfigurationValidator(configurationFactory).validate(module);
-        return Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
-    }
-
-    private static <T> Module createModule(final Class<T> configClass, final String prefix)
-    {
-        return binder -> {
-            PrefixConfigBindingBuilder<T> builder = bindConfig(binder).bind(configClass);
-            if (prefix != null) {
-                builder.prefixedWith(prefix);
-            }
-        };
-    }
 
     @BeforeMethod
     protected void setUp()
@@ -200,23 +83,345 @@ public class TestConfig
             .build();
     }
 
-    private Map<String, String> prefix(String prefix, Map<String, String> properties)
+    @Test(dataProvider = "bindArguments")
+    public void testConfig(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Injector injector = createInjector(prefix == null ? properties : prefix(properties), createModule(Config1.class, prefix, annotationClass, annotation));
+        verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
+    }
+
+    @Test(dataProvider = "bindArguments")
+    public void testConfigDefaults(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Injector injector = createInjector(ImmutableMap.of(), binder -> {
+            binder.install(createModule(Config1.class, prefix, annotationClass, annotation));
+            getDefaultsSetter(binder, annotationClass, annotation)
+                    .setStringOption("a string")
+                    .setBooleanOption(true)
+                    .setBoxedBooleanOption(true)
+                    .setByteOption(Byte.MAX_VALUE)
+                    .setBoxedByteOption(Byte.MAX_VALUE)
+                    .setShortOption(Short.MAX_VALUE)
+                    .setBoxedShortOption(Short.MAX_VALUE)
+                    .setIntegerOption(Integer.MAX_VALUE)
+                    .setBoxedIntegerOption(Integer.MAX_VALUE)
+                    .setLongOption(Long.MAX_VALUE)
+                    .setBoxedLongOption(Long.MAX_VALUE)
+                    .setFloatOption(Float.MAX_VALUE)
+                    .setBoxedFloatOption(Float.MAX_VALUE)
+                    .setDoubleOption(Double.MAX_VALUE)
+                    .setBoxedDoubleOption(Double.MAX_VALUE)
+                    .setMyEnumOption(MyEnum.FOO)
+                    .setValueClassOption(new ValueClass("a value class"));
+        });
+        verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
+    }
+
+    @Test(dataProvider = "bindArguments")
+    public void testPropertiesOverrideConfigDefaults(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Injector injector = createInjector(prefix == null ? properties : prefix(properties), binder -> {
+            binder.install(createModule(Config1.class, prefix, annotationClass, annotation));
+            getDefaultsSetter(binder, annotationClass, annotation)
+                    .setStringOption("default string")
+                    .setBooleanOption(false)
+                    .setBoxedBooleanOption(false)
+                    .setByteOption(Byte.MIN_VALUE)
+                    .setBoxedByteOption(Byte.MIN_VALUE)
+                    .setShortOption(Short.MIN_VALUE)
+                    .setBoxedShortOption(Short.MIN_VALUE)
+                    .setIntegerOption(Integer.MIN_VALUE)
+                    .setBoxedIntegerOption(Integer.MIN_VALUE)
+                    .setLongOption(Long.MIN_VALUE)
+                    .setBoxedLongOption(Long.MIN_VALUE)
+                    .setFloatOption(Float.MIN_VALUE)
+                    .setBoxedFloatOption(Float.MIN_VALUE)
+                    .setDoubleOption(Double.MIN_VALUE)
+                    .setBoxedDoubleOption(Double.MIN_VALUE)
+                    .setMyEnumOption(MyEnum.BAR)
+                    .setValueClassOption(new ValueClass("a default value class"));
+        });
+        verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
+    }
+
+    @Test(dataProvider = "bindArguments")
+    public void testParentModuleOverridesConfigDefaults(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Injector injector = createInjector(ImmutableMap.of(), binder -> {
+            binder.install(subBinder -> {
+                subBinder.install(createModule(Config1.class, prefix, annotationClass, annotation));
+                getDefaultsSetter(subBinder, annotationClass, annotation)
+                        .setStringOption("default string")
+                        .setBooleanOption(false)
+                        .setBoxedBooleanOption(false)
+                        .setByteOption(Byte.MIN_VALUE)
+                        .setBoxedByteOption(Byte.MIN_VALUE)
+                        .setShortOption(Short.MIN_VALUE)
+                        .setBoxedShortOption(Short.MIN_VALUE)
+                        .setIntegerOption(Integer.MIN_VALUE)
+                        .setBoxedIntegerOption(Integer.MIN_VALUE)
+                        .setLongOption(Long.MIN_VALUE)
+                        .setBoxedLongOption(Long.MIN_VALUE)
+                        .setFloatOption(Float.MIN_VALUE)
+                        .setBoxedFloatOption(Float.MIN_VALUE)
+                        .setDoubleOption(Double.MIN_VALUE)
+                        .setBoxedDoubleOption(Double.MIN_VALUE)
+                        .setMyEnumOption(MyEnum.BAR)
+                        .setValueClassOption(new ValueClass("a default value class"));
+            });
+            getDefaultsSetter(binder, annotationClass, annotation)
+                    .setStringOption("a string")
+                    .setBooleanOption(true)
+                    .setBoxedBooleanOption(true)
+                    .setByteOption(Byte.MAX_VALUE)
+                    .setBoxedByteOption(Byte.MAX_VALUE)
+                    .setShortOption(Short.MAX_VALUE)
+                    .setBoxedShortOption(Short.MAX_VALUE)
+                    .setIntegerOption(Integer.MAX_VALUE)
+                    .setBoxedIntegerOption(Integer.MAX_VALUE)
+                    .setLongOption(Long.MAX_VALUE)
+                    .setBoxedLongOption(Long.MAX_VALUE)
+                    .setFloatOption(Float.MAX_VALUE)
+                    .setBoxedFloatOption(Float.MAX_VALUE)
+                    .setDoubleOption(Double.MAX_VALUE)
+                    .setBoxedDoubleOption(Double.MAX_VALUE)
+                    .setMyEnumOption(MyEnum.FOO)
+                    .setValueClassOption(new ValueClass("a value class"));
+        });
+        verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
+    }
+
+
+    @Test(dataProvider = "bindArguments")
+    public void testApplicationDefaultsOverrideConfigDefaults(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Injector injector = createInjectorWithApplicationDefaults(prefix == null ? properties : prefix(properties), binder -> {
+            binder.install(createModule(Config1.class, prefix, annotationClass, annotation));
+            getDefaultsSetter(binder, annotationClass, annotation)
+                    .setStringOption("default string")
+                    .setBooleanOption(false)
+                    .setBoxedBooleanOption(false)
+                    .setByteOption(Byte.MIN_VALUE)
+                    .setBoxedByteOption(Byte.MIN_VALUE)
+                    .setShortOption(Short.MIN_VALUE)
+                    .setBoxedShortOption(Short.MIN_VALUE)
+                    .setIntegerOption(Integer.MIN_VALUE)
+                    .setBoxedIntegerOption(Integer.MIN_VALUE)
+                    .setLongOption(Long.MIN_VALUE)
+                    .setBoxedLongOption(Long.MIN_VALUE)
+                    .setFloatOption(Float.MIN_VALUE)
+                    .setBoxedFloatOption(Float.MIN_VALUE)
+                    .setDoubleOption(Double.MIN_VALUE)
+                    .setBoxedDoubleOption(Double.MIN_VALUE)
+                    .setMyEnumOption(MyEnum.BAR)
+                    .setValueClassOption(new ValueClass("a default value class"));
+        });
+        verifyConfig(injector.getInstance(getKey(Config1.class, annotationClass, annotation)));
+    }
+
+    @Test(dataProvider = "bindArguments")
+    public void testConfigMapSimple(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Map<String,String> properties = ImmutableMap.<String, String>builder()
+                    .put("map.key1", "value1")
+                    .put("map.key2", "value2")
+                    .build();
+        Injector injector = createInjector(prefix == null ? properties : prefix(properties), createModule(ConfigMapSimple.class, prefix, annotationClass, annotation));
+        ConfigMapSimple mapSimple = injector.getInstance(getKey(ConfigMapSimple.class, annotationClass, annotation));
+        assertThat(mapSimple.getMap()).isEqualTo(ImmutableMap.of("key1", "value1", "key2", "value2"));
+    }
+
+    @Test(dataProvider = "bindArguments")
+    public void testConfigMapComplex(String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        ImmutableSet<Integer> keys = ImmutableSet.of(1, 2, 3, 5, 8);
+        Builder<String, String> builder = ImmutableMap.builder();
+        for (Integer key : keys) {
+            for (Entry<String, String> entry : properties.entrySet()) {
+                builder.put("map." + key + "." + entry.getKey(), entry.getValue());
+            }
+        }
+        ImmutableMap<String, String> properties = builder.build();
+        Injector injector = createInjector(prefix == null ? properties : prefix(properties), createModule(ConfigMapComplex.class, prefix, annotationClass, annotation));
+        ConfigMapComplex mapComplex = injector.getInstance(getKey(ConfigMapComplex.class, annotationClass, annotation));
+        assertThat(mapComplex.getMap().keySet()).isEqualTo(keys);
+        for (Config1 config1 : mapComplex.getMap().values()) {
+            verifyConfig(config1);
+        }
+    }
+
+    @Test
+    public void testPrivateBinder()
+    {
+        Module module = binder -> {
+            PrivateBinder privateBinder = binder.newPrivateBinder();
+            privateBinder.install(createModule(Config1.class, null, null, null));
+            privateBinder.bind(ExposeConfig.class).in(Scopes.SINGLETON);
+            privateBinder.expose(ExposeConfig.class);
+        };
+        Injector injector = createInjector(properties, module);
+        verifyConfig(injector.getInstance(ExposeConfig.class).config1);
+    }
+
+    @Test
+    public void testPrivateBinderDifferentPrefix()
+    {
+        Module module = binder -> {
+            PrivateBinder privateBinder = binder.newPrivateBinder();
+            privateBinder.install(createModule(Config1.class, null, null, null));
+            privateBinder.bind(ExposeConfig.class).annotatedWith(named("no-prefix")).to(ExposeConfig.class).in(Scopes.SINGLETON);
+            privateBinder.expose(Key.get(ExposeConfig.class, named("no-prefix")));
+
+            privateBinder = binder.newPrivateBinder();
+            privateBinder.install(createModule(Config1.class, "prefix", null, null));
+            privateBinder.bind(ExposeConfig.class).annotatedWith(named("prefix")).to(ExposeConfig.class).in(Scopes.SINGLETON);
+            privateBinder.expose(Key.get(ExposeConfig.class, named("prefix")));
+        };
+        properties = ImmutableMap.<String, String>builder()
+                .putAll(properties)
+                .put("prefix.stringOption", "a prefix string")
+                .build();
+        Injector injector = createInjector(properties, module);
+        verifyConfig(injector.getInstance(Key.get(ExposeConfig.class, named("no-prefix"))).config1);
+        assertThat(injector.getInstance(Key.get(ExposeConfig.class, named("prefix"))).config1.getStringOption()).isEqualTo("a prefix string");
+    }
+
+    private static void verifyConfig(Config1 config)
+    {
+        assertThat(config.getStringOption()).isEqualTo("a string");
+        assertThat(config.getBooleanOption()).isTrue();
+        assertThat(config.getBoxedBooleanOption()).isTrue();
+        assertThat(config.getByteOption()).isEqualTo(Byte.MAX_VALUE);
+        assertThat(config.getBoxedByteOption()).isEqualTo(Byte.valueOf(Byte.MAX_VALUE));
+        assertThat(config.getShortOption()).isEqualTo(Short.MAX_VALUE);
+        assertThat(config.getBoxedShortOption()).isEqualTo(Short.valueOf(Short.MAX_VALUE));
+        assertThat(config.getIntegerOption()).isEqualTo(Integer.MAX_VALUE);
+        assertThat(config.getBoxedIntegerOption()).isEqualTo(Integer.valueOf(Integer.MAX_VALUE));
+        assertThat(config.getLongOption()).isEqualTo(Long.MAX_VALUE);
+        assertThat(config.getBoxedLongOption()).isEqualTo(Long.valueOf(Long.MAX_VALUE));
+        assertThat(config.getFloatOption()).isEqualTo(Float.MAX_VALUE);
+        assertThat(config.getBoxedFloatOption()).isEqualTo(Float.MAX_VALUE);
+        assertThat(config.getDoubleOption()).isEqualTo(Double.MAX_VALUE);
+        assertThat(config.getBoxedDoubleOption()).isEqualTo(Double.MAX_VALUE);
+        assertThat(config.getMyEnumOption()).isEqualTo(MyEnum.FOO);
+        assertThat(config.getValueClassOption().getValue()).isEqualTo("a value class");
+    }
+
+    @Test(expectedExceptions = CreationException.class)
+    public void testDetectsNoConfigAnnotations()
+    {
+        Injector injector = createInjector(Collections.emptyMap(), createModule(ConfigWithNoAnnotations.class, null, null, null));
+        injector.getInstance(ConfigWithNoAnnotations.class);
+    }
+
+    @DataProvider(name = "bindArguments")
+    @SuppressWarnings("unchecked")
+    public Object[][] bindArguments()
+    {
+        return Sets.cartesianProduct(
+                Sets.newHashSet(asList(new String[] {null}), asList("prefix")),
+                Sets.newHashSet(
+                        asList(null, null),
+                        asList(ForConfigTest.class, null),
+                        asList(null, Names.named("ConfigTest"))
+                )
+        )
+                .stream()
+                .map(l -> l.stream().flatMap(Collection::stream).toArray())
+                .toArray(Object[][]::new);
+    }
+
+    private static Injector createInjector(Map<String, String> properties, Module module)
+    {
+        ConfigurationFactory configurationFactory = new ConfigurationFactory(properties);
+        List<Message> messages = new ConfigurationValidator(configurationFactory).validate(module);
+        return Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
+    }
+
+    private static Injector createInjectorWithApplicationDefaults(Map<String, String> applicationDefaults, Module module)
+    {
+        ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
+                .withApplicationDefaults(applicationDefaults)
+                .build();
+        List<Message> messages = new ConfigurationValidator(configurationFactory).validate(module);
+        return Guice.createInjector(new ConfigurationModule(configurationFactory), module, new ValidationErrorModule(messages));
+    }
+
+    private static <T> Module createModule(Class<T> configClass, String prefix, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        return binder -> {
+            AnnotatedConfigBindingBuilder<T> annotatedBuilder = bindConfig(binder).bind(configClass);
+            PrefixConfigBindingBuilder builder;
+            if (annotationClass != null) {
+                builder = annotatedBuilder.annotatedWith(annotationClass);
+            }
+            else if (annotation != null) {
+                builder = annotatedBuilder.annotatedWith(annotation);
+            }
+            else {
+                builder = annotatedBuilder;
+            }
+            if (prefix != null) {
+                builder.prefixedWith(prefix);
+            }
+        };
+    }
+
+    private static <T> Key<T> getKey(Class<T> type, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        Key<T> key;
+        if (annotationClass != null) {
+            key = Key.get(type, annotationClass);
+        }
+        else if (annotation != null) {
+            key = Key.get(type, annotation);
+        }
+        else {
+            key = Key.get(type);
+        }
+        return key;
+    }
+
+    private static Map<String, String> prefix(Map<String, String> properties)
     {
         Builder<String, String> builder = ImmutableMap.builder();
         for (Entry<String, String> entry : properties.entrySet()) {
-            builder.put(prefix + "." + entry.getKey(), entry.getValue());
+            builder.put("prefix." + entry.getKey(), entry.getValue());
         }
         return builder.build();
     }
 
+    private Config1 getDefaultsSetter(Binder binder, Class<? extends Annotation> annotationClass, Annotation annotation)
+    {
+        AnnotatedConfigDefaultsBindingBuilder<Config1> annotatedBuilder = bindConfig(binder).bindDefaults(Config1.class);
+        ConfigDefaultsBindingBuilder<Config1> bindingBuilder;
+        if (annotationClass != null) {
+            bindingBuilder = annotatedBuilder.annotatedWith(annotationClass);
+        }
+        else if (annotation != null) {
+            bindingBuilder = annotatedBuilder.annotatedWith(annotation);
+        }
+        else {
+            bindingBuilder = annotatedBuilder;
+        }
+        return bindingBuilder.of();
+    }
+
     private static class ExposeConfig
     {
-        public final Config1 config1;
+        final Config1 config1;
 
         @Inject
         private ExposeConfig(Config1 config1)
         {
             this.config1 = config1;
         }
+    }
+
+    @Retention(RUNTIME)
+    @Target(PARAMETER)
+    @Qualifier
+    @interface ForConfigTest
+    {
     }
 }

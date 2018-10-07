@@ -112,7 +112,7 @@ public class ConfigurationInspector
 
             T defaults = null;
             try {
-                defaults = configurationFactory.buildDefaults(configClass, prefix);
+                defaults = configurationFactory.buildDefaults(configClass, key, prefix);
             }
             catch (Throwable ignored) {
             }

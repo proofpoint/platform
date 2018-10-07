@@ -21,6 +21,7 @@ import com.google.inject.ConfigurationException;
 import com.google.inject.Module;
 import com.google.inject.spi.DefaultElementVisitor;
 import com.google.inject.spi.Element;
+import com.google.inject.spi.InstanceBinding;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.PrivateElements;
 import com.google.inject.spi.ProviderInstanceBinding;
@@ -68,7 +69,26 @@ public class ConfigurationValidator
             configurationFactory.getMonitor().onError(message);
         }
 
-        for (final Element element : new ElementsIterator(modules)) {
+        ElementsIterator elementsIterator = new ElementsIterator(modules);
+        for (Element element : elementsIterator) {
+            element.acceptVisitor(new DefaultElementVisitor<Void>()
+            {
+                @Override
+                public <T> Void visit(Binding<T> binding)
+                {
+                    // look for default configs
+                    if (binding instanceof InstanceBinding) {
+                        InstanceBinding<T> instanceBinding = (InstanceBinding<T>) binding;
+                        if (instanceBinding.getInstance() instanceof ConfigDefaultsHolder) {
+                            configurationFactory.registerConfigDefaults((ConfigDefaultsHolder<?>) instanceBinding.getInstance());
+                        }
+                    }
+                    return null;
+                }
+            });
+        }
+
+        for (final Element element : elementsIterator) {
             element.acceptVisitor(new DefaultElementVisitor<Void>()
             {
                 @Override

@@ -1031,7 +1031,7 @@ public class ConfigurationFactoryTest
         }
 
         @Config("boolean-value")
-        private void setBooleanValue(boolean booleanValue)
+        void setBooleanValue(boolean booleanValue)
         {
             this.booleanValue = booleanValue;
         }

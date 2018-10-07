@@ -15,12 +15,18 @@
  */
 package com.proofpoint.configuration;
 
+import com.google.common.reflect.TypeParameter;
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Binder;
 import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.binder.AnnotatedBindingBuilder;
+import com.google.inject.multibindings.Multibinder;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -70,6 +76,24 @@ import static java.util.Objects.requireNonNull;
  *
  * May be combined with {@code .annotatedWith()}.
  *
+ * <pre>
+ *     configBinder(binder)
+ *         .bindDefaults(FooConfig.class)
+ *         .of()
+ *         .setConfigAttribute(newDefault)
+ *         .setOtherConfigAttribute(otherDefault);</pre>
+ *
+ * Modifies the default values of configuration class {@code FooConfig}
+ * (which must have already been bound elsewhere). Each configuration object
+ * constructed will have its defaults adjusted by calling the provided
+ * {@code @Config}-annotated setters with the provided non-null values.
+ * These calls will happen before any application defaults are applied.
+ *
+ * Supplying a mutable object as a default and then mutating it results
+ * in undefined behavior.
+ *
+ * May be combined with {@code .annotatedWith()}.
+ *
  */
 public final class ConfigBinder
 {
@@ -99,6 +123,14 @@ public final class ConfigBinder
         AnnotatedBindingBuilder<T> builder = binder.bind(configClass);
         builder.toProvider(configurationProvider);
         return new AnnotatedConfigBindingBuilder<>(builder, configurationProvider);
+    }
+
+    /**
+     * See the EDSL description at {@link ConfigBinder}.
+     */
+    public <T> AnnotatedConfigDefaultsBindingBuilder<T> bindDefaults(Class<T> configClass)
+    {
+        return new AnnotatedConfigDefaultsBindingBuilder<>(configClass);
     }
 
     public final static class AnnotatedConfigBindingBuilder<T>
@@ -152,5 +184,72 @@ public final class ConfigBinder
             requireNonNull(prefix, "prefix is null");
             configurationProvider.setPrefix(prefix);
         }
+    }
+
+    public final class AnnotatedConfigDefaultsBindingBuilder<T>
+        extends ConfigDefaultsBindingBuilder<T>
+    {
+        private AnnotatedConfigDefaultsBindingBuilder(Class<T> configClass)
+        {
+            super(configClass, Key.get(configClass));
+        }
+
+        /**
+         * See the EDSL description at {@link ConfigBinder}.
+         */
+        public ConfigDefaultsBindingBuilder<T> annotatedWith(Class<? extends Annotation> annotationType)
+        {
+            requireNonNull(annotationType, "annotationType is null");
+            return new ConfigDefaultsBindingBuilder<>(configClass, Key.get(configClass, annotationType));
+        }
+
+        /**
+         * See the EDSL description at {@link ConfigBinder}.
+         */
+        public ConfigDefaultsBindingBuilder<T> annotatedWith(Annotation annotation)
+        {
+            requireNonNull(annotation, "annotation is null");
+            return new ConfigDefaultsBindingBuilder<>(configClass, Key.get(configClass, annotation));
+        }
+    }
+
+    public class ConfigDefaultsBindingBuilder<T>
+    {
+        final Class<T> configClass;
+        final Key<T> configKey;
+
+        private ConfigDefaultsBindingBuilder(Class<T> configClass, Key<T> configKey)
+        {
+            this.configClass = configClass;
+            this.configKey = configKey;
+        }
+
+        /**
+         * See the EDSL description at {@link ConfigBinder}.
+         */
+        public T of() {
+            Recorder<T> recorder = new Recorder<>(configClass);
+            createConfigDefaultsBinder(configKey).addBinding().toInstance(new ConfigDefaultsHolder<>(configKey, recorder));
+            return recorder.getRecordingObject();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> Multibinder<ConfigDefaultsHolder<T>> createConfigDefaultsBinder(Key<T> key)
+    {
+        @SuppressWarnings("SerializableInnerClassWithNonSerializableOuterClass")
+        Type type = new TypeToken<ConfigDefaultsHolder<T>>() {}
+                .where(new TypeParameter<T>() {}, (TypeToken<T>) TypeToken.of(key.getTypeLiteral().getType()))
+                .getType();
+
+        TypeLiteral<ConfigDefaultsHolder<T>> typeLiteral = (TypeLiteral<ConfigDefaultsHolder<T>>) TypeLiteral.get(type);
+
+        if (key.getAnnotation() == null) {
+            return newSetBinder(binder, typeLiteral);
+        }
+        if (key.hasAttributes()) {
+            return newSetBinder(binder, typeLiteral, key.getAnnotation());
+        }
+        return newSetBinder(binder, typeLiteral, key.getAnnotationType());
     }
 }

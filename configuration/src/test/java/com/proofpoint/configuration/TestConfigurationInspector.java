@@ -27,7 +27,7 @@ import java.util.TreeMap;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
-import static org.testng.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.Assert.fail;
 
 public class TestConfigurationInspector
@@ -108,6 +108,26 @@ public class TestConfigurationInspector
     }
 
     @Test
+    public void testSimpleConfigWithBoundDefaults()
+    {
+        Map<String, String> properties = ImmutableMap.of(
+                "string-value", "some value",
+                "boolean-value", "false"
+        );
+
+        inspect(properties, null, null, null, binder -> {
+            bindConfig(binder).bind(AnnotatedSetter.class);
+            AnnotatedSetter defaultSetter = bindConfig(binder).bindDefaults(AnnotatedSetter.class).of();
+            defaultSetter.setStringValue("some default value");
+            defaultSetter.setBooleanValue(true);
+        })
+                .component("ConfigurationFactoryTest$AnnotatedSetter")
+                .value("BooleanValue", "boolean-value", "true", "false", "")
+                .value("StringValue", "string-value", "some default value", "some value", "")
+                .end();
+    }
+
+    @Test
     public void testSimpleConfigWithModuleDefaults()
     {
         Map<String, String> properties = ImmutableMap.of(
@@ -146,6 +166,30 @@ public class TestConfigurationInspector
                 .value("StringValue", "string-value", "some default value", "some value", "")
                 .end();
     }
+
+    @Test
+    public void testSimpleConfigWithBoundAndApplicationDefaults()
+    {
+        Map<String, String> properties = ImmutableMap.of(
+                "string-value", "some value",
+                "boolean-value", "false"
+        );
+        Map<String, String> applicationDefaults = ImmutableMap.of(
+                "string-value", "some default value",
+                "boolean-value", "true"
+        );
+        inspect(properties, applicationDefaults, null, null, binder -> {
+                    bindConfig(binder).bind(AnnotatedSetter.class);
+                    AnnotatedSetter defaultSetter = bindConfig(binder).bindDefaults(AnnotatedSetter.class).of();
+                    defaultSetter.setStringValue("some default value");
+                    defaultSetter.setBooleanValue(true);
+                })
+                .component("ConfigurationFactoryTest$AnnotatedSetter")
+                .value("BooleanValue", "boolean-value", "true", "false", "")
+                .value("StringValue", "string-value", "some default value", "some value", "")
+                .end();
+    }
+
     @Test
     public void testSimpleConfigWithModuleAndApplicationDefaults()
     {
@@ -311,7 +355,7 @@ public class TestConfigurationInspector
                 fail("Extra attributes: " + Iterators.toString(attributeIterator));
             }
             ConfigRecord<?> record = recordIterator.next();
-            assertEquals(record.getComponentName(), "".equals(expectedName) ? "" : (PACKAGE_NAME + expectedName));
+            assertThat(record.getComponentName()).isEqualTo("".equals(expectedName) ? "" : (PACKAGE_NAME + expectedName));
             attributeIterator = record.getAttributes().iterator();
             return this;
         }
@@ -322,7 +366,7 @@ public class TestConfigurationInspector
                 fail("Extra attributes: " + Iterators.toString(attributeIterator));
             }
             ConfigRecord<?> record = recordIterator.next();
-            assertEquals(record.getComponentName(), annotation + " " + PACKAGE_NAME + expectedName);
+            assertThat(record.getComponentName()).isEqualTo(annotation + " " + PACKAGE_NAME + expectedName);
             attributeIterator = record.getAttributes().iterator();
             return this;
         }
@@ -330,11 +374,11 @@ public class TestConfigurationInspector
         public InspectionVerifier value(String attributeName, String propertyName, String defaultValue, String currentValue, String description)
         {
             final ConfigAttribute attribute = attributeIterator.next();
-            assertEquals(attribute.getAttributeName(), attributeName, "Attribute name");
-            assertEquals(attribute.getPropertyName(), propertyName, "Property name");
-            assertEquals(attribute.getDefaultValue(), defaultValue, "Default value");
-            assertEquals(attribute.getCurrentValue(), currentValue, "Current value");
-            assertEquals(attribute.getDescription(), description, "Description");
+            assertThat(attribute.getAttributeName()).as("Attribute name").isEqualTo(attributeName);
+            assertThat(attribute.getPropertyName()).as("Property name").isEqualTo(propertyName);
+            assertThat(attribute.getDefaultValue()).as("Default value").isEqualTo(defaultValue);
+            assertThat(attribute.getCurrentValue()).as("Current value").isEqualTo(currentValue);
+            assertThat(attribute.getDescription()).as("Description").isEqualTo(description);
             return this;
         }
 
