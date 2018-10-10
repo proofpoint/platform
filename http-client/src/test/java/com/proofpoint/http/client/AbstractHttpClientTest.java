@@ -200,7 +200,6 @@ public abstract class AbstractHttpClientTest
 
         ServletHolder servletHolder = new ServletHolder(servlet);
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        context.setGzipHandler(new HackGzipHandler());
         context.addServlet(servletHolder, "/*");
         HandlerCollection handlers = new HandlerCollection();
         handlers.addHandler(context);
@@ -1317,7 +1316,7 @@ public abstract class AbstractHttpClientTest
             throws Exception
     {
         if (createClientConfig().isHttp2Enabled()) {
-            // To difficult to test with HTTP/2
+            // Too difficult to test with HTTP/2
             return;
         }
 
@@ -1785,21 +1784,5 @@ public abstract class AbstractHttpClientTest
     private static <E extends Exception> E castThrowable(Throwable t)
     {
         return (E) t;
-    }
-
-    // TODO: remove this when fixed in Jetty
-    private static class HackGzipHandler
-            extends GzipHandler
-    {
-        @Override
-        public Deflater getDeflater(org.eclipse.jetty.server.Request request, long content_length)
-        {
-            // GzipHandler incorrectly skips this check for HTTP/2
-            HttpField accept = request.getHttpFields().getField(HttpHeader.ACCEPT_ENCODING);
-            if ((accept == null) || !accept.contains("gzip")) {
-                return null;
-            }
-            return super.getDeflater(request, content_length);
-        }
     }
 }
