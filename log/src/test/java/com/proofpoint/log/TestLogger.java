@@ -116,7 +116,7 @@ public class TestLogger
         assertLog(Level.WARNING, "hello, you");
 
         // throwable with message
-        @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+        @SuppressWarnings("ThrowableInstanceNeverThrown")
         Throwable exception = new Throwable();
         logger.warn(exception, "got exception: %s", "foo");
         assertLog(Level.WARNING, "got exception: foo", exception);
@@ -130,14 +130,14 @@ public class TestLogger
         assertLog(Level.SEVERE, "hello, you");
 
         // throwable with message
-        @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+        @SuppressWarnings("ThrowableInstanceNeverThrown")
         Throwable exception = new Throwable();
 
         logger.error(exception, "got exception: %s", "foo");
         assertLog(Level.SEVERE, "got exception: foo", exception);
 
         // throwable alone
-        @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+        @SuppressWarnings("ThrowableInstanceNeverThrown")
         Throwable exception2 = new Throwable("the message");
         logger.error(exception2);
         assertLog(Level.SEVERE, exception2.getMessage(), exception2);
@@ -180,7 +180,7 @@ public class TestLogger
     {
         inner.setLevel(Level.OFF);
 
-        @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+        @SuppressWarnings("ThrowableInstanceNeverThrown")
         Throwable e = new Throwable();
         logger.warn(e, "hello");
 
@@ -200,7 +200,7 @@ public class TestLogger
     {
         inner.setLevel(Level.OFF);
 
-        @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+        @SuppressWarnings("ThrowableInstanceNeverThrown")
         Throwable e = new Throwable();
         logger.error(e, "hello");
 
@@ -212,7 +212,7 @@ public class TestLogger
     {
         inner.setLevel(Level.OFF);
 
-        @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+        @SuppressWarnings("ThrowableInstanceNeverThrown")
         Throwable e = new Throwable();
         logger.error(e);
 
