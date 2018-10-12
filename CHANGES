@@ -26,6 +26,21 @@ Platform 1.87
         <optional>true</optional>
     </dependency>
 
+* In-IDE testing
+
+  We created a new configuration option for simplifying discovery when running
+  servers in-IDE. If the configuration option "testing.discovery.static" is
+  se to "true", then service discovery will be performed statically through
+  configuration rather than querying the discovery service.
+
+  Like the StaticDiscoveryModule(), this mode will use a comma-separated list
+  of URIs from the "service-balancer.SERVICETYPE.uri" config option. This mode
+  will also swallow Discovery announcements.
+
+  This mode is not appropriate for production use. Instead use
+  StaticDiscoveryModule() if a production service needs to run without a
+  discovery service.
+
 * HttpClient
 
   We removed support for setting the configuration property
