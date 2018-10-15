@@ -64,5 +64,11 @@
             <artifactId>bval-jsr</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!--Java 9 workaround for missing bval-jsr dependency declaration BVAL-155 -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
     </dependencies>
 </project>
