@@ -149,6 +149,12 @@
             <artifactId>bval-jsr</artifactId>
         </dependency>
 
+        <!--Java 9 workaround for missing bval-jsr dependency declaration BVAL-155 -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
