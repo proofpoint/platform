@@ -396,14 +396,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>3.1.6</version>
-                    <dependencies>
-                      <dependency>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs</artifactId>
-                        <version>3.1.7</version>
-                      </dependency>
-                    </dependencies>
+                    <version>3.1.7</version>
                     <configuration>
                         <skip>${platform.check.skip-spotbugs}</skip>
                         <jvmArgs>-Xmx${platform.build.jvmsize}</jvmArgs>
