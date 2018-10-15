@@ -13,6 +13,10 @@ Platform 1.88
   - Jetty to 9.4.12 (was 9.3.24)
   - jaxb-api to 2.3.0 (was 2.2.6)
 
+* Maven plugin upgrades
+
+  - spotbugs-maven-plugin to 3.1.7 (was 3.1.6)
+
 Platform 1.87
 
 * Maven
