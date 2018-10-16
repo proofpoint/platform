@@ -16,7 +16,6 @@
 package com.proofpoint.reporting;
 
 import javax.annotation.Nullable;
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
@@ -25,5 +24,5 @@ interface ReportedBeanAttribute
     String getName();
 
     Object getValue(@Nullable Object target)
-            throws AttributeNotFoundException, MBeanException, ReflectionException;
+            throws MBeanException, ReflectionException;
 }

@@ -76,7 +76,7 @@ public class ReportCollector
                     try {
                         value = attribute.getValue(null);
                     }
-                    catch (AttributeNotFoundException | MBeanException | ReflectionException ignored) {
+                    catch (MBeanException | ReflectionException ignored) {
                     }
 
                     if (value != null && isReportable(value)) {
