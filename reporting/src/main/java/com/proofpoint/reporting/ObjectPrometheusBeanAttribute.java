@@ -16,7 +16,6 @@
 package com.proofpoint.reporting;
 
 import javax.annotation.Nullable;
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
@@ -61,7 +60,7 @@ class ObjectPrometheusBeanAttribute implements PrometheusBeanAttribute
 
     @Override
     public ValueAndTimestamp getValue(@Nullable Object target)
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         return valueAndTimestamp(simplePrometheusValue(invoke(firstNonNull(target, this.target), getter)), null);
     }

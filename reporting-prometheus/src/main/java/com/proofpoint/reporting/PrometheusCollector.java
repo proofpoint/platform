@@ -23,7 +23,6 @@ import com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 
 import javax.inject.Inject;
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.util.Map;
@@ -95,7 +94,7 @@ class PrometheusCollector
                 try {
                     valueAndTimestamp = attribute.getValue(null);
                 }
-                catch (AttributeNotFoundException | MBeanException | ReflectionException ignored) {
+                catch (MBeanException | ReflectionException ignored) {
                 }
 
                 if (valueAndTimestamp != null) {

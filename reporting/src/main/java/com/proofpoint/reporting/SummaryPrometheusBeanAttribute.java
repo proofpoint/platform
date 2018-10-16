@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.proofpoint.reporting.Bucketed.BucketInfo;
 
 import javax.annotation.Nullable;
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.util.Collection;
@@ -67,7 +66,7 @@ class SummaryPrometheusBeanAttribute implements PrometheusBeanAttribute
 
     @Override
     public ValueAndTimestamp getValue(@Nullable Object target)
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         BucketInfo bucketInfo = (BucketInfo) invoke(firstNonNull(target, holder), GET_PREVIOUS_BUCKET);
         Builder<String, PrometheusValue> builder = ImmutableMap.builder();
@@ -76,7 +75,7 @@ class SummaryPrometheusBeanAttribute implements PrometheusBeanAttribute
             try {
                 valueAndTimestamp = delegate.getValue(bucketInfo.getBucket());
             }
-            catch (AttributeNotFoundException | MBeanException | ReflectionException ignored) {
+            catch (MBeanException | ReflectionException ignored) {
             }
             if (valueAndTimestamp != null) {
                 builder.put(delegate.getName(), valueAndTimestamp.getValue());
