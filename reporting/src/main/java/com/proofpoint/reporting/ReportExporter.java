@@ -165,7 +165,7 @@ public class ReportExporter
         }
 
         try {
-            for (Entry<Method, Method> entry : findAnnotatedMethods(object.getClass(), ReportedAnnotation.class, Prometheus.class).entrySet()) {
+            for (Entry<Method, Method> entry : findAnnotatedMethods(object.getClass(), ReportedAnnotation.class).entrySet()) {
                 notifyBucketIdProvider(entry.getKey().invoke(object), bucketIdProvider, entry.getValue());
             }
         }

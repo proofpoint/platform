@@ -17,14 +17,10 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableList;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.proofpoint.reporting.PrometheusType.GAUGE;
-import static com.proofpoint.reporting.PrometheusType.SUPPRESSED;
 import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
 import static com.proofpoint.reporting.ReportedMethodInfo.reportedMethodInfo;
 import static java.util.Objects.requireNonNull;
@@ -32,26 +28,6 @@ import static java.util.stream.Collectors.toList;
 
 class ReportedMethodInfoBuilder
 {
-    private static final Prometheus DEFAULT_PROMETHEUS = new Prometheus()
-    {
-        @Override
-        public String name()
-        {
-            return "";
-        }
-
-        @Override
-        public PrometheusType type()
-        {
-            return GAUGE;
-        }
-
-        @Override
-        public Class<? extends Annotation> annotationType()
-        {
-            return Prometheus.class;
-        }
-    };
     private Object target;
     private String name;
     private Method concreteGetter;
@@ -90,7 +66,6 @@ class ReportedMethodInfoBuilder
     public ReportedMethodInfo build()
     {
         checkArgument(target != null, "JmxAttribute must have a target object");
-        Prometheus prometheus = firstNonNull(annotatedGetter.getAnnotation(Prometheus.class), DEFAULT_PROMETHEUS);
 
         if (AnnotationUtils.isFlatten(annotatedGetter)) {
             checkArgument(concreteGetter != null, "Flattened JmxAttribute must have a concrete getter");
@@ -110,15 +85,9 @@ class ReportedMethodInfoBuilder
             List<ReportedBeanAttribute> attributes = reportedBean.getAttributes().stream()
                     .map(attribute -> new FlattenReportedBeanAttribute(concreteGetter, attribute))
                     .collect(toList());
-            List<PrometheusBeanAttribute> prometheusAttributes;
-            if (prometheus.type() == SUPPRESSED) {
-                prometheusAttributes = ImmutableList.of();
-            }
-            else {
-                prometheusAttributes = reportedBean.getPrometheusAttributes().stream()
-                        .map(attribute -> new FlattenPrometheusBeanAttribute(concreteGetter, attribute))
-                        .collect(toList());
-            }
+            List<PrometheusBeanAttribute> prometheusAttributes = reportedBean.getPrometheusAttributes().stream()
+                    .map(attribute -> new FlattenPrometheusBeanAttribute(concreteGetter, attribute))
+                    .collect(toList());
             return reportedMethodInfo(attributes, prometheusAttributes);
         }
         else if (AnnotationUtils.isNested(annotatedGetter)) {
@@ -139,15 +108,9 @@ class ReportedMethodInfoBuilder
             List<ReportedBeanAttribute> attributes = reportedBean.getAttributes().stream()
                     .map(attribute -> new NestedReportedBeanAttribute(name, concreteGetter, attribute))
                     .collect(toList());
-            List<PrometheusBeanAttribute> prometheusAttributes;
-            if (prometheus.type() == SUPPRESSED) {
-                prometheusAttributes = ImmutableList.of();
-            }
-            else {
-                prometheusAttributes = reportedBean.getPrometheusAttributes().stream()
-                        .map(attribute -> new NestedPrometheusBeanAttribute(name, concreteGetter, attribute))
-                        .collect(toList());
-            }
+            List<PrometheusBeanAttribute> prometheusAttributes = reportedBean.getPrometheusAttributes().stream()
+                    .map(attribute -> new NestedPrometheusBeanAttribute(name, concreteGetter, attribute))
+                    .collect(toList());
             return reportedMethodInfo(attributes, prometheusAttributes);
         }
         else {
@@ -160,9 +123,7 @@ class ReportedMethodInfoBuilder
                         AnnotationUtils.isReported(annotatedGetter) ?
                                 ImmutableList.of(new BooleanReportedBeanAttribute(name, target, concreteGetter)) :
                                 ImmutableList.of(),
-                        prometheus.type() != SUPPRESSED ?
-                                ImmutableList.of(new BooleanPrometheusBeanAttribute(name, target, concreteGetter)) :
-                                ImmutableList.of()
+                        ImmutableList.of(new BooleanPrometheusBeanAttribute(name, target, concreteGetter))
                 );
             }
 
@@ -170,9 +131,7 @@ class ReportedMethodInfoBuilder
                     AnnotationUtils.isReported(annotatedGetter) ?
                             ImmutableList.of(new ObjectReportedBeanAttribute(name, target, concreteGetter)) :
                             ImmutableList.of(),
-                    prometheus.type() != SUPPRESSED ?
-                            ImmutableList.of(new ObjectPrometheusBeanAttribute(name, prometheus, target, concreteGetter)) :
-                            ImmutableList.of()
+                    ImmutableList.of(new ObjectPrometheusBeanAttribute(name, target, concreteGetter))
             );
         }
     }

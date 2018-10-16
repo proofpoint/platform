@@ -30,18 +30,11 @@ class ObjectPrometheusBeanAttribute implements PrometheusBeanAttribute
 {
     private final Object target;
     private final String name;
-    private final PrometheusType type;
     private final Method getter;
 
-    ObjectPrometheusBeanAttribute(String name, Prometheus prometheus, Object target, Method getter)
+    ObjectPrometheusBeanAttribute(String name, Object target, Method getter)
     {
-        this.type = requireNonNull(prometheus, "prometheus is null").type();
-        if ("".equals(prometheus.name())) {
-            this.name = requireNonNull(name, "name is null");
-        }
-        else {
-            this.name = prometheus.name();
-        }
+        this.name = requireNonNull(name, "name is null");
         this.target = requireNonNull(target, "target is null");
         this.getter = requireNonNull(getter, "getter is null");
     }
@@ -55,7 +48,7 @@ class ObjectPrometheusBeanAttribute implements PrometheusBeanAttribute
     @Override
     public String getType()
     {
-        return type.name().toLowerCase();
+        return "gauge";
     }
 
     @Override
