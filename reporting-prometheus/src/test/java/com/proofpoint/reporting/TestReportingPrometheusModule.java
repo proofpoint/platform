@@ -264,10 +264,10 @@ public class TestReportingPrometheusModule
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
-                "#TYPE CounterObject_Normal_Count counter\n" +
-                        "CounterObject_Normal_Count{" + EXPECTED_INSTANCE_TAGS + "} 2\n" +
-                        "#TYPE CounterObject_Sparse_Count counter\n" +
-                        "CounterObject_Sparse_Count{" + EXPECTED_INSTANCE_TAGS + "} 4.0\n" +
+                "#TYPE CounterObject_Normal_Count gauge\n" +
+                        "CounterObject_Normal_Count{" + EXPECTED_INSTANCE_TAGS + "} 1.0 1100\n" +
+                        "#TYPE CounterObject_Sparse_Count gauge\n" +
+                        "CounterObject_Sparse_Count{" + EXPECTED_INSTANCE_TAGS + "} 2.0 1100\n" +
                         "#TYPE ReportCollector_NumMetrics gauge\n" +
                         "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
@@ -334,8 +334,8 @@ public class TestReportingPrometheusModule
                         "StatsObject{quantile=\"0.95\"," + EXPECTED_INSTANCE_TAGS + "} 95" + expectedSuffix + " 1200\n" +
                         "StatsObject{quantile=\"0.99\"," + EXPECTED_INSTANCE_TAGS + "} 99" + expectedSuffix + " 1200\n" +
                         "StatsObject{quantile=\"1\"," + EXPECTED_INSTANCE_TAGS + "} 99" + expectedSuffix + " 1200\n" +
-                        "StatsObject_sum{" + EXPECTED_INSTANCE_TAGS + "} 104950" + expectedSuffix + " 1200\n" +
-                        "StatsObject_count{" + EXPECTED_INSTANCE_TAGS + "} 200 1200\n"
+                        "StatsObject_Total{" + EXPECTED_INSTANCE_TAGS + "} 4950" + expectedSuffix + " 1200\n" +
+                        "StatsObject_Count{" + EXPECTED_INSTANCE_TAGS + "} 100.0 1200\n"
         );
     }
 
@@ -446,8 +446,8 @@ public class TestReportingPrometheusModule
                         "StatsObject_DistributionStat{quantile=\"0.95\"," + EXPECTED_INSTANCE_TAGS + "} 95 1200\n" +
                         "StatsObject_DistributionStat{quantile=\"0.99\"," + EXPECTED_INSTANCE_TAGS + "} 99 1200\n" +
                         "StatsObject_DistributionStat{quantile=\"1\"," + EXPECTED_INSTANCE_TAGS + "} 99 1200\n" +
-                        "StatsObject_DistributionStat_sum{" + EXPECTED_INSTANCE_TAGS + "} 104950 1200\n" +
-                        "StatsObject_DistributionStat_count{" + EXPECTED_INSTANCE_TAGS + "} 200 1200\n"
+                        "StatsObject_DistributionStat_Total{" + EXPECTED_INSTANCE_TAGS + "} 4950 1200\n" +
+                        "StatsObject_DistributionStat_Count{" + EXPECTED_INSTANCE_TAGS + "} 100.0 1200\n"
         );
     }
 

@@ -16,14 +16,10 @@
 package com.proofpoint.stats;
 
 import com.google.common.base.Function;
-import com.proofpoint.reporting.Prometheus;
 import com.proofpoint.reporting.PrometheusSummary;
 import com.proofpoint.reporting.Reported;
 
 import javax.annotation.concurrent.GuardedBy;
-
-import static com.proofpoint.reporting.PrometheusType.COUNTER;
-import static com.proofpoint.reporting.PrometheusType.SUPPRESSED;
 
 public final class BucketedTimeDistribution
     extends PrometheusSummary<BucketedTimeDistribution.Distribution>
@@ -32,8 +28,6 @@ public final class BucketedTimeDistribution
     {
         applyToCurrentBucket((Function<Distribution, Void>) input -> {
             synchronized (input) {
-                input.allTimeCount++;
-                input.allTimeTotal += value;
                 input.digest.add(value);
                 input.total += value;
             }
@@ -44,7 +38,7 @@ public final class BucketedTimeDistribution
     @Override
     protected Distribution createBucket(Distribution previousBucket)
     {
-        return new Distribution(previousBucket);
+        return new Distribution();
     }
 
     protected static class Distribution
@@ -52,86 +46,58 @@ public final class BucketedTimeDistribution
         private static final double MAX_ERROR = 0.01;
 
         @GuardedBy("this")
-        private long allTimeTotal = 0;
-
-        @GuardedBy("this")
-        private long allTimeCount = 0;
-
-        @GuardedBy("this")
         private final QuantileDigest digest = new QuantileDigest(MAX_ERROR);
 
         @GuardedBy("this")
         private long total = 0;
-    
-        public Distribution(Distribution previousDistribution)
-        {
-            if (previousDistribution != null) {
-                allTimeTotal = previousDistribution.allTimeTotal;
-                allTimeCount = previousDistribution.allTimeCount;
-            }
-        }
-
-        @Prometheus(name = "Sum", type = COUNTER)
-        public synchronized double getAllTimeTotal()
-        {
-            return convertToSeconds(allTimeTotal);
-        }
-
-        @Prometheus(name = "Count", type = COUNTER)
-        public synchronized long getAllTimeCount()
-        {
-            return allTimeCount;
-        }
 
         @Reported
-        @Prometheus(type = SUPPRESSED)
         public synchronized double getCount()
         {
             return digest.getCount();
         }
 
         @Reported
-        @Prometheus(type = SUPPRESSED)
         public synchronized double getTotal() {
             return convertToSeconds(total);
         }
-    
+
         @Reported
         public synchronized double getP50()
         {
             return convertToSeconds(digest.getQuantile(0.5));
         }
-    
+
         @Reported
         public synchronized double getP75()
         {
             return convertToSeconds(digest.getQuantile(0.75));
         }
-    
+
         @Reported
         public synchronized double getP90()
         {
             return convertToSeconds(digest.getQuantile(0.90));
         }
-    
+
         @Reported
         public synchronized double getP95()
         {
             return convertToSeconds(digest.getQuantile(0.95));
         }
-    
+
         @Reported
         public synchronized double getP99()
         {
             return convertToSeconds(digest.getQuantile(0.99));
         }
-    
+
         @Reported
         public synchronized double getMin()
         {
             return convertToSeconds(digest.getMin());
         }
-    
+
         @Reported
         public synchronized double getMax()
         {
