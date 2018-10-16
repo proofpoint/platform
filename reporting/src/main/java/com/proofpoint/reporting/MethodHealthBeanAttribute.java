@@ -17,7 +17,6 @@ package com.proofpoint.reporting;
 
 import com.google.auto.value.AutoValue;
 
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
@@ -39,7 +38,7 @@ abstract class MethodHealthBeanAttribute
 
     @Override
     public String getValue()
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         Object value = invoke(getTarget(), getGetter());
         if (value == null) {

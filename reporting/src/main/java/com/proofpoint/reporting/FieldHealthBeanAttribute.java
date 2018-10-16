@@ -2,8 +2,6 @@ package com.proofpoint.reporting;
 
 import com.google.auto.value.AutoValue;
 
-import javax.management.AttributeNotFoundException;
-import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,7 +21,7 @@ abstract class FieldHealthBeanAttribute
 
     @Override
     public String getValue()
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws ReflectionException
     {
         Object atomicReference;
         try {
