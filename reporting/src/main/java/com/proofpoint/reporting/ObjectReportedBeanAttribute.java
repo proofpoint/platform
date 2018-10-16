@@ -16,7 +16,6 @@
 package com.proofpoint.reporting;
 
 import javax.annotation.Nullable;
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
@@ -46,7 +45,7 @@ class ObjectReportedBeanAttribute implements ReportedBeanAttribute
 
     @Override
     public Object getValue(@Nullable Object target)
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         return invoke(firstNonNull(target, this.target), getter);
     }

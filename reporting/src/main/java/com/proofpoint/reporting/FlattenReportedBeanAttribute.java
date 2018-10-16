@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
@@ -43,7 +42,7 @@ class FlattenReportedBeanAttribute implements ReportedBeanAttribute
 
     @Override
     public Object getValue(Object target)
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         if (target != null) {
             target = invoke(target, flattenGetter);

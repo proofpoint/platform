@@ -43,7 +43,7 @@ class NestedReportedBeanAttribute implements ReportedBeanAttribute
 
     @Override
     public Object getValue(Object target)
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         if (target != null) {
             target = invoke(target, nestedGetter);
