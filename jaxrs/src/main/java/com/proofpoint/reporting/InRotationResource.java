@@ -19,7 +19,6 @@ import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 import com.proofpoint.reporting.HealthBeanAttribute.Type;
 
 import javax.inject.Inject;
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import javax.ws.rs.GET;
@@ -56,7 +55,7 @@ public class InRotationResource
                             sb.append(value).append('\n');
                         }
                     }
-                    catch (AttributeNotFoundException | MBeanException | ReflectionException e) {
+                    catch (MBeanException | ReflectionException e) {
                         sb.append(e.toString()).append('\n');
                     }
                 });
