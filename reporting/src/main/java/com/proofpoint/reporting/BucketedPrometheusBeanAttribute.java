@@ -17,7 +17,6 @@ package com.proofpoint.reporting;
 
 import com.proofpoint.reporting.Bucketed.BucketInfo;
 
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
@@ -54,7 +53,7 @@ class BucketedPrometheusBeanAttribute implements PrometheusBeanAttribute
 
     @Override
     public ValueAndTimestamp getValue(Object target)
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         BucketInfo bucketInfo = (BucketInfo) invoke(firstNonNull(target, holder), GET_PREVIOUS_BUCKET);
         ValueAndTimestamp valueAndTimestamp = delegate.getValue(bucketInfo.getBucket());
