@@ -16,19 +16,12 @@
 package com.proofpoint.stats;
 
 import com.google.common.base.Function;
-import com.google.common.util.concurrent.AtomicDouble;
 import com.proofpoint.reporting.Bucketed;
-import com.proofpoint.reporting.Prometheus;
 import com.proofpoint.reporting.Reported;
-
-import static com.proofpoint.reporting.PrometheusType.COUNTER;
-import static com.proofpoint.reporting.PrometheusType.SUPPRESSED;
 
 public class SparseCounterStat
     extends Bucketed<SparseCounterStat.Counter>
 {
-    private final AtomicDouble count = new AtomicDouble(0);
-
     public void add(long count)
     {
         addInternal((double) count);
@@ -40,17 +33,10 @@ public class SparseCounterStat
 
     private void addInternal(final double count)
     {
-        this.count.addAndGet(count);
         applyToCurrentBucket((Function<Counter, Void>) input -> {
             input.count += count;
             return null;
         });
-    }
-
-    @Prometheus(name = "Count", type = COUNTER)
-    public double getTotalCount()
-    {
-        return count.get();
     }
 
     @Override
@@ -64,7 +50,6 @@ public class SparseCounterStat
         private double count = 0;
 
         @Reported
-        @Prometheus(type = SUPPRESSED)
         public Double getCount()
         {
             if (count == 0.0) {

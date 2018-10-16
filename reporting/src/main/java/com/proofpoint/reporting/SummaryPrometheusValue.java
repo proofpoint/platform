@@ -38,8 +38,8 @@ abstract class SummaryPrometheusValue implements PrometheusValue
             .put("1", "Max")
             .build();
     private static final ImmutableMap<String, String> EXTRAS = ImmutableMap.<String, String>builder()
-            .put("_sum", "Sum")
-            .put("_count", "Count")
+            .put("_Total", "Total")
+            .put("_Count", "Count")
             .build();
 
     static PrometheusValue summaryPrometheusValue(Map<String, PrometheusValue> values) {

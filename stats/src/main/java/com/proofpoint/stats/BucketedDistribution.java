@@ -16,15 +16,10 @@
 package com.proofpoint.stats;
 
 import com.google.common.base.Function;
-import com.proofpoint.reporting.Prometheus;
 import com.proofpoint.reporting.PrometheusSummary;
 import com.proofpoint.reporting.Reported;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-
-import static com.proofpoint.reporting.PrometheusType.COUNTER;
-import static com.proofpoint.reporting.PrometheusType.SUPPRESSED;
 
 public final class BucketedDistribution
     extends PrometheusSummary<BucketedDistribution.Distribution>
@@ -33,8 +28,6 @@ public final class BucketedDistribution
     {
         applyToCurrentBucket((Function<Distribution, Void>) input -> {
             synchronized (input) {
-                input.allTimeCount++;
-                input.allTimeTotal += value;
                 input.digest.add(value);
                 input.total += value;
             }
@@ -45,54 +38,26 @@ public final class BucketedDistribution
     @Override
     protected Distribution createBucket(Distribution previousBucket)
     {
-        return new Distribution(previousBucket);
+        return new Distribution();
     }
 
     protected static class Distribution
     {
         private static final double MAX_ERROR = 0.01;
-
-        @GuardedBy("this")
-        private long allTimeTotal = 0;
-
-        @GuardedBy("this")
-        private long allTimeCount = 0;
     
         @GuardedBy("this")
         private final QuantileDigest digest = new QuantileDigest(MAX_ERROR);
 
         @GuardedBy("this")
         private long total = 0;
-    
-        public Distribution(@Nullable Distribution previousDistribution)
-        {
-            if (previousDistribution != null) {
-                allTimeTotal = previousDistribution.allTimeTotal;
-                allTimeCount = previousDistribution.allTimeCount;
-            }
-        }
-
-        @Prometheus(name = "Sum", type = COUNTER)
-        public synchronized long getAllTimeTotal()
-        {
-            return allTimeTotal;
-        }
-
-        @Prometheus(name = "Count", type = COUNTER)
-        public synchronized long getAllTimeCount()
-        {
-            return allTimeCount;
-        }
 
         @Reported
-        @Prometheus(type = SUPPRESSED)
         public synchronized double getCount()
         {
             return digest.getCount();
         }
 
         @Reported
-        @Prometheus(type = SUPPRESSED)
         public synchronized long getTotal()
         {
             return total;

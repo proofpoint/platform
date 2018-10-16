@@ -17,7 +17,6 @@ package com.proofpoint.stats;
 
 import com.google.common.base.Function;
 import com.google.common.base.Ticker;
-import com.proofpoint.reporting.Prometheus;
 import com.proofpoint.reporting.PrometheusSummary;
 import com.proofpoint.reporting.Reported;
 import com.proofpoint.units.Duration;
@@ -27,8 +26,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.proofpoint.reporting.PrometheusType.COUNTER;
-import static com.proofpoint.reporting.PrometheusType.SUPPRESSED;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class SparseTimeStat
@@ -65,8 +62,6 @@ public class SparseTimeStat
     {
         applyToCurrentBucket((Function<Distribution, Void>) input -> {
             synchronized (input) {
-                input.allTimeCount++;
-                input.allTimeTotal += value;
                 input.digest.add(value);
                 input.total += value;
             }
@@ -113,7 +108,7 @@ public class SparseTimeStat
     @Override
     protected final Distribution createBucket(Distribution previousBucket)
     {
-        return new Distribution(previousBucket);
+        return new Distribution();
     }
 
     protected static class Distribution
@@ -121,39 +116,12 @@ public class SparseTimeStat
         private static final double MAX_ERROR = 0.01;
 
         @GuardedBy("this")
-        private long allTimeTotal = 0;
-
-        @GuardedBy("this")
-        private long allTimeCount = 0;
-
-        @GuardedBy("this")
         private final QuantileDigest digest = new QuantileDigest(MAX_ERROR);
 
         @GuardedBy("this")
         private long total = 0;
-    
-        public Distribution(Distribution previousDistribution)
-        {
-            if (previousDistribution != null) {
-                allTimeTotal = previousDistribution.allTimeTotal;
-                allTimeCount = previousDistribution.allTimeCount;
-            }
-        }
-
-        @Prometheus(name = "Sum", type = COUNTER)
-        public synchronized double getAllTimeTotal()
-        {
-            return convertToSeconds(allTimeTotal);
-        }
-
-        @Prometheus(name = "Count", type = COUNTER)
-        public synchronized long getAllTimeCount()
-        {
-            return allTimeCount;
-        }
 
         @Reported
-        @Prometheus(type = SUPPRESSED)
         public synchronized double getCount()
         {
             double count = digest.getCount();
@@ -164,7 +132,6 @@ public class SparseTimeStat
         }
 
         @Reported
-        @Prometheus(type = SUPPRESSED)
         public synchronized double getTotal() {
             if (digest.getCount() == 0.0) {
                 return Double.NaN;
