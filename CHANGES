@@ -1,5 +1,7 @@
 Platform 1.88
 
+* We now support Java 11.
+
 * HttpClient
 
   The HTTP client also supports HTTP/2 cleartext. However, there is
