@@ -107,7 +107,7 @@ public abstract class AbstractTestJsonEventWriter
         }
 
         registerRequestToken("sample-trace-token");
-        addTraceTokenProperties("key", "value");
+        addTraceTokenProperties("key", "value", "_local", "shouldIgnore");
         TraceToken traceToken = getCurrentTraceToken();
         clearRequestToken();
 
