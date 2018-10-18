@@ -16,8 +16,10 @@
 package com.proofpoint.tracetoken;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import java.util.Map;
 
@@ -28,12 +30,23 @@ public class TraceToken
 {
     private final Map<String, String> delegate;
 
-    @JsonCreator
     TraceToken(Map<String, String> map)
     {
         requireNonNull(map, "map is null");
         requireNonNull(map.get("id"), "map{id} is null");
         delegate = ImmutableMap.copyOf(map);
+    }
+
+    @JsonCreator
+    static TraceToken createJson(Map<String, String> map)
+    {
+        return new TraceToken(Maps.filterKeys(map, key -> !key.startsWith("_")));
+    }
+
+    @JsonValue
+    Map<String, String> getJson()
+    {
+        return Maps.filterKeys(this, key -> !key.startsWith("_"));
     }
 
     @Override

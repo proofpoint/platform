@@ -481,6 +481,24 @@ public class TestHttpServerProvider
     }
 
     @Test
+    public void testTraceTokenIgnoresLocalProperties()
+            throws Exception
+    {
+        createServer();
+        lifeCycleManager.start();
+
+        try (JettyHttpClient client = new JettyHttpClient()) {
+            StatusResponse response = client.execute(prepareGet()
+                    .setUri(httpServerInfo.getHttpUri())
+                    .setHeader("X-Proofpoint-TraceToken", "{\"id\":\"testBasic\",\"key-b\":\"value-b\",\"_local-1\":\"value-1\",\"key-a\":\"value-a\"}")
+                    .build(), createStatusResponseHandler());
+
+            String token = response.getHeader("X-Trace-Token-Was");
+            assertEquals(token, "{id=testBasic, key-b=value-b, key-a=value-a}");
+        }
+    }
+
+    @Test
     public void testInvalidTraceToken()
             throws Exception
     {

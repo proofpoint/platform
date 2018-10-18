@@ -1,3 +1,11 @@
+Platform 1.89
+
+* Trace tokens
+
+  Trace token properties with keys starting with "_" are now no longer
+  serialized to or deserialized from JSON. This permits setting properties
+  which will be included in logs but not propagated to dependent services.
+
 Platform 1.88
 
 * We now support Java 11.

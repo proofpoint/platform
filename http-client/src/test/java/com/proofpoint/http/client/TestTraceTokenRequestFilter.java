@@ -65,6 +65,23 @@ public class TestTraceTokenRequestFilter
     }
 
     @Test
+    public void testIgnoresLocalProperties()
+    {
+        registerRequestToken("testBasic");
+        addTraceTokenProperties("key-b", "value-b", "_local-1", "value-1", "key-a", "value-a");
+        TraceTokenRequestFilter filter = new TraceTokenRequestFilter();
+        Request original = prepareGet().setUri(URI.create("http://example.com")).build();
+
+        Request filtered = filter.filterRequest(original);
+
+        assertNotSame(filter, original);
+        assertEquals(filtered.getUri(), original.getUri());
+        assertEquals(original.getHeaders().size(), 0);
+        assertEquals(filtered.getHeaders().size(), 1);
+        assertEquals(filtered.getHeaders().get(TRACETOKEN_HEADER), ImmutableList.of("{\"id\":\"testBasic\",\"key-b\":\"value-b\",\"key-a\":\"value-a\"}"));
+    }
+
+    @Test
     public void testSameRequestReturnedWhenTraceTokenNotSet()
     {
         TraceTokenRequestFilter filter = new TraceTokenRequestFilter();

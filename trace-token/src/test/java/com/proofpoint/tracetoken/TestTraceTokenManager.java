@@ -230,6 +230,23 @@ public class TestTraceTokenManager
     }
 
     @Test
+    public void testAddLocalTraceTokenProperties()
+    {
+        registerTraceToken(TESTING_TRACE_TOKEN);
+
+        try (TraceTokenScope ignored = addTraceTokenProperties("_key-f", "value-f", "_key-a", "value-a"))
+        {
+            assertEquals(getCurrentRequestToken(), "{id=testing-id, key-d=value-d, _key-f=value-f, _key-a=value-a}");
+            assertEquals(getCurrentTraceToken(), ImmutableMap.of("id", "testing-id", "key-d", "value-d", "_key-f", "value-f", "_key-a", "value-a"));
+            assertEquals(getCurrentTraceToken().keySet(), ImmutableList.of("id", "key-d", "_key-f", "_key-a"));
+            assertEquals(currentThread().getName(), "testing thread name {id=testing-id, key-d=value-d, _key-f=value-f, _key-a=value-a}");
+        }
+        assertEquals(getCurrentRequestToken(), "{id=testing-id, key-d=value-d}");
+        assertEquals(getCurrentTraceToken(), TESTING_TRACE_TOKEN);
+        assertEquals(currentThread().getName(), "testing thread name {id=testing-id, key-d=value-d}");
+    }
+
+    @Test
     public void testAddTraceTokenPropertiesNoTraceToken()
     {
         clearRequestToken();
