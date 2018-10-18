@@ -2,6 +2,7 @@ package com.proofpoint.stats;
 
 import com.google.common.collect.ImmutableList;
 import com.proofpoint.stats.QuantileDigest.Bucket;
+import io.airlift.slice.Slice;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -61,12 +62,14 @@ public class BenchmarkQuantileDigest
     {
         private QuantileDigest digest1;
         private QuantileDigest digest2;
+        private Slice serializedDigest;
 
         @Setup
         public void setup(Data data)
         {
             digest1 = makeDigest(data.values1);
             digest2 = makeDigest(data.values2);
+            serializedDigest = digest1.serialize();
         }
 
         private QuantileDigest makeDigest(long[] values)
@@ -104,6 +107,18 @@ public class BenchmarkQuantileDigest
         QuantileDigest merged = new QuantileDigest(data.digest1);
         merged.merge(data.digest2);
         return merged;
+    }
+
+    @Benchmark
+    public QuantileDigest benchmarkDeserialize(Digest data)
+    {
+        return new QuantileDigest(data.serializedDigest);
+    }
+
+    @Benchmark
+    public Slice benchmarkSerialize(Digest data)
+    {
+        return data.digest1.serialize();
     }
 
     @Benchmark
