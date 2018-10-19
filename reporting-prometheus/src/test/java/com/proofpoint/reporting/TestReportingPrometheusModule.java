@@ -325,17 +325,25 @@ public class TestReportingPrometheusModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
                 "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
-                        "#TYPE StatsObject summary\n" +
-                        "StatsObject{quantile=\"0\"," + EXPECTED_INSTANCE_TAGS + "} 0" + expectedSuffix + " 1200\n" +
-                        "StatsObject{quantile=\"0.5\"," + EXPECTED_INSTANCE_TAGS + "} 50" + expectedSuffix + " 1200\n" +
-                        "StatsObject{quantile=\"0.75\"," + EXPECTED_INSTANCE_TAGS + "} 75" + expectedSuffix + " 1200\n" +
-                        "StatsObject{quantile=\"0.90\"," + EXPECTED_INSTANCE_TAGS + "} 90" + expectedSuffix + " 1200\n" +
-                        "StatsObject{quantile=\"0.95\"," + EXPECTED_INSTANCE_TAGS + "} 95" + expectedSuffix + " 1200\n" +
-                        "StatsObject{quantile=\"0.99\"," + EXPECTED_INSTANCE_TAGS + "} 99" + expectedSuffix + " 1200\n" +
-                        "StatsObject{quantile=\"1\"," + EXPECTED_INSTANCE_TAGS + "} 99" + expectedSuffix + " 1200\n" +
-                        "StatsObject_Total{" + EXPECTED_INSTANCE_TAGS + "} 4950" + expectedSuffix + " 1200\n" +
-                        "StatsObject_Count{" + EXPECTED_INSTANCE_TAGS + "} 100.0 1200\n"
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 9\n" +
+                        "#TYPE StatsObject_Count gauge\n" +
+                        "StatsObject_Count{" + EXPECTED_INSTANCE_TAGS + "} 100.0 1200\n" +
+                        "#TYPE StatsObject_Max gauge\n" +
+                        "StatsObject_Max{" + EXPECTED_INSTANCE_TAGS + "} 99" + expectedSuffix + " 1200\n" +
+                        "#TYPE StatsObject_Min gauge\n" +
+                        "StatsObject_Min{" + EXPECTED_INSTANCE_TAGS + "} 0" + expectedSuffix + " 1200\n" +
+                        "#TYPE StatsObject_P50 gauge\n" +
+                        "StatsObject_P50{" + EXPECTED_INSTANCE_TAGS + "} 50" + expectedSuffix + " 1200\n" +
+                        "#TYPE StatsObject_P75 gauge\n" +
+                        "StatsObject_P75{" + EXPECTED_INSTANCE_TAGS + "} 75" + expectedSuffix + " 1200\n" +
+                        "#TYPE StatsObject_P90 gauge\n" +
+                        "StatsObject_P90{" + EXPECTED_INSTANCE_TAGS + "} 90" + expectedSuffix + " 1200\n" +
+                        "#TYPE StatsObject_P95 gauge\n" +
+                        "StatsObject_P95{" + EXPECTED_INSTANCE_TAGS + "} 95" + expectedSuffix + " 1200\n" +
+                        "#TYPE StatsObject_P99 gauge\n" +
+                        "StatsObject_P99{" + EXPECTED_INSTANCE_TAGS + "} 99" + expectedSuffix + " 1200\n" +
+                        "#TYPE StatsObject_Total gauge\n" +
+                        "StatsObject_Total{" + EXPECTED_INSTANCE_TAGS + "} 4950" + expectedSuffix + " 1200\n"
         );
     }
 
@@ -437,17 +445,25 @@ public class TestReportingPrometheusModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
                 "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
-                        "#TYPE StatsObject_DistributionStat summary\n" +
-                        "StatsObject_DistributionStat{quantile=\"0\"," + EXPECTED_INSTANCE_TAGS + "} 0 1200\n" +
-                        "StatsObject_DistributionStat{quantile=\"0.5\"," + EXPECTED_INSTANCE_TAGS + "} 50 1200\n" +
-                        "StatsObject_DistributionStat{quantile=\"0.75\"," + EXPECTED_INSTANCE_TAGS + "} 75 1200\n" +
-                        "StatsObject_DistributionStat{quantile=\"0.90\"," + EXPECTED_INSTANCE_TAGS + "} 90 1200\n" +
-                        "StatsObject_DistributionStat{quantile=\"0.95\"," + EXPECTED_INSTANCE_TAGS + "} 95 1200\n" +
-                        "StatsObject_DistributionStat{quantile=\"0.99\"," + EXPECTED_INSTANCE_TAGS + "} 99 1200\n" +
-                        "StatsObject_DistributionStat{quantile=\"1\"," + EXPECTED_INSTANCE_TAGS + "} 99 1200\n" +
-                        "StatsObject_DistributionStat_Total{" + EXPECTED_INSTANCE_TAGS + "} 4950 1200\n" +
-                        "StatsObject_DistributionStat_Count{" + EXPECTED_INSTANCE_TAGS + "} 100.0 1200\n"
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 9\n" +
+                        "#TYPE StatsObject_DistributionStat_Count gauge\n" +
+                        "StatsObject_DistributionStat_Count{" + EXPECTED_INSTANCE_TAGS + "} 100.0 1200\n" +
+                        "#TYPE StatsObject_DistributionStat_Max gauge\n" +
+                        "StatsObject_DistributionStat_Max{" + EXPECTED_INSTANCE_TAGS + "} 99 1200\n" +
+                        "#TYPE StatsObject_DistributionStat_Min gauge\n" +
+                        "StatsObject_DistributionStat_Min{" + EXPECTED_INSTANCE_TAGS + "} 0 1200\n" +
+                        "#TYPE StatsObject_DistributionStat_P50 gauge\n" +
+                        "StatsObject_DistributionStat_P50{" + EXPECTED_INSTANCE_TAGS + "} 50 1200\n" +
+                        "#TYPE StatsObject_DistributionStat_P75 gauge\n" +
+                        "StatsObject_DistributionStat_P75{" + EXPECTED_INSTANCE_TAGS + "} 75 1200\n" +
+                        "#TYPE StatsObject_DistributionStat_P90 gauge\n" +
+                        "StatsObject_DistributionStat_P90{" + EXPECTED_INSTANCE_TAGS + "} 90 1200\n" +
+                        "#TYPE StatsObject_DistributionStat_P95 gauge\n" +
+                        "StatsObject_DistributionStat_P95{" + EXPECTED_INSTANCE_TAGS + "} 95 1200\n" +
+                        "#TYPE StatsObject_DistributionStat_P99 gauge\n" +
+                        "StatsObject_DistributionStat_P99{" + EXPECTED_INSTANCE_TAGS + "} 99 1200\n" +
+                        "#TYPE StatsObject_DistributionStat_Total gauge\n" +
+                        "StatsObject_DistributionStat_Total{" + EXPECTED_INSTANCE_TAGS + "} 4950 1200\n"
         );
     }
 
