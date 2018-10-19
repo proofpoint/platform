@@ -71,9 +71,7 @@ public class MetricsResource
                             first = false;
                             writer.write("#TYPE ");
                             writer.write(entry.getKey());
-                            writer.append(' ');
-                            writer.write(taggedValue.getType());
-                            writer.append('\n');
+                            writer.write(" gauge\n");
                         }
 
                         taggedValue.getValueAndTimestamp().getValue().writeMetric(
