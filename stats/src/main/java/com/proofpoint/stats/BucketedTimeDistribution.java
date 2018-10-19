@@ -16,13 +16,13 @@
 package com.proofpoint.stats;
 
 import com.google.common.base.Function;
-import com.proofpoint.reporting.PrometheusSummary;
+import com.proofpoint.reporting.Bucketed;
 import com.proofpoint.reporting.Reported;
 
 import javax.annotation.concurrent.GuardedBy;
 
 public final class BucketedTimeDistribution
-    extends PrometheusSummary<BucketedTimeDistribution.Distribution>
+    extends Bucketed<BucketedTimeDistribution.Distribution>
 {
     public void add(final long value)
     {

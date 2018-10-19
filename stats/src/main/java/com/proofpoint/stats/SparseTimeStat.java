@@ -17,7 +17,7 @@ package com.proofpoint.stats;
 
 import com.google.common.base.Function;
 import com.google.common.base.Ticker;
-import com.proofpoint.reporting.PrometheusSummary;
+import com.proofpoint.reporting.Bucketed;
 import com.proofpoint.reporting.Reported;
 import com.proofpoint.units.Duration;
 
@@ -29,7 +29,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class SparseTimeStat
-    extends PrometheusSummary<SparseTimeStat.Distribution>
+    extends Bucketed<SparseTimeStat.Distribution>
 {
     private final Ticker ticker;
 
