@@ -46,12 +46,6 @@ class BucketedPrometheusBeanAttribute implements PrometheusBeanAttribute
     }
 
     @Override
-    public String getType()
-    {
-        return delegate.getType();
-    }
-
-    @Override
     public ValueAndTimestamp getValue(Object target)
             throws MBeanException, ReflectionException
     {

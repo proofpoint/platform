@@ -46,12 +46,6 @@ class BooleanPrometheusBeanAttribute implements PrometheusBeanAttribute
     }
 
     @Override
-    public String getType()
-    {
-        return "gauge";
-    }
-
-    @Override
     public ValueAndTimestamp getValue(@Nullable Object target)
             throws MBeanException, ReflectionException
     {

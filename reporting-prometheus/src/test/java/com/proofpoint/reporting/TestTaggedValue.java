@@ -28,13 +28,13 @@ public class TestTaggedValue
     @Test
     public void testComparison() {
         comparisonTester()
-                .addLesserGroup(taggedValue("gauge", ImmutableMap.of(), valueAndTimestamp(simplePrometheusValue(3), null)),
-                        taggedValue("counter", ImmutableMap.of(), valueAndTimestamp(simplePrometheusValue(4), 3333L)))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x"), valueAndTimestamp(simplePrometheusValue(1), null)))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x", "b", "y"), valueAndTimestamp(simplePrometheusValue(1), null)))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "x", "b", "z"), valueAndTimestamp(simplePrometheusValue(1), null)))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("a", "y", "b", "y"), valueAndTimestamp(simplePrometheusValue(1), null)))
-                .addGreaterGroup(taggedValue("gauge", ImmutableMap.of("b", "y"), valueAndTimestamp(simplePrometheusValue(1), null)))
+                .addLesserGroup(taggedValue(ImmutableMap.of(), valueAndTimestamp(simplePrometheusValue(3), null)),
+                        taggedValue(ImmutableMap.of(), valueAndTimestamp(simplePrometheusValue(4), 3333L)))
+                .addGreaterGroup(taggedValue(ImmutableMap.of("a", "x"), valueAndTimestamp(simplePrometheusValue(1), null)))
+                .addGreaterGroup(taggedValue(ImmutableMap.of("a", "x", "b", "y"), valueAndTimestamp(simplePrometheusValue(1), null)))
+                .addGreaterGroup(taggedValue(ImmutableMap.of("a", "x", "b", "z"), valueAndTimestamp(simplePrometheusValue(1), null)))
+                .addGreaterGroup(taggedValue(ImmutableMap.of("a", "y", "b", "y"), valueAndTimestamp(simplePrometheusValue(1), null)))
+                .addGreaterGroup(taggedValue(ImmutableMap.of("b", "y"), valueAndTimestamp(simplePrometheusValue(1), null)))
                 .check();
     }
 }

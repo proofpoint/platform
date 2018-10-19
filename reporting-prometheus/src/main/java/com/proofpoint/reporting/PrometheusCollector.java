@@ -98,11 +98,11 @@ class PrometheusCollector
                 }
 
                 if (valueAndTimestamp != null) {
-                    valuesByMetric.put(name, taggedValue(attribute.getType(), registrationInfo.getTags(), valueAndTimestamp));
+                    valuesByMetric.put(name, taggedValue(registrationInfo.getTags(), valueAndTimestamp));
                 }
             }
         }
-        valuesByMetric.put("ReportCollector_NumMetrics", taggedValue("gauge", versionTags, valueAndTimestamp(simplePrometheusValue(valuesByMetric.size()), null)));
+        valuesByMetric.put("ReportCollector_NumMetrics", taggedValue(versionTags, valueAndTimestamp(simplePrometheusValue(valuesByMetric.size()), null)));
         return valuesByMetric;
     }
 }

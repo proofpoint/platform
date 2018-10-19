@@ -25,8 +25,6 @@ interface PrometheusBeanAttribute
 {
     String getName();
 
-    String getType();
-
     ValueAndTimestamp getValue(@Nullable Object target)
             throws MBeanException, ReflectionException;
 
