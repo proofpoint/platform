@@ -1,5 +1,7 @@
 package com.proofpoint.stats;
 
+import com.google.common.collect.ImmutableList;
+import com.proofpoint.stats.QuantileDigest.Bucket;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -16,6 +18,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.VerboseMode;
 
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -101,6 +104,13 @@ public class BenchmarkQuantileDigest
         QuantileDigest merged = new QuantileDigest(data.digest1);
         merged.merge(data.digest2);
         return merged;
+    }
+
+    @Benchmark
+    public List<Bucket> benchmarkHistogram(Digest data)
+    {
+        return data.digest1.getHistogram(
+                ImmutableList.of(0L, 100_000_000L, 200_000_000L, 300_000_000L, 400_000_000L, 500_000_000L, 600_000_000L, 700_000_000L, 800_000_000L, 900_000_000L, 1_000_000_000L));
     }
 
     public static void main(String[] args)
