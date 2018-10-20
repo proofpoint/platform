@@ -203,6 +203,7 @@
                         <maxmem>${platform.build.jvmsize}</maxmem>
                         <showWarnings>true</showWarnings>
                         <fork>true</fork>
+                        <parameters>true</parameters>
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>com.google.auto.value</groupId>
