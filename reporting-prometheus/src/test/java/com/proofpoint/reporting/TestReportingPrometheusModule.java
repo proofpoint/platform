@@ -79,10 +79,12 @@ public class TestReportingPrometheusModule
     @Test
     public void testGetMetrics()
     {
-        createServer(binder -> {
+        Injector injector = createServer(binder -> {
             binder.bind(ReportedObject.class);
             reportBinder(binder).export(ReportedObject.class).withNamePrefix("TestObject");
         });
+
+        injector.getInstance(TestingBucketIdProvider.class).incrementBucket();
 
         StringResponse response = client.execute(
                 prepareGet().setUri(uriFor("/metrics")).build(),
@@ -112,7 +114,10 @@ public class TestReportingPrometheusModule
                         new TestingAdminHttpServerModule(),
                         explicitJaxrsModule(),
                         new JsonModule(),
-                        new ReportingModule(),
+                        Modules.override(new ReportingModule()).with(binder -> {
+                            binder.bind(TestingBucketIdProvider.class).in(SINGLETON);
+                            binder.bind(BucketIdProvider.class).to(TestingBucketIdProvider.class).in(SINGLETON);
+                        }),
                         new ReportingPrometheusModule()
                 )
                 .initialize();
@@ -128,19 +133,23 @@ public class TestReportingPrometheusModule
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
                 "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{applicationVersion=\"1.2\",platformVersion=\"platform.1\"," + EXPECTED_INSTANCE_TAGS  + "} 0\n");
+                        "ReportCollector_NumMetrics{applicationVersion=\"1.2\",platformVersion=\"platform.1\"," + EXPECTED_INSTANCE_TAGS  + "} 0\n" +
+                        "#TYPE ReportCollector_ServerStart gauge\n" +
+                        "ReportCollector_ServerStart{applicationVersion=\"1.2\",platformVersion=\"platform.1\"," + EXPECTED_INSTANCE_TAGS  + "} 1 1000\n");
     }
 
     @Test
     public void testApplicationPrefixAndTags()
     {
-        createServer(binder -> {
+        Injector injector = createServer(binder -> {
             binder.bind(ReportedObject.class);
             reportBinder(binder).export(ReportedObject.class)
                     .withApplicationPrefix()
                     .withNamePrefix("TestObject")
                     .withTags(ImmutableMap.of("2", "bar"));
         });
+
+        injector.getInstance(TestingBucketIdProvider.class).incrementBucket();
 
         StringResponse response = client.execute(
                 prepareGet().setUri(uriFor("/metrics")).build(),
@@ -157,7 +166,7 @@ public class TestReportingPrometheusModule
     @Test
     public void testMultipleTags()
     {
-        createServer(binder -> {
+        Injector injector = createServer(binder -> {
             binder.bind(ReportedObject.class);
             reportBinder(binder).export(ReportedObject.class)
                     .withNamePrefix("TestObject")
@@ -168,6 +177,8 @@ public class TestReportingPrometheusModule
                     .withNamePrefix("TestObject")
                     .withTags(ImmutableMap.of("baz", "quux", "a", "b", "c", "d\"\\\n"));
         });
+
+        injector.getInstance(TestingBucketIdProvider.class).incrementBucket();
 
         StringResponse response = client.execute(
                 prepareGet().setUri(uriFor("/metrics")).build(),
@@ -185,11 +196,13 @@ public class TestReportingPrometheusModule
     @Test
     public void testLegacy()
     {
-        createServer(binder -> {
+        Injector injector = createServer(binder -> {
             binder.bind(ReportedObject.class);
             reportBinder(binder).export(ReportedObject.class)
                     .as("com.proofpoint.reporting.test:name=TestObject,foo=bar");
         });
+
+        injector.getInstance(TestingBucketIdProvider.class).incrementBucket();
 
         StringResponse response = client.execute(
                 prepareGet().setUri(uriFor("/metrics")).build(),
@@ -207,7 +220,9 @@ public class TestReportingPrometheusModule
     public void testUnreportedValues()
             throws InstanceAlreadyExistsException
     {
-        ReportedBeanRegistry reportedBeanRegistry = createServer(binder -> {}).getInstance(ReportedBeanRegistry.class);
+        Injector injector = createServer(binder -> {});
+        ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
+        injector.getInstance(TestingBucketIdProvider.class).incrementBucket();
 
         UnreportedValueObject unreportedValueObject = new UnreportedValueObject();
         reportedBeanRegistry.register(unreportedValueObject, ReportedBean.forTarget(unreportedValueObject), false, "TestObject", ImmutableMap.of());

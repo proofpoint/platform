@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
@@ -33,6 +34,7 @@ import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp.valueAndTimestamp;
 import static com.proofpoint.reporting.SimplePrometheusValue.simplePrometheusValue;
 import static com.proofpoint.reporting.TaggedValue.taggedValue;
+import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.requireNonNull;
 
 class PrometheusCollector
@@ -42,11 +44,14 @@ class PrometheusCollector
     private final String applicationPrefix;
     private final ReportedBeanRegistry reportedBeanRegistry;
     private final Map<String, String> versionTags;
+    private final BucketIdProvider bucketIdProvider;
+    private final long startupTimestamp;
 
     @Inject
     PrometheusCollector(
             NodeInfo nodeInfo,
-            ReportedBeanRegistry reportedBeanRegistry)
+            ReportedBeanRegistry reportedBeanRegistry,
+            BucketIdProvider bucketIdProvider)
     {
         applicationPrefix = sanitizeMetricName(LOWER_HYPHEN.to(UPPER_CAMEL, nodeInfo.getApplication())) + "_";
         this.reportedBeanRegistry = requireNonNull(reportedBeanRegistry, "reportedBeanRegistry is null");
@@ -59,6 +64,8 @@ class PrometheusCollector
             versionTagsBuilder.put("platformVersion", nodeInfo.getPlatformVersion());
         }
         this.versionTags = versionTagsBuilder.build();
+        this.bucketIdProvider = bucketIdProvider;
+        startupTimestamp = bucketIdProvider.get().getTimestamp();
     }
 
     private static String sanitizeMetricName(String name)
@@ -103,6 +110,9 @@ class PrometheusCollector
             }
         }
         valuesByMetric.put("ReportCollector_NumMetrics", taggedValue(versionTags, valueAndTimestamp(simplePrometheusValue(valuesByMetric.size()), null)));
+        if (bucketIdProvider.get().getTimestamp() < startupTimestamp + TimeUnit.MINUTES.toMillis(10)) {
+            valuesByMetric.put("ReportCollector_ServerStart", taggedValue(versionTags, valueAndTimestamp(simplePrometheusValue(1), startupTimestamp)));
+        }
         return valuesByMetric;
     }
 }
