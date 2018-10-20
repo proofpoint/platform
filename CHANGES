@@ -1,5 +1,10 @@
 Platform 1.90
 
+* Reporting
+
+  We added a "ReportCollector.LogErrors.Count" metric counting the number
+  of log lines at error level.
+
 * HttpClient
 
   The HTTP client also supports HTTP/2 under TLS when running on Java 11.

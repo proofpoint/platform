@@ -28,6 +28,11 @@
 
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
+            <artifactId>reporting-basemetrics</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.proofpoint.platform</groupId>
             <artifactId>stats</artifactId>
         </dependency>
 

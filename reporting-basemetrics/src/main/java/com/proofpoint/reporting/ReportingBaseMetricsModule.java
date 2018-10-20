@@ -19,17 +19,15 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 
-import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
+import static com.proofpoint.reporting.ReportBinder.reportBinder;
 
-public class ReportingPrometheusModule
+public class ReportingBaseMetricsModule
     implements Module
 {
     @Override
     public void configure(Binder binder)
     {
-        binder.bind(PrometheusCollector.class).in(Scopes.SINGLETON);
-        jaxrsBinder(binder).bindAdmin(MetricsResource.class);
-
-        binder.install(new ReportingBaseMetricsModule());
+        binder.bind(LogCounter.class).in(Scopes.SINGLETON);
+        reportBinder(binder).export(LogCounter.class).withNamePrefix("ReportCollector");
     }
 }

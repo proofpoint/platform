@@ -45,6 +45,8 @@ public class ReportingClientModule
 
         discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);
         bindConfig(binder).bind(ReportClientConfig.class);
+
+        binder.install(new ReportingBaseMetricsModule());
     }
 
     @Provides
