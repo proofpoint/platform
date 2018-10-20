@@ -105,6 +105,7 @@
         <module>skeleton-server-archetype-builder</module>
         <module>trace-token</module>
         <module>reporting</module>
+        <module>reporting-basemetrics</module>
         <module>reporting-client</module>
         <module>reporting-prometheus</module>
         <module>openapi</module>

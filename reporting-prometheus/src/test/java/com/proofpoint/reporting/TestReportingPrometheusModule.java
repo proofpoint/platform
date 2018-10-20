@@ -92,8 +92,10 @@ public class TestReportingPrometheusModule
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
-                "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
+                "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1100\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n" +
                         "#TYPE TestObject_Metric gauge\n" +
                         "TestObject_Metric{" + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
@@ -132,10 +134,12 @@ public class TestReportingPrometheusModule
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
-                "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{applicationVersion=\"1.2\",platformVersion=\"platform.1\"," + EXPECTED_INSTANCE_TAGS  + "} 0\n" +
+                "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1000\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{applicationVersion=\"1.2\",platformVersion=\"platform.1\"," + EXPECTED_INSTANCE_TAGS + "} 1\n" +
                         "#TYPE ReportCollector_ServerStart gauge\n" +
-                        "ReportCollector_ServerStart{applicationVersion=\"1.2\",platformVersion=\"platform.1\"," + EXPECTED_INSTANCE_TAGS  + "} 1 1000\n");
+                        "ReportCollector_ServerStart{applicationVersion=\"1.2\",platformVersion=\"platform.1\"," + EXPECTED_INSTANCE_TAGS + "} 1 1000\n");
     }
 
     @Test
@@ -157,8 +161,10 @@ public class TestReportingPrometheusModule
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
-                "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
+                "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1100\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n" +
                         "#TYPE TestApplication_TestObject_Metric gauge\n" +
                         "TestApplication_TestObject_Metric{_2=\"bar\"," + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
@@ -186,8 +192,10 @@ public class TestReportingPrometheusModule
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
-                "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n" +
+                "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1100\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 3\n" +
                         "#TYPE TestObject_Metric gauge\n" +
                         "TestObject_Metric{a=\"b\",baz=\"quux\",c=\"d\\\"\\\\\\n\"," + EXPECTED_INSTANCE_TAGS + "} 2\n" +
                         "TestObject_Metric{foo=\"bar\"," + EXPECTED_INSTANCE_TAGS + "} 2\n");
@@ -210,8 +218,10 @@ public class TestReportingPrometheusModule
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
-                "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n" +
+                "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1100\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n" +
                         "#TYPE TestObject_Metric gauge\n" +
                         "TestObject_Metric{foo=\"bar\"," + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
@@ -220,7 +230,8 @@ public class TestReportingPrometheusModule
     public void testUnreportedValues()
             throws InstanceAlreadyExistsException
     {
-        Injector injector = createServer(binder -> {});
+        Injector injector = createServer(binder -> {
+        });
         ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
         injector.getInstance(TestingBucketIdProvider.class).incrementBucket();
 
@@ -233,8 +244,10 @@ public class TestReportingPrometheusModule
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
-                "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 10\n" +
+                "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1100\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 11\n" +
                         "#TYPE TestObject_ByteMetric gauge\n" +
                         "TestObject_ByteMetric{" + EXPECTED_INSTANCE_TAGS + "} 0\n" +
                         "#TYPE TestObject_DoubleMetric gauge\n" +
@@ -283,8 +296,10 @@ public class TestReportingPrometheusModule
                         "CounterObject_Normal_Count{" + EXPECTED_INSTANCE_TAGS + "} 1.0 1100\n" +
                         "#TYPE CounterObject_Sparse_Count gauge\n" +
                         "CounterObject_Sparse_Count{" + EXPECTED_INSTANCE_TAGS + "} 2.0 1100\n" +
+                        "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1100\n" +
                         "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n");
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 3\n");
     }
 
     @Test
@@ -310,8 +325,10 @@ public class TestReportingPrometheusModule
         assertEquals(response.getBody(),
                 "#TYPE MaxGaugeObject_Max gauge\n" +
                         "MaxGaugeObject_Max{" + EXPECTED_INSTANCE_TAGS + "} 10 1100\n" +
+                        "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1100\n" +
                         "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 1\n");
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 2\n");
     }
 
     @Test(dataProvider = "getStatsObjects")
@@ -324,11 +341,11 @@ public class TestReportingPrometheusModule
         TestingBucketIdProvider bucketIdProvider = injector.getInstance(TestingBucketIdProvider.class);
 
         for (int i = 0; i < 100; i++) {
-             statsObject.add(1000);
+            statsObject.add(1000);
         }
         bucketIdProvider.incrementBucket();
         for (int i = 0; i < 100; i++) {
-             statsObject.add(i);
+            statsObject.add(i);
         }
         bucketIdProvider.incrementBucket();
         statsObject.add(1000);
@@ -339,8 +356,10 @@ public class TestReportingPrometheusModule
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
-                "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 9\n" +
+                "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1200\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 10\n" +
                         "#TYPE StatsObject_Count gauge\n" +
                         "StatsObject_Count{" + EXPECTED_INSTANCE_TAGS + "} 100.0 1200\n" +
                         "#TYPE StatsObject_Max gauge\n" +
@@ -444,11 +463,11 @@ public class TestReportingPrometheusModule
         NestedStatsObject statsObject = injector.getInstance(NestedStatsObject.class);
 
         for (int i = 0; i < 100; i++) {
-             statsObject.add(1000);
+            statsObject.add(1000);
         }
         bucketIdProvider.incrementBucket();
         for (int i = 0; i < 100; i++) {
-             statsObject.add(i);
+            statsObject.add(i);
         }
         bucketIdProvider.incrementBucket();
         statsObject.add(1000);
@@ -459,8 +478,10 @@ public class TestReportingPrometheusModule
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody(),
-                "#TYPE ReportCollector_NumMetrics gauge\n" +
-                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 9\n" +
+                "#TYPE ReportCollector_LogErrors_Count gauge\n" +
+                        "ReportCollector_LogErrors_Count{" + EXPECTED_INSTANCE_TAGS + "} 0.0 1200\n" +
+                        "#TYPE ReportCollector_NumMetrics gauge\n" +
+                        "ReportCollector_NumMetrics{" + EXPECTED_INSTANCE_TAGS + "} 10\n" +
                         "#TYPE StatsObject_DistributionStat_Count gauge\n" +
                         "StatsObject_DistributionStat_Count{" + EXPECTED_INSTANCE_TAGS + "} 100.0 1200\n" +
                         "#TYPE StatsObject_DistributionStat_Max gauge\n" +
@@ -683,9 +704,9 @@ public class TestReportingPrometheusModule
             injector = bootstrapTest()
                     .withModules(
                             binder -> binder.bind(NodeInfo.class).toInstance(new NodeInfo("test-application", new NodeConfig()
-                                            .setEnvironment("test_environment")
-                                            .setNodeInternalHostname("test.hostname")
-                                            .setPool("test_pool"))),
+                                    .setEnvironment("test_environment")
+                                    .setNodeInternalHostname("test.hostname")
+                                    .setPool("test_pool"))),
                             new TestingAdminHttpServerModule(),
                             explicitJaxrsModule(),
                             new JsonModule(),
@@ -713,7 +734,7 @@ public class TestReportingPrometheusModule
     }
 
     private static class TestingBucketIdProvider
-        implements BucketIdProvider
+            implements BucketIdProvider
     {
         private AtomicInteger bucket = new AtomicInteger();
 
@@ -749,7 +770,8 @@ public class TestReportingPrometheusModule
         private final DistributionStat distributionStat = new DistributionStat();
 
         @Nested
-        public DistributionStat getDistributionStat() {
+        public DistributionStat getDistributionStat()
+        {
             return distributionStat;
         }
 

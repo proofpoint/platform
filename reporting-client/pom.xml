@@ -33,6 +33,11 @@
 
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
+            <artifactId>reporting-basemetrics</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.proofpoint.platform</groupId>
             <artifactId>stats</artifactId>
         </dependency>
 
@@ -61,6 +66,12 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-guava</artifactId>
             <scope>test</scope>
         </dependency>
 
