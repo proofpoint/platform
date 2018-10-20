@@ -4,6 +4,10 @@ Platform 1.93
 
   We enabled compiled metadata for reflection on method parameters.
 
+* Library upgrades
+
+ - cglib to 3.2.8 (was 3.1)
+
 Platform 1.92
 
 * Library upgrades
