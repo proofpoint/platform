@@ -24,7 +24,9 @@ import com.proofpoint.bootstrap.AcceptRequests;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.stats.MaxGauge;
+import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
+import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
@@ -68,6 +70,8 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -367,6 +371,8 @@ public class HttpServer
     private ServerConnector createHttpsServerConnector(HttpServerConfig config, ServerSocketChannel serverSocketChannel, HttpConfiguration configuration, Executor threadPool, int acceptors, int selectors)
             throws IOException
     {
+        boolean isJava8 = System.getProperty("java.version").startsWith("1.8.");
+
         configuration.addCustomizer(new SecureRequestCustomizer());
 
         SslContextFactory sslContextFactory = new SslContextFactory();
@@ -377,17 +383,29 @@ public class HttpServer
         sslContextFactory.setExcludeCipherSuites();
         sslContextFactory.setIncludeCipherSuites(ENABLED_CIPHERS);
         sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
-        ConnectionFactory[] connectionFactories = {
-                new SslConnectionFactory(sslContextFactory, "http/1.1"),
-                new HttpConnectionFactory(configuration)
-        };
+
+        List<ConnectionFactory> connectionFactories = new ArrayList<>();
+        connectionFactories.add(new SslConnectionFactory(sslContextFactory, isJava8 ? "http/1.1" : "alpn"));
+        if (!isJava8) {
+            connectionFactories.add(new ALPNServerConnectionFactory("h2", "http/1.1"));
+            HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(configuration);
+            http2.setInitialSessionRecvWindow(toIntExact(config.getHttp2InitialSessionReceiveWindowSize().toBytes()));
+            http2.setInitialStreamRecvWindow(toIntExact(config.getHttp2InitialStreamReceiveWindowSize().toBytes()));
+            http2.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
+            http2.setInputBufferSize(toIntExact(config.getHttp2InputBufferSize().toBytes()));
+            http2.setStreamIdleTimeout(config.getHttp2StreamIdleTimeout().toMillis());
+            connectionFactories.add(http2);
+
+        }
+        connectionFactories.add(new HttpConnectionFactory(configuration));
+
         return createServerConnector(
                 serverSocketChannel,
                 server,
                 threadPool,
                 acceptors,
                 selectors,
-                connectionFactories);
+                connectionFactories.toArray(new ConnectionFactory[]{}));
     }
 
     private ServletContextHandler createServletContext(Servlet theServlet,

@@ -8,6 +8,10 @@ Platform 1.89
   are reported to KairosDB. This means that counts are reported as one-minute
   buckets, not total since startup.
 
+* HTTP/2
+
+  We now enable HTTP/2 under TLS in the server when running under Java 11.
+
 * Trace tokens
 
   Trace token properties with keys starting with "_" are now no longer
