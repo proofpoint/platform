@@ -72,7 +72,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -243,34 +242,21 @@ public class HttpServer
         ServerConnector httpsConnector;
         if (config.isHttpsEnabled()) {
             HttpConfiguration httpsConfiguration = new HttpConfiguration(baseHttpConfiguration);
-            httpsConfiguration.addCustomizer(new SecureRequestCustomizer());
-
-            SslContextFactory sslContextFactory = new SslContextFactory();
-            sslContextFactory.setKeyStorePath(config.getKeystorePath());
-            sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
-            sslContextFactory.setExcludeProtocols();
-            sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);
-            sslContextFactory.setExcludeCipherSuites();
-            sslContextFactory.setIncludeCipherSuites(ENABLED_CIPHERS);
-            sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
-            SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
 
             Integer acceptors = config.getHttpsAcceptorThreads();
             Integer selectors = config.getHttpsSelectorThreads();
-            httpsConnector = createServerConnector(
+            httpsConnector = createHttpsServerConnector(
+                    config,
                     httpServerInfo.getHttpsChannel(),
-                    server,
+                    httpsConfiguration,
                     null,
                     firstNonNull(acceptors, -1),
-                    firstNonNull(selectors, -1),
-                    sslConnectionFactory,
-                    new HttpConnectionFactory(httpsConfiguration));
+                    firstNonNull(selectors, -1));
             httpsConnector.setName("https");
             httpsConnector.setPort(httpServerInfo.getHttpsUri().getPort());
             httpsConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
             httpsConnector.setHost(nodeInfo.getBindIp().getHostAddress());
             httpsConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
-
 
             server.addConnector(httpsConnector);
         }
@@ -286,25 +272,13 @@ public class HttpServer
             adminThreadPool.setIdleTimeout(Ints.checkedCast(config.getThreadMaxIdleTime().toMillis()));
 
             if (config.isHttpsEnabled()) {
-                adminConfiguration.addCustomizer(new SecureRequestCustomizer());
-
-                SslContextFactory sslContextFactory = new SslContextFactory();
-                sslContextFactory.setKeyStorePath(config.getKeystorePath());
-                sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
-                sslContextFactory.setExcludeProtocols();
-                sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);
-                sslContextFactory.setExcludeCipherSuites();
-                sslContextFactory.setIncludeCipherSuites(ENABLED_CIPHERS);
-                sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
-                SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
-                adminConnector = createServerConnector(
+                adminConnector = createHttpsServerConnector(
+                        config,
                         httpServerInfo.getAdminChannel(),
-                        server,
+                        adminConfiguration,
                         adminThreadPool,
                         0,
-                        -1,
-                        sslConnectionFactory,
-                        new HttpConnectionFactory(adminConfiguration));
+                        -1);
             }
             else {
                 HttpConnectionFactory http1 = new HttpConnectionFactory(adminConfiguration);
@@ -325,7 +299,6 @@ public class HttpServer
             adminConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
             adminConnector.setHost(nodeInfo.getBindIp().getHostAddress());
             adminConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
-
 
             server.addConnector(adminConnector);
         }
@@ -389,6 +362,32 @@ public class HttpServer
                 .map(X509Certificate::getNotAfter)
                 .min(naturalOrder())
                 .map(date -> ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
+    }
+
+    private ServerConnector createHttpsServerConnector(HttpServerConfig config, ServerSocketChannel serverSocketChannel, HttpConfiguration configuration, Executor threadPool, int acceptors, int selectors)
+            throws IOException
+    {
+        configuration.addCustomizer(new SecureRequestCustomizer());
+
+        SslContextFactory sslContextFactory = new SslContextFactory();
+        sslContextFactory.setKeyStorePath(config.getKeystorePath());
+        sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
+        sslContextFactory.setExcludeProtocols();
+        sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);
+        sslContextFactory.setExcludeCipherSuites();
+        sslContextFactory.setIncludeCipherSuites(ENABLED_CIPHERS);
+        sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
+        ConnectionFactory[] connectionFactories = {
+                new SslConnectionFactory(sslContextFactory, "http/1.1"),
+                new HttpConnectionFactory(configuration)
+        };
+        return createServerConnector(
+                serverSocketChannel,
+                server,
+                threadPool,
+                acceptors,
+                selectors,
+                connectionFactories);
     }
 
     private ServletContextHandler createServletContext(Servlet theServlet,
