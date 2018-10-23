@@ -11,6 +11,10 @@ Platform 1.89
   We added the ReportCollector_ServerStart metric to those reported by
   ReportingPrometheusModule().
 
+* HTTP/2
+
+  We now enable HTTP/2 under TLS in the server when running under Java 11.
+
 * Trace tokens
 
   Trace token properties with keys starting with "_" are now no longer
