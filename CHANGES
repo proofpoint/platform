@@ -1,5 +1,13 @@
 Platform 1.89
 
+* Reporting
+
+  ReportingPrometheusModule() no longer reports metrics using the Prometheus
+  "counter" or "summary" types. All metrics are now reported as the Prometheus
+  "gauge" type using names and values as close as possible to the way they
+  are reported to KairosDB. This means that counts are reported as one-minute
+  buckets, not total since startup.
+
 * Trace tokens
 
   Trace token properties with keys starting with "_" are now no longer
