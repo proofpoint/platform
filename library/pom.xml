@@ -245,6 +245,7 @@
                             -Xms${platform.test.jvmsize}
                             -XX:+ExitOnOutOfMemoryError
                             -XX:+HeapDumpOnOutOfMemoryError
+                            -XX:-OmitStackTraceInFastThrow
                         </argLine>
                     </configuration>
                 </plugin>
