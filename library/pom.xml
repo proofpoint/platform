@@ -243,7 +243,7 @@
                             -Dfile.encoding=${project.build.sourceEncoding}
                             -Xmx${platform.test.jvmsize}
                             -Xms${platform.test.jvmsize}
-                            -XX:OnOutOfMemoryError="kill -9 %p"
+                            -XX:+ExitOnOutOfMemoryError
                             -XX:+HeapDumpOnOutOfMemoryError
                         </argLine>
                     </configuration>
