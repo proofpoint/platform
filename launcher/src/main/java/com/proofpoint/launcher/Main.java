@@ -453,15 +453,12 @@ public class Main
             if (isJava8) {
                 javaArgs.add("-XX:+AggressiveOpts");
             }
-            if (System.getProperty("os.name").startsWith("Windows")) {
-                javaArgs.add("-XX:OnOutOfMemoryError=taskkill /f /pid %p");
-            }
-            else {
-                javaArgs.add("-XX:OnOutOfMemoryError=kill -9 %p");
+            if (jvmConfigArgs.stream().noneMatch(s -> s.startsWith("-XX:OnOutOfMemoryError=") || "-XX:CrashOnOutOfMemoryError".equals(s))) {
+                javaArgs.add("-XX:+ExitOnOutOfMemoryError");
             }
             javaArgs.add("-Djava.util.logging.manager=com.proofpoint.log.ShutdownWaitingLogManager");
 
-            //Add the trust store. If the trustStore arg is passed from config file, ignore this new truststore.
+            // Add the trust store. If the trustStore arg is passed from config file, ignore this new truststore.
             if (launcherArgs.stream().noneMatch(s -> s.startsWith("-Djavax.net.ssl.trustStore="))) {
                 String trustStorePath = addKubernetesToTrustStore();
                 if (trustStorePath != null) {

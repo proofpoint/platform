@@ -14,6 +14,12 @@ Platform 1.89
   serialized to or deserialized from JSON. This permits setting properties
   which will be included in logs but not propagated to dependent services.
 
+* Launcher
+
+  Unless overridden in jvm.config or jvm.properties, the launcher will now set
+  the -XX:+ExitOnOutOfMemoryError option instead of
+  -XX:OnOutOfMemoryError="kill -9 %p"
+
 Platform 1.88
 
 * We now support Java 11.
