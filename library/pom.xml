@@ -236,6 +236,7 @@
                             <sun.jnu.encoding>${project.build.sourceEncoding}</sun.jnu.encoding>
                             <java.awt.headless>true</java.awt.headless>
                         </systemPropertyVariables>
+                        <trimStackTrace>false</trimStackTrace>
                         <runOrder>random</runOrder>
                         <argLine>
                             ${argLine}
