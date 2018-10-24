@@ -103,6 +103,8 @@ import static org.testng.Assert.fail;
 @SuppressWarnings("InputStreamSlowMultibyteRead")
 public abstract class AbstractHttpClientTest
 {
+    private static final String THOUSAND_X = Strings.repeat("x", 1000);
+
     protected EchoServlet servlet;
     protected Server server;
     protected URI baseURI;
@@ -1511,9 +1513,11 @@ public abstract class AbstractHttpClientTest
                 writer.write("HTTP/1.1 200 OK\r\n" +
                         "Content-Type: application/octet-stream\r\n" +
                         "Content-Length: 100000000\r\n" +
-                        "\r\n" +
-                        Strings.repeat("x", 100000000) +
                         "\r\n");
+                for (int i = 0; i < 100_000; i++) {
+                    writer.write(THOUSAND_X);
+                }
+                writer.write("\r\n");
                 writer.flush();
             }
             catch (IOException ignored) {
