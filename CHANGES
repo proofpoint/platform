@@ -20,6 +20,8 @@ Platform 1.89
   the -XX:+ExitOnOutOfMemoryError option instead of
   -XX:OnOutOfMemoryError="kill -9 %p"
 
+  This means the minimum supported Java version has increased to 8u92.
+
 Platform 1.88
 
 * We now support Java 11.
