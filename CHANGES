@@ -2,6 +2,8 @@ Platform 1.90
 
 * Library upgrades
 
+  - Base Docker image changed to azul/zulu-openjdk-debian:8u181
+    (was openjdk:8u181-jdk)
   - Guice to 4.2.1 (was 4.2.0)
   - Jackson to 2.9.7 (was 2.9.6) (fixes deserialization vulnerabilities
     CVE-2018-14718 and -14721 when using @JsonTypeInfo or "default typing")
