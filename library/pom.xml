@@ -82,6 +82,7 @@
         <platform.check.fail-spotbugs>false</platform.check.fail-spotbugs>
         <platform.check.fail-modernizer>false</platform.check.fail-modernizer>
 
+        <dep.auto-value.version>1.6.2</dep.auto-value.version>
         <dep.jetty.version>9.4.12.v20180830</dep.jetty.version>
         <dep.guava.version>26.0-jre</dep.guava.version>
         <dep.guice.version>4.2.0</dep.guice.version>
@@ -202,6 +203,13 @@
                         <maxmem>${platform.build.jvmsize}</maxmem>
                         <showWarnings>true</showWarnings>
                         <fork>true</fork>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>com.google.auto.value</groupId>
+                                <artifactId>auto-value</artifactId>
+                                <version>${dep.auto-value.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
 
@@ -947,18 +955,8 @@
 
             <dependency>
                 <groupId>com.google.auto.value</groupId>
-                <artifactId>auto-value</artifactId>
-                <version>1.5</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.code.findbugs</groupId>
-                        <artifactId>jsr305</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                </exclusions>
+                <artifactId>auto-value-annotations</artifactId>
+                <version>${dep.auto-value.version}</version>
             </dependency>
 
             <dependency>
