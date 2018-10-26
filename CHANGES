@@ -2,6 +2,7 @@ Platform 1.90
 
 * Library upgrades
 
+  - Guice to 4.2.1 (was 4.2.0)
   - auto-value to 1.6.2 (was 1.5)
     All Maven dependency sections that used to refer to
     <artifactId>auto-value</artifactId> must now be replaced with:
