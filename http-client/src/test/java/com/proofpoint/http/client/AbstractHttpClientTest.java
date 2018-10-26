@@ -12,9 +12,12 @@ import com.proofpoint.testing.Assertions;
 import com.proofpoint.testing.Closeables;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.units.Duration;
+import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
+import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
+import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -88,6 +91,7 @@ import static com.proofpoint.testing.Closeables.closeQuietly;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.units.Duration.nanosSince;
+import static java.lang.Math.toIntExact;
 import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -178,22 +182,28 @@ public abstract class AbstractHttpClientTest
         httpConfiguration.setSendServerVersion(false);
         httpConfiguration.setSendXPoweredBy(false);
 
-        ServerConnector connector;
+        List<ConnectionFactory> connectionFactories = new ArrayList<>();
         if (keystore != null) {
+            boolean isJava8 = System.getProperty("java.version").startsWith("1.8.");
+
             httpConfiguration.addCustomizer(new SecureRequestCustomizer());
 
             sslContextFactory = new SslContextFactory(keystore);
             sslContextFactory.setKeyStorePassword("changeit");
-            SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "http/1.1");
 
-            connector = new ServerConnector(server, sslConnectionFactory, new HttpConnectionFactory(httpConfiguration));
+            connectionFactories.add(new SslConnectionFactory(sslContextFactory, isJava8 ? "http/1.1" : "alpn"));
+            if (!isJava8) {
+                connectionFactories.add(new ALPNServerConnectionFactory("h2", "http/1.1"));
+                connectionFactories.add(new HTTP2ServerConnectionFactory(httpConfiguration));
+            }
+            connectionFactories.add(new HttpConnectionFactory(httpConfiguration));
+
         }
         else {
-            HttpConnectionFactory http1 = new HttpConnectionFactory(httpConfiguration);
-            HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(httpConfiguration);
-
-            connector = new ServerConnector(server, http1, http2c);
+            connectionFactories.add(new HttpConnectionFactory(httpConfiguration));
+            connectionFactories.add(new HTTP2CServerConnectionFactory(httpConfiguration));
         }
+        ServerConnector connector = new ServerConnector(server, connectionFactories.toArray(new ConnectionFactory[]{}));
 
         connector.setIdleTimeout(30000);
         connector.setName(scheme);
