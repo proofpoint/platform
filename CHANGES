@@ -1,3 +1,17 @@
+Platform 1.90
+
+* Library upgrades
+
+  - auto-value to 1.6.2 (was 1.5)
+    All Maven dependency sections that used to refer to
+    <artifactId>auto-value</artifactId> must now be replaced with:
+
+      <dependency>
+          <groupId>com.google.auto.value</groupId>
+          <artifactId>auto-value-annotations</artifactId>
+          <optional>true</optional>
+      </dependency>
+
 Platform 1.89
 
 * Reporting
