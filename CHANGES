@@ -19,6 +19,7 @@ Platform 1.90
   - AssertJ-Guava to 3.2.0 (was 3.1.0)
   - AssertJ-Joda-time to 2.2.0 (was 2.0.0)
   - AssertJ-DB to 1.2.0 (was 1.1.1)
+  - Mockito to 2.23.0 (was 2.21.0)
 
 Platform 1.89
 
