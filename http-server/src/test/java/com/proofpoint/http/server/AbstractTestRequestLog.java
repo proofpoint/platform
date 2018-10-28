@@ -21,7 +21,6 @@ import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.mockito.Mock;
@@ -33,9 +32,11 @@ import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
+import java.util.DoubleSummaryStatistics;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.eclipse.jetty.http.HttpVersion.HTTP_2;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.testng.Assert.assertEquals;
@@ -122,6 +123,7 @@ public abstract class AbstractTestRequestLog
         when(request.getMethod()).thenReturn(method);
         when(request.getContentRead()).thenReturn(requestSize);
         when(request.getHeader("Content-Type")).thenReturn(requestContentType);
+        when(request.getHttpVersion()).thenReturn(HTTP_2);
         when(response.getStatus()).thenReturn(responseCode);
         when(response.getContentCount()).thenReturn(responseSize);
         when(response.getHeader("Content-Type")).thenReturn(responseContentType);
@@ -143,8 +145,11 @@ public abstract class AbstractTestRequestLog
     public void testWriteLog()
             throws Exception
     {
-        logger.log(request, response);
-        ((LifeCycle) logger).stop();
+        DoubleSummaryStatistics summaryStatistics = new DoubleSummaryStatistics();
+        summaryStatistics.accept(1);
+        summaryStatistics.accept(3);
+        logger.log(request, response, 111, 222, 333, new DoubleSummaryStats(summaryStatistics));
+        logger.stop();
 
         String actual = Files.asCharSource(file, UTF_8).read();
         String expected = getExpectedLogLine(timestamp, "9.9.9.9", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());

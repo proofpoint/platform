@@ -33,9 +33,9 @@ public class HttpServerChannelListener
     private static final String REQUEST_BEGIN_TO_END_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".begin_to_end";
     private static final String RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".response_content_timestamps";
 
-    private final DelimitedRequestLog logger;
+    private final RequestLog logger;
 
-    public HttpServerChannelListener(DelimitedRequestLog logger)
+    public HttpServerChannelListener(RequestLog logger)
     {
         this.logger = requireNonNull(logger, "logger is null");
     }

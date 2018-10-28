@@ -23,8 +23,6 @@ import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig.LogFormat;
 import com.proofpoint.node.NodeInfo;
 import org.eclipse.jetty.security.LoginService;
-import org.eclipse.jetty.server.RequestLog;
-import org.eclipse.jetty.server.handler.RequestLogHandler;
 
 import javax.annotation.Nullable;
 import javax.inject.Provider;
@@ -159,10 +157,9 @@ public class HttpServerProvider
     public HttpServer get()
     {
         try {
-            RequestLogHandler logHandler = null;
+            RequestLog requestLog = null;
             if (config.isLogEnabled()) {
-                logHandler = new RequestLogHandler();
-                logHandler.setRequestLog(createRequestLog(config));
+                requestLog = createRequestLog(config);
             }
 
             HttpServer httpServer = new HttpServer(httpServerInfo,
@@ -180,7 +177,7 @@ public class HttpServerProvider
                     queryStringFilter,
                     stats,
                     detailedRequestStats,
-                    logHandler,
+                    requestLog,
                     clientAddressExtractor
             );
             lifeCycleManager.addInstance(httpServer);
