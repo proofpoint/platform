@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.inject.Binder;
+import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -28,6 +29,7 @@ import com.google.inject.Provides;
 import com.google.inject.ProvisionException;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
+import com.google.inject.util.Modules;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 import org.testng.annotations.Test;
 import org.weakref.jmx.Flatten;
@@ -51,10 +53,11 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 public class TestReportBinder
 {
@@ -341,6 +344,99 @@ public class TestReportBinder
                 "Gauge", "Reported",
                 "Nested.Gauge", "Nested.Reported"
         )));
+    }
+
+    @Test
+    public void testDuplicate() {
+        Injector injector = Guice.createInjector(
+                new TestingModule(),
+                binder -> {
+                    reportBinder(binder).export(GaugeClass.class);
+                    reportBinder(binder).export(GaugeClass.class);
+                });
+        assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+    }
+
+    @Test
+    public void testDuplicateAllFeatures() {
+        Injector injector = Guice.createInjector(
+                new TestingModule(),
+                binder -> {
+                    reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class).withApplicationPrefix().withNamePrefix("Prefix").withTags(ImmutableMap.of("foo", "bar"));
+                    reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class).withApplicationPrefix().withNamePrefix("Prefix").withTags(ImmutableMap.of("foo", "bar"));
+                });
+        assertReportRegistration(injector, true, "Prefix", ImmutableMap.of("foo", "bar"), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+    }
+
+    @Test(expectedExceptions = ReportException.class)
+    public void testDuplicateDifferentApplicationPrefixThrows()
+            throws Throwable
+    {
+        try {
+            Guice.createInjector(
+                    new TestingModule(),
+                    binder -> {
+                        reportBinder(binder).export(GaugeClass.class).withNamePrefix("Prefix").withTags(ImmutableMap.of("foo", "bar"));
+                        reportBinder(binder).export(GaugeClass.class).withApplicationPrefix().withNamePrefix("Prefix").withTags(ImmutableMap.of("foo", "bar"));
+                    });
+            fail("Expected CreationException");
+        } catch (CreationException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test(expectedExceptions = ReportException.class)
+    public void testDuplicateDifferentNamePrefixThrows()
+            throws Throwable
+    {
+        try {
+            Guice.createInjector(
+                    new TestingModule(),
+                    binder -> {
+                        reportBinder(binder).export(GaugeClass.class).withApplicationPrefix().withNamePrefix("Prefix").withTags(ImmutableMap.of("foo", "bar"));
+                        reportBinder(binder).export(GaugeClass.class).withApplicationPrefix().withNamePrefix("Other").withTags(ImmutableMap.of("foo", "bar"));
+                    });
+            fail("Expected CreationException");
+        } catch (CreationException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test(expectedExceptions = ReportException.class)
+    public void testDuplicateDifferentTagsThrows()
+            throws Throwable
+    {
+        try {
+            Guice.createInjector(
+                    new TestingModule(),
+                    binder -> {
+                        reportBinder(binder).export(GaugeClass.class).withApplicationPrefix().withNamePrefix("Prefix").withTags(ImmutableMap.of("foo", "bar"));
+                        reportBinder(binder).export(GaugeClass.class).withApplicationPrefix().withNamePrefix("Prefix");
+                    });
+            fail("Expected CreationException");
+        } catch (CreationException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test(expectedExceptions = ReportException.class)
+    public void testDuplicateDifferentAnnotationThrows()
+            throws Throwable
+    {
+        try {
+            GaugeClass gaugeClass = new GaugeClass();
+            Guice.createInjector(
+                    Modules.override(new TestingModule()).with(
+                            binder -> {
+                                binder.bind(GaugeClass.class).toInstance(gaugeClass);
+                                binder.bind(GaugeClass.class).annotatedWith(TestingAnnotation.class).toInstance(gaugeClass);
+                                reportBinder(binder).export(GaugeClass.class);
+                                reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class);
+                            }));
+            fail("Expected CreationException");
+        } catch (CreationException e) {
+            throw e.getCause();
+        }
     }
 
     @Test

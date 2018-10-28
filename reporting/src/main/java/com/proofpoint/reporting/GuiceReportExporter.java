@@ -18,9 +18,10 @@ package com.proofpoint.reporting;
 import com.google.inject.Injector;
 
 import javax.inject.Inject;
-import javax.management.InstanceAlreadyExistsException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 class GuiceReportExporter
@@ -29,15 +30,17 @@ class GuiceReportExporter
 
     @Inject
     GuiceReportExporter(Set<Mapping> mappings, ReportExporter reportExporter, Injector injector)
-            throws MalformedObjectNameException, InstanceAlreadyExistsException
+            throws MalformedObjectNameException
     {
         this.reportExporter = reportExporter;
         export(mappings, injector);
     }
 
     private void export(Set<Mapping> mappings, Injector injector)
-            throws MalformedObjectNameException, InstanceAlreadyExistsException
+            throws MalformedObjectNameException
     {
+        Map<Reference, Mapping> exported = new HashMap<>();
+
         for (Mapping mapping : mappings) {
             Object object = injector.getInstance(mapping.getKey());
 
@@ -46,6 +49,15 @@ class GuiceReportExporter
                 reportExporter.export(new ObjectName(legacyName), object);
             }
             else {
+                Mapping oldMapping = exported.putIfAbsent(new Reference(object), mapping);
+                if (oldMapping != null &&
+                        oldMapping.getKey().equals(mapping.getKey()) &&
+                        oldMapping.isApplicationPrefix() == mapping.isApplicationPrefix() &&
+                        oldMapping.getNamePrefix().equals(mapping.getNamePrefix()) &&
+                        oldMapping.getTags().equals(mapping.getTags())) {
+                    continue;
+                }
+
                 reportExporter.export(object, mapping.isApplicationPrefix(), mapping.getNamePrefix(), mapping.getTags());
             }
         }
