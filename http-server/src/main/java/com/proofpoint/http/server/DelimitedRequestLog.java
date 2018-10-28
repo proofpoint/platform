@@ -20,9 +20,7 @@ import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.encoder.EncoderBase;
 import com.proofpoint.log.Logging;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.Response;
-import org.eclipse.jetty.util.component.LifeCycle;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +30,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 class DelimitedRequestLog
+    implements RequestLog
 {
     // Tab-separated
     // Time, ip, method, url, user, agent, response code, request length, response length, response time
@@ -57,6 +56,7 @@ class DelimitedRequestLog
                 new ContextBase());
     }
 
+    @Override
     public void log(
             Request request,
             Response response,
@@ -79,6 +79,7 @@ class DelimitedRequestLog
         appender.doAppend(event);
     }
 
+    @Override
     public void stop()
     {
         appender.stop();

@@ -31,8 +31,6 @@ import com.proofpoint.log.Level;
 import com.proofpoint.log.Logging;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
-import com.proofpoint.units.Duration;
-import org.eclipse.jetty.server.RequestLog;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
@@ -41,11 +39,9 @@ import org.testng.annotations.Test;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.io.MoreFiles.deleteRecursively;
 import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
@@ -61,6 +57,7 @@ import static com.proofpoint.testing.Assertions.assertNotEquals;
 import static com.proofpoint.testing.Closeables.closeQuietly;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
@@ -68,7 +65,6 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 public class TestHttpServerProvider
 {
@@ -81,7 +77,7 @@ public class TestHttpServerProvider
     private List<String> infoLogMessages;
     private HttpServerInfo httpServerInfo;
     private LifeCycleManager lifeCycleManager;
-    private DelimitedRequestLog requestLog;
+    private RequestLog requestLog;
 
     @BeforeSuite
     public void setupSuite()
@@ -259,7 +255,7 @@ public class TestHttpServerProvider
 
             assertEquals(response.getHeader("X-Protocol"), "HTTP/1.1");
         }
-        verify(requestLog).log(any(), any());
+        verify(requestLog).log(any(), any(), anyLong(), anyLong(), anyLong(), any());
 
         try (JettyHttpClient httpClient = new JettyHttpClient(new HttpClientConfig().setHttp2Enabled(true))) {
             StatusResponse response = httpClient.execute(prepareGet().setUri(httpServerInfo.getHttpUri()).build(), createStatusResponseHandler());
@@ -591,7 +587,7 @@ public class TestHttpServerProvider
             @Override
             protected RequestLog createRequestLog(HttpServerConfig config)
             {
-                requestLog = mock(DelimitedRequestLog.class);
+                requestLog = mock(RequestLog.class);
                 return requestLog;
             }
         };

@@ -21,14 +21,12 @@ import ch.qos.logback.core.encoder.EncoderBase;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.log.Logging;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.Response;
-import org.eclipse.jetty.util.component.LifeCycle;
 
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 
 class JsonRequestLog
-        implements RequestLog, LifeCycle
+        implements RequestLog
 {
     private final CurrentTimeMillisProvider currentTimeMillisProvider;
     private final Appender<HttpRequestEvent> appender;
@@ -50,69 +48,32 @@ class JsonRequestLog
     }
 
     @Override
-    public void log(Request request, Response response)
+    public void log(
+            Request request,
+            Response response,
+            long beginToDispatchMillis,
+            long beginToEndMillis,
+            long firstToLastContentTimeInMillis,
+            DoubleSummaryStats responseContentInterarrivalStats)
     {
-        long currentTime = currentTimeMillisProvider.getCurrentTimeMillis();
-        HttpRequestEvent event = createHttpRequestEvent(request, response, currentTime, clientAddressExtractor);
+        HttpRequestEvent event = createHttpRequestEvent(
+                request,
+                response,
+                currentTimeMillisProvider.getCurrentTimeMillis(),
+                beginToDispatchMillis,
+                beginToEndMillis,
+                firstToLastContentTimeInMillis,
+                responseContentInterarrivalStats,
+                clientAddressExtractor
+        );
 
         appender.doAppend(event);
-    }
-
-    @Override
-    public void start()
-    {
     }
 
     @Override
     public void stop()
     {
         appender.stop();
-    }
-
-    @Override
-    public boolean isRunning()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isStarted()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isStarting()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isStopping()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isStopped()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isFailed()
-    {
-        return false;
-    }
-
-    @Override
-    public void addLifeCycleListener(Listener listener)
-    {
-    }
-
-    @Override
-    public void removeLifeCycleListener(Listener listener)
-    {
     }
 
     private static class EventEncoder extends EncoderBase<HttpRequestEvent>

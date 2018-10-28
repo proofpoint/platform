@@ -105,14 +105,13 @@ public class HttpServer
     private final boolean registerErrorHandler;
     private final RequestStats stats;
     private final MaxGauge busyThreads = new MaxGauge();
+    private final RequestLog requestLog;
     private final ClientAddressExtractor clientAddressExtractor;
 
     private final Optional<ZonedDateTime> certificateExpiration;
 
     /**
-     * @deprecated Use {@link #HttpServer(HttpServerInfo, NodeInfo, HttpServerConfig, Servlet, Map,
-     * Set, Set, Servlet, Map, Set, MBeanServer, LoginService, QueryStringFilter, RequestStats,
-     * DetailedRequestStats, RequestLogHandler, ClientAddressExtractor)}.
+     * @deprecated Will no longer be public.
      */
     @Deprecated
     public HttpServer(HttpServerInfo httpServerInfo,
@@ -135,10 +134,14 @@ public class HttpServer
     {
         this(httpServerInfo, nodeInfo, config, theServlet, parameters, filters, resources, theAdminServlet,
                 adminParameters, adminFilters, mbeanServer, loginService, queryStringFilter, stats,
-                detailedRequestStats, logHandler, new ClientAddressExtractor());
+                detailedRequestStats, (RequestLog) null, new ClientAddressExtractor());
 
     }
 
+    /**
+     * @deprecated Will no longer be public.
+     */
+    @Deprecated
     public HttpServer(HttpServerInfo httpServerInfo,
             NodeInfo nodeInfo,
             HttpServerConfig config,
@@ -158,6 +161,30 @@ public class HttpServer
             ClientAddressExtractor clientAddressExtractor)
             throws IOException
     {
+        this(httpServerInfo, nodeInfo, config, theServlet, parameters, filters, resources, theAdminServlet,
+                adminParameters, adminFilters, mbeanServer, loginService, queryStringFilter, stats,
+                detailedRequestStats, (RequestLog) null, clientAddressExtractor);
+    }
+
+    HttpServer(HttpServerInfo httpServerInfo,
+            NodeInfo nodeInfo,
+            HttpServerConfig config,
+            Servlet theServlet,
+            Map<String, String> parameters,
+            Set<Filter> filters,
+            Set<HttpResourceBinding> resources,
+            @Nullable Servlet theAdminServlet,
+            @Nullable Map<String, String> adminParameters,
+            @Nullable Set<Filter> adminFilters,
+            @Nullable MBeanServer mbeanServer,
+            @Nullable LoginService loginService,
+            QueryStringFilter queryStringFilter,
+            RequestStats stats,
+            DetailedRequestStats detailedRequestStats,
+            @Nullable RequestLog requestLog,
+            ClientAddressExtractor clientAddressExtractor)
+            throws IOException
+    {
         requireNonNull(httpServerInfo, "httpServerInfo is null");
         requireNonNull(nodeInfo, "nodeInfo is null");
         requireNonNull(config, "config is null");
@@ -168,6 +195,7 @@ public class HttpServer
         requireNonNull(queryStringFilter, "queryStringFilter is null");
         this.stats = requireNonNull(stats, "stats is null");
         requireNonNull(detailedRequestStats, "detailedRequestStats is null");
+        this.requestLog = requestLog;
         this.clientAddressExtractor = requireNonNull(clientAddressExtractor, "clientAddressExtractor is null");
 
         QueuedThreadPool threadPool = new QueuedThreadPool(config.getMaxThreads())
@@ -209,12 +237,8 @@ public class HttpServer
 
         // register a channel listener if logging is enabled
         HttpServerChannelListener channelListener = null;
-        if (config.isLogEnabled()) {
-            this.requestLog = createDelimitedRequestLog(config, tokenManager, eventClient);
-            channelListener = new HttpServerChannelListener(this.requestLog);
-        }
-        else {
-            this.requestLog = null;
+        if (requestLog != null) {
+            channelListener = new HttpServerChannelListener(requestLog);
         }
 
         // set up HTTP connector
@@ -518,6 +542,9 @@ public class HttpServer
             throws Exception
     {
         server.stop();
+        if (requestLog != null) {
+            requestLog.stop();
+        }
     }
 
     @Flatten
