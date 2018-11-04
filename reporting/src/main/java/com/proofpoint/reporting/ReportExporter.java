@@ -166,7 +166,10 @@ public class ReportExporter
 
         try {
             for (Entry<Method, Method> entry : findAnnotatedMethods(object.getClass(), ReportedAnnotation.class).entrySet()) {
-                notifyBucketIdProvider(entry.getKey().invoke(object), bucketIdProvider, entry.getValue());
+                Object nestedObject = entry.getKey().invoke(object);
+                if (nestedObject != null) {
+                    notifyBucketIdProvider(nestedObject, bucketIdProvider, entry.getValue());
+                }
             }
         }
         catch (IllegalAccessException | InvocationTargetException e) {
