@@ -17,6 +17,11 @@ Platform 1.93
   "http-server.https.ssl-session-timeout" configuration properties to allow
   configuring the TLS session cache.
 
+  We added "protocolVersion", "timeToDispatch", "timeToRequestEnd",
+  "timeResponseContent", "responseContentChunk", and "timeToLastByte"
+  metrics to the JSON-format http-request.log. The "responseContentChunk"
+  field is a map with two members: "count" and "max".
+
 * Maven
 
   We enabled compiled metadata for reflection on method parameters.

@@ -26,11 +26,28 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
     }
 
     @Override
-    protected String getExpectedLogLine(long timestamp, String clientAddr, String method, String pathQuery, String user, String agent, int responseCode, long requestSize, long responseSize, long timeToLastByte)
+    protected String getExpectedLogLine(
+            long timestamp,
+            String clientAddr,
+            String method,
+            String pathQuery,
+            String user,
+            String agent,
+            int responseCode,
+            long requestSize,
+            long responseSize,
+            Object protocolVersion,
+            long timeToDispatch,
+            long timeToRequestEnd,
+            long timeResponseContent,
+            long responseContentChunkCount, long responseContentChunkMax, long timeToLastByte)
     {
         return String.format("{\"time\":\"%s\",\"traceToken\":\"%s\",\"sourceIp\":\"%s\"," +
                         "\"method\":\"%s\",\"requestUri\":\"%s\",\"username\":\"%s\",\"userAgent\":\"%s\"," +
-                        "\"responseCode\":%d,\"requestSize\":%d,\"responseSize\":%d,\"timeToLastByte\":\"%d.00ms\"}\n",
+                        "\"responseCode\":%d,\"requestSize\":%d,\"responseSize\":%d,\"protocolVersion\":\"%s\"," +
+                        "\"timeToDispatch\":\"%d.00ms\",\"timeToRequestEnd\":\"%d.00ms\"," +
+                        "\"timeResponseContent\":\"%d.00ms\",\"responseContentChunk\":{\"count\":%d,\"max\":\"%d.00ms\"}," +
+                        "\"timeToLastByte\":\"%d.00ms\"}\n",
                 "2018-09-29T03:41:11.000Z",
                 getCurrentRequestToken(),
                 clientAddr,
@@ -41,6 +58,12 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
                 responseCode,
                 requestSize,
                 responseSize,
+                protocolVersion,
+                timeToDispatch,
+                timeToRequestEnd,
+                timeResponseContent,
+                responseContentChunkCount,
+                responseContentChunkMax,
                 timeToLastByte);
     }
 }

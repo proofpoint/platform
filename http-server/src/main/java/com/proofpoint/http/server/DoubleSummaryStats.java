@@ -13,34 +13,32 @@
  */
 package com.proofpoint.http.server;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.proofpoint.units.Duration;
+
 import java.util.DoubleSummaryStatistics;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public class DoubleSummaryStats
+@JsonPropertyOrder({"count", "max"})
+class DoubleSummaryStats
 {
     private final DoubleSummaryStatistics stats;
 
-    public DoubleSummaryStats(DoubleSummaryStatistics stats)
+    DoubleSummaryStats(DoubleSummaryStatistics stats)
     {
         this.stats = requireNonNull(stats, "stats is null");
     }
 
-    public double getMin()
+    @JsonProperty
+    public Duration getMax()
     {
-        return stats.getMin();
+        return new Duration(stats.getMax(), MILLISECONDS);
     }
 
-    public double getMax()
-    {
-        return stats.getMax();
-    }
-
-    public double getAverage()
-    {
-        return stats.getAverage();
-    }
-
+    @JsonProperty
     public long getCount()
     {
         return stats.getCount();

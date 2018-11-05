@@ -34,7 +34,23 @@ public class TestDelimitedRequestLog
     }
 
     @Override
-    protected String getExpectedLogLine(long timestamp, String clientAddr, String method, String pathQuery, String user, String agent, int responseCode, long requestSize, long responseSize, long timeToLastByte)
+    protected String getExpectedLogLine(
+            long timestamp,
+            String clientAddr,
+            String method,
+            String pathQuery,
+            String user,
+            String agent,
+            int responseCode,
+            long requestSize,
+            long responseSize,
+            Object protocolVersion,
+            long timeToDispatch,
+            long timeToRequestEnd,
+            long timeResponseContent,
+            long responseContentChunkCount,
+            long responseContentChunkMax,
+            long timeToLastByte)
     {
         return String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\n",
                 ISO_FORMATTER.format(Instant.ofEpochMilli(timestamp)),
