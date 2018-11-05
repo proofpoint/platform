@@ -22,6 +22,7 @@ import org.testng.annotations.Test;
 
 import javax.validation.constraints.NotNull;
 
+import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.testng.Assert.assertEquals;
@@ -218,6 +219,15 @@ public class TestTestingReportCollectionFactory
     {
         factory.createReportCollection(KeyedDistribution.class, "foo");
         factory.createReportCollection(KeyedDistribution.class, "foo");
+    }
+
+    @Test
+    public void testEquivalence()
+    {
+        equivalenceTester()
+                .addEquivalentGroup(factory.createReportCollection(KeyedDistribution.class, true, "Prefix", ImmutableMap.of()))
+                .addEquivalentGroup(factory.createReportCollection(KeyedDistribution.class, true, "Prefix", ImmutableMap.of()))
+                .check();
     }
 
     private interface KeyedDistribution
