@@ -22,15 +22,17 @@ import com.proofpoint.units.Duration;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 
+import javax.annotation.Nullable;
 import java.security.Principal;
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 import static java.lang.Math.max;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @JsonPropertyOrder({ "time", "traceToken", "sourceIp", "method", "requestUri", "username", "userAgent",
-        "responseCode", "requestSize", "responseSize", "timeToLastByte"})
+        "responseCode", "requestSize", "responseSize", "protocolVersion",
+        "timeToDispatch", "timeToRequestEnd", "timeResponseContent", "responseContentChunk", "timeToLastByte"})
 class HttpRequestEvent
 {
     static HttpRequestEvent createHttpRequestEvent(
@@ -40,7 +42,7 @@ class HttpRequestEvent
             long beginToDispatchMillis,
             long beginToEndMillis,
             long firstToLastContentTimeInMillis,
-            DoubleSummaryStats responseContentInterarrivalStats,
+            @Nullable DoubleSummaryStats responseContentInterarrivalStats,
             ClientAddressExtractor clientAddressExtractor)
     {
         String user = null;
@@ -204,29 +206,39 @@ class HttpRequestEvent
 
     @JsonProperty("timeToLastByte")
     public Duration getTimeToLastByteDuration() {
-        return new Duration(timeToLastByte, TimeUnit.MILLISECONDS);
+        return new Duration(timeToLastByte, MILLISECONDS);
     }
 
-    public long getBeginToDispatchMillis()
+    @JsonProperty
+    public Duration getTimeToDispatch()
     {
-        return beginToDispatchMillis;
+        return new Duration(beginToDispatchMillis, MILLISECONDS);
     }
 
-    public long getBeginToEndMillis()
+    @JsonProperty
+    public Duration getTimeToRequestEnd()
     {
-        return beginToEndMillis;
+        return new Duration(beginToEndMillis, MILLISECONDS);
     }
 
-    public long getFirstToLastContentTimeInMillis()
+    @Nullable
+    @JsonProperty
+    public Duration getTimeResponseContent()
     {
-        return firstToLastContentTimeInMillis;
+        if (firstToLastContentTimeInMillis < 0) {
+            return null;
+        }
+        return new Duration(firstToLastContentTimeInMillis, MILLISECONDS);
     }
 
-    public DoubleSummaryStats getResponseContentInterarrivalStats()
+    @Nullable
+    @JsonProperty
+    public DoubleSummaryStats getResponseContentChunk()
     {
         return responseContentInterarrivalStats;
     }
 
+    @JsonProperty
     public String getProtocolVersion()
     {
         return protocolVersion;

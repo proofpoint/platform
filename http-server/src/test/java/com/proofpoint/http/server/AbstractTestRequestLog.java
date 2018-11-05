@@ -22,7 +22,6 @@ import com.proofpoint.units.DataSize.Unit;
 import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
-import org.eclipse.jetty.util.component.LifeCycle;
 import org.mockito.Mock;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -74,7 +73,24 @@ public abstract class AbstractTestRequestLog
     protected abstract void setup(HttpServerConfig httpServerConfig)
             throws IOException;
 
-    protected abstract String getExpectedLogLine(long timestamp, String clientAddr, String method, String pathQuery, String user, String agent, int responseCode, long requestSize, long responseSize, long timeToLastByte);
+    protected abstract String getExpectedLogLine(
+            long timestamp,
+            String clientAddr,
+            String method,
+            String pathQuery,
+            String user,
+            String agent,
+            int responseCode,
+            long requestSize,
+            long responseSize,
+            Object protocolVersion,
+            long timeToDispatch,
+            long timeToRequestEnd,
+            long timeResponseContent,
+            long responseContentChunkCount,
+            long responseContentChunkMax,
+            long timeToLastByte
+    );
 
     @BeforeMethod
     public final void setupAbstract()
@@ -152,7 +168,21 @@ public abstract class AbstractTestRequestLog
         logger.stop();
 
         String actual = Files.asCharSource(file, UTF_8).read();
-        String expected = getExpectedLogLine(timestamp, "9.9.9.9", method, pathQuery, user, agent, responseCode, requestSize, responseSize, currentTime - request.getTimeStamp());
+        String expected = getExpectedLogLine(
+                timestamp,
+                "9.9.9.9",
+                method,
+                pathQuery,
+                user,
+                agent,
+                responseCode,
+                requestSize,
+                responseSize,
+                "HTTP/2.0",
+                111,
+                222,
+                333,
+                2, 3, currentTime - request.getTimeStamp());
         assertEquals(actual, expected);
     }
 }
