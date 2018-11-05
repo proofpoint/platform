@@ -1,3 +1,7 @@
+Platform 1.91
+
+* [Bug] Report collections didn't implement equals()/hashCode()/toString()
+
 Platform 1.90
 
 * Reporting

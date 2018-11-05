@@ -75,10 +75,20 @@ import static org.mockito.Mockito.spy;
 public class TestingReportCollectionFactory
     extends ReportCollectionFactory
 {
+    private static final Method OBJECT_EQUALS_METHOD;
     private final InstanceMap argumentVerifierMap = new InstanceMap();
     private final InstanceMap superMap = new InstanceMap();
     private final NamedInstanceMap namedArgumentVerifierMap = new NamedInstanceMap();
     private final NamedInstanceMap namedSuperMap = new NamedInstanceMap();
+
+    static {
+        try {
+            OBJECT_EQUALS_METHOD = Object.class.getDeclaredMethod("equals", Object.class);
+        }
+        catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public TestingReportCollectionFactory()
     {
@@ -249,6 +259,9 @@ public class TestingReportCollectionFactory
                 throws Throwable
         {
             method.invoke(argumentVerifier, args);
+            if (OBJECT_EQUALS_METHOD.equals(method)) {
+                return proxy == args[0];
+            }
             return method.invoke(superCollection, args);
         }
     }

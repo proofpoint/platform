@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -341,6 +342,15 @@ public class TestReportCollectionFactory
         assertNotNull(reportCaptor.getValue());
 
         assertNotNull(noParameters.add());
+    }
+
+    @Test
+    public void testEquivalence()
+    {
+        equivalenceTester()
+                .addEquivalentGroup(reportCollectionFactory.createReportCollection(KeyedDistribution.class))
+                .addEquivalentGroup(reportCollectionFactory.createReportCollection(KeyedDistribution.class))
+                .check();
     }
 
     private interface NoParameters

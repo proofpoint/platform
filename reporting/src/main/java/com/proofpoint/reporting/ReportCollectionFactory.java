@@ -56,8 +56,22 @@ import static java.util.Objects.requireNonNull;
 public class ReportCollectionFactory
 {
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+    private static final Method OBJECT_EQUALS_METHOD;
+    private static final Method OBJECT_HASH_CODE_METHOD;
+    private static final Method OBJECT_TO_STRING_METHOD;
     private final Ticker ticker;
     private final ReportExporter reportExporter;
+
+    static {
+        try {
+            OBJECT_EQUALS_METHOD = Object.class.getDeclaredMethod("equals", Object.class);
+            OBJECT_HASH_CODE_METHOD = Object.class.getDeclaredMethod("hashCode");
+            OBJECT_TO_STRING_METHOD = Object.class.getDeclaredMethod("toString");
+        }
+        catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Inject
     public ReportCollectionFactory(ReportExporter reportExporter)
@@ -212,7 +226,19 @@ public class ReportCollectionFactory
                     argBuilder.add(Optional.of(arg.toString()));
                 }
             }
-            return implementationMap.get(method).get(argBuilder.build());
+            MethodImplementation implementation = implementationMap.get(method);
+            if (implementation == null) {
+                if (OBJECT_EQUALS_METHOD.equals(method)) {
+                    return proxy == args[0];
+                }
+                if (OBJECT_HASH_CODE_METHOD.equals(method)) {
+                    return hashCode();
+                }
+                if (OBJECT_TO_STRING_METHOD.equals(method)) {
+                    return proxy.getClass().getName() + "@" + Integer.toHexString(hashCode());
+                }
+            }
+            return implementation.get(argBuilder.build());
         }
 
     }
