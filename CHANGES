@@ -1,3 +1,10 @@
+Platform 1.92
+
+* Library upgrades
+
+  - Base Docker image changed to azul/zulu-openjdk-debian:8u192
+    (was azul/zulu-openjdk-debian:8u181)
+
 Platform 1.91
 
 * [Bug] Report collections didn't implement equals()/hashCode()/toString()
