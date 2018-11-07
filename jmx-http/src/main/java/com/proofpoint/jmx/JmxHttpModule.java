@@ -198,7 +198,7 @@ public class JmxHttpModule implements Module
         if (keySet != null) {
             for (List<?> key : keySet) {
                 if (key != null && !key.isEmpty()) {
-                    Object[] index = key.toArray(new Object[key.size()]);
+                    Object[] index = key.toArray(new Object[0]);
                     CompositeData value = data.get(index);
                     if (value != null) {
                         builder.add(toMap(value));
