@@ -15,10 +15,8 @@
  */
 package com.proofpoint.json.isolated;
 
-import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.JsonCodecBinder;
 import com.proofpoint.json.JsonModule;
@@ -46,16 +44,11 @@ public class TestJsonCodecBinder
             throws Exception
     {
         Injector injector = Guice.createInjector(new JsonModule(),
-                new Module()
-                {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        JsonCodecBinder codecBinder = jsonCodecBinder(binder);
-                        codecBinder.bindJsonCodec(Person.class);
-                        codecBinder.bindListJsonCodec(Person.class);
-                        codecBinder.bindMapJsonCodec(String.class, Person.class);
-                    }
+                binder -> {
+                    JsonCodecBinder codecBinder = jsonCodecBinder(binder);
+                    codecBinder.bindJsonCodec(Person.class);
+                    codecBinder.bindListJsonCodec(Person.class);
+                    codecBinder.bindMapJsonCodec(String.class, Person.class);
                 });
 
         injector.injectMembers(this);
