@@ -48,6 +48,8 @@ public class HttpClientConfig
     private int maxConnectionsPerServer = 100;
     private int maxRequestsQueuedPerDestination = 100;
     private DataSize maxContentLength = new DataSize(16, MEGABYTE);
+    private DataSize requestBufferSize = new DataSize(4, KILOBYTE);
+    private DataSize responseBufferSize = new DataSize(16, KILOBYTE);
     private HostAndPort socksProxy;
     private String keyStorePath = System.getProperty(JAVAX_NET_SSL_KEY_STORE);
     private String keyStorePassword = System.getProperty(JAVAX_NET_SSL_KEY_STORE_PASSWORD);
@@ -156,6 +158,34 @@ public class HttpClientConfig
     public HttpClientConfig setMaxContentLength(DataSize maxContentLength)
     {
         this.maxContentLength = maxContentLength;
+        return this;
+    }
+
+    @NotNull
+    @MaxDataSize("32MB")
+    public DataSize getRequestBufferSize()
+    {
+        return requestBufferSize;
+    }
+
+    @Config("http-client.request-buffer-size")
+    public HttpClientConfig setRequestBufferSize(DataSize requestBufferSize)
+    {
+        this.requestBufferSize = requestBufferSize;
+        return this;
+    }
+
+    @NotNull
+    @MaxDataSize("32MB")
+    public DataSize getResponseBufferSize()
+    {
+        return responseBufferSize;
+    }
+
+    @Config("http-client.response-buffer-size")
+    public HttpClientConfig setResponseBufferSize(DataSize responseBufferSize)
+    {
+        this.responseBufferSize = responseBufferSize;
         return this;
     }
 

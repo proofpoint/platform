@@ -183,6 +183,10 @@ public class JettyHttpClient
 
         httpClient = new AuthorizationPreservingHttpClient(transport, sslContextFactory);
 
+        // request and response buffer size
+        httpClient.setRequestBufferSize(toIntExact(config.getRequestBufferSize().toBytes()));
+        httpClient.setResponseBufferSize(toIntExact(config.getResponseBufferSize().toBytes()));
+
         httpClient.setMaxRequestsQueuedPerDestination(config.getMaxRequestsQueuedPerDestination());
         httpClient.setMaxConnectionsPerDestination(config.getMaxConnectionsPerServer());
 
