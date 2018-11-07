@@ -83,7 +83,7 @@ public class ClassPathResourceHandler
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException
+            throws IOException
     {
         if (baseRequest.isHandled()) {
             return;

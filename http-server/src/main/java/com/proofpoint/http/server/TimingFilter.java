@@ -38,7 +38,6 @@ class TimingFilter
 
     @Override
     public void init(FilterConfig filterConfig)
-            throws ServletException
     {
     }
 
