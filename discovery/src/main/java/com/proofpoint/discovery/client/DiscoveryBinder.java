@@ -34,6 +34,7 @@ import java.net.URI;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.inject.Scopes.SINGLETON;
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
@@ -56,7 +57,7 @@ public class DiscoveryBinder
     {
         requireNonNull(binder, "binder is null");
         this.binder = binder.skipSources(getClass());
-        this.serviceAnnouncementBinder = Multibinder.newSetBinder(binder, ServiceAnnouncement.class);
+        this.serviceAnnouncementBinder = newSetBinder(binder, ServiceAnnouncement.class);
     }
 
     public void bindSelector(String type)
