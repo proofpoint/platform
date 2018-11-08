@@ -18,12 +18,12 @@ package com.proofpoint.http.server;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
-import com.google.inject.multibindings.Multibinder;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 
 import javax.servlet.Filter;
 
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
@@ -66,9 +66,9 @@ public class HttpServerModule
         binder.bind(QueryStringFilter.class).in(Scopes.SINGLETON);
         binder.bind(RequestStats.class).in(Scopes.SINGLETON);
         binder.bind(ClientAddressExtractor.class).in(Scopes.SINGLETON);
-        Multibinder.newSetBinder(binder, Filter.class, TheServlet.class);
-        Multibinder.newSetBinder(binder, Filter.class, TheAdminServlet.class);
-        Multibinder.newSetBinder(binder, HttpResourceBinding.class, TheServlet.class);
+        newSetBinder(binder, Filter.class, TheServlet.class);
+        newSetBinder(binder, Filter.class, TheAdminServlet.class);
+        newSetBinder(binder, HttpResourceBinding.class, TheServlet.class);
 
         reportBinder(binder).export(HttpServer.class);
         newExporter(binder).export(HttpServer.class).withGeneratedName();

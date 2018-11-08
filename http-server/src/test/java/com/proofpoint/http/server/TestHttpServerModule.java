@@ -24,7 +24,6 @@ import com.google.common.net.InetAddresses;
 import com.google.common.net.MediaType;
 import com.google.inject.Injector;
 import com.google.inject.Scopes;
-import com.google.inject.multibindings.Multibinder;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.HttpStatus;
@@ -57,6 +56,7 @@ import static com.google.common.io.MoreFiles.deleteRecursively;
 import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpUriBuilder.uriBuilderFrom;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
@@ -182,7 +182,7 @@ public class TestHttpServerModule
                         binder -> {
                             binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
                             binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
-                            Multibinder.newSetBinder(binder, Filter.class, TheServlet.class).addBinding().to(DummyFilter.class).in(Scopes.SINGLETON);
+                            newSetBinder(binder, Filter.class, TheServlet.class).addBinding().to(DummyFilter.class).in(Scopes.SINGLETON);
                             httpServerBinder(binder).bindResource("/", "webapp/user").withWelcomeFile("user-welcome.txt");
                             httpServerBinder(binder).bindResource("/", "webapp/user2");
                             httpServerBinder(binder).bindResource("path", "webapp/user").withWelcomeFile("user-welcome.txt");

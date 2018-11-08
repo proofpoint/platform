@@ -23,6 +23,7 @@ import com.google.inject.multibindings.Multibinder;
 
 import java.util.List;
 
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.event.client.EventTypeMetadata.getEventTypeMetadata;
 import static java.util.Objects.requireNonNull;
 
@@ -57,7 +58,7 @@ public class EventBinder
         Preconditions.checkArgument(!eventTypes.isEmpty(), "eventTypes is empty");
 
         Binder sourcedBinder = binder.withSource(getCaller());
-        Multibinder<EventTypeMetadata<?>> metadataBinder = Multibinder.newSetBinder(binder, new TypeLiteral<EventTypeMetadata<?>>() {});
+        Multibinder<EventTypeMetadata<?>> metadataBinder = newSetBinder(binder, new TypeLiteral<EventTypeMetadata<?>>() {});
 
         // Bind event type metadata and bind any errors into Guice
         for (Class<?> eventType : eventTypes) {
