@@ -37,6 +37,9 @@ Platform 1.93
 
   We enabled compiled metadata for reflection on method parameters.
 
+  We configured maven-enforcer-plugin to prohibit duplicate dependencies
+  in POMs.
+
 * Discovery
 
   We decreased the timeout for the initial discovery service query from 30

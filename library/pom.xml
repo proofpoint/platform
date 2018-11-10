@@ -181,6 +181,7 @@
                                     <!-- newer versions of junit do not repackage hamcrest -->
                                     <include>junit:junit:[4.11,)</include>                                </includes>
                             </bannedDependencies>
+                            <banDuplicatePomDependencyVersions />
                             <requireMavenVersion>
                                 <version>3.2.3</version>
                             </requireMavenVersion>
