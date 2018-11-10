@@ -203,7 +203,10 @@
                         <maxmem>${platform.build.jvmsize}</maxmem>
                         <showWarnings>true</showWarnings>
                         <fork>true</fork>
-                        <parameters>true</parameters>
+                        <compilerArgs>
+                            <!-- Revert to <parameters>true</parameters> once IntelliJ 183.888 is widespread -->
+                            <arg>-parameters</arg>
+                        </compilerArgs>
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>com.google.auto.value</groupId>
