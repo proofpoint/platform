@@ -224,14 +224,22 @@ public class Logging
     }
 
     public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context) {
-        return createFileAppender(logPath, maxHistory, 256, new Duration(10, SECONDS), maxFileSize, maxTotalSize, encoder, context);
+        return createFileAppender(logPath, maxHistory, 0, new Duration(0, SECONDS), maxFileSize, maxTotalSize, encoder, context);
     }
 
     public static <T> Appender<T> createFileAppender(String logPath, int maxHistory, int queueSize, Duration flushInterval, DataSize maxFileSize, DataSize maxTotalSize, Encoder<T> encoder, Context context)
     {
         recoverTempFiles(logPath);
 
-        FlushingFileAppender<T> fileAppender = new FlushingFileAppender<>(flushInterval);
+        RollingFileAppender<T> fileAppender;
+        if (queueSize > 0) {
+            fileAppender = new FlushingFileAppender<>(flushInterval);
+            fileAppender.setBufferSize(BUFFER_SIZE_IN_BYTES);
+            fileAppender.setImmediateFlush(false);
+        }
+        else {
+            fileAppender = new RollingFileAppender<>();
+        }
         SizeAndTimeBasedRollingPolicy<T> rollingPolicy = new SizeAndTimeBasedRollingPolicy<>();
 
         rollingPolicy.setContext(context);
@@ -244,20 +252,26 @@ public class Logging
         fileAppender.setContext(context);
         fileAppender.setFile(logPath);
         fileAppender.setAppend(true);
-        fileAppender.setBufferSize(BUFFER_SIZE_IN_BYTES);
         fileAppender.setEncoder(encoder);
         fileAppender.setRollingPolicy(rollingPolicy);
-        fileAppender.setImmediateFlush(false);
 
-        AsyncAppenderBase<T> asyncAppender = new AsyncAppenderBase<>();
-        asyncAppender.setContext(context);
-        asyncAppender.setQueueSize(queueSize);
-        asyncAppender.addAppender(fileAppender);
+        AsyncAppenderBase<T> asyncAppender = null;
+        if (queueSize > 0) {
+            asyncAppender = new AsyncAppenderBase<>();
+            asyncAppender.setContext(context);
+            asyncAppender.setQueueSize(queueSize);
+            asyncAppender.addAppender(fileAppender);
+        }
 
         rollingPolicy.start();
         fileAppender.start();
-        asyncAppender.start();
-        return asyncAppender;
+        if (queueSize > 0) {
+            asyncAppender.start();
+            return asyncAppender;
+        }
+        else {
+            return fileAppender;
+        }
     }
 
     public Level getRootLevel()
