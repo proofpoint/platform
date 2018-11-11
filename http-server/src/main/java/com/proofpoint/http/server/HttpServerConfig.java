@@ -380,7 +380,7 @@ public class HttpServerConfig
         return this;
     }
 
-    @Min(1)
+    @Min(0)
     public int getLogQueueSize()
     {
         return logQueueSize;
