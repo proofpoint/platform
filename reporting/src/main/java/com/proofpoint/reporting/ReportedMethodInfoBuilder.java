@@ -33,21 +33,21 @@ class ReportedMethodInfoBuilder
     private Method concreteGetter;
     private Method annotatedGetter;
 
-    public ReportedMethodInfoBuilder onInstance(Object target)
+    ReportedMethodInfoBuilder onInstance(Object target)
     {
         requireNonNull(target, "target is null");
         this.target = target;
         return this;
     }
 
-    public ReportedMethodInfoBuilder named(String name)
+    ReportedMethodInfoBuilder named(String name)
     {
         requireNonNull(name, "name is null");
         this.name = name;
         return this;
     }
 
-    public ReportedMethodInfoBuilder withConcreteGetter(Method concreteGetter)
+    ReportedMethodInfoBuilder withConcreteGetter(Method concreteGetter)
     {
         requireNonNull(concreteGetter, "concreteGetter is null");
         checkArgument(isValidGetter(concreteGetter), "Method is not a valid getter: " + concreteGetter);
@@ -55,7 +55,7 @@ class ReportedMethodInfoBuilder
         return this;
     }
 
-    public ReportedMethodInfoBuilder withAnnotatedGetter(Method annotatedGetter)
+    ReportedMethodInfoBuilder withAnnotatedGetter(Method annotatedGetter)
     {
         requireNonNull(annotatedGetter, "annotatedGetter is null");
         checkArgument(isValidGetter(annotatedGetter), "Method is not a valid getter: " + annotatedGetter);
@@ -63,7 +63,7 @@ class ReportedMethodInfoBuilder
         return this;
     }
 
-    public ReportedMethodInfo build()
+    ReportedMethodInfo build()
     {
         checkArgument(target != null, "JmxAttribute must have a target object");
 
