@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
-import static com.proofpoint.reporting.ReportExporter.notifyBucketIdProvider;
 import static com.proofpoint.reporting.Util.getMethod;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -36,8 +35,7 @@ public class TestReportedBean
     public TestReportedBean()
     {
         for (Object object : objects) {
-            notifyBucketIdProvider(object, bucketIdProvider, null);
-            reportedBeans.put(object, ReportedBean.forTarget(object));
+            reportedBeans.put(object, ReportedBean.forTarget(object, bucketIdProvider));
         }
     }
 
@@ -65,7 +63,7 @@ public class TestReportedBean
             {
                 return 3;
             }
-        });
+        }, bucketIdProvider);
     }
 
     @Test(expectedExceptions = RuntimeException.class,
@@ -77,7 +75,7 @@ public class TestReportedBean
             public void operation(int param)
             {
             }
-        });
+        }, bucketIdProvider);
     }
 
     @Test(expectedExceptions = RuntimeException.class,
@@ -89,7 +87,7 @@ public class TestReportedBean
             public void getVoid()
             {
             }
-        });
+        }, bucketIdProvider);
     }
 
     @Test(dataProvider = "fixtures")

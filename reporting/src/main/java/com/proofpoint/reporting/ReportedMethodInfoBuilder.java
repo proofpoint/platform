@@ -28,10 +28,16 @@ import static java.util.stream.Collectors.toList;
 
 class ReportedMethodInfoBuilder
 {
+    private final BucketIdProvider bucketIdProvider;
     private Object target;
     private String name;
     private Method concreteGetter;
     private Method annotatedGetter;
+
+    ReportedMethodInfoBuilder(BucketIdProvider bucketIdProvider)
+    {
+        this.bucketIdProvider = bucketIdProvider;
+    }
 
     ReportedMethodInfoBuilder onInstance(Object target)
     {
@@ -81,7 +87,7 @@ class ReportedMethodInfoBuilder
                 return reportedMethodInfo(ImmutableList.of(), ImmutableList.of());
             }
 
-            ReportedBean reportedBean = ReportedBean.forTarget(value);
+            ReportedBean reportedBean = ReportedBean.forTarget(value, bucketIdProvider);
             List<ReportedBeanAttribute> attributes = reportedBean.getAttributes().stream()
                     .map(attribute -> new FlattenReportedBeanAttribute(concreteGetter, attribute))
                     .collect(toList());
@@ -104,7 +110,7 @@ class ReportedMethodInfoBuilder
                 return reportedMethodInfo(ImmutableList.of(), ImmutableList.of());
             }
 
-            ReportedBean reportedBean = ReportedBean.forTarget(value);
+            ReportedBean reportedBean = ReportedBean.forTarget(value, bucketIdProvider);
             List<ReportedBeanAttribute> attributes = reportedBean.getAttributes().stream()
                     .map(attribute -> new NestedReportedBeanAttribute(name, concreteGetter, attribute))
                     .collect(toList());

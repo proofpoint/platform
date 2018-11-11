@@ -233,10 +233,11 @@ public class TestReportingPrometheusModule
         Injector injector = createServer(binder -> {
         });
         ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
-        injector.getInstance(TestingBucketIdProvider.class).incrementBucket();
+        TestingBucketIdProvider bucketIdProvider = injector.getInstance(TestingBucketIdProvider.class);
+        bucketIdProvider.incrementBucket();
 
         UnreportedValueObject unreportedValueObject = new UnreportedValueObject();
-        reportedBeanRegistry.register(unreportedValueObject, ReportedBean.forTarget(unreportedValueObject), false, "TestObject", ImmutableMap.of());
+        reportedBeanRegistry.register(unreportedValueObject, ReportedBean.forTarget(unreportedValueObject, bucketIdProvider), false, "TestObject", ImmutableMap.of());
 
         StringResponse response = client.execute(
                 prepareGet().setUri(uriFor("/metrics")).build(),

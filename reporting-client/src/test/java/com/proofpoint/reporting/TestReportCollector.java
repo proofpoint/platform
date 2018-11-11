@@ -65,7 +65,7 @@ public class TestReportCollector
             throws Exception
     {
         Object reported = new ReportedObject();
-        reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), false, "TestObject", ImmutableMap.of());
+        reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported, bucketIdProvider), false, "TestObject", ImmutableMap.of());
 
         assertMetricsCollected("TestObject.Metric", ImmutableMap.of());
     }
@@ -75,7 +75,7 @@ public class TestReportCollector
             throws Exception
     {
         Object reported = new ReportedObject();
-        reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), true, "TestObject", ImmutableMap.of("foo", "bar"));
+        reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported, bucketIdProvider), true, "TestObject", ImmutableMap.of("foo", "bar"));
 
         assertMetricsCollected("TestApplication.TestObject.Metric", ImmutableMap.of("foo", "bar"));
     }
@@ -85,7 +85,7 @@ public class TestReportCollector
             throws Exception
     {
         ObjectName objectName = ObjectName.getInstance("com.proofpoint.reporting.test:name=TestObject,foo=bar");
-        reportedBeanRegistry.register(ReportedBean.forTarget(new ReportedObject()), objectName);
+        reportedBeanRegistry.register(ReportedBean.forTarget(new ReportedObject(), bucketIdProvider), objectName);
 
         assertMetricsCollected("TestObject.Metric", ImmutableMap.of("foo", "bar"));
     }
@@ -257,7 +257,7 @@ public class TestReportCollector
                 throw new UnsupportedOperationException();
             }
         };
-        reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported), false, "TestObject", ImmutableMap.of());
+        reportedBeanRegistry.register(reported, ReportedBean.forTarget(reported, bucketIdProvider), false, "TestObject", ImmutableMap.of());
 
         reportCollector.collectData();
 

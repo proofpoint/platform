@@ -37,7 +37,7 @@ public class TestReportedBeanRegistry
         {
             return 1;
         }
-    });
+    }, () -> null);
 
     private static final ObjectName TESTING_OBJECT_NAME;
     private static final ImmutableMap<String, String> TESTING_TAGS = ImmutableMap.of("tag", "value");
