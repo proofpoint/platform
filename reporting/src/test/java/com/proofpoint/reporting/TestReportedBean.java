@@ -5,7 +5,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.weakref.jmx.internal.guava.collect.ImmutableList;
 
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
@@ -48,7 +47,7 @@ public class TestReportedBean
     }
 
     private Object getAttribute(Object object, String attributeName)
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         return reportedBeans.get(object).getAttributes().stream()
                 .filter(reportedBeanAttribute -> attributeName.equals(reportedBeanAttribute.getName()))
@@ -95,7 +94,6 @@ public class TestReportedBean
 
     @Test(dataProvider = "fixtures")
     public void testGetterAttributeInfo(String attribute, boolean isIs, Object[] values, Class<?> clazz)
-            throws Exception
     {
         for (Object t : objects) {
             String attributeName = toFeatureName(attribute, t);
@@ -109,7 +107,6 @@ public class TestReportedBean
 
     @Test
     public void testNotReportedAttributeInfo()
-            throws Exception
     {
 
         for (Object t : objects) {
@@ -120,7 +117,7 @@ public class TestReportedBean
         }
     }
 
-    private ReportedBeanAttribute getAttributeInfo(Collection<ReportedBeanAttribute> attributes, String attributeName)
+    private static ReportedBeanAttribute getAttributeInfo(Collection<ReportedBeanAttribute> attributes, String attributeName)
     {
         for (ReportedBeanAttribute attribute : attributes) {
             if (attribute.getName().equals(attributeName)) {
@@ -215,7 +212,7 @@ public class TestReportedBean
         };
     }
 
-    private String toFeatureName(String attribute, Object t)
+    private static String toFeatureName(String attribute, Object t)
     {
         String attributeName;
         if (t instanceof NestedObject) {
@@ -227,7 +224,7 @@ public class TestReportedBean
         return attributeName;
     }
 
-    private SimpleInterface toSimpleInterface(Object t)
+    private static SimpleInterface toSimpleInterface(Object t)
     {
         SimpleInterface simpleInterface;
         if (t instanceof SimpleInterface) {

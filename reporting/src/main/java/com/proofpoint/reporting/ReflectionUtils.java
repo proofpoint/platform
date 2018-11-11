@@ -37,15 +37,14 @@ final class ReflectionUtils
 
     private static final Pattern getterOrSetterPattern = Pattern.compile("(get|set|is)(.+)");
 
-    public static Object invoke(Object target, Method method)
+    static Object invoke(Object target, Method method)
             throws MBeanException, ReflectionException
     {
         requireNonNull(target, "target is null");
         requireNonNull(method, "method is null");
 
         try {
-            Object result = method.invoke(target);
-            return result;
+            return method.invoke(target);
         }
         catch (InvocationTargetException e) {
             // unwrap exception
@@ -53,7 +52,7 @@ final class ReflectionUtils
             if (targetException instanceof RuntimeException) {
                 throw new MBeanException(
                         (RuntimeException) targetException,
-                        "RuntimeException occured while invoking " + toSimpleName(method));
+                        "RuntimeException occurred while invoking " + toSimpleName(method));
             }
             else if (targetException instanceof ReflectionException) {
                 // allow ReflectionException to passthrough
@@ -66,17 +65,17 @@ final class ReflectionUtils
             else if (targetException instanceof Exception) {
                 throw new MBeanException(
                         (Exception) targetException,
-                        "Exception occured while invoking " + toSimpleName(method));
+                        "Exception occurred while invoking " + toSimpleName(method));
             }
             else if (targetException instanceof Error) {
                 throw new RuntimeErrorException(
                         (Error) targetException,
-                        "Error occured while invoking " + toSimpleName(method));
+                        "Error occurred while invoking " + toSimpleName(method));
             }
             else {
                 throw new RuntimeErrorException(
                         new AssertionError(targetException),
-                        "Unexpected throwable occured while invoking " + toSimpleName(method));
+                        "Unexpected throwable occurred while invoking " + toSimpleName(method));
             }
         }
         catch (RuntimeException e) {
@@ -98,13 +97,13 @@ final class ReflectionUtils
         return method.getName() + "()";
     }
 
-    public static boolean isGetter(Method method)
+    static boolean isGetter(Method method)
     {
         String methodName = method.getName();
         return (methodName.startsWith("get") || methodName.startsWith("is")) && isValidGetter(method);
     }
 
-    public static String getAttributeName(Method method)
+    static String getAttributeName(Method method)
     {
         Matcher matcher = getterOrSetterPattern.matcher(method.getName());
         if (matcher.matches()) {
@@ -113,12 +112,12 @@ final class ReflectionUtils
         return LOWER_CAMEL.to(UPPER_CAMEL, method.getName());
     }
 
-    public static String getAttributeName(Field field)
+    static String getAttributeName(Field field)
     {
         return LOWER_CAMEL.to(UPPER_CAMEL, field.getName());
     }
 
-    public static boolean isValidGetter(Method getter)
+    static boolean isValidGetter(Method getter)
     {
         if (getter == null) {
             throw new NullPointerException("getter is null");

@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
