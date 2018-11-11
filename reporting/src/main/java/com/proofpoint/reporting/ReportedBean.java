@@ -72,7 +72,7 @@ class ReportedBean
         return prometheusAttributes.values();
     }
 
-    static ReportedBean forTarget(Object target)
+    static ReportedBean forTarget(Object target, BucketIdProvider bucketIdProvider)
     {
         requireNonNull(target, "target is null");
 
@@ -80,6 +80,7 @@ class ReportedBean
         List<PrometheusBeanAttribute> prometheusAttributes = new ArrayList<>();
 
         if (target instanceof Bucketed) {
+            ((Bucketed<?>) target).setBucketIdProvider(bucketIdProvider);
             BucketInfo bucketInfo = null;
             try {
                 bucketInfo = (BucketInfo) GET_PREVIOUS_BUCKET.invoke(target);
@@ -88,7 +89,7 @@ class ReportedBean
                 // todo log me
             }
             if (bucketInfo != null) {
-                ReportedBean reportedBean = ReportedBean.forTarget(bucketInfo.getBucket());
+                ReportedBean reportedBean = ReportedBean.forTarget(bucketInfo.getBucket(), bucketIdProvider);
                 for (ReportedBeanAttribute attribute : reportedBean.getAttributes()) {
                     attributes.add(new BucketedReportedBeanAttribute(target, attribute));
                 }
@@ -112,7 +113,7 @@ class ReportedBean
 
             ReportedMethodInfoBuilder attributeBuilder = methodInfoBuilders.get(attributeName);
             if (attributeBuilder == null) {
-                attributeBuilder = new ReportedMethodInfoBuilder().named(attributeName).onInstance(target);
+                attributeBuilder = new ReportedMethodInfoBuilder(bucketIdProvider).named(attributeName).onInstance(target);
             }
 
             attributeBuilder = attributeBuilder

@@ -300,7 +300,7 @@ public class TestReportExporter
         assertEquals(registrationInfo.isApplicationPrefix(), applicationPrefix);
         assertEquals(registrationInfo.getNamePrefix(), "TestingObject");
         assertEquals(registrationInfo.getTags(), expectedTags);
-        assertEquals(namesOf(registrationInfo.getReportedBean().getAttributes()), namesOf(ReportedBean.forTarget(TESTING_OBJECT).getAttributes()));
+        assertEquals(namesOf(registrationInfo.getReportedBean().getAttributes()), namesOf(ReportedBean.forTarget(TESTING_OBJECT, bucketIdProvider).getAttributes()));
     }
 
     private static Iterable<String> namesOf(Iterable<ReportedBeanAttribute> attributes)

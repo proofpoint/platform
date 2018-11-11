@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.proofpoint.reporting.ReportException.Reason;
 
 import javax.inject.Inject;
@@ -23,15 +22,8 @@ import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import static com.google.common.base.Throwables.throwIfUnchecked;
-import static com.proofpoint.reporting.AnnotationUtils.findAnnotatedMethods;
-import static com.proofpoint.reporting.AnnotationUtils.isFlatten;
-import static com.proofpoint.reporting.AnnotationUtils.isNested;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -60,8 +52,7 @@ public class ReportExporter
      */
     public void export(Object object, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
     {
-        ReportedBean reportedBean = ReportedBean.forTarget(object);
-        notifyBucketIdProvider(object, bucketIdProvider, null);
+        ReportedBean reportedBean = ReportedBean.forTarget(object, bucketIdProvider);
         if (!reportedBean.getAttributes().isEmpty()) {
             try {
                 registry.register(object, reportedBean, applicationPrefix, namePrefix, tags);
@@ -110,8 +101,7 @@ public class ReportExporter
     @Deprecated
     public void export(ObjectName objectName, Object object)
     {
-        ReportedBean reportedBean = ReportedBean.forTarget(object);
-        notifyBucketIdProvider(object, bucketIdProvider, null);
+        ReportedBean reportedBean = ReportedBean.forTarget(object, bucketIdProvider);
         if (!reportedBean.getAttributes().isEmpty()) {
             try {
                 registry.register(reportedBean, objectName);
@@ -151,29 +141,6 @@ public class ReportExporter
         }
         catch (InstanceNotFoundException e) {
             throw new ReportException(Reason.INSTANCE_NOT_FOUND, e.getMessage());
-        }
-    }
-
-    @VisibleForTesting
-    static void notifyBucketIdProvider(Object object, BucketIdProvider bucketIdProvider, Method annotatedGetter)
-    {
-        if (object instanceof Bucketed) {
-            ((Bucketed<?>) object).setBucketIdProvider(bucketIdProvider);
-        }
-        else if (annotatedGetter != null && !isNested(annotatedGetter) && !isFlatten(annotatedGetter)) {
-            return;
-        }
-
-        try {
-            for (Entry<Method, Method> entry : findAnnotatedMethods(object.getClass(), ReportedAnnotation.class).entrySet()) {
-                Object nestedObject = entry.getKey().invoke(object);
-                if (nestedObject != null) {
-                    notifyBucketIdProvider(nestedObject, bucketIdProvider, entry.getValue());
-                }
-            }
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
         }
     }
 }
