@@ -15,6 +15,9 @@
  */
 package com.proofpoint.reporting;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.proofpoint.reporting.Bucketed.BucketInfo;
 
 import java.lang.reflect.Method;
@@ -23,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import static com.proofpoint.reporting.ReflectionUtils.getAttributeName;
@@ -31,6 +35,9 @@ import static java.util.Objects.requireNonNull;
 
 class ReportedBean
 {
+    private static final LoadingCache<Class<?>, Iterable<Entry<Method, Method>>> METHODS_CACHE = CacheBuilder.newBuilder()
+            .build(CacheLoader.from(clazz -> AnnotationUtils.findAnnotatedMethods(clazz, ReportedAnnotation.class).entrySet()));
+
     static Method GET_PREVIOUS_BUCKET;
 
     private final Map<String, ReportedBeanAttribute> attributes;
@@ -101,7 +108,7 @@ class ReportedBean
 
         Map<String, ReportedMethodInfoBuilder> methodInfoBuilders = new TreeMap<>();
 
-        for (Map.Entry<Method, Method> entry : AnnotationUtils.findAnnotatedMethods(target.getClass(), ReportedAnnotation.class).entrySet()) {
+        for (Map.Entry<Method, Method> entry : METHODS_CACHE.getUnchecked(target.getClass())) {
             Method concreteMethod = entry.getKey();
             Method annotatedMethod = entry.getValue();
 
