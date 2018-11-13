@@ -47,6 +47,7 @@ Platform 1.93
 
 * Library upgrades
 
+ - Jetty to 9.4.14 (was 9.4.12)
  - Guice to 4.2.2 (was 4.2.1)
  - Joda-time to 2.10.1 (was 2.9.9)
  - objenesis to 3.0.1 (was 2.6)
