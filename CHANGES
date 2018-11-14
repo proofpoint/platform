@@ -55,6 +55,7 @@ Platform 1.93
 
  - modernizer-maven-plugin to 1.7.0 (was 1.6.0)
  - maven-surefire-plugin to 2.22.1 (was 2.22.0)
+ - spotbugs-maven-plugin to 3.1.8 (was 3.1.7)
 
 Platform 1.92
 
