@@ -50,6 +50,10 @@ Platform 1.93
  - cglib to 3.2.8 (was 3.1)
  - javax.annotation-api to 1.3.1 (was 1.2)
 
+* Maven plugin upgrades
+
+ - modernizer-maven-plugin to 1.7.0 (was 1.6.0)
+
 Platform 1.92
 
 * Library upgrades
