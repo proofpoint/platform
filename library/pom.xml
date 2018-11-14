@@ -1114,14 +1114,6 @@
                 <version>${dep.jetty.version}</version>
             </dependency>
 
-            <!-- FindBugs / SpotBugs -->
-            <dependency>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-annotations</artifactId>
-                <version>3.1.8</version>
-            </dependency>
-
-            <!-- JSR-305 -->
             <dependency>
                 <groupId>org.eclipse.jetty.http2</groupId>
                 <artifactId>http2-client</artifactId>
@@ -1134,6 +1126,14 @@
                 <version>${dep.jetty.version}</version>
             </dependency>
 
+            <!-- FindBugs / SpotBugs -->
+            <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-annotations</artifactId>
+                <version>3.1.8</version>
+            </dependency>
+
+            <!-- JSR-305 -->
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
