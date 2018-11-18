@@ -25,7 +25,6 @@ import javax.inject.Inject;
 import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import java.lang.management.ManagementFactory;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Iterator;
@@ -120,7 +119,6 @@ public class JmxInspector
     }
 
     private void addConfig(Multimap<String, String> nameMap, Class<?> clazz, ImmutableSortedSet.Builder<InspectorRecord> builder)
-            throws InvocationTargetException, IllegalAccessException
     {
         Collection<String> thisNameList = nameMap.get(clazz.getName());
         if (thisNameList != null) {

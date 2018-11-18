@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.ByteStreams;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,7 +48,7 @@ public final class EchoServlet
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException
+            throws IOException
     {
         requestMethod = request.getMethod();
         requestUri = URI.create(request.getRequestURL().toString());

@@ -18,7 +18,6 @@ package com.proofpoint.event.client;
 import com.google.common.collect.ImmutableList;
 
 import javax.annotation.concurrent.GuardedBy;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +29,6 @@ public class InMemoryEventClient
 
     @Override
     protected synchronized  <T> void postEvent(T event)
-            throws IOException
     {
         events.add(event);
     }

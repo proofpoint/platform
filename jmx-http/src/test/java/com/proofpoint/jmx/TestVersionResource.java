@@ -54,7 +54,6 @@ public class TestVersionResource
 
     @BeforeMethod
     public void setup()
-            throws Exception
     {
         lifeCycleManager = null;
         server = null;

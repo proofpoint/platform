@@ -164,7 +164,6 @@ public class TestHttpServerProvider
 
     @Test
     public void testHttpDisabled()
-            throws Exception
     {
         closeChannels(httpServerInfo);
 
@@ -188,7 +187,6 @@ public class TestHttpServerProvider
 
     @Test
     public void testAdminDisabled()
-            throws Exception
     {
         closeChannels(httpServerInfo);
 
@@ -212,7 +210,6 @@ public class TestHttpServerProvider
 
     @Test
     public void testHttpsEnabled()
-            throws Exception
     {
         closeChannels(httpServerInfo);
 

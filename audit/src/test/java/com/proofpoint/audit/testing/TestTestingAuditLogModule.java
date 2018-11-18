@@ -42,7 +42,6 @@ public class TestTestingAuditLogModule
 
     @BeforeMethod
     public void setup()
-            throws Exception
     {
         TraceTokenManager.clearRequestToken();
         Injector injector = Guice.createInjector(

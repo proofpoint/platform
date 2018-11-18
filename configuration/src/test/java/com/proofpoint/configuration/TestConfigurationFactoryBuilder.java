@@ -91,7 +91,6 @@ public class TestConfigurationFactoryBuilder
 
     @Test
     public void testLoadsFromSystemProperties()
-            throws IOException
     {
         System.setProperty("test", "foo");
 

@@ -15,14 +15,11 @@
  */
 package com.proofpoint.event.client;
 
-import java.io.IOException;
-
 public class NullEventClient
         extends AbstractEventClient
 {
     @Override
     protected <T> void postEvent(T event)
-            throws IOException
     {
         // Discard event
     }

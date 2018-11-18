@@ -44,7 +44,6 @@ import org.weakref.jmx.testing.TestingMBeanModule;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -241,7 +240,7 @@ public class TestHttpServerModule
 
         @Override
         protected void service(HttpServletRequest request, HttpServletResponse response)
-                throws ServletException, IOException
+                throws IOException
         {
             ByteStreams.copy(request.getInputStream(), ByteStreams.nullOutputStream());
 

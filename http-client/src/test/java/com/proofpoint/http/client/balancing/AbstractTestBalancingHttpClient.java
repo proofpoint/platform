@@ -89,7 +89,6 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
 
     @BeforeMethod
     protected void setUp()
-            throws Exception
     {
         testingTicker = new TestingTicker();
         serviceBalancer = mock(HttpServiceBalancer.class);

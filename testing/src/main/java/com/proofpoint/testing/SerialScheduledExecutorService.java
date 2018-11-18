@@ -35,7 +35,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -98,7 +97,6 @@ public class SerialScheduledExecutorService
 
     @Override
     public boolean awaitTermination(long l, TimeUnit timeUnit)
-            throws InterruptedException
     {
         return true;
     }
@@ -138,7 +136,6 @@ public class SerialScheduledExecutorService
 
     @Override
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> callables)
-            throws InterruptedException
     {
         requireNonNull(callables, "Task object list is null");
         ImmutableList.Builder<Future<T>> resultBuilder = ImmutableList.builder();
@@ -163,7 +160,7 @@ public class SerialScheduledExecutorService
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> callables)
-            throws InterruptedException, ExecutionException
+            throws ExecutionException
     {
         requireNonNull(callables, "callables is null");
         checkArgument(!callables.isEmpty(), "callables is empty");
@@ -177,7 +174,7 @@ public class SerialScheduledExecutorService
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> callables, long l, TimeUnit timeUnit)
-            throws InterruptedException, ExecutionException, TimeoutException
+            throws InterruptedException, ExecutionException
     {
         return invokeAny(callables);
     }
@@ -386,7 +383,7 @@ public class SerialScheduledExecutorService
 
         @Override
         public T get(long l, TimeUnit timeUnit)
-                throws InterruptedException, ExecutionException, TimeoutException
+                throws InterruptedException, ExecutionException
         {
             return get();
         }

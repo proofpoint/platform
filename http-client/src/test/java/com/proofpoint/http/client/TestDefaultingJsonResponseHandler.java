@@ -29,7 +29,6 @@ public class TestDefaultingJsonResponseHandler
 
     @BeforeMethod
     public void setUp()
-            throws Exception
     {
         codec = JsonCodec.jsonCodec(User.class);
         handler = createDefaultingJsonResponseHandler(codec, DEFAULT_VALUE);
@@ -37,7 +36,6 @@ public class TestDefaultingJsonResponseHandler
 
     @Test
     public void testValidJson()
-            throws Exception
     {
         User user = new User("Joe", 25);
         String json = codec.toJson(user);

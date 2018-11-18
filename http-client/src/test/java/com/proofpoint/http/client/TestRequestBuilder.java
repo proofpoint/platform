@@ -48,7 +48,6 @@ public class TestRequestBuilder
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Cannot make requests to HTTP port 0")
     public void testCannotBuildRequestToIllegalPort()
-            throws Exception
     {
         prepareGet().setUri(URI.create("http://example.com:0/"));
     }

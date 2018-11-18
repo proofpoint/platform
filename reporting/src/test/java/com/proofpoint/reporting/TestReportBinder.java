@@ -616,7 +616,6 @@ public class TestReportBinder
     @SuppressWarnings("deprecation")
     @Test
     public void testReportCollectionWithLegacyName()
-            throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
                 new TestingCollectionModule(),
@@ -631,7 +630,6 @@ public class TestReportBinder
     @SuppressWarnings("deprecation")
     @Test
     public void testReportCollectionWithLegacyNameAndAnnotation()
-            throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
                 new TestingCollectionModule(),
@@ -646,7 +644,6 @@ public class TestReportBinder
     @SuppressWarnings("deprecation")
     @Test
     public void testReportCollectionLegacyNameAndNameAnnotated()
-            throws MalformedObjectNameException
     {
         Injector injector = Guice.createInjector(
                 new TestingCollectionModule(),

@@ -252,7 +252,6 @@ public class TestLifeCycleManager
 
     @Test
     public void testIllegalMethods()
-            throws Exception
     {
         try {
             Guice.createInjector(

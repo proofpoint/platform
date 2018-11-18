@@ -97,7 +97,6 @@ public class TestParsingExceptionMapper
 
     @Test
     public void testGetWithValidBodySucceeds()
-            throws Exception
     {
         StatusResponse response = client.execute(buildRequestWithBody("/integer", "123"), createStatusResponseHandler());
         assertEquals(response.getStatusCode(), Status.NO_CONTENT.getStatusCode());
@@ -105,7 +104,6 @@ public class TestParsingExceptionMapper
 
     @Test
     public void testGetWithInvalidBodyBadRequest()
-            throws Exception
     {
         StringResponse response = client.execute(buildRequestWithBody("/integer", "string"), createStringResponseHandler());
         assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());
@@ -115,7 +113,6 @@ public class TestParsingExceptionMapper
 
     @Test
     public void testGetWithInvalidListBadRequest()
-            throws Exception
     {
         StringResponse response = client.execute(buildRequestWithBody("/list", "{}"), createStringResponseHandler());
         assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());
@@ -125,7 +122,6 @@ public class TestParsingExceptionMapper
 
     @Test
     public void testGetWithInvalidNestedBadRequest()
-            throws Exception
     {
         StringResponse response = client.execute(buildRequestWithBody("/nested", "{\"foo\": [\"bar\", \"baz\" }"), createStringResponseHandler());
         assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());

@@ -141,7 +141,6 @@ public class TestHttpDiscoveryLookupClient
 
     @Test
     public void testGetServicesNotModified()
-            throws Exception
     {
         ListenableFuture<ServiceDescriptors> future = createClient(
                 request -> mockResponse()

@@ -46,7 +46,6 @@ public class TestBalancingHttpClient
 
     @Override
     protected void assertHandlerExceptionThrown(ResponseHandler responseHandler, RuntimeException handlerException)
-            throws Exception
     {
         try {
             balancingHttpClient.execute(request, responseHandler);
@@ -59,7 +58,6 @@ public class TestBalancingHttpClient
 
     @Override
     protected void issueRequest()
-            throws Exception
     {
         balancingHttpClient.executeAsync(request, mock(ResponseHandler.class));
     }

@@ -41,7 +41,6 @@ public class TestJsonCodecBinder
 
     @Test
     public void test()
-            throws Exception
     {
         Injector injector = Guice.createInjector(new JsonModule(),
                 binder -> {

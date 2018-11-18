@@ -21,7 +21,6 @@ public class TestNullEventClient extends AbstractTestNullEventClient
 {
     @BeforeMethod
     public void setUp()
-            throws Exception
     {
         eventClient = new NullEventClient();
     }

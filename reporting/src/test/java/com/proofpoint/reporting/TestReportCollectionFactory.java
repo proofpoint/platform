@@ -57,7 +57,6 @@ public class TestReportCollectionFactory
 
     @Test
     public void testKeyedDistribution()
-            throws Exception
     {
         KeyedDistribution keyedDistribution = reportCollectionFactory.createReportCollection(KeyedDistribution.class);
         SomeObject someObject = keyedDistribution.add("value", false);
@@ -73,7 +72,6 @@ public class TestReportCollectionFactory
 
     @Test
     public void testNullValue()
-            throws Exception
     {
         KeyedDistribution keyedDistribution = reportCollectionFactory.createReportCollection(KeyedDistribution.class);
         SomeObject someObject = keyedDistribution.add(null, false);
@@ -89,7 +87,6 @@ public class TestReportCollectionFactory
 
     @Test
     public void testOptionalValue()
-            throws Exception
     {
         OptionalKeyedDistribution optionalKeyedDistribution = reportCollectionFactory.createReportCollection(OptionalKeyedDistribution.class);
         SomeObject someObject = optionalKeyedDistribution.add(Optional.empty(), Optional.of(false));
@@ -115,7 +112,6 @@ public class TestReportCollectionFactory
 
     @Test
     public void testPrefixedCollection()
-            throws Exception
     {
         KeyedDistribution keyedDistribution = reportCollectionFactory.createReportCollection(
                 KeyedDistribution.class,
@@ -143,7 +139,6 @@ public class TestReportCollectionFactory
 
     @Test
     public void testPrefixAbsentCollection()
-            throws Exception
     {
         KeyedDistribution keyedDistribution = reportCollectionFactory.createReportCollection(
                 KeyedDistribution.class,
@@ -172,7 +167,6 @@ public class TestReportCollectionFactory
     @Test(expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = ".*KeyedDistribution\\.add\\(java\\.lang\\.String, boolean\\) @Key\\(\"foo\"\\) duplicates tag on entire report collection.*")
     public void testPrefixedCollectionWithConflictingTags()
-            throws Exception
     {
         reportCollectionFactory.createReportCollection(
                 KeyedDistribution.class,
@@ -185,7 +179,6 @@ public class TestReportCollectionFactory
     @Test
     @SuppressWarnings("deprecation")
     public void testLegacyNamedCollection()
-            throws Exception
     {
         String name = new ObjectNameBuilder("com.example")
                 .withProperty("a", "fooval")
@@ -315,7 +308,6 @@ public class TestReportCollectionFactory
 
     @Test
     public void testLegacyNamedNoParameters()
-            throws Exception
     {
         TrackInstantiation.reset();
         String name = new ObjectNameBuilder("com.example")

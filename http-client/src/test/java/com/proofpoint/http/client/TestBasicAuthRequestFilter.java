@@ -27,7 +27,6 @@ public class TestBasicAuthRequestFilter
 {
     @Test
     public void testBasicAuthentication()
-            throws Exception
     {
         Predicate<Request> predicate = request -> request.getUri().getPath().startsWith("/private");
         HttpRequestFilter filter = new BasicAuthRequestFilter(predicate, "Aladdin", "open sesame");

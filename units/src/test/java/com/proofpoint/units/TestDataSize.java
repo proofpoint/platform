@@ -242,7 +242,6 @@ public class TestDataSize
 
     @Test
     public void testJsonRoundTrip()
-            throws Exception
     {
         assertJsonRoundTrip(new DataSize(1.234, BYTE));
         assertJsonRoundTrip(new DataSize(1.234, KILOBYTE));

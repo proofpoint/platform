@@ -47,7 +47,6 @@ public class TestCachingServiceSelector
 
     @BeforeMethod
     protected void setUp()
-            throws Exception
     {
         executor = new ScheduledThreadPoolExecutor(10, daemonThreadsNamed("Discovery-%s"));
         nodeInfo = new NodeInfo("environment");
@@ -64,7 +63,6 @@ public class TestCachingServiceSelector
 
     @AfterMethod
     public void tearDown()
-            throws Exception
     {
         executor.shutdownNow();
     }
@@ -94,7 +92,6 @@ public class TestCachingServiceSelector
 
     @Test
     public void testStartedEmpty()
-            throws Exception
     {
         updater.start();
 

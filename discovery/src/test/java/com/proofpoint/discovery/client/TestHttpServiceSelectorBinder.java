@@ -46,7 +46,6 @@ public class TestHttpServiceSelectorBinder
 
     @BeforeMethod
     public void setUp()
-            throws Exception
     {
         injector = Guice.createInjector(
                 new ApplicationNameModule("test-application"),

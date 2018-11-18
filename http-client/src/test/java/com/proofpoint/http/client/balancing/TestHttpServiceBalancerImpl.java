@@ -257,7 +257,6 @@ public class TestHttpServiceBalancerImpl
 
     @Test
     public void testPersistentlyFailingInstanceRemoved()
-            throws Exception
     {
         URI goodUri = URI.create("http://good.example.com");
         ImmutableSet<URI> expected = ImmutableSet.of(goodUri, URI.create("https://bad.example.com"));
@@ -293,7 +292,6 @@ public class TestHttpServiceBalancerImpl
 
     @Test
     public void testRemovedInstanceProbeSucceeds()
-            throws Exception
     {
         URI goodUri = URI.create("http://good.example.com");
         URI badUri = URI.create("https://bad.example.com");
@@ -343,7 +341,6 @@ public class TestHttpServiceBalancerImpl
 
     @Test
     public void testRemovedInstanceProbeFails()
-            throws Exception
     {
         URI goodUri = URI.create("http://good.example.com");
         URI badUri = URI.create("https://bad.example.com");
@@ -388,7 +385,6 @@ public class TestHttpServiceBalancerImpl
 
     @Test
     public void testRemovedInstanceSucceeds()
-            throws Exception
     {
         URI goodUri = URI.create("http://good.example.com");
         URI badUri = URI.create("https://bad.example.com");
@@ -443,7 +439,6 @@ public class TestHttpServiceBalancerImpl
 
     @Test
     public void testMinimizeConcurrentAvoidsRemovedInstances()
-            throws Exception
     {
         URI goodUri1 = URI.create("http://good1.example.com");
         URI goodUri2 = URI.create("http://good2.example.com");

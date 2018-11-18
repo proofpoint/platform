@@ -105,7 +105,6 @@ public class TestConfigurationResource
 
     @Test
     public void testGetConfiguration()
-            throws Exception
     {
         Map<String, Map<String, String>> response = client.execute(
                 prepareGet().setUri(uriFor("/admin/configuration")).build(),

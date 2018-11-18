@@ -62,7 +62,7 @@ public class TestTraceTokenCopyingExecutor
 
     @Test
     public void testRunnableTraceTokenCopied()
-            throws InterruptedException, ExecutionException
+            throws InterruptedException
     {
         AtomicReference<TraceToken> actualToken = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);

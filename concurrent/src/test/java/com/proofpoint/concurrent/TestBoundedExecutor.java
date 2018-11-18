@@ -25,21 +25,18 @@ public class TestBoundedExecutor
 
     @BeforeMethod
     public void setUp()
-            throws Exception
     {
         executorService = Executors.newCachedThreadPool();
     }
 
     @AfterMethod
     public void tearDown()
-            throws Exception
     {
         executorService.shutdownNow();
     }
 
     @Test
     public void testCounter()
-            throws Exception
     {
         int maxThreads = 1;
         BoundedExecutor boundedExecutor = new BoundedExecutor(executorService, maxThreads); // Enforce single thread
@@ -91,28 +88,24 @@ public class TestBoundedExecutor
 
     @Test
     public void testSingleThreadBound()
-            throws Exception
     {
         testBound(1, 100_000);
     }
 
     @Test
     public void testDoubleThreadBound()
-            throws Exception
     {
         testBound(2, 100_000);
     }
 
     @Test
     public void testTripleThreadBound()
-            throws Exception
     {
         testBound(3, 100_000);
     }
 
     @Test
     public void testExecutorCorruptionDetection()
-            throws Exception
     {
         AtomicBoolean reject = new AtomicBoolean();
         Executor executor = command -> {

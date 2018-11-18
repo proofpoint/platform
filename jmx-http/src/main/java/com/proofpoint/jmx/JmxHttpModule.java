@@ -16,7 +16,6 @@
 package com.proofpoint.jmx;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -102,7 +101,6 @@ public class JmxHttpModule implements Module
 
         @Override
         public JsonNode getSchema(SerializerProvider provider, Type typeHint)
-                throws JsonMappingException
         {
             // List<Map<String, Object>
             ObjectNode o = createSchemaNode("array", true);

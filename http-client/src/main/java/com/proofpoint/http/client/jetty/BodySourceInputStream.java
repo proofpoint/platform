@@ -19,7 +19,6 @@ class BodySourceInputStream extends InputStream
 
     @Override
     public int read()
-            throws IOException
     {
         // We guarantee we don't call the int read() method of the delegate.
         throw new UnsupportedOperationException();
@@ -77,7 +76,6 @@ class BodySourceInputStream extends InputStream
 
     @Override
     public void reset()
-            throws IOException
     {
         // We guarantee we don't call this
         throw new UnsupportedOperationException();

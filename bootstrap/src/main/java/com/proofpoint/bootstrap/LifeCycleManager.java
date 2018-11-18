@@ -179,7 +179,6 @@ public final class LifeCycleManager
     }
 
     private void stopList(Queue<Object> instances, Class<? extends Annotation> annotation)
-            throws IllegalAccessException, InvocationTargetException
     {
         List<Object> reversedInstances = Lists.newArrayList(instances);
         Collections.reverse(reversedInstances);

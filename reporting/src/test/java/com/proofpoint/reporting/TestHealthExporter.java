@@ -29,11 +29,8 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeConverterBinding;
 import org.testng.annotations.BeforeMethod;
 
-import javax.management.AttributeNotFoundException;
 import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
 import javax.management.ReflectionException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -72,14 +69,14 @@ public class TestHealthExporter extends AbstractHealthBeanTest<TestHealthExporte
 
     @Override
     protected String getAttribute(NamedObject namedObject, String description)
-            throws MBeanException, AttributeNotFoundException, InstanceNotFoundException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         return registry.getHealthAttributes().get(description + " (" + namedObject.objectName + ")").getValue();
     }
 
     @BeforeMethod
     void setup()
-            throws MalformedObjectNameException, InstanceAlreadyExistsException
+            throws InstanceAlreadyExistsException
     {
         registry = new HealthBeanRegistry();
 

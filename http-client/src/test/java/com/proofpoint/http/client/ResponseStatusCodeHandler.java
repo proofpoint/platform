@@ -12,7 +12,6 @@ public class ResponseStatusCodeHandler
 
     @Override
     public Integer handle(Request request, Response response)
-            throws Exception
     {
         return response.getStatusCode();
     }

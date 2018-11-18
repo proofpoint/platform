@@ -129,7 +129,6 @@ public class TestDuration
 
     @Test(dataProvider = "printedValues")
     public void testNonEnglishLocale(String expectedString, double value, TimeUnit unit)
-            throws Exception
     {
         synchronized (Locale.class) {
             Locale previous = Locale.getDefault();

@@ -39,7 +39,6 @@ public class TestLogging
 
     @BeforeMethod
     public void setup()
-            throws IOException
     {
         tempDir = createTempDir();
     }
@@ -81,7 +80,6 @@ public class TestLogging
 
     @Test
     public void testPropagatesLevels()
-            throws Exception
     {
         Logging logging = Logging.initialize();
         Logger logger = Logger.get("testPropagatesLevels");
@@ -113,7 +111,6 @@ public class TestLogging
 
     @Test
     public void testPropagatesLevelsHierarchical()
-            throws Exception
     {
         Logging logging = Logging.initialize();
         Logger logger = Logger.get("testPropagatesLevelsHierarchical.child");
@@ -145,7 +142,6 @@ public class TestLogging
 
     @Test
     public void testChildLevelOverridesParent()
-            throws Exception
     {
         Logging logging = Logging.initialize();
         Logger logger = Logger.get("testChildLevelOverridesParent.child");
