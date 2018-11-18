@@ -130,10 +130,10 @@ public class TestTestingResponse
         TestingResponse response = mockResponse().body(input).build();
         input[0] = 9;
         assertResponse(response,
-                HttpStatus.OK, ImmutableListMultimap.<String, String>of(), expected);
+                HttpStatus.OK, ImmutableListMultimap.of(), expected);
 
         assertResponse(mockResponse().body(new byte[0]).build(),
-                HttpStatus.OK, ImmutableListMultimap.<String, String>of(), new byte[0]);
+                HttpStatus.OK, ImmutableListMultimap.of(), new byte[0]);
     }
 
     @Test
@@ -141,10 +141,10 @@ public class TestTestingResponse
     {
         TestingResponse response = mockResponse().body("neé").build();
         assertResponse(response,
-                HttpStatus.OK, ImmutableListMultimap.<String, String>of(), new byte[] { 'n', 'e', -61, -87});
+                HttpStatus.OK, ImmutableListMultimap.of(), new byte[] { 'n', 'e', -61, -87});
 
         assertResponse(mockResponse().body("").build(),
-                HttpStatus.OK, ImmutableListMultimap.<String, String>of(), new byte[0]);
+                HttpStatus.OK, ImmutableListMultimap.of(), new byte[0]);
     }
 
     @Test
@@ -152,10 +152,10 @@ public class TestTestingResponse
     {
         TestingResponse response = mockResponse().body(new ByteArrayInputStream(new byte[] {0, 1, 5})).build();
         assertResponse(response,
-                HttpStatus.OK, ImmutableListMultimap.<String, String>of(), new byte[] { 0, 1, 5 });
+                HttpStatus.OK, ImmutableListMultimap.of(), new byte[] { 0, 1, 5 });
 
         assertResponse(mockResponse().body(new ByteArrayInputStream(new byte[0])).build(),
-                HttpStatus.OK, ImmutableListMultimap.<String, String>of(), new byte[0]);
+                HttpStatus.OK, ImmutableListMultimap.of(), new byte[0]);
     }
 
     @Test

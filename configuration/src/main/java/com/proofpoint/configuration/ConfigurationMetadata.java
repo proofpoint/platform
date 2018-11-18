@@ -789,8 +789,8 @@ public class ConfigurationMetadata<T>
         String getterName = "get" + attributeName;
         String isName = "is" + attributeName;
 
-        List<Method> getters = new ArrayList<Method>();
-        List<Method> unusableGetters = new ArrayList<Method>();
+        List<Method> getters = new ArrayList<>();
+        List<Method> unusableGetters = new ArrayList<>();
         for (Class<?> clazz = configClass; (clazz != null) && !clazz.equals(Object.class); clazz = clazz.getSuperclass()) {
             for (Method method : clazz.getDeclaredMethods()) {
                 if (method.getName().equals(getterName) || method.getName().equals(isName)) {

@@ -345,7 +345,7 @@ public class BalancingHttpClient
                                     }
                                 }
                             }, backoff.roundTo(MILLISECONDS), MILLISECONDS);
-                            subFuture = new RetryDelayFuture<T>(scheduledFuture, attempt);
+                            subFuture = new RetryDelayFuture<>(scheduledFuture, attempt);
                         }
                     }
                 }

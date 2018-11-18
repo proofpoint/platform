@@ -40,14 +40,14 @@ public class ValidationUtils
         Set<ConstraintViolation<Object>> violations = VALIDATOR.validate(object);
 
         if (violations.isEmpty() && List.class.isAssignableFrom(TypeToken.of(genericType).getRawType())) {
-            violations = VALIDATOR.<Object>validate(new ValidatableList((List<?>) object));
+            violations = VALIDATOR.validate(new ValidatableList((List<?>) object));
         }
         else if (violations.isEmpty() && Collection.class.isAssignableFrom(TypeToken.of(genericType).getRawType())) {
-            violations = VALIDATOR.<Object>validate(new ValidatableCollection((Collection<?>) object));
+            violations = VALIDATOR.validate(new ValidatableCollection((Collection<?>) object));
         }
 
         if (violations.isEmpty() && Map.class.isAssignableFrom(TypeToken.of(genericType).getRawType())) {
-            violations = VALIDATOR.<Object>validate(new ValidatableMap((Map<?, ?>) object));
+            violations = VALIDATOR.validate(new ValidatableMap((Map<?, ?>) object));
         }
 
         if (!violations.isEmpty()) {

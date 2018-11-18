@@ -46,6 +46,6 @@ public class TestServiceSelectorConfig
     @Test
     public void testLegacyProperties()
     {
-        ConfigAssertions.assertLegacyEquivalence(ServiceSelectorConfig.class, ImmutableMap.<String, String>of());
+        ConfigAssertions.assertLegacyEquivalence(ServiceSelectorConfig.class, ImmutableMap.of());
     }
 }

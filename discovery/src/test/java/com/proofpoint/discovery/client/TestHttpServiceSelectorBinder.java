@@ -49,7 +49,7 @@ public class TestHttpServiceSelectorBinder
     {
         injector = Guice.createInjector(
                 new ApplicationNameModule("test-application"),
-                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.<String, String>of())),
+                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of())),
                 new TestingNodeModule(),
                 new TestingDiscoveryModule(),
                 new ReportingModule(),
@@ -74,7 +74,7 @@ public class TestHttpServiceSelectorBinder
     {
         injector = Guice.createInjector(
                 new ApplicationNameModule("test-application"),
-                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.<String, String>of())),
+                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of())),
                 new TestingNodeModule(),
                 new TestingDiscoveryModule(),
                 new ReportingModule(),

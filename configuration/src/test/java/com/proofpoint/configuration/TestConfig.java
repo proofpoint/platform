@@ -150,7 +150,7 @@ public class TestConfig
     public void testDetectsNoConfigAnnotations()
     {
         try {
-            Injector injector = createInjector(Collections.<String, String>emptyMap(), createModule(ConfigWithNoAnnotations.class, null));
+            Injector injector = createInjector(Collections.emptyMap(), createModule(ConfigWithNoAnnotations.class, null));
             injector.getInstance(ConfigWithNoAnnotations.class);
             fail("Expected exception due to missing @Config annotations");
         }

@@ -378,7 +378,7 @@ public final class MoreFutures
         return unmodifiableFuture(allDoneFuture.thenApply(v ->
                 futures.stream().
                         map(CompletableFuture::join).
-                        collect(Collectors.<V>toList())));
+                        collect(Collectors.toList())));
     }
 
     /**

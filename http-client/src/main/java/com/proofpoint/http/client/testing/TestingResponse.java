@@ -95,7 +95,7 @@ public class TestingResponse
      */
     public static Response mockResponse(HttpStatus status)
     {
-        return new TestingResponse(status, ImmutableListMultimap.<String, String>of(), new byte[0]);
+        return new TestingResponse(status, ImmutableListMultimap.of(), new byte[0]);
     }
 
     /**

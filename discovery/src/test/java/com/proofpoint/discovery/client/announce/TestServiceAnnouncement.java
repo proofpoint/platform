@@ -43,8 +43,8 @@ public class TestServiceAnnouncement
     @Test
     public void testBuilder()
     {
-        assertAnnouncement(serviceAnnouncement("foo").build(), "foo", ImmutableMap.<String, String>of());
-        assertAnnouncement(serviceAnnouncement("foo").build(), "foo", ImmutableMap.<String, String>of());
+        assertAnnouncement(serviceAnnouncement("foo").build(), "foo", ImmutableMap.of());
+        assertAnnouncement(serviceAnnouncement("foo").build(), "foo", ImmutableMap.of());
 
         assertAnnouncement(serviceAnnouncement("foo").addProperty("a", "apple").build(),
                 "foo",

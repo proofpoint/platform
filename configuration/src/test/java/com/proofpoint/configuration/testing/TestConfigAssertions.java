@@ -284,7 +284,7 @@ public class TestConfigAssertions
     @Test
     public void testNoLegacyProperties()
     {
-        assertLegacyEquivalence(NoLegacyConfig.class, ImmutableMap.<String, String>of());
+        assertLegacyEquivalence(NoLegacyConfig.class, ImmutableMap.of());
     }
 
     @Test
