@@ -9,7 +9,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -86,14 +85,9 @@ public class TestSparseTimeStat
         SparseTimeStat stat = new SparseTimeStat(ticker);
         stat.setBucketIdProvider(bucketIdProvider);
 
-        stat.time(new Callable<Void>()
-        {
-            @Override
-            public Void call()
-            {
-                ticker.elapseTime(10, TimeUnit.MILLISECONDS);
-                return null;
-            }
+        stat.time(() -> {
+            ticker.elapseTime(10, TimeUnit.MILLISECONDS);
+            return null;
         });
 
         ++bucketIdProvider.id;
@@ -108,14 +102,9 @@ public class TestSparseTimeStat
         stat.setBucketIdProvider(bucketIdProvider);
 
         try {
-            stat.time(new Callable<Void>()
-            {
-                @Override
-                public Void call()
-                {
-                    ticker.elapseTime(10, TimeUnit.MILLISECONDS);
-                    throw new RuntimeException("test exception");
-                }
+            stat.time(() -> {
+                ticker.elapseTime(10, TimeUnit.MILLISECONDS);
+                throw new RuntimeException("test exception");
             });
         }
         catch (RuntimeException ignored) {

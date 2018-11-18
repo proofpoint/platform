@@ -31,17 +31,11 @@ import java.util.Map;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.event.client.EventDataType.validateFieldValueType;
+import static java.util.Comparator.comparing;
 
 class EventFieldMetadata
 {
-    public static final Comparator<EventFieldMetadata> NAME_COMPARATOR = new Comparator<EventFieldMetadata>()
-    {
-        @Override
-        public int compare(EventFieldMetadata a, EventFieldMetadata b)
-        {
-            return a.name.compareTo(b.name);
-        }
-    };
+    public static final Comparator<EventFieldMetadata> NAME_COMPARATOR = comparing(a -> a.name);
 
     public enum ContainerType
     {

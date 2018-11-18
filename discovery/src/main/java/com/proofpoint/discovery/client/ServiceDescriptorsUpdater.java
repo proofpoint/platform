@@ -131,14 +131,7 @@ public final class ServiceDescriptorsUpdater
         if (executor.isShutdown()) {
             return;
         }
-        executor.schedule(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                refresh();
-            }
-        }, delay.toMillis(), TimeUnit.MILLISECONDS);
+        executor.schedule((Runnable) this::refresh, delay.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     private static <V> ListenableFuture<V> chainedCallback(
