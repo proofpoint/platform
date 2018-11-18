@@ -43,7 +43,7 @@ import static java.util.Objects.requireNonNull;
 
 public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, DiscoveryLookupClient
 {
-    private final AtomicReference<Set<ServiceDescriptor>> announcements = new AtomicReference<Set<ServiceDescriptor>>(ImmutableSet.<ServiceDescriptor>of());
+    private final AtomicReference<Set<ServiceDescriptor>> announcements = new AtomicReference<>(ImmutableSet.of());
     private final ConcurrentMap<UUID, ServiceDescriptor> discovered = new MapMaker().makeMap();
 
     private final NodeInfo nodeInfo;
@@ -120,7 +120,7 @@ public class InMemoryDiscoveryClient implements DiscoveryAnnouncementClient, Dis
     @Override
     public ListenableFuture<Void> unannounce()
     {
-        announcements.set(ImmutableSet.<ServiceDescriptor>of());
+        announcements.set(ImmutableSet.of());
         return immediateFuture(null);
     }
 

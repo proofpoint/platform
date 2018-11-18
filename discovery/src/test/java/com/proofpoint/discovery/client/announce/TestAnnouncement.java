@@ -82,16 +82,16 @@ public class TestAnnouncement
     {
         equivalenceTester()
                 .addEquivalentGroup(
-                        new Announcement("environment", "node-A", "pool", "location", ImmutableSet.<ServiceAnnouncement>of(serviceAnnouncement("foo").build())),
-                        new Announcement("ENVIRONMENT", "node-A", "pool", "location", ImmutableSet.<ServiceAnnouncement>of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment", "node-A", "pool", "LOCATION", ImmutableSet.<ServiceAnnouncement>of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment", "node-A", "pool", "location", ImmutableSet.<ServiceAnnouncement>of(serviceAnnouncement("FOO").build()))
+                        new Announcement("environment", "node-A", "pool", "location", ImmutableSet.of(serviceAnnouncement("foo").build())),
+                        new Announcement("ENVIRONMENT", "node-A", "pool", "location", ImmutableSet.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment", "node-A", "pool", "LOCATION", ImmutableSet.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment", "node-A", "pool", "location", ImmutableSet.of(serviceAnnouncement("FOO").build()))
                 )
                 .addEquivalentGroup(
-                        new Announcement("environment", "node-B", "pool", "location", ImmutableSet.<ServiceAnnouncement>of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment-X", "node-B", "pool", "location", ImmutableSet.<ServiceAnnouncement>of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment", "node-B", "pool", "location-X", ImmutableSet.<ServiceAnnouncement>of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment", "node-B", "pool", "location", ImmutableSet.<ServiceAnnouncement>of(serviceAnnouncement("bar").build()))
+                        new Announcement("environment", "node-B", "pool", "location", ImmutableSet.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment-X", "node-B", "pool", "location", ImmutableSet.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment", "node-B", "pool", "location-X", ImmutableSet.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment", "node-B", "pool", "location", ImmutableSet.of(serviceAnnouncement("bar").build()))
                 )
                 .check();
     }

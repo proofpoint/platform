@@ -109,7 +109,7 @@ public class TestHttpDiscoveryLookupClient
             throws Exception
     {
         ServiceDescriptors descriptors = createClient(createProcessor(null, null, "testingenvironment"))
-                .refreshServices(new ServiceDescriptors("testService", "testPool", ImmutableList.<ServiceDescriptor>of(), new Duration(1, HOURS), null))
+                .refreshServices(new ServiceDescriptors("testService", "testPool", ImmutableList.of(), new Duration(1, HOURS), null))
                 .get();
         assertDescriptorsExpected(descriptors, null, DEFAULT_DELAY);
     }
@@ -119,7 +119,7 @@ public class TestHttpDiscoveryLookupClient
             throws Exception
     {
         ServiceDescriptors descriptors = createClient(createProcessor(null, "oldEtag", "testingenvironment"))
-                .refreshServices(new ServiceDescriptors("testService", "testPool", ImmutableList.<ServiceDescriptor>of(), new Duration(1, HOURS), "oldEtag"))
+                .refreshServices(new ServiceDescriptors("testService", "testPool", ImmutableList.of(), new Duration(1, HOURS), "oldEtag"))
                 .get();
         assertDescriptorsExpected(descriptors, null, DEFAULT_DELAY);
     }

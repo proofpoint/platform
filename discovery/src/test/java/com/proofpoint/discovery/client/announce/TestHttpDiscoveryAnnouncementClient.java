@@ -132,7 +132,7 @@ public class TestHttpDiscoveryAnnouncementClient
 
             return mockResponse(NOT_FOUND);
         }));
-        Duration duration = client.announce(ImmutableSet.<ServiceAnnouncement>of()).get();
+        Duration duration = client.announce(ImmutableSet.of()).get();
 
         assertEquals(duration, new Duration(10, TimeUnit.SECONDS));
         assertEquals(httpClient.getRequestCount(), 1);
@@ -145,7 +145,7 @@ public class TestHttpDiscoveryAnnouncementClient
     {
         httpClient.setProcessor((request -> mockResponse(INTERNAL_SERVER_ERROR)));
         try {
-            client.announce(ImmutableSet.<ServiceAnnouncement>of()).get();
+            client.announce(ImmutableSet.of()).get();
             fail("expected ExecutionException");
         }
         catch (ExecutionException e) {

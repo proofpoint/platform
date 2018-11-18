@@ -144,7 +144,7 @@ public class SerialScheduledExecutorService
                 resultBuilder.add(Futures.immediateFuture(callable.call()));
             }
             catch (Exception e) {
-                resultBuilder.add(Futures.<T>immediateFailedFuture(e));
+                resultBuilder.add(Futures.immediateFailedFuture(e));
             }
         }
         return resultBuilder.build();
@@ -238,7 +238,7 @@ public class SerialScheduledExecutorService
     {
         requireNonNull(vCallable, "Task object is null");
         checkArgument(l >= 0, "Delay must not be negative");
-        SerialScheduledFuture<V> future = new SerialScheduledFuture<>(new FutureTask<V>(vCallable), toNanos(l, timeUnit));
+        SerialScheduledFuture<V> future = new SerialScheduledFuture<>(new FutureTask<>(vCallable), toNanos(l, timeUnit));
         if (l == 0) {
             future.task.run();
         }
@@ -397,7 +397,7 @@ public class SerialScheduledExecutorService
 
         RecurringRunnableSerialScheduledFuture(Runnable runnable, long initialDelayNanos, long recurringDelayNanos)
         {
-            super(new FutureTask<Void>(runnable, null), initialDelayNanos);
+            super(new FutureTask<>(runnable, null), initialDelayNanos);
             this.runnable = runnable;
             this.recurringDelayNanos = recurringDelayNanos;
         }
