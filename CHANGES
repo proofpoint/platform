@@ -6,6 +6,9 @@ Platform 1.94
   @JsonCreator constructors and methods. If absent the parameter name will
   be used instead.
 
+  [Bug] We fixed serialization to omit null map values. This had regressed in
+  Platform 1.73.
+
 Platform 1.93
 
 * HttpClient
