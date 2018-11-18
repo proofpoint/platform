@@ -208,7 +208,7 @@ public class TestTestingResponse
             }
         }
 
-        return returnValues.toArray(new Object[][]{});
+        return returnValues.toArray(new Object[0][]);
     }
 
     private static void assertResponse(Response response, HttpStatus status, ImmutableListMultimap<String, String> headers, byte[] body)
