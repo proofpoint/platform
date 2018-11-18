@@ -16,7 +16,6 @@
 package com.proofpoint.platform.sample;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 import javax.annotation.Nullable;
@@ -38,7 +37,7 @@ public abstract class PersonRepresentation
     abstract String getName();
 
     @JsonCreator
-    public static PersonRepresentation createPersonRepresentation(@JsonProperty("email") String email, @JsonProperty("name") String name)
+    public static PersonRepresentation createPersonRepresentation(String email, String name)
     {
         return new AutoValue_PersonRepresentation(email, name);
     }

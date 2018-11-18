@@ -1,3 +1,11 @@
+Platform 1.94
+
+* JSON
+
+  The @JsonProperty annotation is no longer necessary on parameters to
+  @JsonCreator constructors and methods. If absent the parameter name will
+  be used instead.
+
 Platform 1.93
 
 * HttpClient
