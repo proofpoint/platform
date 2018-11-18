@@ -19,8 +19,8 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.Multibinder;
 
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
@@ -41,6 +41,6 @@ public class HttpEventModule implements Module
                 .withPrivateIoThreadPool();
 
         // Kick off the binding of Set<EventTypeMetadata> in case no events are bound
-        Multibinder.newSetBinder(binder, new TypeLiteral<EventTypeMetadata<?>>() {});
+        newSetBinder(binder, new TypeLiteral<EventTypeMetadata<?>>() {});
     }
 }
