@@ -200,7 +200,7 @@ public abstract class AbstractHttpClientTest
             connectionFactories.add(new HttpConnectionFactory(httpConfiguration));
             connectionFactories.add(new HTTP2CServerConnectionFactory(httpConfiguration));
         }
-        ServerConnector connector = new ServerConnector(server, connectionFactories.toArray(new ConnectionFactory[]{}));
+        ServerConnector connector = new ServerConnector(server, connectionFactories.toArray(new ConnectionFactory[0]));
 
         connector.setIdleTimeout(30000);
         connector.setName(scheme);

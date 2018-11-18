@@ -447,7 +447,7 @@ public class HttpServer
                 threadPool,
                 acceptors,
                 selectors,
-                connectionFactories.toArray(new ConnectionFactory[]{}));
+                connectionFactories.toArray(new ConnectionFactory[0]));
     }
 
     private ServletContextHandler createServletContext(Servlet theServlet,

@@ -364,7 +364,7 @@ public final class MoreFutures
      */
     public static <V> CompletableFuture<List<V>> allAsList(List<CompletableFuture<? extends V>> futures)
     {
-        CompletableFuture<Void> allDoneFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        CompletableFuture<Void> allDoneFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
         // Eagerly propagate exceptions, rather than waiting for all the futures to complete first (default behavior)
         for (CompletableFuture<? extends V> future : futures) {
