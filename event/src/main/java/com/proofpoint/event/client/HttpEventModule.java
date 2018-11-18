@@ -37,8 +37,7 @@ public class HttpEventModule implements Module
 
         // bind the http client
         discoveryBinder(binder)
-                .bindDiscoveredHttpClient("event", serviceType("collector"), ForEventClient.class)
-                .withPrivateIoThreadPool();
+                .bindDiscoveredHttpClient("event", serviceType("collector"), ForEventClient.class);
 
         // Kick off the binding of Set<EventTypeMetadata> in case no events are bound
         newSetBinder(binder, new TypeLiteral<EventTypeMetadata<?>>() {});

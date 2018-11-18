@@ -284,7 +284,6 @@ public class TestDiscoveryBinder
         Injector injector = createInjector(
                 ImmutableMap.of("discovery.foo.pool", "foo-pool"),
                 binder -> discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
-                        .withPrivateIoThreadPool()
         );
 
         HttpClient fooClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
