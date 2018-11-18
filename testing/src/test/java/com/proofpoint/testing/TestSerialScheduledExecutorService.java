@@ -59,13 +59,8 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testThrownExceptionsAreSwallowedForRunOnceRunnable()
     {
-        executorService.execute(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                throw new RuntimeException("deliberate");
-            }
+        executorService.execute(() -> {
+            throw new RuntimeException("deliberate");
         });
     }
 
@@ -85,13 +80,8 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testThrownExceptionsArePushedIntoFutureForSubmittedRunnable()
     {
-        Future<Integer> future = executorService.submit(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                throw new RuntimeException("deliberate");
-            }
+        Future<Integer> future = executorService.submit(() -> {
+            throw new RuntimeException("deliberate");
         }, 10);
 
         assertTrue(future.isDone());
@@ -122,14 +112,8 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testThrownExceptionsArePushedIntoFutureForSubmittedCallable()
     {
-        Future<Integer> future = executorService.submit(new Callable<Integer>()
-        {
-            @Override
-            public Integer call()
-                    throws Exception
-            {
-                throw new Exception("deliberate");
-            }
+        Future<Integer> future = executorService.submit(() -> {
+            throw new Exception("deliberate");
         });
 
         assertTrue(future.isDone());
@@ -186,13 +170,8 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testThrownExceptionsArePushedIntoFutureForScheduledRunnable()
     {
-        Future<?> future = executorService.schedule(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                throw new RuntimeException("deliberate");
-            }
+        Future<?> future = executorService.schedule((Runnable) () -> {
+            throw new RuntimeException("deliberate");
         }, 10, TimeUnit.MINUTES);
 
         executorService.elapseTime(10, TimeUnit.MINUTES);
@@ -272,14 +251,8 @@ public class TestSerialScheduledExecutorService
     @Test
     public void testThrownExceptionsArePushedIntoFutureForScheduledCallable()
     {
-        Future<Integer> future = executorService.schedule(new Callable<Integer>()
-        {
-            @Override
-            public Integer call()
-                    throws Exception
-            {
-                throw new Exception("deliberate");
-            }
+        Future<Integer> future = executorService.schedule(() -> {
+            throw new Exception("deliberate");
         }, 10, TimeUnit.MINUTES);
 
         executorService.elapseTime(10, TimeUnit.MINUTES);
@@ -647,83 +620,39 @@ public class TestSerialScheduledExecutorService
 
     private Runnable createRunnableWithNestedScheduleWithFixedDelay(final List<String> collector, final long innerTaskDelay, final long repeat)
     {
-        return new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                collector.add(OUTER);
-                executorService.scheduleWithFixedDelay(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        collector.add(INNER);
-                    }
-                }, innerTaskDelay, repeat, TimeUnit.MILLISECONDS);
-            }
+        return () -> {
+            collector.add(OUTER);
+            executorService.scheduleWithFixedDelay(() -> collector.add(INNER), innerTaskDelay, repeat, TimeUnit.MILLISECONDS);
         };
     }
 
     private Runnable createRunnableWithNestedScheduleAtFixedRate(final List<String> collector, final long innerTaskDelay, final long repeat)
     {
-        return new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                collector.add(OUTER);
-                executorService.scheduleAtFixedRate(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        collector.add(INNER);
-                    }
-                }, innerTaskDelay, repeat, TimeUnit.MILLISECONDS);
-            }
+        return () -> {
+            collector.add(OUTER);
+            executorService.scheduleAtFixedRate(() -> collector.add(INNER), innerTaskDelay, repeat, TimeUnit.MILLISECONDS);
         };
     }
 
     private Runnable createRunnableWithNestedSchedule(final List<String> collector, final long innerTaskDelay)
     {
-        return new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                collector.add(OUTER);
-                executorService.schedule(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        collector.add(INNER);
-                    }
-                }, innerTaskDelay, TimeUnit.MILLISECONDS);
-            }
+        return () -> {
+            collector.add(OUTER);
+            executorService.schedule(() -> {
+                collector.add(INNER);
+            }, innerTaskDelay, TimeUnit.MILLISECONDS);
         };
     }
 
     private Callable<Boolean> createCallableWithNestedSchedule(final List<String> collector, final long innerTaskDelay)
     {
-        return new Callable<Boolean>()
-        {
-            @Override
-            public Boolean call()
-            {
-                collector.add(OUTER);
-                executorService.schedule(new Callable<Boolean>()
-                {
-                    @Override
-                    public Boolean call()
-                    {
-                        collector.add(INNER);
-                        return false;
-                    }
-                }, innerTaskDelay, TimeUnit.MILLISECONDS);
+        return () -> {
+            collector.add(OUTER);
+            executorService.schedule(() -> {
+                collector.add(INNER);
                 return false;
-            }
+            }, innerTaskDelay, TimeUnit.MILLISECONDS);
+            return false;
         };
     }
 

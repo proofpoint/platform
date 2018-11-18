@@ -174,14 +174,7 @@ public class TestConfigurationFactoryBuilder
         System.getProperties().remove("config");
 
         try {
-            createInjector(configurationFactory, new Module()
-            {
-                @Override
-                public void configure(Binder binder)
-                {
-                    bindConfig(binder).bind(AnnotatedSetter.class);
-                }
-            });
+            createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
 
             fail("Expected an exception in object creation due to unused configuration");
         } catch (CreationException e) {
@@ -211,14 +204,7 @@ public class TestConfigurationFactoryBuilder
         System.getProperties().remove("config");
 
         try {
-            createInjector(configurationFactory, new Module()
-            {
-                @Override
-                public void configure(Binder binder)
-                {
-                    bindConfig(binder).bind(AnnotatedSetter.class);
-                }
-            });
+            createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
 
             fail("Expected an exception in object creation due to unused configuration");
         } catch (CreationException e) {
@@ -248,14 +234,7 @@ public class TestConfigurationFactoryBuilder
         System.getProperties().remove("config");
 
         try {
-            createInjector(configurationFactory, new Module()
-            {
-                @Override
-                public void configure(Binder binder)
-                {
-                    bindConfig(binder).bind(AnnotatedSetter.class);
-                }
-            });
+            createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
 
             fail("Expected an exception in object creation due to unused configuration");
         } catch (CreationException e) {
@@ -288,14 +267,7 @@ public class TestConfigurationFactoryBuilder
         System.getProperties().remove("config");
 
         try {
-            createInjector(configurationFactory, new Module()
-            {
-                @Override
-                public void configure(Binder binder)
-                {
-                    bindConfig(binder).bind(AnnotatedSetter.class);
-                }
-            });
+            createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
 
             fail("Expected an exception in object creation due to duplicate configuration");
         } catch (CreationException e) {
