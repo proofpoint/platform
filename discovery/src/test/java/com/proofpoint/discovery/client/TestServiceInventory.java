@@ -68,7 +68,6 @@ public class TestServiceInventory
 
     @Test
     public void testNullServiceInventory()
-            throws Exception
     {
         ServiceInventory serviceInventory = createServiceInventory();
 
@@ -81,7 +80,6 @@ public class TestServiceInventory
 
     @Test
     public void testDeprecatedServiceInventory()
-            throws Exception
     {
         discoveryClientConfig.setDiscoveryServiceURI(URI.create("https://example.com:4111"));
         ServiceInventory serviceInventory = createServiceInventory();

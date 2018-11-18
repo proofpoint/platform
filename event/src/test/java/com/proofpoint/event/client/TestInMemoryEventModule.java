@@ -23,7 +23,6 @@ public class TestInMemoryEventModule extends AbstractTestInMemoryEventClient
 {
     @BeforeMethod
     public void setup()
-            throws Exception
     {
         Injector injector = Guice.createInjector(
                 new InMemoryEventModule()

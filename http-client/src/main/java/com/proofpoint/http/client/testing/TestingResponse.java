@@ -14,7 +14,6 @@ import com.proofpoint.json.ObjectMapperProvider;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
@@ -72,7 +71,6 @@ public class TestingResponse
 
     @Override
     public InputStream getInputStream()
-            throws IOException
     {
         return countingInputStream;
     }

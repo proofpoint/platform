@@ -7,7 +7,6 @@ import com.proofpoint.testing.TestingTicker;
 import io.airlift.slice.Slice;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -121,7 +120,6 @@ public class TestQuantileDigest
 
     @Test
     public void testCompression()
-            throws Exception
     {
         QuantileDigest digest = new QuantileDigest(1, 0, new TestingTicker());
 
@@ -225,7 +223,6 @@ public class TestQuantileDigest
 
     @Test
     public void testBatchQuantileQuery()
-            throws Exception
     {
         QuantileDigest digest = new QuantileDigest(1);
 
@@ -240,7 +237,6 @@ public class TestQuantileDigest
 
     @Test
     public void testHistogramQuery()
-            throws Exception
     {
         QuantileDigest digest = new QuantileDigest(1);
 
@@ -331,7 +327,6 @@ public class TestQuantileDigest
 
     @Test
     public void testHistogramQueryAfterCompression()
-            throws Exception
     {
         QuantileDigest digest = new QuantileDigest(0.1);
 
@@ -380,7 +375,6 @@ public class TestQuantileDigest
 
     @Test
     public void testDecayedQuantiles()
-            throws Exception
     {
         TestingTicker ticker = new TestingTicker();
         QuantileDigest digest = new QuantileDigest(1, ExponentialDecay.computeAlpha(0.5, 60), ticker);
@@ -401,7 +395,6 @@ public class TestQuantileDigest
 
     @Test
     public void testDecayedCounts()
-            throws Exception
     {
         TestingTicker ticker = new TestingTicker();
         QuantileDigest digest = new QuantileDigest(1, ExponentialDecay.computeAlpha(0.5, 60), ticker);
@@ -419,7 +412,6 @@ public class TestQuantileDigest
 
     @Test
     public void testDecayedCountsWithClockIncrementSmallerThanRescaleThreshold()
-            throws Exception
     {
         int targetAgeInSeconds = (int) (QuantileDigest.RESCALE_THRESHOLD_SECONDS - 1);
 
@@ -436,7 +428,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMinMax()
-            throws Exception
     {
         QuantileDigest digest = new QuantileDigest(0.01, 0, new TestingTicker());
 
@@ -450,7 +441,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMinMaxWithDecay()
-            throws Exception
     {
         TestingTicker ticker = new TestingTicker();
 
@@ -473,7 +463,6 @@ public class TestQuantileDigest
 
     @Test
     public void testRescaleWithDecayKeepsCompactTree()
-            throws Exception
     {
         TestingTicker ticker = new TestingTicker();
         int targetAgeInSeconds = (int) (QuantileDigest.RESCALE_THRESHOLD_SECONDS);
@@ -495,7 +484,6 @@ public class TestQuantileDigest
 
     @Test
     public void testEquivalenceEmpty()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -505,7 +493,6 @@ public class TestQuantileDigest
 
     @Test
     public void testEquivalenceSingle()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -518,7 +505,6 @@ public class TestQuantileDigest
 
     @Test
     public void testEquivalenceSingleDifferent()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -531,7 +517,6 @@ public class TestQuantileDigest
 
     @Test
     public void testEquivalenceComplex()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -544,7 +529,6 @@ public class TestQuantileDigest
 
     @Test
     public void testEquivalenceComplexDifferent()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -557,7 +541,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMergeEmpty()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -579,7 +562,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMergeIntoEmpty()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -604,7 +586,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMergeWithEmpty()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -627,7 +608,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMergeSample()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -645,7 +625,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMergeSeparateBranches()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -669,7 +648,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMergeWithLowerLevel()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(1, 0, Ticker.systemTicker());
         QuantileDigest b = new QuantileDigest(1, 0, Ticker.systemTicker());
@@ -697,7 +675,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMergeWithHigherLevel()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(1, 0, Ticker.systemTicker());
         QuantileDigest b = new QuantileDigest(1, 0, Ticker.systemTicker());
@@ -725,7 +702,6 @@ public class TestQuantileDigest
     // we handle boundary conditions properly
     @Test
     public void testMergeMaxLevel()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(0.01);
         QuantileDigest b = new QuantileDigest(0.01);
@@ -747,7 +723,6 @@ public class TestQuantileDigest
 
     @Test
     public void testMergeSameLevel()
-            throws Exception
     {
         QuantileDigest a = new QuantileDigest(1, 0, Ticker.systemTicker());
         QuantileDigest b = new QuantileDigest(1, 0, Ticker.systemTicker());
@@ -819,7 +794,6 @@ public class TestQuantileDigest
     }
 
     private QuantileDigest deserialize(Slice serialized)
-            throws IOException
     {
         QuantileDigest result = new QuantileDigest(serialized);
         result.validate();

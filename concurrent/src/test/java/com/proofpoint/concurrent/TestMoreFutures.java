@@ -67,7 +67,6 @@ public class TestMoreFutures
 
     @Test
     public void propagateCancellationWithoutInterrupt()
-            throws Exception
     {
         // Test interrupt override
         ExtendedSettableFuture<Object> fromFuture = ExtendedSettableFuture.create();
@@ -87,7 +86,6 @@ public class TestMoreFutures
 
     @Test
     public void propagateCancellationWithInterrupt()
-            throws Exception
     {
         ExtendedSettableFuture<Object> fromFuture = ExtendedSettableFuture.create();
         ExtendedSettableFuture<Object> toFuture = ExtendedSettableFuture.create();
@@ -155,7 +153,6 @@ public class TestMoreFutures
 
     @Test
     public void testModifyUnmodifiableFuture()
-            throws Exception
     {
         CompletableFuture<String> future = new CompletableFuture<>();
         CompletableFuture<String> unmodifiableFuture = unmodifiableFuture(future);
@@ -193,7 +190,6 @@ public class TestMoreFutures
 
     @Test
     public void testModifyCancelableUnmodifiableFuture()
-            throws Exception
     {
         CompletableFuture<String> future = new CompletableFuture<>();
         CompletableFuture<String> unmodifiableFuture = unmodifiableFuture(future, true);
@@ -220,7 +216,6 @@ public class TestMoreFutures
 
     @Test
     public void testUnmodifiableFutureCancelPropagation()
-            throws Exception
     {
         CompletableFuture<String> future = new CompletableFuture<>();
         CompletableFuture<String> unmodifiableFuture = unmodifiableFuture(future, true);
@@ -249,7 +244,6 @@ public class TestMoreFutures
 
     @Test
     public void testCompleteUnmodifiableFuture()
-            throws Exception
     {
         CompletableFuture<String> future = new CompletableFuture<>();
         CompletableFuture<String> unmodifiableFuture = unmodifiableFuture(future);
@@ -262,7 +256,6 @@ public class TestMoreFutures
 
     @Test
     public void testCompleteExceptionallyUnmodifiableFuture()
-            throws Exception
     {
         CompletableFuture<String> future = new CompletableFuture<>();
         CompletableFuture<String> unmodifiableFuture = unmodifiableFuture(future);
@@ -282,7 +275,6 @@ public class TestMoreFutures
 
     @Test
     public void testAlreadyCompleteUnmodifiableFuture()
-            throws Exception
     {
         CompletableFuture<String> future = completedFuture("done");
         CompletableFuture<String> unmodifiableFuture = unmodifiableFuture(future);
@@ -294,7 +286,6 @@ public class TestMoreFutures
 
     @Test
     public void testAlreadyCompleteExceptionallyUnmodifiableFuture()
-            throws Exception
     {
         CompletableFuture<String> future = failedFuture(new SQLException("foo"));
         CompletableFuture<String> unmodifiableFuture = unmodifiableFuture(future);
@@ -313,7 +304,6 @@ public class TestMoreFutures
 
     @Test
     public void testFailedFuture()
-            throws Exception
     {
         CompletableFuture<Object> future = failedFuture(new SQLException("foo"));
 
@@ -472,7 +462,6 @@ public class TestMoreFutures
 
     @Test
     public void testEmptyAllAsList()
-            throws Exception
     {
         CompletableFuture<List<Object>> future = allAsList(ImmutableList.of());
         assertTrue(future.isDone());
@@ -483,7 +472,6 @@ public class TestMoreFutures
 
     @Test
     public void testSingleElementAllAsList()
-            throws Exception
     {
         CompletableFuture<String> element1 = new CompletableFuture<>();
 
@@ -500,7 +488,6 @@ public class TestMoreFutures
 
     @Test
     public void testExceptionalSingleElementAllAsList()
-            throws Exception
     {
         CompletableFuture<String> element1 = new CompletableFuture<>();
 
@@ -516,7 +503,6 @@ public class TestMoreFutures
 
     @Test
     public void testMultipleElementAllAsList()
-            throws Exception
     {
         CompletableFuture<String> element1 = new CompletableFuture<>();
         CompletableFuture<String> element2 = new CompletableFuture<>();
@@ -539,7 +525,6 @@ public class TestMoreFutures
 
     @Test
     public void testExceptionalMultipleElementAllAsList()
-            throws Exception
     {
         CompletableFuture<String> element1 = new CompletableFuture<>();
         CompletableFuture<String> element2 = new CompletableFuture<>();
@@ -557,7 +542,6 @@ public class TestMoreFutures
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testUnmodifiableAllAsList()
-            throws Exception
     {
         CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(new CompletableFuture<String>()));
         future.complete(null);
@@ -565,7 +549,6 @@ public class TestMoreFutures
 
     @Test
     public void testListenableTimeout()
-            throws Exception
     {
         SettableFuture<String> rootFuture = SettableFuture.create();
         ListenableFuture<String> timeoutFuture = addTimeout(rootFuture, () -> "timeout", new Duration(0, MILLISECONDS), executorService);
@@ -582,7 +565,6 @@ public class TestMoreFutures
 
     @Test
     public void testListenableTimeoutExceptionValue()
-            throws Exception
     {
         SettableFuture<String> rootFuture = SettableFuture.create();
         ListenableFuture<String> timeoutFuture = addTimeout(rootFuture, () -> { throw new SQLException("timeout"); }, new Duration(0, MILLISECONDS), executorService);
@@ -602,7 +584,6 @@ public class TestMoreFutures
 
     @Test
     public void testListenableTimeoutCancel()
-            throws Exception
     {
         SettableFuture<String> rootFuture = SettableFuture.create();
         ListenableFuture<String> timeoutFuture = addTimeout(rootFuture, () -> "timeout", new Duration(10, SECONDS), executorService);
@@ -622,7 +603,6 @@ public class TestMoreFutures
 
     @Test
     public void testTimeout()
-            throws Exception
     {
         CompletableFuture<String> rootFuture = new CompletableFuture<>();
         CompletableFuture<String> timeoutFuture = addTimeout(rootFuture, () -> "timeout", new Duration(0, MILLISECONDS), executorService);
@@ -639,7 +619,6 @@ public class TestMoreFutures
 
     @Test
     public void testTimeoutExceptionValue()
-            throws Exception
     {
         CompletableFuture<String> rootFuture = new CompletableFuture<>();
         CompletableFuture<String> timeoutFuture = addTimeout(rootFuture, () -> { throw new SQLException("timeout"); }, new Duration(0, MILLISECONDS), executorService);
@@ -659,7 +638,6 @@ public class TestMoreFutures
 
     @Test
     public void testTimeoutCancel()
-            throws Exception
     {
         CompletableFuture<String> rootFuture = new CompletableFuture<>();
         CompletableFuture<String> timeoutFuture = addTimeout(rootFuture, () -> "timeout", new Duration(10, SECONDS), executorService);
@@ -719,7 +697,6 @@ public class TestMoreFutures
 
     @SuppressWarnings("ReturnValueIgnored")
     private static void assertGetUncheckedListenable(Function<ListenableFuture<Object>, Object> getter)
-            throws Exception
     {
         assertEquals(getter.apply(immediateFuture("foo")), "foo");
 

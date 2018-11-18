@@ -148,7 +148,6 @@ class TimingResourceDynamicFeature
                     {
                         @Override
                         public SparseTimeStat load(List<Optional<String>> key)
-                                throws Exception
                         {
                             SparseTimeStat returnValue = new SparseTimeStat();
 

@@ -91,7 +91,6 @@ public class TestLivenessResource
 
     @Test
     public void testNothingExported()
-            throws Exception
     {
         StringResponse response = client.execute(
                 prepareGet().setUri(uriFor("/liveness")).build(),

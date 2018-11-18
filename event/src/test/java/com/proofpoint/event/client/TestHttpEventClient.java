@@ -44,7 +44,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -252,7 +251,7 @@ public class TestHttpEventClient
 
         @Override
         protected void doPost(HttpServletRequest request, HttpServletResponse response)
-                throws ServletException, IOException
+                throws IOException
         {
             lastPath = request.getPathInfo();
             lastBody = CharStreams.toString(new InputStreamReader(request.getInputStream(), UTF_8));

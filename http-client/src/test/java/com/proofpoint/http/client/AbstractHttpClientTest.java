@@ -543,14 +543,12 @@ public abstract class AbstractHttpClientTest
 
                     @Override
                     public int read()
-                            throws IOException
                     {
                         throw new UnsupportedOperationException();
                     }
 
                     @Override
                     public int read(byte[] b)
-                            throws IOException
                     {
                         switch (invocation.getAndIncrement()) {
                             case 0:
@@ -598,14 +596,12 @@ public abstract class AbstractHttpClientTest
 
                     @Override
                     public int read()
-                            throws IOException
                     {
                         throw new UnsupportedOperationException();
                     }
 
                     @Override
                     public int read(byte[] b)
-                            throws IOException
                     {
                         switch (invocation.getAndIncrement()) {
                             case 0:
@@ -801,7 +797,6 @@ public abstract class AbstractHttpClientTest
 
                     @Override
                     public Writer start(OutputStream out)
-                            throws Exception
                     {
                         return new Writer()
                         {
@@ -1203,14 +1198,12 @@ public abstract class AbstractHttpClientTest
 
     @BeforeClass
     public final void setUp()
-            throws Exception
     {
         executor = Executors.newCachedThreadPool(threadsNamed("test-%s"));
     }
 
     @AfterClass
     public final void tearDown()
-            throws Exception
     {
         if (executor != null) {
             executor.shutdownNow();
@@ -1583,7 +1576,6 @@ public abstract class AbstractHttpClientTest
 
         @Override
         public Void handle(Request request, Response response)
-                throws Exception
         {
             throw new UnsupportedOperationException();
         }
@@ -1644,7 +1636,6 @@ public abstract class AbstractHttpClientTest
 
         @Override
         public String handle(Request request, Response response)
-                throws CapturedException
         {
             throw new UnsupportedOperationException();
         }

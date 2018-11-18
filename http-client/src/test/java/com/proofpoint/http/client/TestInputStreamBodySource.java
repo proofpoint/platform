@@ -45,7 +45,6 @@ public class TestInputStreamBodySource
         {
             @Override
             public int read()
-                    throws IOException
             {
                 setWasInvoked();
                 return 0;
@@ -71,7 +70,6 @@ public class TestInputStreamBodySource
         {
             @Override
             public int read(byte[] b)
-                    throws IOException
             {
                 setWasInvoked();
                 return 0;
@@ -97,7 +95,6 @@ public class TestInputStreamBodySource
         {
             @Override
             public int read(byte[] b, int off, int len)
-                    throws IOException
             {
                 setWasInvoked();
                 return 0;
@@ -123,7 +120,6 @@ public class TestInputStreamBodySource
         {
             @Override
             public long skip(long n)
-                    throws IOException
             {
                 setWasInvoked();
                 return 1;
@@ -149,7 +145,6 @@ public class TestInputStreamBodySource
         {
             @Override
             public int available()
-                    throws IOException
             {
                 setWasInvoked();
                 return 1;
@@ -175,7 +170,6 @@ public class TestInputStreamBodySource
         {
             @Override
             public void close()
-                    throws IOException
             {
                 setWasInvoked();
             }
@@ -208,7 +202,6 @@ public class TestInputStreamBodySource
         {
             @Override
             public void apply(InputStream inputStream)
-                    throws IOException
             {
                 inputStream.mark(0);
             }
@@ -224,7 +217,6 @@ public class TestInputStreamBodySource
         {
             @Override
             public void reset()
-                    throws IOException
             {
                 setWasInvoked();
             }
@@ -258,7 +250,6 @@ public class TestInputStreamBodySource
         {
             @Override
             public void apply(InputStream inputStream)
-                    throws IOException
             {
                 inputStream.markSupported();
             }
@@ -306,7 +297,6 @@ public class TestInputStreamBodySource
 
         @Override
         public int read()
-                throws IOException
         {
             throw new UnsupportedOperationException();
         }

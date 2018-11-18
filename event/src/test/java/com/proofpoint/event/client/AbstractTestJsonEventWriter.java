@@ -55,7 +55,6 @@ public abstract class AbstractTestJsonEventWriter
 
     @BeforeMethod
     public void setup()
-            throws Exception
     {
         Set<EventTypeMetadata<?>> eventTypes = getValidEventTypeMetaDataSet(
                 FixedDummyEventClass.class, FixedTokenEventClass.class, FixedStringTokenEventClass.class, NestedDummyEventClass.class, CircularEventClass.class, ChainedCircularEventClass.class);

@@ -22,7 +22,6 @@ public class TestTestingHttpClient
 {
     @Test
     public void testBlocking()
-            throws Exception
     {
         Request request = prepareGet()
                 .setUri(URI.create("http://example.org"))
@@ -217,7 +216,6 @@ public class TestTestingHttpClient
 
         @Override
         public String handle(Request request, Response response)
-                throws CapturedException
         {
             throw new UnsupportedOperationException();
         }

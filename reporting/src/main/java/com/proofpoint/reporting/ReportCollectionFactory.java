@@ -263,7 +263,6 @@ public class ReportCollectionFactory
 
         @Override
         public Object get(List<Optional<String>> key)
-                throws ExecutionException
         {
             return returnValue;
         }
@@ -311,7 +310,6 @@ public class ReportCollectionFactory
                     {
                         @Override
                         public Object load(List<Optional<String>> key)
-                                throws Exception
                         {
                             Object returnValue = returnValueSupplier.get();
 

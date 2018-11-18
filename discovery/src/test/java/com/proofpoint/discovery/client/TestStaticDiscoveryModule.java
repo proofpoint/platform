@@ -40,14 +40,12 @@ public class TestStaticDiscoveryModule
 
     @BeforeMethod
     public void setup()
-            throws Exception
     {
         injector = null;
     }
 
     @AfterMethod(alwaysRun = true)
     public void teardown()
-            throws Exception
     {
         try {
             LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);

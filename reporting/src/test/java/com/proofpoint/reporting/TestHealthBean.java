@@ -2,7 +2,6 @@ package com.proofpoint.reporting;
 
 import org.testng.annotations.Test;
 
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ public class TestHealthBean extends AbstractHealthBeanTest<Object>
 
     @Override
     protected String getAttribute(Object object, String description)
-            throws AttributeNotFoundException, MBeanException, ReflectionException
+            throws MBeanException, ReflectionException
     {
         for (HealthBeanAttribute attribute : healthBeans.get(object).getAttributes()) {
             if (attribute.getDescription().equals(description)) {

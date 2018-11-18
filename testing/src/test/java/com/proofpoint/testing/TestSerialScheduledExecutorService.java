@@ -43,14 +43,12 @@ public class TestSerialScheduledExecutorService
 
     @BeforeMethod
     public void setUp()
-            throws Exception
     {
         executorService = new SerialScheduledExecutorService();
     }
 
     @Test
     public void testRunOnce()
-            throws Exception
     {
         Counter counter = new Counter();
         executorService.execute(counter);
@@ -60,7 +58,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testThrownExceptionsAreSwallowedForRunOnceRunnable()
-            throws Exception
     {
         executorService.execute(new Runnable()
         {
@@ -87,7 +84,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testThrownExceptionsArePushedIntoFutureForSubmittedRunnable()
-            throws Exception
     {
         Future<Integer> future = executorService.submit(new Runnable()
         {
@@ -125,7 +121,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testThrownExceptionsArePushedIntoFutureForSubmittedCallable()
-            throws Exception
     {
         Future<Integer> future = executorService.submit(new Callable<Integer>()
         {
@@ -168,7 +163,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testScheduleRunnable()
-            throws Exception
     {
         Ticker ticker = executorService.getTicker();
         long initialTick = ticker.read();
@@ -191,7 +185,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testThrownExceptionsArePushedIntoFutureForScheduledRunnable()
-            throws Exception
     {
         Future<?> future = executorService.schedule(new Runnable()
         {
@@ -220,7 +213,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testScheduledRunnableWithZeroDelayCompletesImmediately()
-            throws Exception
     {
         Ticker ticker = executorService.getTicker();
         long initialTick = ticker.read();
@@ -235,7 +227,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testCancelScheduledRunnable()
-            throws Exception
     {
         Ticker ticker = executorService.getTicker();
         long initialTick = ticker.read();
@@ -280,7 +271,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testThrownExceptionsArePushedIntoFutureForScheduledCallable()
-            throws Exception
     {
         Future<Integer> future = executorService.schedule(new Callable<Integer>()
         {
@@ -310,7 +300,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testScheduledCallableWithZeroDelayCompletesImmediately()
-            throws Exception
     {
         CallableCounter counter = new CallableCounter();
         Future<Integer> future = executorService.schedule(counter, 0, TimeUnit.MINUTES);
@@ -346,7 +335,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testRepeatingRunnable()
-            throws Exception
     {
         Ticker ticker = executorService.getTicker();
         long initialTick = ticker.read();
@@ -382,7 +370,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testRepeatingRunnableThatThrowsDoesNotRunAgain()
-            throws Exception
     {
         FailingCounter counter = new FailingCounter(1);
         ScheduledFuture<?> future = executorService.scheduleAtFixedRate(counter, 10, 5, TimeUnit.MINUTES);
@@ -414,7 +401,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testRepeatingRunnableThatThrowsDoesNotRunAgainWhenElapseContainsMultipleInvocations()
-            throws Exception
     {
         FailingCounter counter = new FailingCounter(1);
         ScheduledFuture<?> future = executorService.scheduleAtFixedRate(counter, 10, 5, TimeUnit.MINUTES);
@@ -446,7 +432,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testRepeatingRunnableWithZeroDelayExecutesImmediately()
-            throws Exception
     {
         Ticker ticker = executorService.getTicker();
         long initialTick = ticker.read();
@@ -466,7 +451,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testCancelRepeatingRunnableBeforeFirstRun()
-            throws Exception
     {
         Ticker ticker = executorService.getTicker();
         long initialTick = ticker.read();
@@ -495,7 +479,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testCancelRepeatingRunnableAfterFirstRun()
-            throws Exception
     {
         Ticker ticker = executorService.getTicker();
         long initialTick = ticker.read();
@@ -524,7 +507,6 @@ public class TestSerialScheduledExecutorService
 
     @Test
     public void testMultipleRepeatingRunnables()
-            throws Exception
     {
         Ticker ticker = executorService.getTicker();
         long initialTick = ticker.read();
@@ -735,7 +717,6 @@ public class TestSerialScheduledExecutorService
                 {
                     @Override
                     public Boolean call()
-                            throws Exception
                     {
                         collector.add(INNER);
                         return false;
@@ -791,7 +772,6 @@ public class TestSerialScheduledExecutorService
 
         @Override
         public Integer call()
-                throws Exception
         {
             return ++count;
         }

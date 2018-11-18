@@ -110,7 +110,6 @@ public class TestReportScheduler
 
     @Test
     public void testScheduling()
-            throws Exception
     {
         testReportsStartup();
         verify(reportCollector, atLeast(0)).getVersionTags();

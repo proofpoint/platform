@@ -94,7 +94,6 @@ public class TestReportExporter
 
     @Test
     public void testExportNoAttributes()
-            throws Exception
     {
         reportExporter.export(new Object(), false, "TestingObject", ImmutableMap.of());
         assertEquals(registry.getReportedBeans(), ImmutableList.of());
@@ -102,7 +101,6 @@ public class TestReportExporter
 
     @Test
     public void testExportDuplicate()
-            throws Exception
     {
         try {
             reportExporter.export(TESTING_OBJECT, false, "TestingObject", ImmutableMap.of());
@@ -117,7 +115,6 @@ public class TestReportExporter
 
     @Test
     public void testUnexportObject()
-            throws Exception
     {
         reportExporter.export(TESTING_OBJECT, false, "TestingObject", ImmutableMap.of());
         reportExporter.unexportObject(TESTING_OBJECT);
@@ -126,7 +123,6 @@ public class TestReportExporter
 
     @Test
     public void testUnexportObjectNotRegistered()
-            throws Exception
     {
         try {
             reportExporter.unexportObject(TESTING_OBJECT);
@@ -150,7 +146,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyExportString()
-            throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME.getCanonicalName(), TESTING_OBJECT);
         assertExported(false, ImmutableMap.of());
@@ -158,7 +153,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyExportStringNoAttributes()
-            throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME.getCanonicalName(), new Object());
         assertEquals(registry.getReportedBeans(), ImmutableList.of());
@@ -166,7 +160,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyExportStringMalformedName()
-            throws Exception
     {
         try {
             reportExporter.export("TestingObject", TESTING_OBJECT);
@@ -180,7 +173,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyExportStringDuplicate()
-            throws Exception
     {
         try {
             reportExporter.export(TESTING_OBJECT_NAME.getCanonicalName(), TESTING_OBJECT);
@@ -195,7 +187,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyExportObjectName()
-            throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME, TESTING_OBJECT);
         assertExported(false, ImmutableMap.of());
@@ -203,7 +194,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyExportObjectNameNoAttributes()
-            throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME, new Object());
         assertEquals(registry.getReportedBeans(), ImmutableList.of());
@@ -211,7 +201,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyExportObjectNameDuplicate()
-            throws Exception
     {
         try {
             reportExporter.export(TESTING_OBJECT_NAME, TESTING_OBJECT);
@@ -226,7 +215,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyUnexportString()
-            throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME, TESTING_OBJECT);
         reportExporter.unexport(TESTING_OBJECT_NAME.getCanonicalName());
@@ -235,7 +223,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyUnexportStringMalformedName()
-            throws Exception
     {
         try {
             reportExporter.unexport("TestingObject");
@@ -249,7 +236,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyUnexportStringNotRegistered()
-            throws Exception
     {
         try {
             reportExporter.unexport(TESTING_OBJECT_NAME.getCanonicalName());
@@ -263,7 +249,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyUnexportObjectName()
-            throws Exception
     {
         reportExporter.export(TESTING_OBJECT_NAME, TESTING_OBJECT);
         reportExporter.unexport(TESTING_OBJECT_NAME);
@@ -272,7 +257,6 @@ public class TestReportExporter
 
     @Test
     public void testLegacyUnexportObjectNameNotRegistered()
-            throws Exception
     {
         try {
             reportExporter.unexport(TESTING_OBJECT_NAME);

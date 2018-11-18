@@ -86,7 +86,6 @@ public class TestQueryParamExceptionMapper
 
     @Test
     public void testGetWithValidQueryParamSucceeds()
-            throws Exception
     {
         StatusResponse response = client.execute(buildRequestWithQueryParam("123"), createStatusResponseHandler());
         assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
@@ -94,7 +93,6 @@ public class TestQueryParamExceptionMapper
 
     @Test
     public void testGetWithInvalidQueryParamReturnsBadRequest()
-            throws Exception
     {
         StringResponse response = client.execute(buildRequestWithQueryParam("string"), createStringResponseHandler());
         assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());

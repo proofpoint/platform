@@ -86,7 +86,6 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testDeleteViaQueryParam()
-            throws Exception
     {
         client.execute(buildRequestWithQueryParam(POST, DELETE), createStatusResponseHandler());
 
@@ -98,7 +97,6 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testPutViaQueryParam()
-            throws Exception
     {
         client.execute(buildRequestWithQueryParam(POST, PUT), createStatusResponseHandler());
 
@@ -111,7 +109,6 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testPostViaQueryParam()
-            throws Exception
     {
         client.execute(buildRequestWithQueryParam(POST, POST), createStatusResponseHandler());
 
@@ -123,7 +120,6 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testDeleteViaHeader()
-            throws Exception
     {
         client.execute(buildRequestWithHeader(POST, DELETE), createStatusResponseHandler());
 
@@ -135,7 +131,6 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testPutViaHeader()
-            throws Exception
     {
         client.execute(buildRequestWithHeader(POST, PUT), createStatusResponseHandler());
 
@@ -148,7 +143,6 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testPostViaHeader()
-            throws Exception
     {
         client.execute(buildRequestWithHeader(POST, POST), createStatusResponseHandler());
 
@@ -160,7 +154,6 @@ public class TestOverrideMethodFilterInHttpServer
 
 
     private void assertNonOverridableMethod(Request request)
-            throws IOException, ExecutionException, InterruptedException
     {
         StatusResponse response = client.execute(request, createStatusResponseHandler());
 

@@ -62,7 +62,6 @@ class NonCloseableOutputStream
 
     @Override
     public void close()
-            throws IOException
     {
         // ignore
     }

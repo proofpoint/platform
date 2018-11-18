@@ -293,7 +293,6 @@ public class TestTestingHttpServer
 
         @Override
         public synchronized void init(ServletConfig config)
-                throws ServletException
         {
             sampleInitParam = config.getInitParameter("sampleInitParameter");
         }

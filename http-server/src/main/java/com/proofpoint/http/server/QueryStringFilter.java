@@ -31,7 +31,6 @@ public class QueryStringFilter implements Filter
 
     @Override
     public void init(FilterConfig filterConfig)
-            throws ServletException
     {
     }
 

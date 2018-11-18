@@ -3,14 +3,12 @@ package com.proofpoint.concurrent;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static java.util.Objects.requireNonNull;
 
@@ -60,28 +58,24 @@ public class ExecutorServiceAdapter
 
     @Override
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
-            throws InterruptedException
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
-            throws InterruptedException
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
-            throws InterruptedException, ExecutionException
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
-            throws InterruptedException, ExecutionException, TimeoutException
     {
         throw new UnsupportedOperationException();
     }
@@ -112,7 +106,6 @@ public class ExecutorServiceAdapter
 
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit)
-            throws InterruptedException
     {
         throw new UnsupportedOperationException();
     }

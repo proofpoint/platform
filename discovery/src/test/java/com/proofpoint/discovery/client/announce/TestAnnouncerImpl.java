@@ -54,7 +54,6 @@ public class TestAnnouncerImpl
 
     @BeforeMethod
     protected void setUp()
-            throws Exception
     {
         nodeInfo = new NodeInfo("test-application", new NodeConfig().setEnvironment("test").setPool("pool"));
         discoveryClient = new InMemoryDiscoveryClient(nodeInfo, MAX_AGE);
@@ -64,7 +63,6 @@ public class TestAnnouncerImpl
 
     @AfterMethod
     public void tearDown()
-            throws Exception
     {
         announcer.destroy();
         assertAnnounced();
@@ -72,7 +70,6 @@ public class TestAnnouncerImpl
 
     @Test
     public void testBasic()
-            throws Exception
     {
         assertAnnounced();
 
@@ -83,7 +80,6 @@ public class TestAnnouncerImpl
 
     @Test
     public void startAfterDestroy()
-            throws Exception
     {
         announcer.start();
         announcer.destroy();
@@ -98,7 +94,6 @@ public class TestAnnouncerImpl
 
     @Test
     public void idempotentStart()
-            throws Exception
     {
         announcer.start();
         announcer.start();
@@ -108,7 +103,6 @@ public class TestAnnouncerImpl
 
     @Test
     public void idempotentDestroy()
-            throws Exception
     {
         announcer.start();
         announcer.destroy();
@@ -118,7 +112,6 @@ public class TestAnnouncerImpl
 
     @Test
     public void destroyNoStart()
-            throws Exception
     {
         discoveryClient = spy(discoveryClient);
         announcer = new AnnouncerImpl(discoveryClient, ImmutableSet.of(serviceAnnouncement));

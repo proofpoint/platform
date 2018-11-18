@@ -23,7 +23,6 @@ public class TestNullEventModule extends AbstractTestNullEventClient
 {
     @BeforeMethod
     public void setup()
-            throws Exception
     {
         Injector injector = Guice.createInjector(
                 new NullEventModule()
