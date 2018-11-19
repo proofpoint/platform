@@ -9,6 +9,10 @@ Platform 1.94
   [Bug] We fixed serialization to omit null map values. This had regressed in
   Platform 1.73.
 
+* Maven
+
+  We enabled the RequireUpperBoundDeps rule in maven-enforcer-plugin.
+
 * Library upgrades
 
   - validation-api to 2.0.1 (was 1.1.0)
