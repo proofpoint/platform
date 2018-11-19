@@ -17,6 +17,7 @@ Platform 1.94
 
   - validation-api to 2.0.1 (was 1.1.0)
   - bval-jsr to 2.0.0 (was 1.1.2)
+  - byte-buddy to 1.9.4 (was 1.8.15)
 
 Platform 1.93
 
