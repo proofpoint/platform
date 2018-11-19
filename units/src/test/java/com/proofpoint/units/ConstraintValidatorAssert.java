@@ -15,6 +15,7 @@ package com.proofpoint.units;
 
 import org.assertj.core.api.AbstractAssert;
 
+import javax.validation.ClockProvider;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
@@ -60,6 +61,12 @@ final class ConstraintValidatorAssert<A extends Annotation, T>
 
         @Override
         public String getDefaultConstraintMessageTemplate()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ClockProvider getClockProvider()
         {
             throw new UnsupportedOperationException();
         }
