@@ -9,6 +9,11 @@ Platform 1.94
   [Bug] We fixed serialization to omit null map values. This had regressed in
   Platform 1.73.
 
+* Library upgrades
+
+  - validation-api to 2.0.1 (was 1.1.0)
+  - bval-jsr to 2.0.0 (was 1.1.2)
+
 Platform 1.93
 
 * HttpClient
