@@ -88,7 +88,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class HttpServer
 {
-    private static final String[] ENABLED_PROTOCOLS = {"SSLv2Hello", "TLSv1.1", "TLSv1.2"};
+    private static final String[] ENABLED_PROTOCOLS = {"TLSv1.1", "TLSv1.2"};
     private static final String[] ENABLED_CIPHERS = {
             "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
             "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",

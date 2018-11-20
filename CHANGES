@@ -1,5 +1,9 @@
 Platform 1.94
 
+* HttpServer
+
+  We disabled support for SSL 2.0 compatible hello packets.
+
 * JSON
 
   The @JsonProperty annotation is no longer necessary on parameters to
