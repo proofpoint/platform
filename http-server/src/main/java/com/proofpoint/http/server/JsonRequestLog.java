@@ -21,24 +21,16 @@ import ch.qos.logback.core.encoder.EncoderBase;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.log.Logging;
 import com.proofpoint.units.Duration;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
 
-import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 class JsonRequestLog
         implements RequestLog
 {
-    private final CurrentTimeMillisProvider currentTimeMillisProvider;
     private final Appender<HttpRequestEvent> appender;
-    private final ClientAddressExtractor clientAddressExtractor;
 
-    JsonRequestLog(HttpServerConfig config, CurrentTimeMillisProvider currentTimeMillisProvider, ClientAddressExtractor clientAddressExtractor)
+    JsonRequestLog(HttpServerConfig config)
     {
-        this.currentTimeMillisProvider = currentTimeMillisProvider;
-        this.clientAddressExtractor = clientAddressExtractor;
-
         appender = Logging.createFileAppender(
                 config.getLogPath(),
                 config.getLogMaxHistory(),
@@ -51,25 +43,8 @@ class JsonRequestLog
     }
 
     @Override
-    public void log(
-            Request request,
-            Response response,
-            long beginToDispatchMillis,
-            long beginToEndMillis,
-            long firstToLastContentTimeInMillis,
-            DoubleSummaryStats responseContentInterarrivalStats)
+    public void log(HttpRequestEvent event)
     {
-        HttpRequestEvent event = createHttpRequestEvent(
-                request,
-                response,
-                currentTimeMillisProvider.getCurrentTimeMillis(),
-                beginToDispatchMillis,
-                beginToEndMillis,
-                firstToLastContentTimeInMillis,
-                responseContentInterarrivalStats,
-                clientAddressExtractor
-        );
-
         appender.doAppend(event);
     }
 

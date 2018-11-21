@@ -22,10 +22,11 @@ import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
+import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-public class HttpServerChannelListener
+final class HttpServerChannelListener
         implements Listener
 {
     private static final String REQUEST_BEGIN_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".begin";
@@ -34,10 +35,12 @@ public class HttpServerChannelListener
     private static final String RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".response_content_timestamps";
 
     private final RequestLog logger;
+    private final ClientAddressExtractor clientAddressExtractor;
 
-    public HttpServerChannelListener(RequestLog logger)
+    HttpServerChannelListener(RequestLog logger, ClientAddressExtractor clientAddressExtractor)
     {
         this.logger = requireNonNull(logger, "logger is null");
+        this.clientAddressExtractor = requireNonNull(clientAddressExtractor, "clientAddressExtractor is null");
     }
 
     @Override
@@ -87,12 +90,17 @@ public class HttpServerChannelListener
         }
         long beginToDispatchMillis = NANOSECONDS.toMillis((Long) request.getAttribute(REQUEST_BEGIN_TO_DISPATCH_ATTRIBUTE));
         long beginToEndMillis = NANOSECONDS.toMillis((Long) request.getAttribute(REQUEST_BEGIN_TO_END_ATTRIBUTE));
-        logger.log(request,
+        HttpRequestEvent event = createHttpRequestEvent(
+                request,
                 request.getResponse(),
+                System.currentTimeMillis(),
                 beginToDispatchMillis,
                 beginToEndMillis,
                 firstToLastContentTimeInMillis,
-                processContentTimestamps(contentTimestamps));
+                processContentTimestamps(contentTimestamps),
+                clientAddressExtractor
+        );
+        logger.log(event);
     }
 
     /**

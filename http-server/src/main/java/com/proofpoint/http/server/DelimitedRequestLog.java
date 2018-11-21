@@ -20,13 +20,10 @@ import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.encoder.EncoderBase;
 import com.proofpoint.log.Logging;
 import com.proofpoint.units.Duration;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -39,15 +36,10 @@ class DelimitedRequestLog
 
     private static final DateTimeFormatter ISO_FORMATTER = ISO_OFFSET_DATE_TIME.withZone(ZoneId.systemDefault());
 
-    private final CurrentTimeMillisProvider currentTimeMillisProvider;
     private final Appender<HttpRequestEvent> appender;
-    private final ClientAddressExtractor clientAddressExtractor;
 
-    DelimitedRequestLog(HttpServerConfig config, CurrentTimeMillisProvider currentTimeMillisProvider, ClientAddressExtractor clientAddressExtractor)
+    DelimitedRequestLog(HttpServerConfig config)
     {
-        this.currentTimeMillisProvider = currentTimeMillisProvider;
-        this.clientAddressExtractor = clientAddressExtractor;
-
         appender = Logging.createFileAppender(
                 config.getLogPath(),
                 config.getLogMaxHistory(),
@@ -60,25 +52,8 @@ class DelimitedRequestLog
     }
 
     @Override
-    public void log(
-            Request request,
-            Response response,
-            long beginToDispatchMillis,
-            long beginToEndMillis,
-            long firstToLastContentTimeInMillis,
-            DoubleSummaryStats responseContentInterarrivalStats)
+    public void log(HttpRequestEvent event)
     {
-        HttpRequestEvent event = createHttpRequestEvent(
-                request,
-                response,
-                currentTimeMillisProvider.getCurrentTimeMillis(),
-                beginToDispatchMillis,
-                beginToEndMillis,
-                firstToLastContentTimeInMillis,
-                responseContentInterarrivalStats,
-                clientAddressExtractor
-        );
-
         appender.doAppend(event);
     }
 

@@ -30,7 +30,7 @@ public class TestDelimitedRequestLog
     @Override
     protected void setup(HttpServerConfig httpServerConfig)
     {
-        logger = new DelimitedRequestLog(httpServerConfig, currentTimeMillisProvider, clientAddressExtractor);
+        logger = new DelimitedRequestLog(httpServerConfig);
     }
 
     @Override

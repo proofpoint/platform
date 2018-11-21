@@ -252,7 +252,7 @@ public class TestHttpServerProvider
 
             assertEquals(response.getHeader("X-Protocol"), "HTTP/1.1");
         }
-        verify(requestLog).log(any(), any(), anyLong(), anyLong(), anyLong(), any());
+        verify(requestLog).log(any());
 
         try (JettyHttpClient httpClient = new JettyHttpClient(new HttpClientConfig().setHttp2Enabled(true))) {
             StatusResponse response = httpClient.execute(prepareGet().setUri(httpServerInfo.getHttpUri()).build(), createStatusResponseHandler());

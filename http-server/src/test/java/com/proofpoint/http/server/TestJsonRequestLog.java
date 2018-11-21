@@ -22,7 +22,7 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
     @Override
     protected void setup(HttpServerConfig httpServerConfig)
     {
-        logger = new JsonRequestLog(httpServerConfig, currentTimeMillisProvider, clientAddressExtractor);
+        logger = new JsonRequestLog(httpServerConfig);
     }
 
     @Override
