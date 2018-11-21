@@ -5,7 +5,8 @@ Platform 1.94
   We disabled support for SSL 2.0 compatible hello packets.
 
   We now log the TLS protocol version and cipher suite in the JSON
-  http-request log.
+  http-request log. We also added a HttpServer.TlsRequest.Count metric broken
+  down by protocolVersion and cipherSuite.
 
 * JSON
 

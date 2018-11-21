@@ -25,6 +25,7 @@ import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.RequestStats;
 import com.proofpoint.http.server.TheAdminServlet;
 import com.proofpoint.node.NodeInfo;
+import com.proofpoint.stats.SparseCounterStat;
 import com.proofpoint.stats.SparseTimeStat;
 
 import javax.inject.Inject;
@@ -135,6 +136,12 @@ public class TestingAdminHttpServer extends HttpServer
         public SparseTimeStat requestTimeByCode(int responseCode, int resposeCodeFamily)
         {
             return new SparseTimeStat();
+        }
+
+        @Override
+        public SparseCounterStat tlsRequest(String protocolVersion, String cipherSuite)
+        {
+            return new SparseCounterStat();
         }
     }
 
