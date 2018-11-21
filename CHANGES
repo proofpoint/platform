@@ -4,6 +4,9 @@ Platform 1.94
 
   We disabled support for SSL 2.0 compatible hello packets.
 
+  We now log the TLS protocol version and cipher suite in the JSON
+  http-request log.
+
 * JSON
 
   The @JsonProperty annotation is no longer necessary on parameters to

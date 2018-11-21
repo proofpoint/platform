@@ -17,6 +17,7 @@ import org.eclipse.jetty.server.HttpChannel.Listener;
 import org.eclipse.jetty.server.Request;
 
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLSession;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
@@ -33,6 +34,7 @@ final class HttpServerChannelListener
     private static final String REQUEST_BEGIN_TO_DISPATCH_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".begin_to_dispatch";
     private static final String REQUEST_BEGIN_TO_END_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".begin_to_end";
     private static final String RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".response_content_timestamps";
+    private static final String REQUEST_SSL_SESSION_ATTRIBUTE = "org.eclipse.jetty.servlet.request.ssl_session";
 
     private final RequestLog logger;
     private final ClientAddressExtractor clientAddressExtractor;
@@ -90,9 +92,11 @@ final class HttpServerChannelListener
         }
         long beginToDispatchMillis = NANOSECONDS.toMillis((Long) request.getAttribute(REQUEST_BEGIN_TO_DISPATCH_ATTRIBUTE));
         long beginToEndMillis = NANOSECONDS.toMillis((Long) request.getAttribute(REQUEST_BEGIN_TO_END_ATTRIBUTE));
+        SSLSession sslSession = (SSLSession) request.getAttribute(REQUEST_SSL_SESSION_ATTRIBUTE);
         HttpRequestEvent event = createHttpRequestEvent(
                 request,
                 request.getResponse(),
+                sslSession,
                 System.currentTimeMillis(),
                 beginToDispatchMillis,
                 beginToEndMillis,

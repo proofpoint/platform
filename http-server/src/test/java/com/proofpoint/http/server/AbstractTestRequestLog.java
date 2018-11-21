@@ -27,6 +27,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
@@ -47,6 +48,8 @@ public abstract class AbstractTestRequestLog
     Request request;
     @Mock
     Response response;
+    @Mock
+    SSLSession sslSession;
     @Mock
     Principal principal;
     @Mock
@@ -83,7 +86,9 @@ public abstract class AbstractTestRequestLog
             int responseCode,
             long requestSize,
             long responseSize,
-            Object protocolVersion,
+            String protocolVersion,
+            String tlsProtocolVersion,
+            String tlsCipherSuite,
             long timeToDispatch,
             long timeToRequestEnd,
             long timeResponseContent,
@@ -123,6 +128,8 @@ public abstract class AbstractTestRequestLog
                 .setLogMaxTotalSize(new DataSize(1, Unit.GIGABYTE));
         setup(httpServerConfig);
 
+        when(sslSession.getProtocol()).thenReturn("TLS1.0");
+        when(sslSession.getCipherSuite()).thenReturn("TLS_RSA_WITH_AES_256_CBC_SHA");
         when(principal.getName()).thenReturn(user);
         when(clientAddressExtractor.clientAddressFor(request)).thenReturn("9.9.9.9");
         when(request.getTimeStamp()).thenReturn(timestamp);
@@ -166,6 +173,7 @@ public abstract class AbstractTestRequestLog
         HttpRequestEvent event = createHttpRequestEvent(
                 request,
                 response,
+                sslSession,
                 currentTime,
                 111,
                 222,
@@ -188,10 +196,14 @@ public abstract class AbstractTestRequestLog
                 requestSize,
                 responseSize,
                 "HTTP/2.0",
+                "TLS1.0",
+                "TLS_RSA_WITH_AES_256_CBC_SHA",
                 111,
                 222,
                 333,
-                2, 3, currentTime - request.getTimeStamp());
+                2,
+                3,
+                currentTime - request.getTimeStamp());
         assertEquals(actual, expected);
     }
 }
