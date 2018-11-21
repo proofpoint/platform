@@ -203,10 +203,10 @@ public class HttpServerProvider
         }
 
         if (config.getLogFormat() == LogFormat.TSV) {
-            return new DelimitedRequestLog(config, new SystemCurrentTimeMillisProvider(), clientAddressExtractor);
+            return new DelimitedRequestLog(config);
         }
         else {
-            return new JsonRequestLog(config, new SystemCurrentTimeMillisProvider(), clientAddressExtractor);
+            return new JsonRequestLog(config);
         }
     }
 }

@@ -238,7 +238,7 @@ public class HttpServer
         // register a channel listener if logging is enabled
         HttpServerChannelListener channelListener = null;
         if (requestLog != null) {
-            channelListener = new HttpServerChannelListener(requestLog);
+            channelListener = new HttpServerChannelListener(requestLog, clientAddressExtractor);
         }
 
         // set up HTTP connector

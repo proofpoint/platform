@@ -33,6 +33,7 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
 
+import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.jetty.http.HttpVersion.HTTP_2;
@@ -66,7 +67,6 @@ public abstract class AbstractTestRequestLog
     private int responseCode;
     private String responseContentType;
     private String pathQuery;
-    protected MockCurrentTimeMillisProvider currentTimeMillisProvider;
     protected RequestLog logger;
     private long currentTime;
 
@@ -116,7 +116,6 @@ public abstract class AbstractTestRequestLog
 
         file = File.createTempFile(getClass().getName(), ".log");
 
-        currentTimeMillisProvider = new MockCurrentTimeMillisProvider(timestamp + timeToLastByte);
         HttpServerConfig httpServerConfig = new HttpServerConfig()
                 .setLogPath(file.getAbsolutePath())
                 .setLogMaxHistory(1)
@@ -145,7 +144,7 @@ public abstract class AbstractTestRequestLog
         when(response.getHeader("Content-Type")).thenReturn(responseContentType);
 
         createAndRegisterNewRequestToken();
-        currentTime = currentTimeMillisProvider.getCurrentTimeMillis();
+        currentTime = timestamp + timeToLastByte;
     }
 
     @AfterMethod
@@ -164,7 +163,17 @@ public abstract class AbstractTestRequestLog
         DoubleSummaryStatistics summaryStatistics = new DoubleSummaryStatistics();
         summaryStatistics.accept(1);
         summaryStatistics.accept(3);
-        logger.log(request, response, 111, 222, 333, new DoubleSummaryStats(summaryStatistics));
+        HttpRequestEvent event = createHttpRequestEvent(
+                request,
+                response,
+                currentTime,
+                111,
+                222,
+                333,
+                new DoubleSummaryStats(summaryStatistics),
+                clientAddressExtractor
+        );
+        logger.log(event);
         logger.stop();
 
         String actual = Files.asCharSource(file, UTF_8).read();

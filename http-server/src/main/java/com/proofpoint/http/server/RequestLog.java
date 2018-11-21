@@ -15,18 +15,9 @@
  */
 package com.proofpoint.http.server;
 
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
-
 interface RequestLog
 {
-    void log(
-            Request request,
-            Response response,
-            long beginToDispatchMillis,
-            long beginToEndMillis,
-            long firstToLastContentTimeInMillis,
-            DoubleSummaryStats responseContentInterarrivalStats);
+    void log(HttpRequestEvent event);
 
     void stop();
 }
