@@ -20,6 +20,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.Response;
 
+import javax.net.ssl.SSLSession;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.max;
@@ -28,6 +29,8 @@ import static java.util.Objects.requireNonNull;
 public class StatsRecordingHandler
         implements RequestLog
 {
+    private static final String REQUEST_SSL_SESSION_ATTRIBUTE = "org.eclipse.jetty.servlet.request.ssl_session";
+
     private final RequestStats stats;
     private final DetailedRequestStats detailedRequestStats;
 
@@ -41,8 +44,13 @@ public class StatsRecordingHandler
     public void log(Request request, Response response)
     {
         Duration requestTime = new Duration(max(0, System.currentTimeMillis() - request.getTimeStamp()), TimeUnit.MILLISECONDS);
+        SSLSession sslSession = (SSLSession) request.getAttribute(REQUEST_SSL_SESSION_ATTRIBUTE);
 
         stats.record(request.getContentRead(), response.getContentCount(), requestTime);
         detailedRequestStats.requestTimeByCode(response.getStatus(), response.getStatus() / 100).add(requestTime);
+
+        if (sslSession != null) {
+            detailedRequestStats.tlsRequest(sslSession.getProtocol(), sslSession.getCipherSuite()).add(1);
+        }
     }
 }

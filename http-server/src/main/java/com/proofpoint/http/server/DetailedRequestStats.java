@@ -16,9 +16,12 @@
 package com.proofpoint.http.server;
 
 import com.proofpoint.reporting.Key;
+import com.proofpoint.stats.SparseCounterStat;
 import com.proofpoint.stats.SparseTimeStat;
 
 public interface DetailedRequestStats
 {
     SparseTimeStat requestTimeByCode(@Key("responseCode") int responseCode, @Key("responseCodeFamily") int responseCodeFamily);
+
+    SparseCounterStat tlsRequest(@Key("protocolVersion") String protocolVersion, @Key("cipherSuite") String cipherSuite);
 }
