@@ -36,7 +36,9 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
             int responseCode,
             long requestSize,
             long responseSize,
-            Object protocolVersion,
+            String protocolVersion,
+            String tlsProtocolVersion,
+            String tlsCipherSuite,
             long timeToDispatch,
             long timeToRequestEnd,
             long timeResponseContent,
@@ -45,6 +47,7 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
         return String.format("{\"time\":\"%s\",\"traceToken\":\"%s\",\"sourceIp\":\"%s\"," +
                         "\"method\":\"%s\",\"requestUri\":\"%s\",\"username\":\"%s\",\"userAgent\":\"%s\"," +
                         "\"responseCode\":%d,\"requestSize\":%d,\"responseSize\":%d,\"protocolVersion\":\"%s\"," +
+                        "\"tlsProtocolVersion\":\"%s\",\"tlsCipherSuite\":\"%s\"," +
                         "\"timeToDispatch\":\"%d.00ms\",\"timeToRequestEnd\":\"%d.00ms\"," +
                         "\"timeResponseContent\":\"%d.00ms\",\"responseContentChunk\":{\"count\":%d,\"max\":\"%d.00ms\"}," +
                         "\"timeToLastByte\":\"%d.00ms\"}\n",
@@ -59,6 +62,8 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
                 requestSize,
                 responseSize,
                 protocolVersion,
+                tlsProtocolVersion,
+                tlsCipherSuite,
                 timeToDispatch,
                 timeToRequestEnd,
                 timeResponseContent,

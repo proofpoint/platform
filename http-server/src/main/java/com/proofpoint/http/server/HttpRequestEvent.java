@@ -23,6 +23,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLSession;
 import java.security.Principal;
 import java.time.Instant;
 
@@ -31,13 +32,14 @@ import static java.lang.Math.max;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @JsonPropertyOrder({ "time", "traceToken", "sourceIp", "method", "requestUri", "username", "userAgent",
-        "responseCode", "requestSize", "responseSize", "protocolVersion",
+        "responseCode", "requestSize", "responseSize", "protocolVersion", "tlsProtocolVersion", "tlsCipherSuite",
         "timeToDispatch", "timeToRequestEnd", "timeResponseContent", "responseContentChunk", "timeToLastByte"})
 class HttpRequestEvent
 {
     static HttpRequestEvent createHttpRequestEvent(
             Request request,
             Response response,
+            @Nullable SSLSession sslSession,
             long currentTimeInMillis,
             long beginToDispatchMillis,
             long beginToEndMillis,
@@ -81,7 +83,9 @@ class HttpRequestEvent
                 beginToEndMillis,
                 firstToLastContentTimeInMillis,
                 responseContentInterarrivalStats,
-                request.getHttpVersion().toString()
+                request.getHttpVersion().toString(),
+                sslSession == null ? null : sslSession.getProtocol(),
+                sslSession == null ? null : sslSession.getCipherSuite()
         );
     }
 
@@ -101,6 +105,8 @@ class HttpRequestEvent
     private final long firstToLastContentTimeInMillis;
     private final DoubleSummaryStats responseContentInterarrivalStats;
     private final String protocolVersion;
+    private final String tlsProtocolVersion;
+    private final String tlsCipherSuite;
 
     private HttpRequestEvent(
             Instant timeStamp,
@@ -118,7 +124,9 @@ class HttpRequestEvent
             long beginToEndMillis,
             long firstToLastContentTimeInMillis,
             DoubleSummaryStats responseContentInterarrivalStats,
-            String protocolVersion)
+            String protocolVersion,
+            String tlsProtocolVersion,
+            String tlsCipherSuite)
     {
         this.timeStamp = timeStamp;
         this.traceToken = traceToken;
@@ -136,6 +144,8 @@ class HttpRequestEvent
         this.firstToLastContentTimeInMillis = firstToLastContentTimeInMillis;
         this.responseContentInterarrivalStats = responseContentInterarrivalStats;
         this.protocolVersion = protocolVersion;
+        this.tlsProtocolVersion = tlsProtocolVersion;
+        this.tlsCipherSuite = tlsCipherSuite;
     }
 
     @JsonProperty("time")
@@ -242,5 +252,17 @@ class HttpRequestEvent
     public String getProtocolVersion()
     {
         return protocolVersion;
+    }
+
+    @JsonProperty
+    public String getTlsProtocolVersion()
+    {
+        return tlsProtocolVersion;
+    }
+
+    @JsonProperty
+    public String getTlsCipherSuite()
+    {
+        return tlsCipherSuite;
     }
 }
