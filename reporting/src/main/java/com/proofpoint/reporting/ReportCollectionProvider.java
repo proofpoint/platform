@@ -49,6 +49,7 @@ class ReportCollectionProvider<T> implements Provider<T>
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public T get()
     {
         provided.set(true);

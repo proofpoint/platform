@@ -503,6 +503,7 @@ public abstract class AbstractHttpClientTest
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testPutMethodWithStaticBodyGenerator()
             throws Exception
     {

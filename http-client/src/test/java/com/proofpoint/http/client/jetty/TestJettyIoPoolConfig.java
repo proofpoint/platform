@@ -10,6 +10,7 @@ import static com.proofpoint.configuration.testing.ConfigAssertions.assertLegacy
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertRecordedDefaults;
 import static com.proofpoint.configuration.testing.ConfigAssertions.recordDefaults;
 
+@SuppressWarnings("deprecation")
 public class TestJettyIoPoolConfig
 {
     @Test

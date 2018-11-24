@@ -97,6 +97,7 @@ public class TestJsonEventSerializer
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testEventSerializerStringToken()
             throws Exception
     {
@@ -113,6 +114,7 @@ public class TestJsonEventSerializer
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testEventSerializerNullStringToken()
             throws Exception
     {

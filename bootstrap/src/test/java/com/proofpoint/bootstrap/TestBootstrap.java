@@ -220,6 +220,7 @@ public class TestBootstrap
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testRequiredConfigIgnoresSystemPropertiesAndConfigFile()
             throws Exception
     {
@@ -588,6 +589,7 @@ public class TestBootstrap
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testApplicationName()
             throws Exception
     {
@@ -604,6 +606,7 @@ public class TestBootstrap
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testDynamicApplicationName()
             throws Exception
     {

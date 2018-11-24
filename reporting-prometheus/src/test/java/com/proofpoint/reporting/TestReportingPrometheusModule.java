@@ -202,6 +202,7 @@ public class TestReportingPrometheusModule
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testLegacy()
     {
         Injector injector = createServer(binder -> {

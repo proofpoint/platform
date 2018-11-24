@@ -307,6 +307,7 @@ public class TestReportCollectionFactory
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testLegacyNamedNoParameters()
     {
         TrackInstantiation.reset();

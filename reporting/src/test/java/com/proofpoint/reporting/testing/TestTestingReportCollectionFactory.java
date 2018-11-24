@@ -31,6 +31,7 @@ import static org.testng.Assert.assertNotSame;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertSame;
 
+@SuppressWarnings("deprecation")
 public class TestTestingReportCollectionFactory
 {
     private TestingReportCollectionFactory factory;

@@ -36,6 +36,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
+@SuppressWarnings("deprecation")
 public class TestReportExporter
 {
     private static final Object TESTING_OBJECT = new Object()

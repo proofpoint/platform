@@ -11,6 +11,7 @@ public final class ResponseHandlerUtils
     {
     }
 
+    @SuppressWarnings("deprecation")
     public static RuntimeException propagate(Request request, Throwable exception)
     {
         if (exception instanceof ConnectException) {

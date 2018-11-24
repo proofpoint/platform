@@ -24,6 +24,7 @@ import javax.inject.Provider;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("deprecation")
 class HttpServiceSelectorProvider
         implements Provider<HttpServiceSelector>
 {

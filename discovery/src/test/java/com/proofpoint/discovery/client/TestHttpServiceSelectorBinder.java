@@ -40,6 +40,7 @@ import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.servi
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
 import static org.testng.Assert.assertEquals;
 
+@SuppressWarnings("deprecation")
 public class TestHttpServiceSelectorBinder
 {
     private Injector injector;
