@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 
 import static com.google.common.io.ByteStreams.nullOutputStream;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 
 public class TestSerializingPrivateEvent
 {
@@ -35,7 +36,7 @@ public class TestSerializingPrivateEvent
     {
         JsonEventSerializer serializer = new JsonEventSerializer(new NodeInfo("test"), PrivateEvent.class);
         JsonGenerator generator = new JsonFactory().createGenerator(nullOutputStream());
-        serializer.serialize(new PrivateEvent(), "sample-trace-token", generator);
+        serializer.serialize(new PrivateEvent(), getCurrentTraceToken(), generator);
     }
 
     @EventType("Private")
