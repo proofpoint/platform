@@ -71,7 +71,7 @@ public class SmileBodyGenerator<T>
 
         try {
             if (rootType != null) {
-                objectMapper.writerWithType(rootType).writeValue(jsonGenerator, instance);
+                objectMapper.writerFor(rootType).writeValue(jsonGenerator, instance);
             }
             else {
                 objectMapper.writeValue(jsonGenerator, instance);
