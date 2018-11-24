@@ -35,7 +35,7 @@ import java.net.UnknownHostException;
 import java.util.Set;
 
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
