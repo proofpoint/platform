@@ -26,6 +26,7 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected String getExpectedLogLine(
             long timestamp,
             String clientAddr,

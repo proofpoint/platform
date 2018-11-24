@@ -152,6 +152,7 @@ public class FileUtils
         return file.delete() && success;
     }
 
+    @SuppressWarnings("deprecation")
     public static boolean copyDirectoryContents(File src, File target)
     {
         checkArgument(src.isDirectory(), "Source dir is not a directory: %s", src);

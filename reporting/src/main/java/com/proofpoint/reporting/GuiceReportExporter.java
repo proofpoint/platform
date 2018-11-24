@@ -36,6 +36,7 @@ class GuiceReportExporter
         export(mappings, injector);
     }
 
+    @SuppressWarnings("deprecation")
     private void export(Set<Mapping> mappings, Injector injector)
             throws MalformedObjectNameException
     {

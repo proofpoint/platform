@@ -147,7 +147,7 @@ public class TestingReportCollectionFactory
      * @deprecated Use {@link #createReportCollection(Class, boolean, String, Map)}.
      */
     @Deprecated
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "deprecation"})
     @Override
     public <T> T createReportCollection(Class<T> aClass, String name)
     {

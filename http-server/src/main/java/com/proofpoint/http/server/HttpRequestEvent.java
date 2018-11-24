@@ -53,6 +53,7 @@ class HttpRequestEvent
             user = principal.getName();
         }
 
+        @SuppressWarnings("deprecation")
         String token = getCurrentRequestToken();
 
         long timeToLastByte = max(currentTimeInMillis - request.getTimeStamp(), 0);

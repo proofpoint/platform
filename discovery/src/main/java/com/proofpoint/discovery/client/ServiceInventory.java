@@ -85,6 +85,7 @@ public class ServiceInventory
     }
 
     @Inject
+    @SuppressWarnings("deprecation")
     ServiceInventory(ServiceInventoryConfig serviceInventoryConfig,
             DiscoveryClientConfig discoveryClientConfig,
             NodeInfo nodeInfo,

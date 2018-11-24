@@ -32,6 +32,7 @@ import static java.lang.Thread.currentThread;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
+@SuppressWarnings("deprecation")
 public class TestTraceTokenManager
 {
     private static final ThreadLocal<String> originalThreadName = new ThreadLocal<>();
