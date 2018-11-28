@@ -27,15 +27,6 @@ public class JsonMapperParsingException extends ParsingException
 {
     private final Class<?> type;
 
-    /**
-     * @deprecated Will no longer be public
-     */
-    @Deprecated
-    public JsonMapperParsingException(Class<?> type, Throwable cause)
-    {
-        this(type, "Invalid json", cause);
-    }
-
     private JsonMapperParsingException(Class<?> type, String message, Throwable cause)
     {
         super(message, cause);

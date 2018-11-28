@@ -70,26 +70,6 @@ public class JsonEventSerializer
         serializer.serialize(event, jsonGenerator, null);
     }
 
-    /**
-     * @deprecated Use {@link #serialize(Object, TraceToken, JsonGenerator)}
-     */
-    @Deprecated
-    public <T> void serialize(T event, @Nullable String token, JsonGenerator jsonGenerator)
-            throws IOException
-    {
-        requireNonNull(event, "event is null");
-        requireNonNull(jsonGenerator, "jsonGenerator is null");
-
-        TraceToken traceToken = null;
-        if (token != null) {
-            try (TraceTokenScope scope = registerRequestToken(token)) {
-                traceToken = getCurrentTraceToken();
-            }
-        }
-
-        serialize(event, traceToken, jsonGenerator);
-    }
-
     @SuppressWarnings("unchecked")
     private <T> JsonSerializer<T> getSerializer(T event, @Nullable TraceToken token)
     {

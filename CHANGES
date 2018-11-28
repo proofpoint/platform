@@ -1,3 +1,17 @@
+Platform 1.96
+
+* Deprecation removals
+
+  We removed the following deprecated APIs:
+
+  - ConfigRecord.createConfigRecord()
+  - ConfigurationValidator(ConfigurationFactory, WarningsMonitor) constructor
+  - HttpServiceBalancerFactory.createHttpServiceBalancer(String,
+    ServiceSelectorConfig, NodeInfo)
+  - JsonEventSerializer.serialize(Object, String, JsonGenerator)
+  - HttpServiceBalancerImpl(String, HttpServiceBalancerStats)
+  - JsonMapperParsingException constructor
+
 Platform 1.95
 
 * HttpClient
