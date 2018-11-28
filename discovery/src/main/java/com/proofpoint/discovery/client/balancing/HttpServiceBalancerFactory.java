@@ -56,15 +56,6 @@ public final class HttpServiceBalancerFactory
         this.reportCollectionFactory = requireNonNull(reportCollectionFactory, "reportCollectionFactory is null");
     }
 
-    /**
-     * @deprecated Use {@link #createHttpServiceBalancer(String, ServiceSelectorConfig, HttpServiceBalancerConfig, NodeInfo)}.
-     */
-    @Deprecated
-    public HttpServiceBalancer createHttpServiceBalancer(String type, ServiceSelectorConfig selectorConfig, NodeInfo nodeInfo)
-    {
-        return createHttpServiceBalancer(type, selectorConfig, new HttpServiceBalancerConfig(), nodeInfo);
-    }
-
     public HttpServiceBalancer createHttpServiceBalancer(String type, ServiceSelectorConfig selectorConfig, HttpServiceBalancerConfig balancerConfig, NodeInfo nodeInfo)
     {
         requireNonNull(type, "type is null");
