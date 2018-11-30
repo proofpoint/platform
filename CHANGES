@@ -1,3 +1,16 @@
+Platform 1.95
+
+* HttpClient
+
+ We renamed the HttpClient.IoPool.CONFIGPREFIX.FreeThreadCount metric to
+ HttpClient.QUALIFIER.IoPool.FreeThreadCount. This was done in order to fix
+ startup failures introduced in Platform 1.93 caused by a duplicate metric
+ name when using a library that had two HttpClients bound with the same config
+ prefix but different qualifiers (and filters).
+
+ We also fixed a bug where non-balanced HttpClients did not report request
+ metrics.
+
 Platform 1.94
 
 * HttpServer

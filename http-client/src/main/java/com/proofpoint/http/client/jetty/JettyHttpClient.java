@@ -62,6 +62,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.proofpoint.http.client.jetty.AuthorizationPreservingHttpClient.setPreserveAuthorization;
+import static com.proofpoint.http.client.jetty.Stats.stats;
 import static java.lang.Math.max;
 import static java.lang.Math.toIntExact;
 import static java.util.Objects.requireNonNull;
@@ -98,7 +99,7 @@ public class JettyHttpClient
     private final long maxContentLength;
     private final Long requestTimeoutMillis;
     private final long idleTimeoutMillis;
-    private final RequestStats stats = new RequestStats();
+    private final Stats stats;
     private final CachedDistribution queuedRequestsPerDestination;
     private final CachedDistribution activeConnectionsPerDestination;
     private final CachedDistribution idleConnectionsPerDestination;
@@ -113,7 +114,6 @@ public class JettyHttpClient
     private final Exception creationLocation = new Exception();
     private final String name;
     private final AtomicLong lastLoggedJettyState = new AtomicLong();
-    private final IoPoolStats ioPoolStats;
 
     public JettyHttpClient()
     {
@@ -214,7 +214,7 @@ public class JettyHttpClient
 
         httpClient.setByteBufferPool(new MappedByteBufferPool());
         QueuedThreadPool executor = createExecutor(name, config.getMinThreads(), config.getMaxThreads());
-        ioPoolStats = new IoPoolStats(executor);
+        stats = stats(executor);
         httpClient.setExecutor(executor);
         // add executor as a managed bean to get its state in the client dumps
         httpClient.addBean(executor, true);
@@ -538,9 +538,13 @@ public class JettyHttpClient
         return requestFilters;
     }
 
+    /**
+     * @deprecated Will be removed.
+     */
+    @Deprecated
     public IoPoolStats getIoPoolStats()
     {
-        return ioPoolStats;
+        return stats.getIoPool();
     }
 
     @Override

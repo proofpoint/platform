@@ -93,11 +93,13 @@ public class HttpClientBinder
 {
     private final Binder binder;
     private final Binder rootBinder;
+    private final boolean isPrivate;
 
-    private HttpClientBinder(Binder binder, Binder rootBinder)
+    private HttpClientBinder(Binder binder, Binder rootBinder, boolean isPrivate)
     {
         this.binder = requireNonNull(binder, "binder is null").skipSources(getClass());
         this.rootBinder = requireNonNull(rootBinder, "rootBinder is null");
+        this.isPrivate = isPrivate;
     }
 
     /**
@@ -107,7 +109,7 @@ public class HttpClientBinder
      */
     public static HttpClientBinder httpClientBinder(Binder binder)
     {
-        return new HttpClientBinder(binder, binder);
+        return new HttpClientBinder(binder, binder, false);
     }
 
     /**
@@ -123,7 +125,7 @@ public class HttpClientBinder
      */
     public static HttpClientBinder httpClientPrivateBinder(Binder privateBinder, Binder rootBinder)
     {
-        return new HttpClientBinder(privateBinder, rootBinder);
+        return new HttpClientBinder(privateBinder, rootBinder, true);
     }
 
     /**
@@ -135,7 +137,7 @@ public class HttpClientBinder
      */
     public HttpClientBindingBuilder bindHttpClient(String name, Class<? extends Annotation> annotation)
     {
-        HttpClientModule module = new HttpClientModule(name, annotation, rootBinder);
+        HttpClientModule module = new HttpClientModule(name, annotation, rootBinder, isPrivate);
         binder.install(module);
         HttpClientBindOptions options = new HttpClientBindOptions();
         binder.bind(HttpClientBindOptions.class).annotatedWith(annotation).toInstance(options);
