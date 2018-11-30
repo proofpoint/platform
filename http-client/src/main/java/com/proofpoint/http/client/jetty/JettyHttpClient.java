@@ -538,7 +538,8 @@ public class JettyHttpClient
         return requestFilters;
     }
 
-    public IoPoolStats getIoPoolStats()
+    @Nested
+    public IoPoolStats getIoPool()
     {
         return ioPoolStats;
     }

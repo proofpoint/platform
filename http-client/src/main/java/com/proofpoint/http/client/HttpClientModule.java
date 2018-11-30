@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -25,7 +24,6 @@ import com.google.inject.TypeLiteral;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.client.jetty.JettyIoPoolConfig;
 import com.proofpoint.log.Logger;
-import com.proofpoint.reporting.ReportExporter;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -34,8 +32,6 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
-import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
@@ -136,7 +132,6 @@ public class HttpClientModule
             checkState(client == null, "client already created");
 
             HttpClientConfig config = injector.getInstance(Key.get(HttpClientConfig.class, annotation));
-            ReportExporter reportExporter = injector.getInstance(ReportExporter.class);
 
             Set<HttpRequestFilter> filters = new HashSet<>(injector.getInstance(Key.get(new TypeLiteral<Set<HttpRequestFilter>>() {}, annotation)));
             HttpClientBindOptions httpClientBindOptions = injector.getInstance(Key.get(HttpClientBindOptions.class, annotation));
@@ -146,7 +141,6 @@ public class HttpClientModule
             }
 
             client = new JettyHttpClient(name, config, filters);
-            reportExporter.export(client.getIoPoolStats(), false, "HttpClient.IoPool." + LOWER_HYPHEN.to(UPPER_CAMEL, name), ImmutableMap.of());
 
             injector = null;
             return client;
