@@ -141,13 +141,17 @@ public abstract class AbstractHttpClientTest
         }
     }
 
-    public abstract <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)
-            throws Exception;
+    public final <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)
+            throws Exception
+    {
+        return executeRequest(createClientConfig(), request, responseHandler);
+    }
 
     public final <T, E extends Exception> T executeRequest(HttpClientConfig config, Request request, ResponseHandler<T, E> responseHandler)
             throws Exception
     {
         try (ClientTester clientTester = clientTester(config)) {
+            stats = clientTester.getRequestStats();
             return clientTester.executeRequest(request, responseHandler);
         }
     }
@@ -159,16 +163,18 @@ public abstract class AbstractHttpClientTest
     {
         <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)
                 throws Exception;
+
+        RequestStats getRequestStats();
     }
 
     @BeforeSuite
-    public void setupSuite()
+    public final void setupSuite()
     {
         Logging.initialize();
     }
 
     @BeforeMethod
-    public void abstractSetup()
+    public final void abstractSetup()
             throws Exception
     {
         servlet = new EchoServlet();
@@ -221,7 +227,7 @@ public abstract class AbstractHttpClientTest
     }
 
     @AfterMethod(alwaysRun = true)
-    public void abstractTeardown()
+    public final void abstractTeardown()
             throws Exception
     {
         if (server != null) {
@@ -439,11 +445,16 @@ public abstract class AbstractHttpClientTest
                 .setUri(uri)
                 .build();
 
-        StatusResponse response1 = executeRequest(request, createStatusResponseHandler());
-        Thread.sleep(1000);
-        StatusResponse response2 = executeRequest(request, createStatusResponseHandler());
-        Thread.sleep(1000);
-        StatusResponse response3 = executeRequest(request, createStatusResponseHandler());
+        StatusResponse response1;
+        StatusResponse response2;
+        StatusResponse response3;
+        try (ClientTester clientTester = clientTester(createClientConfig())) {
+            response1 = clientTester.executeRequest(request, createStatusResponseHandler());
+            Thread.sleep(1000);
+            response2 = clientTester.executeRequest(request, createStatusResponseHandler());
+            Thread.sleep(1000);
+            response3 = clientTester.executeRequest(request, createStatusResponseHandler());
+        }
 
         assertNotNull(response1.getHeader("remotePort"));
         assertNotNull(response2.getHeader("remotePort"));
