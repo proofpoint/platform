@@ -476,7 +476,7 @@
                 <plugin>
                     <groupId>org.gaul</groupId>
                     <artifactId>modernizer-maven-plugin</artifactId>
-                    <version>1.7.0</version>
+                    <version>1.7.1</version>
                     <configuration>
                         <skip>${platform.check.skip-modernizer}</skip>
                         <failOnViolations>${platform.check.fail-modernizer}</failOnViolations>
