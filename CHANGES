@@ -11,6 +11,10 @@ Platform 1.95
  We also fixed a bug where non-balanced HttpClients did not report request
  metrics.
 
+* Maven plugin upgrades
+
+ - modernizer-maven-plugin to 1.7.1 (was 1.7.0)
+
 Platform 1.94
 
 * HttpServer
