@@ -12,6 +12,13 @@ Platform 1.96
   - HttpServiceBalancerImpl(String, HttpServiceBalancerStats)
   - JsonMapperParsingException constructor
 
+* Library upgrades
+
+  - Jackson to 2.9.8 (was 2.9.7) (fixes deserialization vulnerabilities
+    CVE-2018-19360, -19361, and -19362 when using @JsonTypeInfo or
+    "default typing". Fixes performance issue with malicious BigDecimal input
+    CVE-2018-1000873.)
+
 Platform 1.95
 
 * HttpClient
