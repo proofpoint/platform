@@ -12,6 +12,9 @@ Platform 1.96
   - HttpServiceBalancerImpl(String, HttpServiceBalancerStats)
   - JsonMapperParsingException constructor
 
+* We configured duplicate-finder-maven-plugin to ignore module-info classes
+  that are in subdirectories.
+
 * Library upgrades
 
   - Jackson to 2.9.8 (was 2.9.7) (fixes deserialization vulnerabilities
