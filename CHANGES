@@ -1,3 +1,13 @@
+Platform 1.97
+
+* JAX-RS
+
+  We added a filter to attach the Strict-Transport-Security header
+  to responses from all resources. We added configuration options
+  "jaxrs.hsts.max-age", "jaxrs.hsts.include-sub-domains", and
+  "jaxrs.hsts.preload" for configuring the contents of the header. The
+  filter is enabled by configuring a value for the max age.
+
 Platform 1.96
 
 * Deprecation removals

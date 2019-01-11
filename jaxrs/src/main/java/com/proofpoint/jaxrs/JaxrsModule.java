@@ -31,7 +31,6 @@ import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.reporting.InRotationResource;
 import com.proofpoint.reporting.LivenessResource;
 import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -94,6 +93,7 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
         jaxrsBinder(binder).bind(InRotationResource.class);
         jaxrsBinder(binder).bind(LivenessResource.class);
+        jaxrsBinder(binder).bind(HstsResponseFilter.class);
 
         bindConfig(binder).bind(JaxrsConfig.class);
 
