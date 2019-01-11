@@ -1,3 +1,13 @@
+Platform 1.97
+
+* JAX-RS
+
+  We added an @HSTS annotation to attach the Strict-Transport-Security header
+  to all responses from annotated resource classes or methods. We added
+  configuration options "jaxrs.hsts.max-age-seconds",
+  "jaxrs.hsts.include-sub-domains", and "jaxrs.hsts.preload" for configuring
+  the contents of the header.
+
 Platform 1.96
 
 * Deprecation removals

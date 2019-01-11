@@ -94,6 +94,7 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
         jaxrsBinder(binder).bind(InRotationResource.class);
         jaxrsBinder(binder).bind(LivenessResource.class);
+        jaxrsBinder(binder).bind(HSTSResponseFilter.class);
 
         bindConfig(binder).bind(JaxrsConfig.class);
 

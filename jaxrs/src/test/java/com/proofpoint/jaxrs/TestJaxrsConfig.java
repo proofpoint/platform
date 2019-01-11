@@ -15,6 +15,9 @@ public class TestJaxrsConfig
     public void testDefaults()
     {
         assertRecordedDefaults(ConfigAssertions.recordDefaults(JaxrsConfig.class)
+                .setHstsMaxAge(31536000)
+                .setIncludeSubDomains(false)
+                .setPreload(false)
         );
     }
 
@@ -22,9 +25,15 @@ public class TestJaxrsConfig
     public void testExplicitPropertyMappings()
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
+                .put("jaxrs.hsts.max-age-seconds", "600")
+                .put("jaxrs.hsts.include-sub-domains", "true")
+                .put("jaxrs.hsts.preload", "true")
                 .build();
 
-        JaxrsConfig expected = new JaxrsConfig();
+        JaxrsConfig expected = new JaxrsConfig()
+                .setHstsMaxAge(600)
+                .setIncludeSubDomains(true)
+                .setPreload(true);
 
         assertFullMapping(properties, expected);
     }
