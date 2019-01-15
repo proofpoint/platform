@@ -29,10 +29,13 @@ import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.testing.Closeables;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import javax.servlet.Filter;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Map;
 
@@ -44,20 +47,18 @@ import static com.proofpoint.http.client.StatusResponseHandler.createStatusRespo
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.jaxrs.JaxrsModule.explicitJaxrsModule;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
-public class TestHstsInHttpServer
+public class TestHstsResponseFilter
 {
     private static final String JAVAX_NET_SSL_TRUST_STORE = "javax.net.ssl.trustStore";
-    private JettyHttpClient client;
+    private static JettyHttpClient client;
 
     private LifeCycleManager lifeCycleManager;
     private TestingHttpServer server;
     private String originalTrustStore;
 
-
-    @BeforeMethod
+    @BeforeClass
     public void setup()
     {
         originalTrustStore = System.getProperty(JAVAX_NET_SSL_TRUST_STORE);
@@ -72,20 +73,17 @@ public class TestHstsInHttpServer
         if (lifeCycleManager != null) {
             lifeCycleManager.stop();
         }
+    }
 
+    @AfterClass(alwaysRun = true)
+    public void teardownClass()
+    {
         if (originalTrustStore != null) {
             System.setProperty(JAVAX_NET_SSL_TRUST_STORE, originalTrustStore);
         }
         else {
             System.clearProperty(JAVAX_NET_SSL_TRUST_STORE);
         }
-
-        Closeables.closeQuietly(client);
-    }
-
-    @AfterClass(alwaysRun = true)
-    public void teardownClass()
-    {
         Closeables.closeQuietly(client);
     }
 
@@ -93,7 +91,7 @@ public class TestHstsInHttpServer
     public void testHstsNotReturnedWithHttp()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(HSTSResource.class), ImmutableMap.of());
+        createServer(ImmutableMap.of());
 
         Request request = Request.builder()
                 .setUri(uriBuilderFrom(server.getBaseUrl().resolve("/test/hsts")).build())
@@ -108,10 +106,9 @@ public class TestHstsInHttpServer
     public void testHstsWithConfig()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(HSTSResource.class),
-                ImmutableMap.of("jaxrs.hsts.max-age-seconds", "600",
-                        "jaxrs.hsts.include-sub-domains", "true",
-                        "jaxrs.hsts.preload", "true"));
+        createServer(ImmutableMap.of("jaxrs.hsts.max-age", "600s",
+                "jaxrs.hsts.include-sub-domains", "true",
+                "jaxrs.hsts.preload", "true"));
         Request request = Request.builder()
                 .setUri(uriBuilderFrom(server.getHttpServerInfo().getHttpsUri().resolve("/test/hsts")).build())
                 .setMethod("GET")
@@ -119,16 +116,14 @@ public class TestHstsInHttpServer
         StatusResponse response = client.execute(request, createStatusResponseHandler());
         assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
         String hstsHeader = response.getHeader("Strict-Transport-Security");
-        assertNotNull(hstsHeader);
         assertEquals(hstsHeader, "max-age=600; includeSubDomains; preload");
     }
 
     @Test
-    public void testHstsWithoutConfig()
+    public void testHstsWithoutOptionalConfig()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(HSTSResource.class),
-                ImmutableMap.of());
+        createServer(ImmutableMap.of("jaxrs.hsts.max-age", "31536000s"));
         Request request = Request.builder()
                 .setUri(uriBuilderFrom(server.getHttpServerInfo().getHttpsUri().resolve("/test/hsts")).build())
                 .setMethod("GET")
@@ -136,34 +131,24 @@ public class TestHstsInHttpServer
         StatusResponse response = client.execute(request, createStatusResponseHandler());
         assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
         String hstsHeader = response.getHeader("Strict-Transport-Security");
-        assertNotNull(hstsHeader);
         assertEquals(hstsHeader, "max-age=31536000");
     }
 
     @Test
-    public void testHstsOnlyOnAnnotatedMethod()
+    public void testHstsDisabledIfMaxAgeNotSet()
             throws Exception
     {
-        createServer(binder -> jaxrsBinder(binder).bind(HSTSResource.class),
-                ImmutableMap.of());
+        createServer(ImmutableMap.of());
         Request request = Request.builder()
-                .setUri(uriBuilderFrom(server.getHttpServerInfo().getHttpsUri().resolve("/test/hsts")).build())
+                .setUri(uriBuilderFrom(server.getBaseUrl().resolve("/test/hsts")).build())
                 .setMethod("GET")
                 .build();
         StatusResponse response = client.execute(request, createStatusResponseHandler());
         assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
-        assertNotNull(response.getHeader("Strict-Transport-Security"));
-
-        request = Request.builder()
-                .setUri(uriBuilderFrom(server.getHttpServerInfo().getHttpsUri().resolve("/test/nohsts")).build())
-                .setMethod("GET")
-                .build();
-        response = client.execute(request, createStatusResponseHandler());
-        assertEquals(response.getStatusCode(), Status.OK.getStatusCode());
         assertNull(response.getHeader("Strict-Transport-Security"));
     }
 
-    private void createServer(Module module, Map<String, String> config)
+    private void createServer(Map<String, String> config)
             throws Exception
     {
         NodeInfo nodeInfo = new NodeInfo("test-application", new NodeConfig()
@@ -180,7 +165,7 @@ public class TestHstsInHttpServer
                         new JsonModule(),
                         new ReportingModule(),
                         new SslTestingHttpServerModule(),
-                        module)
+                        binder -> jaxrsBinder(binder).bind(HstsResource.class))
                 .setRequiredConfigurationProperties(config)
                 .initialize();
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);
@@ -215,6 +200,17 @@ public class TestHstsInHttpServer
             newSetBinder(binder, Filter.class, TheServlet.class);
             newSetBinder(binder, HttpResourceBinding.class, TheServlet.class);
             binder.bind(AnnouncementHttpServerInfo.class).to(LocalAnnouncementHttpServerInfo.class);
+        }
+    }
+
+    @Path("/test")
+    public static class HstsResource
+    {
+        @GET
+        @Path("/hsts")
+        public Response hsts()
+        {
+            return Response.ok().build();
         }
     }
 }

@@ -2,22 +2,28 @@ package com.proofpoint.jaxrs;
 
 import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.DefunctConfig;
+import com.proofpoint.units.Duration;
+import com.proofpoint.units.MinDuration;
+
+import javax.annotation.Nullable;
 
 @DefunctConfig("jaxrs.query-params-as-form-params")
 public class JaxrsConfig
 {
-    private int hstsMaxAge = 31536000;
+    private Duration hstsMaxAge = null;
     private boolean includeSubDomains = false;
     private boolean preload = false;
 
-    @Config("jaxrs.hsts.max-age-seconds")
-    public JaxrsConfig setHstsMaxAge(int hstsMaxAge)
+    @Config("jaxrs.hsts.max-age")
+    public JaxrsConfig setHstsMaxAge(Duration hstsMaxAge)
     {
         this.hstsMaxAge = hstsMaxAge;
         return this;
     }
 
-    public int getHstsMaxAge()
+    @Nullable
+    @MinDuration(value = "1m", message = "must be greater than or equal to 1m")
+    public Duration getHstsMaxAge()
     {
         return hstsMaxAge;
     }
