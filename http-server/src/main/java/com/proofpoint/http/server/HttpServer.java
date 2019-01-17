@@ -416,6 +416,7 @@ public class HttpServer
         configuration.addCustomizer(new SecureRequestCustomizer());
 
         SslContextFactory sslContextFactory = new SslContextFactory();
+        sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
         sslContextFactory.setKeyStorePath(config.getKeystorePath());
         sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
         sslContextFactory.setExcludeProtocols();
