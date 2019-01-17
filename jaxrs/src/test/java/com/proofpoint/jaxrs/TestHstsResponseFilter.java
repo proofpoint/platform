@@ -59,7 +59,7 @@ public class TestHstsResponseFilter
     private String originalTrustStore;
 
     @BeforeClass
-    public void setup()
+    public void setupClass()
     {
         originalTrustStore = System.getProperty(JAVAX_NET_SSL_TRUST_STORE);
         System.setProperty(JAVAX_NET_SSL_TRUST_STORE, getResource("localhost.keystore").getPath());
@@ -72,6 +72,7 @@ public class TestHstsResponseFilter
     {
         if (lifeCycleManager != null) {
             lifeCycleManager.stop();
+            lifeCycleManager = null;
         }
     }
 

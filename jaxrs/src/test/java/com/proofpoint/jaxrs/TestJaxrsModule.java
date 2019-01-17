@@ -62,6 +62,7 @@ public class TestJaxrsModule
     {
         if (lifeCycleManager != null) {
             lifeCycleManager.stop();
+            lifeCycleManager = null;
         }
     }
 

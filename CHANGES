@@ -6,7 +6,7 @@ Platform 1.97
   to responses from all resources. We added configuration options
   "jaxrs.hsts.max-age", "jaxrs.hsts.include-sub-domains", and
   "jaxrs.hsts.preload" for configuring the contents of the header. The
-  filter is enabled by setting the max age to a non-null duration.
+  filter is enabled by configuring a value for the max age.
 
 Platform 1.96
 
