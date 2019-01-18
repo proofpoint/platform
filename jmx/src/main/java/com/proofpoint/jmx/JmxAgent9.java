@@ -63,6 +63,7 @@ class JmxAgent9
                     properties.setProperty("com.sun.management.jmxremote.rmi.port", Integer.toString(serverPort));
                     properties.setProperty("com.sun.management.jmxremote.authenticate", "false");
                     properties.setProperty("com.sun.management.jmxremote.ssl", "false");
+                    properties.setProperty("java.rmi.server.hostname", "127.0.0.1");
                     virtualMachine.startManagementAgent(properties);
                 }
                 finally {

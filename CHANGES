@@ -1,3 +1,10 @@
+Platform 1.98
+
+* JMX
+
+  We now configure the "java.rmi.server.hostname" property to "127.0.0.1"
+  when JMX is enabled. This permits enabling JMX inside containers.
+
 Platform 1.97
 
 * JAX-RS
