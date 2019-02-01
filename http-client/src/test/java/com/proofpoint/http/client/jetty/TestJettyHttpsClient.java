@@ -79,8 +79,7 @@ public class TestJettyHttpsClient
         super.testConnectTimeout();
     }
 
-    // https://github.com/eclipse/jetty.project/issues/1199
-    @Test(expectedExceptions = {SSLHandshakeException.class, EOFException.class}, enabled = false)
+    @Test(expectedExceptions = {SSLHandshakeException.class, EOFException.class})
     public void testCertHostnameMismatch()
             throws Exception
     {
