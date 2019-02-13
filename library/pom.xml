@@ -31,6 +31,7 @@
     </developers>
 
     <properties>
+        <project.basedir>.</project.basedir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.targetJdk>1.8</project.build.targetJdk>
         <project.report.outputEncoding>UTF-8</project.report.outputEncoding>
@@ -1724,17 +1725,17 @@
                                             <inline>
                                                 <files>
                                                     <file>
-                                                        <source>target/sealights/sl-test-listener.jar</source>
+                                                        <source>${project.basedir}/target/sealights/sl-test-listener.jar</source>
                                                         <destName>sl-test-listener.jar</destName>
                                                         <outputDirectory>lib/</outputDirectory>
                                                     </file>
                                                     <file>
-                                                        <source>buildSessionId.txt</source>
+                                                        <source>${project.basedir}/buildSessionId.txt</source>
                                                         <destName>buildSessionId.txt</destName>
                                                         <outputDirectory>lib/</outputDirectory>
                                                     </file>
                                                     <file>
-                                                        <source>${SL_TOKEN_FILE}</source>
+                                                        <source>${project.basedir}/${SL_TOKEN_FILE}</source>
                                                         <destName>sl-token.txt</destName>
                                                         <fileMode>0644</fileMode>
                                                         <outputDirectory>lib/</outputDirectory>
