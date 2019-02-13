@@ -5,6 +5,13 @@ Platform 1.98
   We now configure the "java.rmi.server.hostname" property to "127.0.0.1"
   when JMX is enabled. This permits enabling JMX inside containers.
 
+* Docker
+
+  The Sealights integration now copies the necessary files relative to the
+  value of the "project.basedir" maven property, which defaults to ".". Maven
+  subprojects that need Sealights integration in their generated Docker image
+  will need to override that property in the subproject's pom.xml.
+
 Platform 1.97
 
 * JAX-RS
