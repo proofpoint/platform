@@ -1,3 +1,10 @@
+Platform 2.00
+
+* Launcher
+
+  [Bug] When running in a Docker container, pass termination signals to the
+  child server process.
+
 Platform 1.99
 
 * JMX

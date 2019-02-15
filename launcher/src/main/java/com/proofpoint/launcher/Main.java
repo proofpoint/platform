@@ -537,6 +537,15 @@ public final class Main
             }
 
             if (!daemon) {
+                Process childCopy = child;
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    childCopy.destroy();
+                    try {
+                        childCopy.waitFor();
+                    }
+                    catch (InterruptedException ignored) {
+                    }
+                }));
                 try {
                     System.exit(child.waitFor());
                 }
