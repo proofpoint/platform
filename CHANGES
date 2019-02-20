@@ -5,6 +5,10 @@ Platform 2.00
   [Bug] When running in a Docker container, pass termination signals to the
   child server process.
 
+* Library Upgrades
+
+  - Jetty to 9.4.15 (was 9.4.14)
+
 Platform 1.99
 
 * JMX
