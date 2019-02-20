@@ -8,6 +8,7 @@ Platform 2.00
 * Library Upgrades
 
   - Jetty to 9.4.15 (was 9.4.14)
+  - slf4j to 1.7.26 (was 1.7.25)
 
 Platform 1.99
 
