@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Objects.requireNonNull;
@@ -50,7 +51,7 @@ public final class LifeCycleManager
     private final ConcurrentLinkedQueue<Object> stopTrafficInstances = new ConcurrentLinkedQueue<>();
     private final LifeCycleMethodsMap methodsMap;
     private final LifeCycleConfig config;
-    private final AtomicReference<Thread> shutdownHook = new AtomicReference<>();
+    private final CountDownLatch stoppedLatch = new CountDownLatch(1);
 
     private enum State
     {
@@ -124,9 +125,8 @@ public final class LifeCycleManager
                 log.error(e, "Trying to shut down");
             }
         });
-        shutdownHook.set(thread);
         Runtime.getRuntime().addShutdownHook(thread);
-        Logging.addShutdownHookToWaitFor(thread);
+        Logging.addShutdownLatchToWaitFor(stoppedLatch);
 
         state.set(State.STARTED);
         log.info("Life cycle startup complete. System ready.");
@@ -150,16 +150,6 @@ public final class LifeCycleManager
             return;
         }
 
-        Thread thread = shutdownHook.getAndSet(null);
-        if (thread != null) {
-            try {
-                Runtime.getRuntime().removeShutdownHook(thread);
-            }
-            catch (IllegalStateException ignored) {
-            }
-            Logging.removeShutdownHookToWaitFor(thread);
-        }
-
         log.info("Life cycle stopping...");
         stopList(stopTrafficInstances, StopTraffic.class);
 
@@ -176,6 +166,8 @@ public final class LifeCycleManager
 
         state.set(State.STOPPED);
         log.info("Life cycle stopped.");
+
+        stoppedLatch.countDown();
     }
 
     private void stopList(Queue<Object> instances, Class<? extends Annotation> annotation)

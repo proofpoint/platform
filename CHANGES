@@ -1,5 +1,7 @@
 Platform 2.01
 
+* [Bug] Fixed deadlock during graceful shutdown.
+
 * Library upgrades
 
   - Base Docker image to proofpoint/platform-zulu-8:1.0
