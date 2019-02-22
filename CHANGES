@@ -1,3 +1,12 @@
+Platform 2.01
+
+* Library upgrades
+
+  - Base Docker image to proofpoint/platform-zulu-8:1.0
+    (was azul/zulu-openjdk-debian:8u192)
+  
+    Uses "dumb-init" to better handle pid 1 responsibilites   
+
 Platform 2.00
 
 * Launcher
