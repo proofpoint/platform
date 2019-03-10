@@ -1,3 +1,9 @@
+Platform 2.02
+
+* Library Upgrades
+
+  - Guava to 27.1-jre (was 27.0.1-jre)
+
 Platform 2.01
 
 * [Bug] Fixed deadlock during graceful shutdown.
