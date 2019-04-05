@@ -3,6 +3,8 @@ Platform 2.02
 * Library Upgrades
 
   - Guava to 27.1-jre (was 27.0.1-jre)
+  - Base Docker image to proofpoint/platform-zulu-8:1.1
+    based on 8u202 (was proofpoint/platform-zulu-8:1.0)
 
 Platform 2.01
 
