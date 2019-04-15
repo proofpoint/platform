@@ -57,7 +57,6 @@ import static com.proofpoint.testing.Assertions.assertNotEquals;
 import static com.proofpoint.testing.Closeables.closeQuietly;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
@@ -299,6 +298,22 @@ public class TestHttpServerProvider
             assertEquals(response.getStatusCode(), HttpServletResponse.SC_OK);
         }
         assertNull(requestLog, "request log");
+    }
+
+    @Test
+    public void testLogOnExceptionNotReadingBody()
+            throws Exception
+    {
+        createServer(new ErrorServlet());
+        lifeCycleManager.start();
+
+        try (JettyHttpClient httpClient = new JettyHttpClient()) {
+            StatusResponse response = httpClient.execute(preparePut().setUri(httpServerInfo.getHttpUri()).setBodySource(createStaticBodyGenerator("{}", UTF_8)).build(), createStatusResponseHandler());
+
+            assertEquals(response.getStatusCode(), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+        server.stop();
+        verify(requestLog).log(any());
     }
 
     @Test
