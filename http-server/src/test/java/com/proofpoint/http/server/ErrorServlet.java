@@ -27,4 +27,10 @@ class ErrorServlet
     {
         throw new RuntimeException("test error");
     }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp)
+    {
+        throw new RuntimeException("test error");
+    }
 }
