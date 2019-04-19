@@ -1,3 +1,10 @@
+Platform 2.04
+
+* Library Upgrades
+
+  - Base Docker image to proofpoint/platform-zulu-8:1.2
+    based on 8u212 (was proofpoint/platform-zulu-8:1.1)
+
 Platform 2.03
 
 * TLS 1.3
