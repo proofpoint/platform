@@ -2,6 +2,7 @@ Platform 2.04
 
 * Library Upgrades
 
+  - Jetty to 9.4.17 (was 9.4.15) (CVE-2019-10241, -10246, -10247)
   - Base Docker image to proofpoint/platform-zulu-8:1.2
     based on 8u212 (was proofpoint/platform-zulu-8:1.1)
 
