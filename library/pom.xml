@@ -84,7 +84,7 @@
         <platform.check.fail-modernizer>false</platform.check.fail-modernizer>
 
         <dep.auto-value.version>1.6.2</dep.auto-value.version>
-        <dep.jetty.version>9.4.17.v20190418</dep.jetty.version>
+        <dep.jetty.version>9.4.18.v20190429</dep.jetty.version>
         <dep.guava.version>27.1-jre</dep.guava.version>
         <dep.guice.version>4.2.2</dep.guice.version>
         <dep.slf4j.version>1.7.26</dep.slf4j.version>
