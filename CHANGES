@@ -3,6 +3,7 @@ Platform 2.05
 * Library Upgrades
   - Jetty 9.4.18 (was 9.4.17) fixes server becomes unresponsive after sitting
     idle from a load spike.
+  - Jackson to 2.9.9 (was 2.9.8) (CVE-2019-12086)
 
 Platform 2.04
 
