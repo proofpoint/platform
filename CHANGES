@@ -1,5 +1,10 @@
 Platform 2.05
 
+* JAX-RS
+
+  We added the JaxrsModule.withOptionsEnabled() method to enable the default
+  support of the OPTIONS method.
+
 * Library Upgrades
   - Jetty 9.4.18 (was 9.4.17) fixes server becomes unresponsive after sitting
     idle from a load spike.
