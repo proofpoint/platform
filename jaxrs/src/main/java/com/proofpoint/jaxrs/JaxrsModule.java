@@ -66,6 +66,7 @@ public class JaxrsModule
         implements Module
 {
     private final CommonJaxrsModule commonJaxrsModule = new CommonJaxrsModule();
+    private boolean enableOptions = false;
 
     public static JaxrsModule explicitJaxrsModule() {
         return new JaxrsModule();
@@ -90,7 +91,9 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(QueryParamExceptionMapper.class);
         jaxrsBinder(binder).bind(OverrideMethodFilter.class);
         jaxrsBinder(binder).bind(TimingResourceDynamicFeature.class);
-        jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
+        if (!enableOptions) {
+            jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
+        }
         jaxrsBinder(binder).bind(InRotationResource.class);
         jaxrsBinder(binder).bind(LivenessResource.class);
         jaxrsBinder(binder).bind(HstsResponseFilter.class);
@@ -148,6 +151,12 @@ public class JaxrsModule
         }
 
         return false;
+    }
+
+    public JaxrsModule withOptionsEnabled()
+    {
+        enableOptions = true;
+        return this;
     }
 
     private static class AdminOnlyJaxrsModule
