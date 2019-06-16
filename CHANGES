@@ -1,3 +1,9 @@
+Platform 2.06
+
+* Library Upgrades
+
+  - Guava to 28.0-jre (was 27.1-jre)
+
 Platform 2.05
 
 * JAX-RS
