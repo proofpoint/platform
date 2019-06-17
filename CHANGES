@@ -3,6 +3,7 @@ Platform 2.06
 * Library Upgrades
 
   - Guava to 28.0-jre (was 27.1-jre)
+  - AutoValue to 1.6.5 (was 1.6.2)
 
 Platform 2.05
 
