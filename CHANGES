@@ -4,6 +4,8 @@ Platform 2.06
 
   - Guava to 28.0-jre (was 27.1-jre)
   - AutoValue to 1.6.5 (was 1.6.2)
+  - Mockito to 2.28.2 (was 2.23.0)
+  - byte-buddy to 1.9.13 (was 1.9.4)
 
 Platform 2.05
 
