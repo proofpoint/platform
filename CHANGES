@@ -1,5 +1,34 @@
 Platform 2.06
 
+* Bean Validation
+
+  We replaced Apache BVal with Hibernate Validator.
+
+  Unit tests which assertFailsValidation with a message of "may not be null"
+  will need to be changed to assert a message of "must not be null".
+
+  Any use of org.apache.bval.jsr.ApacheValidationProvider will need to be
+  replaced with org.hibernate.validator.HibernateValidator.
+
+  Any Maven dependency of:
+
+    <dependency>
+        <groupId>org.apache.bval</groupId>
+        <artifactId>bval-jsr</artifactId>
+    </dependency>
+
+  will need to be replaced with:
+
+    <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.glassfish</groupId>
+        <artifactId>jakarta.el</artifactId>
+    </dependency>
+
 * Library Upgrades
 
   - Guava to 28.0-jre (was 27.1-jre)

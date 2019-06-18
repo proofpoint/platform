@@ -15,7 +15,7 @@
  */
 package com.proofpoint.units;
 
-import org.apache.bval.jsr.ApacheValidationProvider;
+import org.hibernate.validator.HibernateValidator;
 import org.testng.annotations.Test;
 
 import javax.validation.ConstraintViolation;
@@ -31,7 +31,7 @@ import static org.testng.Assert.fail;
 
 public class TestDurationValidator
 {
-    private static final Validator validator = Validation.byProvider(ApacheValidationProvider.class).configure().buildValidatorFactory().getValidator();
+    private static final Validator validator = Validation.byProvider(HibernateValidator.class).configure().buildValidatorFactory().getValidator();
 
     @Test
     public void testMaxDurationValidator()

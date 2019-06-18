@@ -28,7 +28,7 @@ import com.google.inject.Key;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
 import com.proofpoint.configuration.ConfigurationMetadata.InjectionPointMetaData;
 import com.proofpoint.configuration.Problems.Monitor;
-import org.apache.bval.jsr.ApacheValidationProvider;
+import org.hibernate.validator.HibernateValidator;
 
 import javax.annotation.Nullable;
 import javax.validation.ConstraintViolation;
@@ -56,7 +56,7 @@ import static java.util.Objects.requireNonNull;
 
 public final class ConfigurationFactory
 {
-    private static final Validator VALIDATOR = Validation.byProvider(ApacheValidationProvider.class).configure().buildValidatorFactory().getValidator();
+    private static final Validator VALIDATOR = Validation.byProvider(HibernateValidator.class).configure().buildValidatorFactory().getValidator();
 
     private final Map<String, String> properties;
     private final Map<String, String> applicationDefaults;
