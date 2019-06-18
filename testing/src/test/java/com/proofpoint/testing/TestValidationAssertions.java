@@ -73,13 +73,13 @@ public class TestValidationAssertions
     @Test
     public void testTheAssertFailsValidationMethodSucceedsWithInvalidObject()
     {
-        assertFailsValidation(INVALID_OBJECT, "value", "may not be null", NotNull.class);
+        assertFailsValidation(INVALID_OBJECT, "value", "must not be null", NotNull.class);
     }
 
     @Test
     public void testTheAssertFailsValidationWithMessageMethodSucceedsWithInvalidObject()
     {
-        assertFailsValidation(INVALID_OBJECT, "value", "may not be null", NotNull.class, MESSAGE);
+        assertFailsValidation(INVALID_OBJECT, "value", "must not be null", NotNull.class, MESSAGE);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class TestValidationAssertions
     {
         boolean ok = false;
         try {
-            assertFailsValidation(VALID_OBJECT, "value", "may not be null", NotNull.class);
+            assertFailsValidation(VALID_OBJECT, "value", "must not be null", NotNull.class);
         }
         catch (AssertionError e) {
             ok = true;
@@ -102,7 +102,7 @@ public class TestValidationAssertions
     {
         boolean ok = false;
         try {
-            assertFailsValidation(VALID_OBJECT, "value", "may not be null", NotNull.class, MESSAGE);
+            assertFailsValidation(VALID_OBJECT, "value", "must not be null", NotNull.class, MESSAGE);
         }
         catch (AssertionError e) {
             ok = true;

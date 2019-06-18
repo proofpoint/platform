@@ -16,7 +16,7 @@
 package com.proofpoint.testing;
 
 import com.google.common.annotations.Beta;
-import org.apache.bval.jsr.ApacheValidationProvider;
+import org.hibernate.validator.HibernateValidator;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -30,7 +30,7 @@ import static org.testng.Assert.fail;
 @Beta
 public class ValidationAssertions
 {
-    private static final Validator VALIDATOR = Validation.byProvider(ApacheValidationProvider.class).configure().buildValidatorFactory().getValidator();
+    private static final Validator VALIDATOR = Validation.byProvider(HibernateValidator.class).configure().buildValidatorFactory().getValidator();
 
     private ValidationAssertions()
     {

@@ -146,10 +146,10 @@ public class TestHttpClientConfig
     public void testValidations()
     {
         assertValidates(new HttpClientConfig().setMaxRequestsQueuedPerDestination(1).setMaxConnectionsPerServer(1));
-        assertFailsValidation(new HttpClientConfig().setConnectTimeout(null), "connectTimeout", "may not be null", NotNull.class);
-        assertFailsValidation(new HttpClientConfig().setIdleTimeout(null), "idleTimeout", "may not be null", NotNull.class);
+        assertFailsValidation(new HttpClientConfig().setConnectTimeout(null), "connectTimeout", "must not be null", NotNull.class);
+        assertFailsValidation(new HttpClientConfig().setIdleTimeout(null), "idleTimeout", "must not be null", NotNull.class);
         assertFailsValidation(new HttpClientConfig().setMaxConnectionsPerServer(0), "maxConnectionsPerServer", "must be greater than or equal to 1", Min.class);
         assertFailsValidation(new HttpClientConfig().setMaxRequestsQueuedPerDestination(0), "maxRequestsQueuedPerDestination", "must be greater than or equal to 1", Min.class);
-        assertFailsValidation(new HttpClientConfig().setMaxContentLength(null), "maxContentLength", "may not be null", NotNull.class);
+        assertFailsValidation(new HttpClientConfig().setMaxContentLength(null), "maxContentLength", "must not be null", NotNull.class);
     }
 }
