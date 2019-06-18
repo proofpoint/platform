@@ -35,6 +35,8 @@ Platform 2.06
   - AutoValue to 1.6.5 (was 1.6.2)
   - Mockito to 2.28.2 (was 2.23.0)
   - byte-buddy to 1.9.13 (was 1.9.4)
+  - assertj-core to 3.12.2 (was 3.11.1) (Iterable assertions require .toIterable() to access)
+  - assertj-guava to 3.2.1 (was 3.2.0)
 
 Platform 2.05
 
