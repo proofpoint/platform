@@ -15,6 +15,7 @@ Platform 2.07
  - plexus-compiler-javac-errorprone to 2.8.5 (was 2.8.2)
  - error_prone_core to 2.3.3 (was 2.0.21)
  - maven-invoker-plugin to 3.2.0 (was 3.1.0)
+ - maven-shade-plugin to 3.2.1 (was 3.1.1)
 
 Platform 2.06
 
