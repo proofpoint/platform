@@ -4,6 +4,7 @@ Platform 2.07
 
  - maven-compiler-plugin to 3.8.1 (was 3.8.0)
  - maven-assembly-plugin to 3.1.1 (was 3.1.0)
+ - maven-surefire-plugin to 2.22.2 (was 2.22.1)
 
 Platform 2.06
 
