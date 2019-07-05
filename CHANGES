@@ -1,5 +1,10 @@
 Platform 2.07
 
+* OpenApi
+
+  We moved the OpenApi support into the jaxrs module. The openapi module no
+  longer does anything and is deprecated
+
 * Maven plugin upgrades
 
  - maven-compiler-plugin to 3.8.1 (was 3.8.0)

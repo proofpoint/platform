@@ -18,14 +18,14 @@ package com.proofpoint.openapi;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 
-import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
-
+/**
+ * @deprecated No longer needed.
+ */
+@Deprecated
 public class OpenApiModule implements Module
 {
     @Override
     public void configure(Binder binder)
     {
-        jaxrsBinder(binder).bindAdmin(OpenApiResource.class);
-        jaxrsBinder(binder).bindAdmin(OpenApiAdminResource.class);
     }
 }
