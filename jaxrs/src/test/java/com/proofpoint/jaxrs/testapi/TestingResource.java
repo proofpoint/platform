@@ -1,4 +1,4 @@
-package com.proofpoint.openapi.testapi;
+package com.proofpoint.jaxrs.testapi;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
