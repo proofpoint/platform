@@ -1646,7 +1646,7 @@
                                             <run>mkdir /service/var</run>
                                             <run>chown service /service/var</run>
                                         </runCmds>
-                                        <user>service</user>
+                                        <user>${project.docker.uid}</user>
                                         <workdir>/service</workdir>
                                         <assembly>
                                             <targetDir>/service</targetDir>
