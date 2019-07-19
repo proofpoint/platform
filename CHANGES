@@ -1,3 +1,9 @@
+Platform 2.08
+
+* Library Upgrades
+
+  - jackson-databind to 2.9.9.1 (was 2.9.9) (CVE-2019-12384 CVE-2019-12814)
+
 Platform 2.07
 
 * Docker
