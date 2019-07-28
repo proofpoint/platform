@@ -393,12 +393,18 @@ public final class Main
             try (InputStream jvmPropertiesFile = new FileInputStream(jvmPropertiesPath)) {
                 Properties jvmProperties = new Properties();
                 jvmProperties.load(jvmPropertiesFile);
+                // move all unlocking arguments to the front of the list
+                for (Entry<Object, Object> entry : jvmProperties.entrySet()) {
+                    if (entry.getKey().toString().startsWith("-XX:+Unlock")) {
+                        jvmConfigArgs.add(entry.getKey().toString() + entry.getValue().toString());
+                    }
+                }
                 for (Entry<Object, Object> entry : jvmProperties.entrySet()) {
                     if ("-classpath".equals(entry.getKey())) {
                         jvmConfigArgs.add(entry.getKey().toString());
                         jvmConfigArgs.add(entry.getValue().toString());
                     }
-                    else {
+                    else if (!entry.getKey().toString().startsWith("-XX:+Unlock")) {
                         jvmConfigArgs.add(entry.getKey().toString() + entry.getValue().toString());
                     }
                 }
