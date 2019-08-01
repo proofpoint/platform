@@ -5,6 +5,10 @@ Platform 2.09
   Arguments in jvm.properties that start with "-XX:+Unlock" now get moved
   earlier than other arguments in jvm.properties.
 
+* Library Upgrades
+
+  - jackson-databind to 2.9.9.2 (was 2.9.9.1) (CVE-2019-14379 CVE-2019-14439)
+
 Platform 2.08
 
 * Library Upgrades
