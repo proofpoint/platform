@@ -1,3 +1,9 @@
+Platform 2.10
+
+* Library Upgrades
+
+  - jackson-databind to 2.9.9.3 (was 2.9.9.2) (fix regression in Platform 2.09)
+
 Platform 2.09
 
 * Launcher
