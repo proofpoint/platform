@@ -154,12 +154,22 @@ public class Logging
         consoleHandler = null;
     }
 
+    /**
+     * @deprecated use {@link #logToFile(String, int, int, DataSize, DataSize)}
+     */
     @SuppressWarnings("MethodMayBeStatic")
+    @Deprecated
     public void logToFile(String logPath, int maxHistory, DataSize maxSize, DataSize maxTotalSize)
+    {
+        logToFile(logPath, maxHistory, 0, maxSize, maxTotalSize);
+    }
+
+    @SuppressWarnings("MethodMayBeStatic")
+    public void logToFile(String logPath, int maxHistory, int queueSize, DataSize maxSize, DataSize maxTotalSize)
     {
         log.info("Logging to %s", logPath);
 
-        RollingFileHandler rollingFileHandler = new RollingFileHandler(logPath, maxHistory, maxSize, maxTotalSize);
+        RollingFileHandler rollingFileHandler = new RollingFileHandler(logPath, maxHistory, queueSize, maxSize, maxTotalSize);
         ROOT.addHandler(rollingFileHandler);
     }
 
@@ -378,7 +388,7 @@ public class Logging
         }
 
         if (config.getLogPath() != null) {
-            logToFile(config.getLogPath(), config.getMaxHistory(), config.getMaxSegmentSize(), config.getMaxTotalSize());
+            logToFile(config.getLogPath(), config.getMaxHistory(), config.getQueueSize(), config.getMaxSegmentSize(), config.getMaxTotalSize());
         }
 
         if (!config.isConsoleEnabled()) {

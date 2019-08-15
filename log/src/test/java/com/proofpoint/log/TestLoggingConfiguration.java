@@ -20,6 +20,7 @@ public class TestLoggingConfiguration
                 .setBootstrapLogPath(null)
                 .setMaxSegmentSize(new DataSize(100, Unit.MEGABYTE))
                 .setMaxHistory(30)
+                .setQueueSize(0)
                 .setLevelsFile(null)
                 .setMaxTotalSize(new DataSize(1, Unit.GIGABYTE))
         );
@@ -34,6 +35,7 @@ public class TestLoggingConfiguration
                 .put("log.bootstrap.path", "var/log/bar.log")
                 .put("log.max-size", "1GB")
                 .put("log.max-history", "25")
+                .put("log.queue-size", "10000")
                 .put("log.levels-file", "var/log/log-levels-test.cfg")
                 .put("log.max-total-size", "5GB")
                 .build();
@@ -44,6 +46,7 @@ public class TestLoggingConfiguration
                 .setBootstrapLogPath("var/log/bar.log")
                 .setMaxSegmentSize(new DataSize(1, Unit.GIGABYTE))
                 .setMaxHistory(25)
+                .setQueueSize(10_000)
                 .setLevelsFile("var/log/log-levels-test.cfg")
                 .setMaxTotalSize(new DataSize(5, Unit.GIGABYTE));
 
