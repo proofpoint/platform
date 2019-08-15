@@ -21,6 +21,8 @@ import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 
+import javax.validation.constraints.Min;
+
 public class LoggingConfiguration
 {
     private boolean consoleEnabled = true;
@@ -28,6 +30,7 @@ public class LoggingConfiguration
     private String bootstrapLogPath = null;
     private DataSize maxSegmentSize = new DataSize(100, Unit.MEGABYTE);
     private int maxHistory = 30;
+    private int queueSize = 0;
     private String levelsFile = null;
     private DataSize maxTotalSize = new DataSize(1, Unit.GIGABYTE);
 
@@ -98,6 +101,19 @@ public class LoggingConfiguration
     public LoggingConfiguration setMaxHistory(int maxHistory)
     {
         this.maxHistory = maxHistory;
+        return this;
+    }
+
+    @Min(0)
+    public int getQueueSize()
+    {
+        return queueSize;
+    }
+
+    @Config("log.queue-size")
+    public LoggingConfiguration setQueueSize(int queueSize)
+    {
+        this.queueSize = queueSize;
         return this;
     }
 

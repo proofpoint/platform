@@ -1,5 +1,11 @@
 Platform 2.11
 
+* Logging
+
+  We added a "log.queue-size" configuration option. If nonzero, the main
+  launcher.log will use asynchronous logging with an in-memory queue
+  of the configured maximum size. The default is "0".
+
 * Library Upgrades
 
   - Jetty to 9.4.20 (was 9.4.18)
