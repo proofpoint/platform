@@ -1,3 +1,9 @@
+Platform 2.12
+
+* Library Upgrades
+
+  - Guava to 28.1-jre (was 28.0-jre)
+
 Platform 2.11
 
 * Logging
