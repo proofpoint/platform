@@ -78,7 +78,7 @@ public class JettyHttpClient
 
     private static final Logger log = Logger.get(JettyHttpClient.class);
     private static final String[] ENABLED_PROTOCOLS = System.getProperty("java.version").matches("11(\\.0\\.[12])?") ?
-            new String[] {"TLSv1.1", "TLSv1.2"} : new String[] {"TLSv1.1", "TLSv1.2", "TLSv1.3"};
+            new String[] {"TLSv1.2"} : new String[] {"TLSv1.2", "TLSv1.3"};
     private static final String[] ENABLED_CIPHERS = {
             "TLS_AES_256_GCM_SHA384",
             "TLS_AES_128_GCM_SHA256",
@@ -86,10 +86,6 @@ public class JettyHttpClient
             "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
             "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
             "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-            "TLS_RSA_WITH_AES_256_CBC_SHA",
-            "TLS_RSA_WITH_AES_128_CBC_SHA",
             "TLS_EMPTY_RENEGOTIATION_INFO_SCSV",
     };
 
