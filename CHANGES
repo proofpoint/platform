@@ -8,7 +8,9 @@ Platform 2.12
 
 * JMX
 
-  We fixed a bug preventing JMX from starting on Java 11.
+  - We fixed a bug preventing JMX from starting on Java 11.
+  - We log a hint about necessary JVM config when JMX fails to start on Java 11
+  - We skip starting the JMX agent on Java 11 if it is already configured.
 
 * Library Upgrades
 
