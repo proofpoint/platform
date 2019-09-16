@@ -6,6 +6,10 @@ Platform 2.12
   TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA, and
   TLS_RSA_WITH_AES_128_CBC_SHA.
 
+* JMX
+
+  We fixed a bug preventing JMX from starting on Java 11.
+
 * Library Upgrades
 
   - Guava to 28.1-jre (was 28.0-jre)
