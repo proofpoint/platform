@@ -1,3 +1,10 @@
+Platform 2.13
+
+* Library Upgrades
+
+  - Jackson to 2.9.10 (was 2.9.9) (fixes deserialization vulnerabilities
+    when using @JsonTypeInfo or "default typing")
+
 Platform 2.12
 
 * HttpClient and HttpServer
