@@ -1,3 +1,9 @@
+Platform 2.14
+
+* Library Upgrades
+
+  - Jetty to 9.4.21 (was 9.4.20) (various HTTP/2 denial-of-service fixes)
+
 Platform 2.13
 
 * Library Upgrades
