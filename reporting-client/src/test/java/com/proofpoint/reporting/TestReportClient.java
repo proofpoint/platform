@@ -154,6 +154,27 @@ public class TestReportClient
         assertEquals(tags.keySet(), ImmutableSet.of("application", "host", "environment", "pool", "foo", "baz"));
     }
 
+    @Test
+    public void testNoReportHost()
+    {
+        ReportClient client = new ReportClient(nodeInfo, httpClient,
+                new ReportClientConfig().setPulseIncludeHostTag(false), new ReportTagConfig()
+                        .setTags(ImmutableMap.of("foo", "ba:r", "baz", "quux")), objectMapper);
+        client.report(TEST_TIME, collectedData);
+        assertEquals(sentJson.size(), 2);
+
+        for (Map<String, Object> map : sentJson) {
+            assertEquals(map.keySet(), ImmutableSet.of("name", "timestamp", "value", "tags"));
+            Map<String, String> tags = (Map<String, String>) map.get("tags");
+            assertEquals(tags.get("foo"), "ba:r");
+            assertEquals(tags.get("baz"), "quux");
+        }
+        Map<String, String> tags = (Map<String, String>) sentJson.get(0).get("tags");
+        assertEquals(tags.keySet(), ImmutableSet.of("application", "environment", "pool", "foo", "baz", "tag1"));
+        tags = (Map<String, String>) sentJson.get(1).get("tags");
+        assertEquals(tags.keySet(), ImmutableSet.of("application", "environment", "pool", "foo", "baz"));
+    }
+
     private class TestingResponseFunction
             implements Processor
     {
