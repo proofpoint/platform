@@ -63,7 +63,9 @@ class ReportClient
 
         Builder<String, String> builder = ImmutableMap.builder();
         builder.put("application", nodeInfo.getApplication());
-        builder.put("host", nodeInfo.getInternalHostname());
+        if (reportClientConfig.isPulseIncludeHostTag()) {
+            builder.put("host", nodeInfo.getInternalHostname());
+        }
         builder.put("environment", nodeInfo.getEnvironment());
         builder.put("pool", nodeInfo.getPool());
         builder.putAll(reportTagConfig.getTags());

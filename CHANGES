@@ -1,3 +1,11 @@
+Platform 2.14
+
+* Reporting
+
+  We added a "reporting.pulse.include-host-tag" config option (default "true")
+  which can be set to "false" in order to omit the "host" tag from metrics
+  reported to Pulse.
+
 Platform 2.13
 
 * Library Upgrades

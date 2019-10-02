@@ -22,6 +22,7 @@ import com.proofpoint.configuration.DefunctConfig;
 public class ReportClientConfig
 {
     private boolean enabled = true;
+    private boolean pulseIncludeHostTag = true;
 
     public boolean isEnabled()
     {
@@ -32,6 +33,18 @@ public class ReportClientConfig
     public ReportClientConfig setEnabled(boolean enabled)
     {
         this.enabled = enabled;
+        return this;
+    }
+
+    public boolean isPulseIncludeHostTag()
+    {
+        return pulseIncludeHostTag;
+    }
+
+    @Config("reporting.pulse.include-host-tag")
+    public ReportClientConfig setPulseIncludeHostTag(boolean pulseIncludeHostTag)
+    {
+        this.pulseIncludeHostTag = pulseIncludeHostTag;
         return this;
     }
 }
