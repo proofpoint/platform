@@ -1,3 +1,10 @@
+Platform 2.15
+
+* Library Upgrades
+
+  - Jackson to 2.10.0 (was 2.9.10) (fixes deserialization vulnerabilities
+    when using @JsonTypeInfo or "default typing")
+
 Platform 2.14
 
 * Reporting
