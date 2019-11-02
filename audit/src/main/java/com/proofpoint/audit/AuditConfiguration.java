@@ -22,10 +22,24 @@ import com.proofpoint.units.DataSize.Unit;
 
 public class AuditConfiguration
 {
-    private String logPath = null;
+    private boolean logEnable = true;
+    private String logPath = "var/log/audit.log";
     private DataSize maxSegmentSize = new DataSize(100, Unit.MEGABYTE);
     private int maxHistory = 30;
     private DataSize maxTotalSize = new DataSize(1, Unit.GIGABYTE);
+
+
+    public boolean isLogEnable()
+    {
+        return logEnable;
+    }
+
+    @Config("audit.log.enable")
+    public AuditConfiguration setLogEnable(boolean logEnable)
+    {
+        this.logEnable = logEnable;
+        return this;
+    }
 
     public String getLogPath()
     {

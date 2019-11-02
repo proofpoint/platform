@@ -14,7 +14,8 @@ public class TestAuditConfiguration
     public void testDefaults()
     {
         ConfigAssertions.assertRecordedDefaults(ConfigAssertions.recordDefaults(AuditConfiguration.class)
-                .setLogPath(null)
+                .setLogEnable(true)
+                .setLogPath("var/log/audit.log")
                 .setMaxSegmentSize(new DataSize(100, Unit.MEGABYTE))
                 .setMaxHistory(30)
                 .setMaxTotalSize(new DataSize(1, Unit.GIGABYTE))
@@ -25,6 +26,7 @@ public class TestAuditConfiguration
     public void testExplicitPropertyMappings()
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
+                .put("audit.log.enable", "false")
                 .put("audit.log.path", "var/log/foo.log")
                 .put("audit.log.max-size", "1GB")
                 .put("audit.log.max-history", "25")
@@ -32,6 +34,7 @@ public class TestAuditConfiguration
                 .build();
 
         AuditConfiguration expected = new AuditConfiguration()
+                .setLogEnable(false)
                 .setLogPath("var/log/foo.log")
                 .setMaxSegmentSize(new DataSize(1, Unit.GIGABYTE))
                 .setMaxHistory(25)
