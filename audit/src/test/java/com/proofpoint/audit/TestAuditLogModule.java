@@ -39,6 +39,7 @@ public class TestAuditLogModule
                         new AuditLogModule(),
                         binder -> auditLoggerBinder(binder).bind(TestingRecord.class)
                 )
+                .setRequiredConfigurationProperty("audit.log.enable", "false")
                 .initialize();
         AuditLogger<TestingRecord> auditLogger = injector.getInstance(Key.get(new TypeLiteral<AuditLogger<TestingRecord>>() {}));
         auditLogger.audit(new TestingRecord());
