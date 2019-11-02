@@ -3,7 +3,8 @@ Platform 2.17
 * Audit Logging
 
   - The default value for "audit.log.path" has changed to "var/log/audit.log".
-    To disable audit logging, use the new config option "audit.log.enable".
+    This config option is no longer overridden by the launcher. To disable
+    audit logging, use the new config option "audit.log.enable".
 
 Platform 2.16
 

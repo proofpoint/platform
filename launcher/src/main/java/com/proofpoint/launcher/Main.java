@@ -132,9 +132,6 @@ public final class Main
         @Option(type = OptionType.GLOBAL, name = "--bootstrap-log-file", description = "Path to bootstrap log file. Defaults to DATA_DIR/var/log/bootstrap.log")
         public String bootstrapLogPath = null;
 
-        @Option(type = OptionType.GLOBAL, name = "--audit-log-file", description = "Path to audit log file. Defaults to DATA_DIR/var/log/audit.log")
-        public String auditLogPath = null;
-
         @Option(type = OptionType.GLOBAL, name = "-D", description = "Set a Java System property")
         public final List<String> property = new ArrayList<>();
 
@@ -321,13 +318,6 @@ public final class Main
                 launcherArgs.add("--log-file");
                 launcherArgs.add(new File(logPath).getAbsolutePath());
             }
-            if (auditLogPath == null) {
-                auditLogPath = dataDir + "/var/log/audit.log";
-            }
-            else {
-                launcherArgs.add("--audit-log-file");
-                launcherArgs.add(new File(auditLogPath).getAbsolutePath());
-            }
             if (bootstrapLogPath == null) {
                 bootstrapLogPath = dataDir + "/var/log/bootstrap.log";
             }
@@ -501,7 +491,6 @@ public final class Main
             if (new File(logLevelsPath).exists()) {
                 javaArgs.add("-Dlog.levels-file=" + logLevelsPath);
             }
-            javaArgs.add("-Daudit.log.path=" + auditLogPath);
             javaArgs.add("-Dlog.bootstrap.path=" + bootstrapLogPath);
             javaArgs.add("-jar");
             javaArgs.add(installPath + "/lib/launcher.jar");
