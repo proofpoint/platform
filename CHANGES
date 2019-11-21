@@ -1,3 +1,8 @@
+Platform 2.19
+
+* Library Upgrades
+  - Jetty to 9.4.24 (was 9.4.21)
+
 Platform 2.18
 
 * Library Upgrades
