@@ -90,43 +90,7 @@ public class TestJsonEventSerializer
         JsonGenerator jsonGenerator = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
 
         FixedDummyEventClass event = TestingUtils.getEvents().get(0);
-        eventSerializer.serialize(event, (TraceToken) null, jsonGenerator);
-
-        String json = out.toString(UTF_8.name());
-        assertEquals(new ObjectMapper().readValue(json, Object.class), expectedEventJson, "JSON encoding " + json);
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testEventSerializerStringToken()
-            throws Exception
-    {
-        JsonEventSerializer eventSerializer = new JsonEventSerializer(new NodeInfo("test"), FixedDummyEventClass.class);
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator jsonGenerator = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
-
-        FixedDummyEventClass event = TestingUtils.getEvents().get(0);
-        eventSerializer.serialize(event, "sample-trace-token", jsonGenerator);
-
-        String json = out.toString(UTF_8.name());
-        assertEquals(new ObjectMapper().readValue(json, Object.class), expectedEventJson, "JSON encoding " + json);
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testEventSerializerNullStringToken()
-            throws Exception
-    {
-        expectedEventJson.remove("traceToken");
-
-        JsonEventSerializer eventSerializer = new JsonEventSerializer(new NodeInfo("test"), FixedDummyEventClass.class);
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator jsonGenerator = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
-
-        FixedDummyEventClass event = TestingUtils.getEvents().get(0);
-        eventSerializer.serialize(event, (String) null, jsonGenerator);
+        eventSerializer.serialize(event, null, jsonGenerator);
 
         String json = out.toString(UTF_8.name());
         assertEquals(new ObjectMapper().readValue(json, Object.class), expectedEventJson, "JSON encoding " + json);
@@ -142,6 +106,6 @@ public class TestJsonEventSerializer
         JsonGenerator jsonGenerator = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
 
         FixedDummyEventClass event = TestingUtils.getEvents().get(0);
-        eventSerializer.serialize(event, (TraceToken) null, jsonGenerator);
+        eventSerializer.serialize(event, null, jsonGenerator);
     }
 }

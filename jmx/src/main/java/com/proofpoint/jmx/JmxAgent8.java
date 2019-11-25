@@ -74,6 +74,7 @@ class JmxAgent8
             System.setProperty("com.sun.management.jmxremote.rmi.port", Integer.toString(serverPort));
             System.setProperty("com.sun.management.jmxremote.authenticate", "false");
             System.setProperty("com.sun.management.jmxremote.ssl", "false");
+            System.setProperty("java.rmi.server.hostname", "127.0.0.1");
 
             try {
                 Agent.startAgent();

@@ -55,7 +55,7 @@ final class HttpServerChannelListener
     @Override
     public void onBeforeDispatch(Request request)
     {
-        long requestBeginTime = (Long) request.getAttribute(REQUEST_BEGIN_ATTRIBUTE);
+        long requestBeginTime = getRequestBeginTime(request);
         request.setAttribute(REQUEST_BEGIN_TO_DISPATCH_ATTRIBUTE, System.nanoTime() - requestBeginTime);
     }
 
@@ -63,13 +63,27 @@ final class HttpServerChannelListener
     @Override
     public void onRequestEnd(Request request)
     {
-        long requestBeginTime = (Long) request.getAttribute(REQUEST_BEGIN_ATTRIBUTE);
+        long requestBeginTime = getRequestBeginTime(request);
         request.setAttribute(REQUEST_BEGIN_TO_END_ATTRIBUTE, System.nanoTime() - requestBeginTime);
+    }
+
+    private long getRequestBeginTime(Request request)
+    {
+        Object requestBeginAttribute = request.getAttribute(REQUEST_BEGIN_ATTRIBUTE);
+        if (requestBeginAttribute != null) {
+            return (long) (Long) requestBeginAttribute;
+        }
+        long currentTime = System.nanoTime();
+        request.setAttribute(REQUEST_BEGIN_ATTRIBUTE, currentTime);
+        return currentTime;
     }
 
     @Override
     public void onResponseBegin(Request request)
     {
+        if (request.getAttribute(REQUEST_BEGIN_TO_END_ATTRIBUTE) == null) {
+            onRequestEnd(request);
+        }
         request.setAttribute(RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE, new ArrayList<Long>());
     }
 

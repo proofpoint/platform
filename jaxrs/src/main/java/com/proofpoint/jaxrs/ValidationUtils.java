@@ -16,7 +16,7 @@
 package com.proofpoint.jaxrs;
 
 import com.google.common.reflect.TypeToken;
-import org.apache.bval.jsr.ApacheValidationProvider;
+import org.hibernate.validator.HibernateValidator;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
@@ -30,7 +30,7 @@ import java.util.Set;
 
 public class ValidationUtils
 {
-    private static final Validator VALIDATOR = Validation.byProvider(ApacheValidationProvider.class).configure().buildValidatorFactory().getValidator();
+    private static final Validator VALIDATOR = Validation.byProvider(HibernateValidator.class).configure().buildValidatorFactory().getValidator();
 
     private ValidationUtils() {}
 

@@ -35,7 +35,7 @@ public class TestHttpClientMetrics
                 )
                 .initialize();
         Assertions.assertThat(injector.getInstance(ReportingTester.class).collectData())
-                .containsCell("HttpClient.IoPool.Foo.FreeThreadCount", ImmutableMap.of(), 198);
+                .containsCell("HttpClient.FooClient.IoPool.FreeThreadCount", ImmutableMap.of(), 198);
     }
 
     @Test
@@ -50,7 +50,7 @@ public class TestHttpClientMetrics
                 )
                 .initialize();
         Assertions.assertThat(injector.getInstance(ReportingTester.class).collectData())
-                .containsCell("HttpClient.IoPool.Foo.FreeThreadCount", ImmutableMap.of(), 198);
+                .containsCell("HttpClient.foo.IoPool.FreeThreadCount", ImmutableMap.of(), 198);
     }
 
     @Retention(RUNTIME)

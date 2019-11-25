@@ -57,7 +57,6 @@ import static com.proofpoint.testing.Assertions.assertNotEquals;
 import static com.proofpoint.testing.Closeables.closeQuietly;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
@@ -302,6 +301,22 @@ public class TestHttpServerProvider
     }
 
     @Test
+    public void testLogOnExceptionNotReadingBody()
+            throws Exception
+    {
+        createServer(new ErrorServlet());
+        lifeCycleManager.start();
+
+        try (JettyHttpClient httpClient = new JettyHttpClient()) {
+            StatusResponse response = httpClient.execute(preparePut().setUri(httpServerInfo.getHttpUri()).setBodySource(createStaticBodyGenerator("{}", UTF_8)).build(), createStatusResponseHandler());
+
+            assertEquals(response.getStatusCode(), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+        server.stop();
+        verify(requestLog).log(any());
+    }
+
+    @Test
     public void testFilter()
             throws Exception
     {
@@ -312,7 +327,6 @@ public class TestHttpServerProvider
             StatusResponse response = client.execute(prepareGet().setUri(httpServerInfo.getHttpUri().resolve("/filter")).build(), createStatusResponseHandler());
 
             assertEquals(response.getStatusCode(), HttpServletResponse.SC_PAYMENT_REQUIRED);
-            assertEquals(response.getStatusMessage(), "filtered");
         }
     }
 

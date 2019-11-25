@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofpoint.openapi;
+package com.proofpoint.http.client.jetty;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
+import com.google.auto.value.AutoValue;
+import com.proofpoint.http.client.RequestStats;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.weakref.jmx.Nested;
 
-/**
- * @deprecated No longer needed.
- */
-@Deprecated
-public class OpenApiModule implements Module
+@AutoValue
+abstract class Stats
+    extends RequestStats
 {
-    @Override
-    public void configure(Binder binder)
-    {
+    @Nested
+    abstract IoPoolStats getIoPool();
+
+    static Stats stats(QueuedThreadPool executor) {
+        return new AutoValue_Stats(new IoPoolStats(executor));
     }
 }

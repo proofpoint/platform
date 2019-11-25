@@ -62,6 +62,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.proofpoint.http.client.jetty.AuthorizationPreservingHttpClient.setPreserveAuthorization;
+import static com.proofpoint.http.client.jetty.Stats.stats;
 import static java.lang.Math.max;
 import static java.lang.Math.toIntExact;
 import static java.util.Objects.requireNonNull;
@@ -76,16 +77,15 @@ public class JettyHttpClient
     }
 
     private static final Logger log = Logger.get(JettyHttpClient.class);
-    private static final String[] ENABLED_PROTOCOLS = {"TLSv1.1", "TLSv1.2"};
+    private static final String[] ENABLED_PROTOCOLS = System.getProperty("java.version").matches("11(\\.0\\.[12])?") ?
+            new String[] {"TLSv1.2"} : new String[] {"TLSv1.2", "TLSv1.3"};
     private static final String[] ENABLED_CIPHERS = {
+            "TLS_AES_256_GCM_SHA384",
+            "TLS_AES_128_GCM_SHA256",
             "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
             "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
             "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
             "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-            "TLS_RSA_WITH_AES_256_CBC_SHA",
-            "TLS_RSA_WITH_AES_128_CBC_SHA",
             "TLS_EMPTY_RENEGOTIATION_INFO_SCSV",
     };
 
@@ -98,7 +98,7 @@ public class JettyHttpClient
     private final long maxContentLength;
     private final Long requestTimeoutMillis;
     private final long idleTimeoutMillis;
-    private final RequestStats stats = new RequestStats();
+    private final Stats stats;
     private final CachedDistribution queuedRequestsPerDestination;
     private final CachedDistribution activeConnectionsPerDestination;
     private final CachedDistribution idleConnectionsPerDestination;
@@ -113,7 +113,6 @@ public class JettyHttpClient
     private final Exception creationLocation = new Exception();
     private final String name;
     private final AtomicLong lastLoggedJettyState = new AtomicLong();
-    private final IoPoolStats ioPoolStats;
 
     public JettyHttpClient()
     {
@@ -214,7 +213,7 @@ public class JettyHttpClient
 
         httpClient.setByteBufferPool(new MappedByteBufferPool());
         QueuedThreadPool executor = createExecutor(name, config.getMinThreads(), config.getMaxThreads());
-        ioPoolStats = new IoPoolStats(executor);
+        stats = stats(executor);
         httpClient.setExecutor(executor);
         // add executor as a managed bean to get its state in the client dumps
         httpClient.addBean(executor, true);
@@ -538,9 +537,13 @@ public class JettyHttpClient
         return requestFilters;
     }
 
+    /**
+     * @deprecated Will be removed.
+     */
+    @Deprecated
     public IoPoolStats getIoPoolStats()
     {
-        return ioPoolStats;
+        return stats.getIoPool();
     }
 
     @Override

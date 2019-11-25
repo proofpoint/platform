@@ -4,12 +4,14 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.encoder.EncoderBase;
 import com.proofpoint.units.DataSize;
+import com.proofpoint.units.Duration;
 
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 import static com.proofpoint.log.Logging.createFileAppender;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.logging.ErrorManager.CLOSE_FAILURE;
 import static java.util.logging.ErrorManager.FORMAT_FAILURE;
 import static java.util.logging.ErrorManager.WRITE_FAILURE;
@@ -19,11 +21,20 @@ final class RollingFileHandler
 {
     private final Appender<String> fileAppender;
 
+    /**
+     * @deprecated use {@link #RollingFileHandler(String, int, int, DataSize, DataSize)}
+     */
+    @Deprecated
     RollingFileHandler(String filename, int maxHistory, DataSize maxFileSize, DataSize maxTotalSize)
+    {
+        this(filename, maxHistory, 0, maxFileSize, maxTotalSize);
+    }
+
+    RollingFileHandler(String filename, int maxHistory, int queueSize, DataSize maxFileSize, DataSize maxTotalSize)
     {
         setFormatter(new StaticFormatter());
 
-        fileAppender = createFileAppender(filename, maxHistory, maxFileSize, maxTotalSize, new StringEncoder(), new ContextBase());
+        fileAppender = createFileAppender(filename, maxHistory, queueSize, new Duration(10, SECONDS), maxFileSize, maxTotalSize, new StringEncoder(), new ContextBase());
     }
 
     @Override

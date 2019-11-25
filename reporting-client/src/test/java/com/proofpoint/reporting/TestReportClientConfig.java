@@ -31,7 +31,9 @@ public class TestReportClientConfig
     public void testDefaults()
     {
         assertRecordedDefaults(recordDefaults(ReportClientConfig.class)
-                .setEnabled(true));
+                .setEnabled(true)
+                .setPulseIncludeHostTag(true)
+        );
     }
 
     @Test
@@ -39,10 +41,12 @@ public class TestReportClientConfig
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
                 .put("reporting.enabled", "false")
+                .put("reporting.pulse.include-host-tag", "false")
                 .build();
 
         ReportClientConfig expected = new ReportClientConfig()
-                .setEnabled(false);
+                .setEnabled(false)
+                .setPulseIncludeHostTag(false);
 
         assertFullMapping(properties, expected);
     }

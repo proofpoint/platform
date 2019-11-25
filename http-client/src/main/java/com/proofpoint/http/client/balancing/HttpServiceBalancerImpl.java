@@ -66,15 +66,6 @@ public class HttpServiceBalancerImpl
         this(description, httpServiceBalancerStats, config, Ticker.systemTicker());
     }
 
-    /**
-     * @deprecated Use {@link #HttpServiceBalancerImpl(String, HttpServiceBalancerStats, HttpServiceBalancerConfig)}
-     */
-    @Deprecated
-    public HttpServiceBalancerImpl(String description, HttpServiceBalancerStats httpServiceBalancerStats)
-    {
-        this(description, httpServiceBalancerStats, new HttpServiceBalancerConfig(), Ticker.systemTicker());
-    }
-
     HttpServiceBalancerImpl(String description, HttpServiceBalancerStats httpServiceBalancerStats, HttpServiceBalancerConfig config, Ticker ticker)
     {
         this.description = requireNonNull(description, "description is null");

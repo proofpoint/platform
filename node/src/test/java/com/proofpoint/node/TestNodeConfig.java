@@ -95,7 +95,7 @@ public class TestNodeConfig
 
         assertFailsValidation(new NodeConfig().setNodeId("abc/123"), "nodeId", "is malformed", Pattern.class);
 
-        assertFailsValidation(new NodeConfig(), "environment", "may not be null", NotNull.class);
+        assertFailsValidation(new NodeConfig(), "environment", "must not be null", NotNull.class);
         assertFailsValidation(new NodeConfig().setEnvironment("FOO"), "environment", "is malformed", Pattern.class);
 
         assertFailsValidation(new NodeConfig().setPool("FO/O"), "pool", "is malformed", Pattern.class);

@@ -1,4 +1,4 @@
-package com.proofpoint.openapi;
+package com.proofpoint.jaxrs;
 
 import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 import com.proofpoint.jaxrs.JaxrsResource;

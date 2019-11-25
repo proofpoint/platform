@@ -132,9 +132,6 @@ public final class Main
         @Option(type = OptionType.GLOBAL, name = "--bootstrap-log-file", description = "Path to bootstrap log file. Defaults to DATA_DIR/var/log/bootstrap.log")
         public String bootstrapLogPath = null;
 
-        @Option(type = OptionType.GLOBAL, name = "--audit-log-file", description = "Path to audit log file. Defaults to DATA_DIR/var/log/audit.log")
-        public String auditLogPath = null;
-
         @Option(type = OptionType.GLOBAL, name = "-D", description = "Set a Java System property")
         public final List<String> property = new ArrayList<>();
 
@@ -321,13 +318,6 @@ public final class Main
                 launcherArgs.add("--log-file");
                 launcherArgs.add(new File(logPath).getAbsolutePath());
             }
-            if (auditLogPath == null) {
-                auditLogPath = dataDir + "/var/log/audit.log";
-            }
-            else {
-                launcherArgs.add("--audit-log-file");
-                launcherArgs.add(new File(auditLogPath).getAbsolutePath());
-            }
             if (bootstrapLogPath == null) {
                 bootstrapLogPath = dataDir + "/var/log/bootstrap.log";
             }
@@ -393,12 +383,18 @@ public final class Main
             try (InputStream jvmPropertiesFile = new FileInputStream(jvmPropertiesPath)) {
                 Properties jvmProperties = new Properties();
                 jvmProperties.load(jvmPropertiesFile);
+                // move all unlocking arguments to the front of the list
+                for (Entry<Object, Object> entry : jvmProperties.entrySet()) {
+                    if (entry.getKey().toString().startsWith("-XX:+Unlock")) {
+                        jvmConfigArgs.add(entry.getKey().toString() + entry.getValue().toString());
+                    }
+                }
                 for (Entry<Object, Object> entry : jvmProperties.entrySet()) {
                     if ("-classpath".equals(entry.getKey())) {
                         jvmConfigArgs.add(entry.getKey().toString());
                         jvmConfigArgs.add(entry.getValue().toString());
                     }
-                    else {
+                    else if (!entry.getKey().toString().startsWith("-XX:+Unlock")) {
                         jvmConfigArgs.add(entry.getKey().toString() + entry.getValue().toString());
                     }
                 }
@@ -495,7 +491,6 @@ public final class Main
             if (new File(logLevelsPath).exists()) {
                 javaArgs.add("-Dlog.levels-file=" + logLevelsPath);
             }
-            javaArgs.add("-Daudit.log.path=" + auditLogPath);
             javaArgs.add("-Dlog.bootstrap.path=" + bootstrapLogPath);
             javaArgs.add("-jar");
             javaArgs.add(installPath + "/lib/launcher.jar");
@@ -537,6 +532,15 @@ public final class Main
             }
 
             if (!daemon) {
+                Process childCopy = child;
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    childCopy.destroy();
+                    try {
+                        childCopy.waitFor();
+                    }
+                    catch (InterruptedException ignored) {
+                    }
+                }));
                 try {
                     System.exit(child.waitFor());
                 }

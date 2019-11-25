@@ -37,15 +37,6 @@ public class ConfigurationValidator
 {
     private final ConfigurationFactory configurationFactory;
 
-    /**
-     * @deprecated Use {@link #ConfigurationValidator(ConfigurationFactory)}.
-     */
-    @Deprecated
-    public ConfigurationValidator(ConfigurationFactory configurationFactory, WarningsMonitor warningsMonitor)
-    {
-        this(configurationFactory);
-    }
-
     public ConfigurationValidator(ConfigurationFactory configurationFactory)
     {
         requireNonNull(configurationFactory, "configurationFactory is null");

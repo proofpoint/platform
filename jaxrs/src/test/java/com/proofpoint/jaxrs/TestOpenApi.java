@@ -1,4 +1,4 @@
-package com.proofpoint.openapi;
+package com.proofpoint.jaxrs;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
@@ -10,7 +10,7 @@ import com.proofpoint.http.server.testing.TestingAdminHttpServer;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
-import com.proofpoint.openapi.testapi.TestingResource;
+import com.proofpoint.jaxrs.testapi.TestingResource;
 import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.testing.Closeables;
 import org.testng.annotations.AfterClass;
@@ -33,7 +33,7 @@ import static com.proofpoint.json.JsonCodec.mapJsonCodec;
 import static com.proofpoint.testing.Assertions.assertContains;
 import static org.testng.Assert.assertEquals;
 
-public class TestOpenApiModule
+public class TestOpenApi
 {
     private final HttpClient client = new JettyHttpClient();
     private static final JsonCodec<Map<String, Object>> MAP_CODEC = mapJsonCodec(String.class, Object.class);
@@ -52,7 +52,6 @@ public class TestOpenApiModule
                         initializesMainServletTestingAdminHttpServerModule(),
                         new JsonModule(),
                         new ReportingModule(),
-                        new OpenApiModule(),
                         binder -> jaxrsBinder(binder).bind(TestingResource.class))
                 .initialize();
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);

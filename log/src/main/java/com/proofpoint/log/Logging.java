@@ -51,6 +51,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
@@ -153,12 +154,22 @@ public class Logging
         consoleHandler = null;
     }
 
+    /**
+     * @deprecated use {@link #logToFile(String, int, int, DataSize, DataSize)}
+     */
     @SuppressWarnings("MethodMayBeStatic")
+    @Deprecated
     public void logToFile(String logPath, int maxHistory, DataSize maxSize, DataSize maxTotalSize)
+    {
+        logToFile(logPath, maxHistory, 0, maxSize, maxTotalSize);
+    }
+
+    @SuppressWarnings("MethodMayBeStatic")
+    public void logToFile(String logPath, int maxHistory, int queueSize, DataSize maxSize, DataSize maxTotalSize)
     {
         log.info("Logging to %s", logPath);
 
-        RollingFileHandler rollingFileHandler = new RollingFileHandler(logPath, maxHistory, maxSize, maxTotalSize);
+        RollingFileHandler rollingFileHandler = new RollingFileHandler(logPath, maxHistory, queueSize, maxSize, maxTotalSize);
         ROOT.addHandler(rollingFileHandler);
     }
 
@@ -377,7 +388,7 @@ public class Logging
         }
 
         if (config.getLogPath() != null) {
-            logToFile(config.getLogPath(), config.getMaxHistory(), config.getMaxSegmentSize(), config.getMaxTotalSize());
+            logToFile(config.getLogPath(), config.getMaxHistory(), config.getQueueSize(), config.getMaxSegmentSize(), config.getMaxTotalSize());
         }
 
         if (!config.isConsoleEnabled()) {
@@ -437,6 +448,21 @@ public class Logging
         });
     }
 
+    public static void addShutdownLatchToWaitFor(CountDownLatch latch)
+    {
+        LogManager logManager = LogManager.getLogManager();
+        if (logManager instanceof ShutdownWaitingLogManager) {
+            ((ShutdownWaitingLogManager) logManager).addWaitFor(latch);
+        } else {
+            log.warn("LogManager is not a ShutdownWaitingLogManager, so shutdown hooks might not be able to log. Please run java with -Djava.util.logging.manager=%s",
+                    ShutdownWaitingLogManager.class.getTypeName());
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #addShutdownLatchToWaitFor(CountDownLatch)}
+     */
+    @Deprecated
     public static void addShutdownHookToWaitFor(Thread shutdownHook)
     {
         LogManager logManager = LogManager.getLogManager();
@@ -448,6 +474,10 @@ public class Logging
         }
     }
 
+    /**
+     * @deprecated Use a {@link CountDownLatch} instead
+     */
+    @Deprecated
     public static void removeShutdownHookToWaitFor(Thread shutdownHook)
     {
         LogManager logManager = LogManager.getLogManager();

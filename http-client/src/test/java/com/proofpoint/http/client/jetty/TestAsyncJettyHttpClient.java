@@ -6,13 +6,12 @@ import com.proofpoint.http.client.AbstractHttpClientTest;
 import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
 import com.proofpoint.http.client.HttpClientConfig;
 import com.proofpoint.http.client.Request;
+import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.TestingRequestFilter;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.units.Duration;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.net.URI;
@@ -20,7 +19,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
-import static com.proofpoint.testing.Closeables.closeQuietly;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
@@ -31,34 +29,11 @@ import static org.testng.Assert.fail;
 public class TestAsyncJettyHttpClient
         extends AbstractHttpClientTest
 {
-    private JettyHttpClient httpClient;
-
-    @BeforeMethod
-    public void setUpHttpClient()
-    {
-        httpClient = new JettyHttpClient("test-shared", createClientConfig(), ImmutableList.of(new TestingRequestFilter()));
-        stats = httpClient.getStats();
-    }
-
-    @AfterMethod
-    public void tearDownHttpClient()
-    {
-        closeQuietly(httpClient);
-    }
-
     @Override
     protected HttpClientConfig createClientConfig()
     {
         return new HttpClientConfig()
                 .setHttp2Enabled(false);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)
-            throws Exception
-    {
-        return executeAsync(httpClient, request, responseHandler);
     }
 
     @Override
@@ -73,6 +48,12 @@ public class TestAsyncJettyHttpClient
                     throws Exception
             {
                 return executeAsync(client, request, responseHandler);
+            }
+
+            @Override
+            public RequestStats getRequestStats()
+            {
+                return client.getStats();
             }
 
             @Override
@@ -96,51 +77,53 @@ public class TestAsyncJettyHttpClient
         HttpClientConfig config = createClientConfig();
         config.setConnectTimeout(new Duration(5, MILLISECONDS));
 
-        Request request = prepareGet()
-                .setUri(new URI("http", null, "127.0.0.1", port, "/", null, null))
-                .build();
+        try (JettyHttpClient client = new JettyHttpClient("test-private", config, ImmutableList.of(new TestingRequestFilter()))) {
+            Request request = prepareGet()
+                    .setUri(new URI("http", null, "127.0.0.1", port, "/", null, null))
+                    .build();
 
-        HttpResponseFuture<Void> future = null;
-        try {
-            future = httpClient.executeAsync(request, new ResponseHandler<Void, RuntimeException>()
-        {
-            @Override
-            public Void handleException(Request request1, Exception exception)
-                    throws RuntimeException
+            HttpResponseFuture<Void> future = null;
+            try {
+                future = client.executeAsync(request, new ResponseHandler<Void, RuntimeException>()
             {
-                try {
-                    responseHandlerLatch.await();
+                @Override
+                public Void handleException(Request request1, Exception exception)
+                        throws RuntimeException
+                {
+                    try {
+                        responseHandlerLatch.await();
+                    }
+                    catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    throw new RuntimeException(exception);
                 }
-                catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+
+                @Override
+                public Void handle(Request request1, Response response)
+                        throws RuntimeException
+                {
+                    fail("unexpected response");
+                    return null;
                 }
-                throw new RuntimeException(exception);
+            });
+            }
+            catch (Exception e) {
+                fail("Unexpected exception", e);
             }
 
-            @Override
-            public Void handle(Request request1, Response response)
-                    throws RuntimeException
-            {
-                fail("unexpected response");
-                return null;
-            }
-        });
+            AtomicReference<TraceToken> callbackToken = new AtomicReference<>();
+            future.addListener(() -> {
+                callbackToken.set(getCurrentTraceToken());
+                listenerLatch.countDown();
+            }, MoreExecutors.directExecutor());
+
+            registerTraceToken(null);
+            responseHandlerLatch.countDown();
+
+            listenerLatch.await();
+            assertEquals(callbackToken.get(), token);
         }
-        catch (Exception e) {
-            fail("Unexpected exception", e);
-        }
-
-        AtomicReference<TraceToken> callbackToken = new AtomicReference<>();
-        future.addListener(() -> {
-            callbackToken.set(getCurrentTraceToken());
-            listenerLatch.countDown();
-        }, MoreExecutors.directExecutor());
-
-        registerTraceToken(null);
-        responseHandlerLatch.countDown();
-
-        listenerLatch.await();
-        assertEquals(callbackToken.get(), token);
     }
 
     @Test
@@ -156,8 +139,8 @@ public class TestAsyncJettyHttpClient
                 .build();
 
         HttpResponseFuture<Void> future = null;
-        try {
-            future = httpClient.executeAsync(request, new ResponseHandler<Void, RuntimeException>()
+        try (JettyHttpClient client = new JettyHttpClient("test-private", createClientConfig(), ImmutableList.of(new TestingRequestFilter()))) {
+            future = client.executeAsync(request, new ResponseHandler<Void, RuntimeException>()
         {
             @Override
             public Void handleException(Request request1, Exception exception)

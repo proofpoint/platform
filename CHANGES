@@ -1,3 +1,299 @@
+Platform 2.19
+
+* Library Upgrades
+  - Jetty to 9.4.24 (was 9.4.21)
+
+Platform 2.18
+
+* Library Upgrades
+
+  - Base Docker image to proofpoint/platform-zulu-11:1.4
+    based on 11.0.5 (was proofpoint/platform-zulu-11:1.3)
+
+Platform 2.17
+
+* Audit Logging
+
+  - The default value for "audit.log.path" has changed to "var/log/audit.log".
+    This config option is no longer overridden by the launcher. To disable
+    audit logging, for example when running in-IDE, use the new config option
+    "audit.log.enable".
+
+Platform 2.16
+
+* Library Upgrades
+
+  - Jackson to 2.10.0 (was 2.9.10) (fixes deserialization vulnerabilities
+    when using @JsonTypeInfo or "default typing")
+
+Platform 2.14
+
+* Reporting
+
+  We added a "reporting.pulse.include-host-tag" config option (default "true")
+  which can be set to "false" in order to omit the "host" tag from metrics
+  reported to Pulse.
+
+* Library Upgrades
+
+  - Jetty to 9.4.21 (was 9.4.20) (various HTTP/2 denial-of-service fixes)
+
+Platform 2.13
+
+* Library Upgrades
+
+  - Jackson to 2.9.10 (was 2.9.9) (fixes deserialization vulnerabilities
+    when using @JsonTypeInfo or "default typing")
+
+Platform 2.12
+
+* HttpClient and HttpServer
+
+  We disabled TLS 1.1 and the ciphers TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+  TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA, and
+  TLS_RSA_WITH_AES_128_CBC_SHA.
+
+* JMX
+
+  - We fixed a bug preventing JMX from starting on Java 11.
+  - We log a hint about necessary JVM config when JMX fails to start on Java 11
+  - We skip starting the JMX agent on Java 11 if it is already configured.
+
+* Library Upgrades
+
+  - Guava to 28.1-jre (was 28.0-jre)
+
+Platform 2.11
+
+* Logging
+
+  We added a "log.queue-size" configuration option. If nonzero, the main
+  launcher.log will use asynchronous logging with an in-memory queue
+  of the configured maximum size. The default is "0".
+
+* Library Upgrades
+
+  - Jetty to 9.4.20 (was 9.4.18)
+
+Platform 2.10
+
+* Library Upgrades
+
+  - jackson-databind to 2.9.9.3 (was 2.9.9.2) (fix regression in Platform 2.09)
+
+Platform 2.09
+
+* Launcher
+
+  Arguments in jvm.properties that start with "-XX:+Unlock" now get moved
+  earlier than other arguments in jvm.properties.
+
+* Library Upgrades
+
+  - jackson-databind to 2.9.9.2 (was 2.9.9.1) (CVE-2019-14379 CVE-2019-14439)
+
+Platform 2.08
+
+* Library Upgrades
+
+  - jackson-databind to 2.9.9.1 (was 2.9.9) (CVE-2019-12384 CVE-2019-12814)
+  - Base Docker image to proofpoint/platform-zulu-11:1.3
+    based on 11.0.4 (was proofpoint/platform-zulu-8:1.2)
+
+Platform 2.07
+
+* Docker
+
+  Docker images built now specify their user numerically instead of by name.
+
+* OpenApi
+
+  We moved the OpenApi support into the jaxrs module. The openapi module no
+  longer does anything and is deprecated
+
+* Maven plugin upgrades
+
+ - maven-compiler-plugin to 3.8.1 (was 3.8.0)
+ - maven-assembly-plugin to 3.1.1 (was 3.1.0)
+ - maven-surefire-plugin to 2.22.2 (was 2.22.1)
+ - maven-javadoc-plugin to 3.1.0 (was 3.0.1)
+ - maven-source-plugin to 3.1.0 (was 3.0.1)
+ - duplicate-finder-maven-plugin to 1.3.0 (was 1.2.1)
+ - spotbugs-maven-plugin to 3.1.12 (was 3.1.8)
+ - jacoco-maven-plugin to 0.8.4 (was 0.8.2)
+ - modernizer-maven-plugin to 1.8.0 (was 1.7.1)
+ - docker-maven-plugin to 0.30.0 (was 0.27.2)
+ - plexus-compiler-javac-errorprone to 2.8.5 (was 2.8.2)
+ - error_prone_core to 2.3.3 (was 2.0.21)
+ - maven-invoker-plugin to 3.2.0 (was 3.1.0)
+ - maven-shade-plugin to 3.2.1 (was 3.1.1)
+
+Platform 2.06
+
+* Bean Validation
+
+  We replaced Apache BVal with Hibernate Validator.
+
+  Unit tests which assertFailsValidation with a message of "may not be null"
+  will need to be changed to assert a message of "must not be null".
+
+  Any use of org.apache.bval.jsr.ApacheValidationProvider will need to be
+  replaced with org.hibernate.validator.HibernateValidator.
+
+  Any Maven dependency of:
+
+    <dependency>
+        <groupId>org.apache.bval</groupId>
+        <artifactId>bval-jsr</artifactId>
+    </dependency>
+
+  will need to be replaced with:
+
+    <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.glassfish</groupId>
+        <artifactId>jakarta.el</artifactId>
+    </dependency>
+
+* Library Upgrades
+
+  - Guava to 28.0-jre (was 27.1-jre)
+  - AutoValue to 1.6.5 (was 1.6.2)
+  - Mockito to 2.28.2 (was 2.23.0)
+  - byte-buddy to 1.9.13 (was 1.9.4)
+  - assertj-core to 3.12.2 (was 3.11.1) (Iterable assertions require .toIterable() to access)
+  - assertj-guava to 3.2.1 (was 3.2.0)
+
+Platform 2.05
+
+* JAX-RS
+
+  We added the JaxrsModule.withOptionsEnabled() method to enable the default
+  support of the OPTIONS method.
+
+* Library Upgrades
+  - Jetty 9.4.18 (was 9.4.17) fixes server becomes unresponsive after sitting
+    idle from a load spike.
+  - Jackson to 2.9.9 (was 2.9.8) (CVE-2019-12086)
+
+Platform 2.04
+
+* Library Upgrades
+
+  - Jetty to 9.4.17 (was 9.4.15) (CVE-2019-10241, -10246, -10247)
+  - Base Docker image to proofpoint/platform-zulu-8:1.2
+    based on 8u212 (was proofpoint/platform-zulu-8:1.1)
+
+Platform 2.03
+
+* TLS 1.3
+
+  We now support TLS 1.3 with TLS_AES_256_GCM_SHA384 and
+  TLS_AES_128_GCM_SHA256 ciphers when running on Java 11.0.3 or later.
+
+* [Bug] Requests weren't logged when they threw exceptions before reading the
+  body.
+
+Platform 2.02
+
+* Library Upgrades
+
+  - Guava to 27.1-jre (was 27.0.1-jre)
+  - Base Docker image to proofpoint/platform-zulu-8:1.1
+    based on 8u202 (was proofpoint/platform-zulu-8:1.0)
+
+Platform 2.01
+
+* [Bug] Fixed deadlock during graceful shutdown.
+
+* Library upgrades
+
+  - Base Docker image to proofpoint/platform-zulu-8:1.0
+    (was azul/zulu-openjdk-debian:8u192)
+  
+    Uses "dumb-init" to better handle pid 1 responsibilites   
+
+Platform 2.00
+
+* Launcher
+
+  [Bug] When running in a Docker container, pass termination signals to the
+  child server process.
+
+* Library Upgrades
+
+  - Jetty to 9.4.15 (was 9.4.14)
+  - slf4j to 1.7.26 (was 1.7.25)
+
+Platform 1.99
+
+* JMX
+
+  We now configure the "java.rmi.server.hostname" property to "127.0.0.1"
+  when JMX is enabled. This permits enabling JMX inside containers.
+
+* Docker
+
+  The Sealights integration now copies the necessary files relative to the
+  value of the "project.basedir" maven property, which defaults to ".". Maven
+  subprojects that need Sealights integration in their generated Docker image
+  will need to override that property in the subproject's pom.xml.
+
+Platform 1.97
+
+* JAX-RS
+
+  We added a filter to attach the Strict-Transport-Security header
+  to responses from all resources. We added configuration options
+  "jaxrs.hsts.max-age", "jaxrs.hsts.include-sub-domains", and
+  "jaxrs.hsts.preload" for configuring the contents of the header. The
+  filter is enabled by configuring a value for the max age.
+
+Platform 1.96
+
+* Deprecation removals
+
+  We removed the following deprecated APIs:
+
+  - ConfigRecord.createConfigRecord()
+  - ConfigurationValidator(ConfigurationFactory, WarningsMonitor) constructor
+  - HttpServiceBalancerFactory.createHttpServiceBalancer(String,
+    ServiceSelectorConfig, NodeInfo)
+  - JsonEventSerializer.serialize(Object, String, JsonGenerator)
+  - HttpServiceBalancerImpl(String, HttpServiceBalancerStats)
+  - JsonMapperParsingException constructor
+
+* We configured duplicate-finder-maven-plugin to ignore module-info classes
+  that are in subdirectories.
+
+* Library upgrades
+
+  - Jackson to 2.9.8 (was 2.9.7) (fixes deserialization vulnerabilities
+    CVE-2018-19360, -19361, and -19362 when using @JsonTypeInfo or
+    "default typing". Fixes performance issue with malicious BigDecimal input
+    CVE-2018-1000873.)
+
+Platform 1.95
+
+* HttpClient
+
+ We renamed the HttpClient.IoPool.CONFIGPREFIX.FreeThreadCount metric to
+ HttpClient.QUALIFIER.IoPool.FreeThreadCount. This was done in order to fix
+ startup failures introduced in Platform 1.93 caused by a duplicate metric
+ name when using a library that had two HttpClients bound with the same config
+ prefix but different qualifiers (and filters).
+
+ We also fixed a bug where non-balanced HttpClients did not report request
+ metrics.
+
+* Maven plugin upgrades
+
+ - modernizer-maven-plugin to 1.7.1 (was 1.7.0)
+
 Platform 1.94
 
 * HttpServer

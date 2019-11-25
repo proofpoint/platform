@@ -26,7 +26,7 @@ public class AuditLogModule
     protected void setup(Binder binder)
     {
         AuditConfiguration config = buildConfigObject(AuditConfiguration.class);
-        if (config.getLogPath() == null) {
+        if (!config.isLogEnable()) {
             binder.bind(AuditLoggerFactory.class).to(NullAuditLoggerFactory.class).asEagerSingleton();
         }
         else {

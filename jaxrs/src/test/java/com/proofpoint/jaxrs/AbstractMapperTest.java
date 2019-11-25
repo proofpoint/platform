@@ -190,8 +190,8 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
         }
         catch (BeanValidationException e) {
             assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
-                    "secondField may not be null",
-                    "firstField may not be null"
+                    "secondField must not be null",
+                    "firstField must not be null"
             ));
         }
     }
@@ -212,8 +212,8 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
         }
         catch (BeanValidationException e) {
             assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
-                    "list[1].secondField may not be null",
-                    "list[1].firstField may not be null"
+                    "list[1].secondField must not be null",
+                    "list[1].firstField must not be null"
             ));
         }
     }
@@ -231,8 +231,8 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
         }
         catch (BeanValidationException e) {
             assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
-                    "collection[].secondField may not be null",
-                    "collection[].firstField may not be null"
+                    "collection[].secondField must not be null",
+                    "collection[].firstField must not be null"
             ));
         }
     }
@@ -250,8 +250,8 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
         }
         catch (BeanValidationException e) {
             assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
-                    "map[foo].secondField may not be null",
-                    "map[foo].firstField may not be null"
+                    "map[foo].secondField must not be null",
+                    "map[foo].firstField must not be null"
             ));
         }
     }

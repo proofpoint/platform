@@ -62,6 +62,7 @@ public class TestJaxrsModule
     {
         if (lifeCycleManager != null) {
             lifeCycleManager.stop();
+            lifeCycleManager = null;
         }
     }
 
@@ -97,6 +98,31 @@ public class TestJaxrsModule
                             .build();
         StatusResponse response = client.execute(request, createStatusResponseHandler());
         assertEquals(response.getStatusCode(), Status.METHOD_NOT_ALLOWED.getStatusCode(), "Status code");
+        assertNull(response.getHeader("Host")); // Pentest "finding"
+    }
+
+    @Test
+    public void testEnableOptions()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        new TestingNodeModule(),
+                        new JaxrsModule().withOptionsEnabled(),
+                        new JsonModule(),
+                        new ReportingModule(),
+                        new TestingHttpServerModule(),
+                        binder -> jaxrsBinder(binder).bind(TestingResource.class))
+                .initialize();
+        lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+        server = injector.getInstance(TestingHttpServer.class);
+
+        Request request = Request.builder()
+                            .setUri(server.getBaseUrl().resolve("/"))
+                            .setMethod("OPTIONS")
+                            .build();
+        StatusResponse response = client.execute(request, createStatusResponseHandler());
+        assertEquals(response.getStatusCode(), Status.OK.getStatusCode(), "Status code");
         assertNull(response.getHeader("Host")); // Pentest "finding"
     }
 

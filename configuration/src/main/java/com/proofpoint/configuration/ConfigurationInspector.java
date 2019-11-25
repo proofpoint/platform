@@ -82,12 +82,6 @@ public class ConfigurationInspector
         private final String prefix;
         private final SortedSet<ConfigAttribute> attributes;
 
-        @Deprecated
-        public static <T> ConfigRecord<T> createConfigRecord(ConfigurationProvider<T> configurationProvider)
-        {
-            return new ConfigRecord<>(configurationProvider.getConfigurationFactory(), configurationProvider.getConfigClass(), configurationProvider.getPrefix(), configurationProvider.getKey());
-        }
-
         static <T> ConfigRecord<T> createConfigRecord(ConfigurationFactory configurationFactory, ConfigurationIdentity<T> configurationIdentity)
         {
             return new ConfigRecord<>(configurationFactory, configurationIdentity.getConfigClass(), configurationIdentity.getPrefix(), configurationIdentity.getKey());
