@@ -51,11 +51,7 @@ public class ConfigurationModule
 
     public static class AnnotatedBindingBuilder extends PrefixBindingBuilder
     {
-        /**
-         * @deprecated Will no longer be public.
-         */
-        @Deprecated
-        public AnnotatedBindingBuilder(Binder binder)
+        AnnotatedBindingBuilder(Binder binder)
         {
             super(binder, null, null);
         }
@@ -73,11 +69,7 @@ public class ConfigurationModule
 
     public static class PrefixBindingBuilder extends ConfigBindingBuilder
     {
-        /**
-         * @deprecated Will no longer be public.
-         */
-        @Deprecated
-        public PrefixBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, Annotation annotation)
+        PrefixBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, Annotation annotation)
         {
             super(binder, annotationType, annotation, null);
         }
@@ -95,11 +87,7 @@ public class ConfigurationModule
         protected final Annotation annotation;
         protected final String prefix;
 
-        /**
-         * @deprecated Will no longer be public.
-         */
-        @Deprecated
-        public ConfigBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, Annotation annotation, String prefix)
+        ConfigBindingBuilder(Binder binder, Class<? extends Annotation> annotationType, Annotation annotation, String prefix)
         {
             this.binder = binder;
             this.annotationType = annotationType;

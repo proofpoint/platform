@@ -63,29 +63,6 @@ public class HttpServerProvider
     private final ClientAddressExtractor clientAddressExtractor;
     private final LifeCycleManager lifeCycleManager;
 
-    /**
-     * @deprecated Use {@link #HttpServerProvider(HttpServerInfo, NodeInfo, HttpServerConfig, Servlet,
-     * Set, Set, Servlet, Set, RequestStats, DetailedRequestStats, QueryStringFilter,
-     * ClientAddressExtractor, LifeCycleManager)}.
-     */
-    @Deprecated
-    public HttpServerProvider(HttpServerInfo httpServerInfo,
-            NodeInfo nodeInfo,
-            HttpServerConfig config,
-            Servlet theServlet,
-            Set<Filter> filters,
-            Set<HttpResourceBinding> resources,
-            Servlet theAdminServlet,
-            Set<Filter> adminFilters,
-            RequestStats stats,
-            DetailedRequestStats detailedRequestStats,
-            QueryStringFilter queryStringFilter,
-            LifeCycleManager lifeCycleManager) {
-        this(httpServerInfo, nodeInfo, config, theServlet, filters, resources, theAdminServlet,
-                adminFilters, stats, detailedRequestStats, queryStringFilter,
-                new ClientAddressExtractor(), lifeCycleManager);
-    }
-
     @Inject
     public HttpServerProvider(HttpServerInfo httpServerInfo,
             NodeInfo nodeInfo,

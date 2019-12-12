@@ -65,32 +65,6 @@ public class TestingHttpServer extends HttpServer
         );
     }
 
-    /**
-     * @deprecated Use {@link #TestingHttpServer(HttpServerInfo, NodeInfo, HttpServerConfig, Servlet,
-     * Map, Set, Set, QueryStringFilter, ClientAddressExtractor)}
-     */
-    @Deprecated
-    public TestingHttpServer(HttpServerInfo httpServerInfo,
-            NodeInfo nodeInfo,
-            HttpServerConfig config,
-            Servlet servlet,
-            Map<String, String> initParameters,
-            Set<Filter> filters,
-            Set<HttpResourceBinding> resources,
-            QueryStringFilter queryStringFilter)
-            throws IOException
-    {
-        this(httpServerInfo,
-                nodeInfo,
-                config,
-                servlet,
-                initParameters,
-                filters,
-                resources,
-                queryStringFilter,
-                new ClientAddressExtractor());
-    }
-
     @Inject
     public TestingHttpServer(HttpServerInfo httpServerInfo,
             NodeInfo nodeInfo,

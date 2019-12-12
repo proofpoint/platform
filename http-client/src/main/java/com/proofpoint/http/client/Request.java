@@ -38,25 +38,7 @@ public class Request
     private final boolean followRedirects;
     private final boolean preserveAuthorizationOnRedirect;
 
-    /**
-     * @deprecated Use {@link #builder()} to construct this.
-     */
-    @Deprecated
-    public Request(URI uri, String method, ListMultimap<String, String> headers, @Nullable BodySource bodySource)
-    {
-        this(uri, method, headers, bodySource, false);
-    }
-
-    /**
-     * @deprecated Use {@link #builder()} to construct this.
-     */
-    @Deprecated
-    public Request(URI uri, String method, ListMultimap<String, String> headers, @Nullable BodySource bodySource, boolean followRedirects)
-    {
-        this(uri, method, headers, bodySource, followRedirects, false);
-    }
-
-    private Request(
+    Request(
             URI uri,
             String method,
             ListMultimap<String, String> headers,
