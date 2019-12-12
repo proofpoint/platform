@@ -70,19 +70,19 @@ public class TestRequest
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Cannot make requests to HTTP port 0")
     public void testCannotMakeRequestToIllegalPort()
     {
-        new Request(URI.create("http://example.com:0/"), "GET", createHeadersA(), createBodySource());
+        new Request(URI.create("http://example.com:0/"), "GET", createHeadersA(), createBodySource(), false, false);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "uri does not have a host: http:///foo")
     public void testInvalidUriMissingHost()
     {
-        new Request(URI.create("http:///foo"), "GET", createHeadersA(), createBodySource());
+        new Request(URI.create("http:///foo"), "GET", createHeadersA(), createBodySource(), false, false);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "uri scheme must be http or https: gopher://example.com")
     public void testInvalidUriScheme()
     {
-        new Request(URI.create("gopher://example.com"), "GET", createHeadersA(), createBodySource());
+        new Request(URI.create("gopher://example.com"), "GET", createHeadersA(), createBodySource(), false, false);
     }
 
     private static URI createUriA()

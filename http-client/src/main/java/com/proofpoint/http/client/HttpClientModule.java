@@ -22,7 +22,6 @@ import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
-import com.proofpoint.http.client.jetty.JettyIoPoolConfig;
 import com.proofpoint.log.Logger;
 
 import javax.annotation.PreDestroy;
@@ -39,11 +38,7 @@ import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static java.util.Objects.requireNonNull;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
-/**
- * @deprecated Will no longer be public.
- */
-@Deprecated
-public class HttpClientModule
+class HttpClientModule
         implements Module
 {
     private static final Logger log = Logger.get(HttpClientModule.class);
@@ -52,24 +47,6 @@ public class HttpClientModule
     private final Binder rootBinder;
     private final boolean isPrivate;
     protected Binder binder;
-
-    /**
-     * @deprecated Will be removed.
-     */
-    @Deprecated
-    protected HttpClientModule(String name, Class<? extends Annotation> annotation)
-    {
-        this(name, annotation, null, false);
-    }
-
-    /**
-     * @deprecated Will be removed.
-     */
-    @Deprecated
-    protected HttpClientModule(String name, Class<? extends Annotation> annotation, Binder rootBinder)
-    {
-        this(name, annotation, rootBinder, false);
-    }
 
     HttpClientModule(String name, Class<? extends Annotation> annotation, Binder rootBinder, boolean isPrivate)
     {
@@ -87,10 +64,6 @@ public class HttpClientModule
         // bind the configuration
         bindConfig(binder).bind(HttpClientConfig.class).annotatedWith(annotation).prefixedWith(name);
 
-        // Bind the deprecated shared thread pool config, which is not used,
-        // so that it can consume the deprecated config properties.
-        bindConfig(rootBinder).bind(JettyIoPoolConfig.class);
-
         // bind the client
         this.binder.bind(HttpClient.class).annotatedWith(annotation).toProvider(new HttpClientProvider(name, annotation)).in(Scopes.SINGLETON);
 
@@ -102,15 +75,6 @@ public class HttpClientModule
             reportBinder(binder).export(HttpClient.class).annotatedWith(annotation);
             newExporter(binder).export(HttpClient.class).annotatedWith(annotation).withGeneratedName();
         }
-    }
-
-    /**
-     * @deprecated Will no longer be public
-     */
-    @Deprecated
-    public void addAlias(Class<? extends Annotation> alias)
-    {
-        binder.bind(HttpClient.class).annotatedWith(alias).to(Key.get(HttpClient.class, annotation));
     }
 
     private static class HttpClientProvider

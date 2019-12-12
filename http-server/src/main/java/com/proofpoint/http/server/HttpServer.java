@@ -109,63 +109,7 @@ public class HttpServer
 
     private final Optional<ZonedDateTime> certificateExpiration;
 
-    /**
-     * @deprecated Will no longer be public.
-     */
-    @Deprecated
     public HttpServer(HttpServerInfo httpServerInfo,
-            NodeInfo nodeInfo,
-            HttpServerConfig config,
-            Servlet theServlet,
-            Map<String, String> parameters,
-            Set<Filter> filters,
-            Set<HttpResourceBinding> resources,
-            @Nullable Servlet theAdminServlet,
-            @Nullable Map<String, String> adminParameters,
-            @Nullable Set<Filter> adminFilters,
-            @Nullable MBeanServer mbeanServer,
-            @Nullable LoginService loginService,
-            QueryStringFilter queryStringFilter,
-            RequestStats stats,
-            DetailedRequestStats detailedRequestStats,
-            @Nullable RequestLogHandler logHandler)
-            throws IOException
-    {
-        this(httpServerInfo, nodeInfo, config, theServlet, parameters, filters, resources, theAdminServlet,
-                adminParameters, adminFilters, mbeanServer, loginService, queryStringFilter, stats,
-                detailedRequestStats, (RequestLog) null, new ClientAddressExtractor());
-
-    }
-
-    /**
-     * @deprecated Will no longer be public.
-     */
-    @Deprecated
-    public HttpServer(HttpServerInfo httpServerInfo,
-            NodeInfo nodeInfo,
-            HttpServerConfig config,
-            Servlet theServlet,
-            Map<String, String> parameters,
-            Set<Filter> filters,
-            Set<HttpResourceBinding> resources,
-            @Nullable Servlet theAdminServlet,
-            @Nullable Map<String, String> adminParameters,
-            @Nullable Set<Filter> adminFilters,
-            @Nullable MBeanServer mbeanServer,
-            @Nullable LoginService loginService,
-            QueryStringFilter queryStringFilter,
-            RequestStats stats,
-            DetailedRequestStats detailedRequestStats,
-            @Nullable RequestLogHandler logHandler,
-            ClientAddressExtractor clientAddressExtractor)
-            throws IOException
-    {
-        this(httpServerInfo, nodeInfo, config, theServlet, parameters, filters, resources, theAdminServlet,
-                adminParameters, adminFilters, mbeanServer, loginService, queryStringFilter, stats,
-                detailedRequestStats, (RequestLog) null, clientAddressExtractor);
-    }
-
-    HttpServer(HttpServerInfo httpServerInfo,
             NodeInfo nodeInfo,
             HttpServerConfig config,
             Servlet theServlet,

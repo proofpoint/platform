@@ -1,3 +1,29 @@
+Platform 2.20
+
+* Deprecation removals
+
+  We removed the following deprecated APIs:
+
+  - AnnotatedBindingBuilder constructor
+  - PrefixBindingBuilder constructor
+  - ConfigBindingBuilder constructor
+  - ConfigurationProvider
+  - HttpClientModule
+  - http.client.Request constructors
+  - RuntimeIOException
+  - JettyHttpClient.getIoPoolStats()
+  - JettyIoPoolConfig
+  - ClientInfoUtils.clientAddressFor()
+  - HttpServer constructors
+  - HttpServerProvider, TestingHttpServer, and TestingAdminHttpServer
+    constructors without a ClientAddressExtractor parameter
+  - RequestStats.record(String, int, long, long, Duration, Duration)
+  - TestingNodeModule constructors taking Guava Optional
+  - http-client.max-threads configuration option
+  - http-client.min-threads configuration option
+  - http-client.timeout-concurrency configuration option
+  - http-client.timeout-threads configuration option
+
 Platform 2.19
 
 * Library Upgrades

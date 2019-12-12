@@ -65,28 +65,6 @@ public class TestingAdminHttpServer extends HttpServer
         );
     }
 
-    @Deprecated
-    public TestingAdminHttpServer(HttpServerInfo httpServerInfo,
-            NodeInfo nodeInfo,
-            HttpServerConfig config,
-            Servlet servlet,
-            Servlet adminServlet,
-            Map<String, String> initParameters,
-            Set<Filter> filters,
-            QueryStringFilter queryStringFilter)
-            throws IOException
-    {
-        this(httpServerInfo,
-                nodeInfo,
-                config,
-                servlet,
-                adminServlet,
-                initParameters,
-                filters,
-                queryStringFilter,
-                new ClientAddressExtractor());
-    }
-
     @Inject
     public TestingAdminHttpServer(HttpServerInfo httpServerInfo,
             NodeInfo nodeInfo,

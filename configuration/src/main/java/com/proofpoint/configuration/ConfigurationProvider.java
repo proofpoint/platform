@@ -26,31 +26,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
-/**
- * @deprecated Will no longer be public.
- */
-@Deprecated
-public class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
+class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
 {
     private final AtomicReference<Key<T>> key = new AtomicReference<>();
     private final Class<T> configClass;
     private final AtomicReference<String> prefix = new AtomicReference<>();
     private final AtomicBoolean built = new AtomicBoolean();
     private ConfigurationFactory configurationFactory;
-
-    /**
-     * @deprecated Will no longer be public.
-     */
-    @Deprecated
-    public ConfigurationProvider(Key<T> key, Class<T> configClass, String prefix)
-    {
-        requireNonNull(key, "key is null");
-        requireNonNull(configClass, "configClass is null");
-
-        this.key.set(key);
-        this.configClass = configClass;
-        this.prefix.set(prefix);
-    }
 
     ConfigurationProvider(Class<T> configClass)
     {

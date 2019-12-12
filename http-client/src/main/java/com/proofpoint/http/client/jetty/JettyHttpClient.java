@@ -537,15 +537,6 @@ public class JettyHttpClient
         return requestFilters;
     }
 
-    /**
-     * @deprecated Will be removed.
-     */
-    @Deprecated
-    public IoPoolStats getIoPoolStats()
-    {
-        return stats.getIoPool();
-    }
-
     @Override
     @Managed
     @Flatten
