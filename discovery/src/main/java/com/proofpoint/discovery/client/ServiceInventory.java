@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerListenerAdapter;
+import com.proofpoint.http.client.ServiceType;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.log.Logger;
@@ -74,7 +75,7 @@ public class ServiceInventory
             DiscoveryClientConfig discoveryClientConfig,
             NodeInfo nodeInfo,
             JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec,
-            @ServiceType("discovery") HttpServiceBalancerImpl discoveryBalancer)
+            @com.proofpoint.http.client.ServiceType("discovery") HttpServiceBalancerImpl discoveryBalancer)
     {
         this(serviceInventoryConfig,
                 discoveryClientConfig,

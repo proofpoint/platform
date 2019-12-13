@@ -63,10 +63,22 @@ public class DiscoveryBinder
     public void bindSelector(String type)
     {
         requireNonNull(type, "type is null");
-        bindSelector(serviceType(type));
+        bindSelector(com.proofpoint.http.client.ServiceTypes.serviceType(type));
+        binder.bind(ServiceSelector.class).annotatedWith(serviceType(type)).to(Key.get(ServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType(type)));
     }
 
+    /**
+     * Use {@link #bindSelector(com.proofpoint.http.client.ServiceType)}.
+     */
+    @Deprecated
     public void bindSelector(ServiceType serviceType)
+    {
+        requireNonNull(serviceType, "serviceType is null");
+        bindConfig(binder).bind(ServiceSelectorConfig.class).annotatedWith(com.proofpoint.http.client.ServiceTypes.serviceType(serviceType.value())).prefixedWith("discovery." + serviceType.value());
+        binder.bind(ServiceSelector.class).annotatedWith(serviceType).toProvider(new ServiceSelectorProvider(serviceType.value())).in(SINGLETON);
+    }
+
+    public void bindSelector(com.proofpoint.http.client.ServiceType serviceType)
     {
         requireNonNull(serviceType, "serviceType is null");
         bindConfig(binder).bind(ServiceSelectorConfig.class).annotatedWith(serviceType).prefixedWith("discovery." + serviceType.value());
@@ -76,10 +88,18 @@ public class DiscoveryBinder
     public void bindHttpBalancer(String type)
     {
         requireNonNull(type, "type is null");
-        bindHttpBalancer(serviceType(type));
+        bindHttpBalancer(com.proofpoint.http.client.ServiceTypes.serviceType(type));
+        binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType(type)).to(Key.get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType(type)));
     }
 
     public void bindHttpBalancer(ServiceType serviceType)
+    {
+        requireNonNull(serviceType, "serviceType is null");
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(serviceType).prefixedWith("service-balancer." + serviceType.value());
+        binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType).toProvider(new HttpServiceBalancerProvider(serviceType.value())).in(SINGLETON);
+    }
+
+    public void bindHttpBalancer(com.proofpoint.http.client.ServiceType serviceType)
     {
         requireNonNull(serviceType, "serviceType is null");
         bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(serviceType).prefixedWith("service-balancer." + serviceType.value());
@@ -122,7 +142,8 @@ public class DiscoveryBinder
     public void bindHttpSelector(String type)
     {
         requireNonNull(type, "type is null");
-        bindHttpSelector(serviceType(type));
+        bindHttpSelector(com.proofpoint.http.client.ServiceTypes.serviceType(type));
+        binder.bind(HttpServiceSelector.class).annotatedWith(serviceType(type)).to(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType(type)));
     }
 
     /**
@@ -140,12 +161,40 @@ public class DiscoveryBinder
         binder.bind(HttpServiceSelector.class).annotatedWith(serviceType).toProvider(new HttpServiceSelectorProvider(serviceType.value())).in(SINGLETON);
     }
 
-    public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String type)
+    /**
+     * @deprecated Use {@link #bindDiscoveredHttpClient(com.proofpoint.http.client.ServiceType, Class)} to get a
+     * {@link com.proofpoint.http.client.balancing.BalancingHttpClient} or use
+     * {@link #bindHttpBalancer(com.proofpoint.http.client.ServiceType)} to get a
+     * {@link com.proofpoint.http.client.balancing.HttpServiceBalancer}.
+     */
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    public void bindHttpSelector(com.proofpoint.http.client.ServiceType serviceType)
     {
-        return bindDiscoveredHttpClient(requireNonNull(type, "type is null"), serviceType(type));
+        requireNonNull(serviceType, "serviceType is null");
+        bindSelector(serviceType);
+        binder.bind(HttpServiceSelector.class).annotatedWith(serviceType).toProvider(new HttpServiceSelectorProvider(serviceType.value())).in(SINGLETON);
     }
 
+    public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String type)
+    {
+        return bindDiscoveredHttpClient(requireNonNull(type, "type is null"), com.proofpoint.http.client.ServiceTypes.serviceType(type)).withAlias(serviceType(type));
+    }
+
+    /**
+     * @deprecated Use {@link #bindDiscoveredHttpClient(String, com.proofpoint.http.client.ServiceType)}.
+     */
     public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String name, ServiceType serviceType)
+    {
+        requireNonNull(name, "name is null");
+        requireNonNull(serviceType, "serviceType is null");
+
+        bindHttpBalancer(serviceType);
+        String serviceName = LOWER_CAMEL.to(UPPER_CAMEL, serviceType.value());
+        return httpClientBinder(binder).bindBalancingHttpClient(name, serviceType, serviceName, Key.get(HttpServiceBalancer.class, serviceType));
+    }
+
+    public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String name, com.proofpoint.http.client.ServiceType serviceType)
     {
         requireNonNull(name, "name is null");
         requireNonNull(serviceType, "serviceType is null");
@@ -157,15 +206,33 @@ public class DiscoveryBinder
 
     public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String type, Class<? extends Annotation> annotation)
     {
-        return bindDiscoveredHttpClient(serviceType(requireNonNull(type, "type is null")), annotation);
+        return bindDiscoveredHttpClient(com.proofpoint.http.client.ServiceTypes.serviceType(requireNonNull(type, "type is null")), annotation).withAlias(serviceType(type));
     }
 
+    /**
+     * @deprecated Use {@link #bindDiscoveredHttpClient(com.proofpoint.http.client.ServiceType, Class)}
+     */
+    @Deprecated
     public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(ServiceType serviceType, Class<? extends Annotation> annotation)
     {
         return bindDiscoveredHttpClient(serviceType.value(), serviceType, annotation);
     }
 
+    public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(com.proofpoint.http.client.ServiceType serviceType, Class<? extends Annotation> annotation)
+    {
+        return bindDiscoveredHttpClient(serviceType.value(), serviceType, annotation);
+    }
+
+    /**
+     * @deprecated Use {@link #bindDiscoveredHttpClient(String, com.proofpoint.http.client.ServiceType, Class)}
+     */
     public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String name, ServiceType serviceType, Class<? extends Annotation> annotation)
+    {
+        bindHttpBalancer(serviceType);
+        return httpClientBinder(binder).bindBalancingHttpClient(name, annotation, Key.get(HttpServiceBalancer.class, serviceType));
+    }
+
+    public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String name, com.proofpoint.http.client.ServiceType serviceType, Class<? extends Annotation> annotation)
     {
         bindHttpBalancer(serviceType);
         return httpClientBinder(binder).bindBalancingHttpClient(name, annotation, Key.get(HttpServiceBalancer.class, serviceType));

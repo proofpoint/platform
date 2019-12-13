@@ -50,7 +50,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
-import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
+import static com.proofpoint.http.client.ServiceTypes.serviceType;
 import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
 import static com.proofpoint.json.JsonCodecBinder.jsonCodecBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
@@ -125,7 +125,7 @@ public class DiscoveryModule
         }
 
         @Provides
-        @ServiceType("discovery")
+        @com.proofpoint.http.client.ServiceType("discovery")
         public HttpServiceBalancer createHttpServiceBalancer(
                 ReportExporter reportExporter,
                 ReportCollectionFactory reportCollectionFactory,
@@ -134,8 +134,8 @@ public class DiscoveryModule
             return getHttpServiceBalancerImpl(reportExporter, reportCollectionFactory, config);
         }
 
-        @ServiceType("discovery")
         @Provides
+        @com.proofpoint.http.client.ServiceType("discovery")
         public synchronized HttpServiceBalancerImpl getHttpServiceBalancerImpl(
                 ReportExporter reportExporter,
                 ReportCollectionFactory reportCollectionFactory,
@@ -151,6 +151,26 @@ public class DiscoveryModule
                 reportExporter.export(discoveryBalancer, false, "ServiceClient", tags);
             }
             return discoveryBalancer;
+        }
+
+        @Provides
+        @ServiceType("discovery")
+        public HttpServiceBalancer createLegacyHttpServiceBalancer(
+                ReportExporter reportExporter,
+                ReportCollectionFactory reportCollectionFactory,
+                @ForDiscoveryClient HttpServiceBalancerConfig config)
+        {
+            return getHttpServiceBalancerImpl(reportExporter, reportCollectionFactory, config);
+        }
+
+        @Provides
+        @ServiceType("discovery")
+        public HttpServiceBalancerImpl createLegacyHttpServiceBalancerImpl(
+                ReportExporter reportExporter,
+                ReportCollectionFactory reportCollectionFactory,
+                @ForDiscoveryClient HttpServiceBalancerConfig config)
+        {
+            return getHttpServiceBalancerImpl(reportExporter, reportCollectionFactory, config);
         }
 
         private static class DiscoveryExecutorProvider

@@ -22,7 +22,7 @@ import com.google.inject.TypeLiteral;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
-import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
+import static com.proofpoint.http.client.ServiceTypes.serviceType;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 public class HttpEventModule implements Module

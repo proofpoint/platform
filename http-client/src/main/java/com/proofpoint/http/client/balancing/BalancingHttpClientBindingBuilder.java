@@ -54,6 +54,12 @@ public class BalancingHttpClientBindingBuilder
         return this;
     }
 
+    public BalancingHttpClientBindingBuilder withAlias(Annotation alias)
+    {
+        binder.bind(HttpClient.class).annotatedWith(alias).to(key);
+        return this;
+    }
+
     public BalancingHttpClientBindingBuilder withAliases(Collection<Class<? extends Annotation>> aliases)
     {
         for (Class<? extends Annotation> alias : aliases) {
