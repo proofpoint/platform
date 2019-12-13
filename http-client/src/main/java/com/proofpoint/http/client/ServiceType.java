@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofpoint.discovery.client;
+package com.proofpoint.http.client;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.Retention;
@@ -24,13 +24,9 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * @deprecated Use {@link com.proofpoint.http.client.ServiceType}
- */
 @Retention(RUNTIME)
 @Target({FIELD, PARAMETER, METHOD})
 @Qualifier
-@Deprecated
 public @interface ServiceType
 {
     String value();

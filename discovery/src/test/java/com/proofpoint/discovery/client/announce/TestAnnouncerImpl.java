@@ -20,8 +20,8 @@ import com.google.common.collect.ImmutableSet;
 import com.proofpoint.discovery.client.DiscoveryException;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceDescriptors;
-import com.proofpoint.discovery.client.ServiceType;
 import com.proofpoint.discovery.client.testing.InMemoryDiscoveryClient;
+import com.proofpoint.http.client.ServiceType;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.units.Duration;
@@ -36,7 +36,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.concurrent.MoreFutures.getFutureValue;
-import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
+import static com.proofpoint.http.client.ServiceTypes.serviceType;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.testng.Assert.assertEquals;

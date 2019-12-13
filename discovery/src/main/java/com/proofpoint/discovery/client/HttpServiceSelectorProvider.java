@@ -21,7 +21,7 @@ import com.google.inject.Key;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
+import static com.proofpoint.http.client.ServiceTypes.serviceType;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("deprecation")

@@ -21,6 +21,10 @@ public final class ServiceTypes
     {
     }
 
+    /**
+     * @deprecated Use {@link com.proofpoint.http.client.ServiceType}.
+     */
+    @Deprecated
     public static ServiceType serviceType(String type)
     {
         return new ServiceTypeImpl(type);

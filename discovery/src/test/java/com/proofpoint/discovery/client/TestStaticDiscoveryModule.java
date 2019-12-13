@@ -92,7 +92,9 @@ public class TestStaticDiscoveryModule
                 )
                 .initialize();
 
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType("foo"))));
         assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("foo"))));
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType("bar"))));
         assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("bar"))));
     }
 

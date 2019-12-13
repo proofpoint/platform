@@ -102,7 +102,9 @@ public class TestDiscoveryModule
                 .initialize();
 
         assertThat(injector.getInstance(get(HttpServiceBalancer.class, serviceType("foo")))).isNotNull();
+        assertThat(injector.getInstance(get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType("foo")))).isNotNull();
         assertThat(injector.getInstance(get(HttpServiceBalancer.class, serviceType("bar")))).isNotNull();
+        assertThat(injector.getInstance(get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType("bar")))).isNotNull();
     }
 
     @Test
@@ -124,10 +126,14 @@ public class TestDiscoveryModule
                         "service-balancer.bar.uri", "http://127.0.0.1/bar"))
                 .initialize();
 
-        HttpServiceBalancer fooBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("foo")));
+        HttpServiceBalancer fooBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType("foo")));
         assertThat(fooBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/foo"));
-        HttpServiceBalancer barBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("bar")));
+        HttpServiceBalancer barBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType("bar")));
         assertThat(barBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/bar"));
+        HttpServiceBalancer fooLegacyBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("foo")));
+        assertThat(fooLegacyBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/foo"));
+        HttpServiceBalancer barLegacyBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("bar")));
+        assertThat(barLegacyBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/bar"));
         assertThat(injector.getInstance(Announcer.class)).isInstanceOf(NullAnnouncer.class);
     }
 
