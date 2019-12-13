@@ -77,6 +77,11 @@ class HttpClientModule
         }
     }
 
+    void addAlias(Class<? extends Annotation> alias)
+    {
+        binder.bind(HttpClient.class).annotatedWith(alias).to(Key.get(HttpClient.class, annotation));
+    }
+
     private static class HttpClientProvider
             implements Provider<HttpClient>
     {
