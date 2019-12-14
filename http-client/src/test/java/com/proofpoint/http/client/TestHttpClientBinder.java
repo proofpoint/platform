@@ -38,6 +38,7 @@ import static com.google.inject.name.Names.named;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.HttpClientBinder.HttpClientBindingBuilder;
 import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
+import static com.proofpoint.http.client.ServiceTypes.serviceType;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.testng.Assert.assertEquals;
@@ -188,6 +189,20 @@ public class TestHttpClientBinder
     }
 
     @Test
+    public void testBindBalancingHttpClientSimple()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", "http://nonexistent.nonexistent"),
+                        new ReportingModule(),
+                        new TestingMBeanModule())
+                .initialize();
+
+        assertNotNull(injector.getInstance(Key.get(HttpClient.class, serviceType("foo"))));
+    }
+
+    @Test
     public void testBindBalancingHttpClientUris()
             throws Exception
     {
@@ -213,6 +228,20 @@ public class TestHttpClientBinder
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, named("bar"))));
+    }
+
+    @Test
+    public void testBindKubernetesServiceBalancingHttp()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        binder -> httpClientBinder(binder).bindKubernetesServiceHttpClient("foo", "default"),
+                        new ReportingModule(),
+                        new TestingMBeanModule())
+                .initialize();
+
+        assertNotNull(injector.getInstance(Key.get(HttpClient.class, serviceType("foo"))));
     }
 
     @Test

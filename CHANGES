@@ -5,6 +5,10 @@ Platform 2.19
   We have deprecated @com.proofpoint.discovery.client.ServiceType in favor of
   @com.proofpoint.http.client.ServiceType.
 
+  We created convenience HttpClientBinder methods
+  bindBalancingHttpClient(String, String, String...) and
+  bindKubernetesServiceHttpClient(String, String)
+
 * Deprecation removals
 
   We removed the following deprecated APIs:
