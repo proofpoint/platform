@@ -15,6 +15,7 @@
  */
 package com.proofpoint.http.client;
 
+import com.google.common.collect.Streams;
 import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
@@ -31,15 +32,17 @@ import org.weakref.jmx.ObjectNameBuilder;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 /**
@@ -87,6 +90,23 @@ import static org.weakref.jmx.guice.ExportBinder.newExporter;
  *
  * Additionally binds the same {@link HttpClient} annotated with the
  * {@code @BarClient} annotation.
+ *
+ * <pre>
+ *     httpClientBinder(binder).bindBalancingHttpClient("foo", "https://foo.example.com");</pre>
+ *
+ * Binds an {@link HttpClient} annotated with the {@code @ServiceType("foo")}
+ * annotation to an implementation that takes relative {@link URI}s in
+ * requests, interpreting them relative to "https://foo.example.com".
+ * The string {@code "foo"} also specifies the prefix for configuration.
+ *
+ * <pre>
+ *     httpClientBinder(binder).bindKubernetesServiceHttpClient("foo", "bar");</pre>
+ *
+ * Binds an {@link HttpClient} annotated with the {@code @ServiceType("foo")}
+ * annotation to an implementation that takes relative {@link URI}s in
+ * requests, interpreting them relative to the Kubernetes service "foo" in
+ * Kubernetes namespace "bar".
+ * The string {@code "foo"} also specifies the prefix for configuration.
  *
  */
 public class HttpClientBinder
@@ -142,6 +162,26 @@ public class HttpClientBinder
         HttpClientBindOptions options = new HttpClientBindOptions();
         binder.bind(HttpClientBindOptions.class).annotatedWith(annotation).toInstance(options);
         return new HttpClientBindingBuilder(module, newSetBinder(binder, HttpRequestFilter.class, annotation), options);
+    }
+
+    /**
+     * Binds an {@link HttpClient} annotated with {@code @ServiceType(type)}
+     * to an implementation that takes relative
+     * {@link URI}s. The requests are balanced against the provided static set
+     * of prefixes.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param type The service type.
+     * @param moreBaseUris The {@link URI} prefixes to balance across.
+     */
+    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String type, String baseUri, String... moreBaseUris)
+    {
+        requireNonNull(type, "type is null");
+        requireNonNull(baseUri, "baseUri is null");
+        requireNonNull(moreBaseUris, "moreBaseUris is null");
+
+        return bindBalancingHttpClient(type, ServiceTypes.serviceType(type), type, Streams.concat(Stream.of(baseUri), Arrays.stream(moreBaseUris)).map(URI::create).collect(toList()));
     }
 
     /**
@@ -253,6 +293,25 @@ public class HttpClientBinder
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).to(balancerKey);
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
+    }
+
+    /**
+     * Binds an {@link HttpClient} annotated with @ServiceType(type)
+     * to an implementation that uses a Kubernetes service.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param type The Kubernetes service type.
+     * @param namespace The Kubernetes namespace serving the service.
+     */
+    public BalancingHttpClientBindingBuilder bindKubernetesServiceHttpClient(String type, String namespace)
+    {
+        requireNonNull(type, "type is null");
+        checkArgument(!type.equals(""), "type is empty");
+        requireNonNull(namespace, "namespace is null");
+        checkArgument(!namespace.equals(""), "namespace is empty");
+
+        return bindBalancingHttpClient(type, "https://" + type + "." + namespace + ".svc.cluster.local");
     }
 
     private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Annotation annotation, String serviceName)
