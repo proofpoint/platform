@@ -1,3 +1,11 @@
+Platform 2.20
+
+* HttpClient
+
+  We fixed a bug
+  bindDiscoveredHttpClient(String, Class<? extends Annotation>) that was
+  introduced in 2.19.
+
 Platform 2.19
 
 * HttpClient

@@ -230,10 +230,14 @@ public class TestDiscoveryBinder
     {
         Injector injector = createInjector(
                 ImmutableMap.of("discovery.foo.pool", "foo-pool"),
-                binder -> discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
+                binder -> {
+                    discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class);
+                    discoveryBinder(binder).bindDiscoveredHttpClient("foo", BarClient.class);
+                }
         );
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("foo"))));
     }
 
     @Test

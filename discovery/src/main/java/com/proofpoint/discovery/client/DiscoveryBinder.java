@@ -206,7 +206,8 @@ public class DiscoveryBinder
 
     public BalancingHttpClientBindingBuilder bindDiscoveredHttpClient(String type, Class<? extends Annotation> annotation)
     {
-        return bindDiscoveredHttpClient(com.proofpoint.http.client.ServiceTypes.serviceType(requireNonNull(type, "type is null")), annotation).withAlias(serviceType(type));
+        binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType(type)).to(Key.get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType(type)));
+        return bindDiscoveredHttpClient(com.proofpoint.http.client.ServiceTypes.serviceType(requireNonNull(type, "type is null")), annotation);
     }
 
     /**
