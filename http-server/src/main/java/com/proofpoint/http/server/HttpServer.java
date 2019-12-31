@@ -358,7 +358,7 @@ public class HttpServer
 
         configuration.addCustomizer(new SecureRequestCustomizer());
 
-        SslContextFactory sslContextFactory = new SslContextFactory();
+        SslContextFactory sslContextFactory = new SslContextFactory.Server();
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
         sslContextFactory.setKeyStorePath(config.getKeystorePath());
         sslContextFactory.setKeyStorePassword(config.getKeystorePassword());

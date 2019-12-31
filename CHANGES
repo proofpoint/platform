@@ -1,3 +1,10 @@
+Platform 2.21
+
+* HttpServer
+
+  We fixed a regression in 2.19 when a Java keystore had multiple cert/key
+  pairs.
+
 Platform 2.20
 
 * HttpClient
