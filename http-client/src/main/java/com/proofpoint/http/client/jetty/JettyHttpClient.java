@@ -151,7 +151,7 @@ public class JettyHttpClient
 
         creationLocation.fillInStackTrace();
 
-        SslContextFactory sslContextFactory = new SslContextFactory();
+        SslContextFactory sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
         sslContextFactory.setExcludeProtocols();
         sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);

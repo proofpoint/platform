@@ -191,7 +191,8 @@ public abstract class AbstractHttpClientTest
 
             httpConfiguration.addCustomizer(new SecureRequestCustomizer());
 
-            sslContextFactory = new SslContextFactory(keystore);
+            sslContextFactory = new SslContextFactory.Server();
+            sslContextFactory.setKeyStorePath(keystore);
             sslContextFactory.setKeyStorePassword("changeit");
 
             connectionFactories.add(new SslConnectionFactory(sslContextFactory, isJava8 ? "http/1.1" : "alpn"));
