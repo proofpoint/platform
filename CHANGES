@@ -5,6 +5,9 @@ Platform 2.21
   We fixed a regression in 2.19 when a Java keystore had multiple cert/key
   pairs.
 
+* Library Upgrades
+  - Guava to 28.2-jre (was 28.1-jre)
+
 Platform 2.20
 
 * HttpClient

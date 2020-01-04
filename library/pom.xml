@@ -85,7 +85,7 @@
 
         <dep.auto-value.version>1.6.5</dep.auto-value.version>
         <dep.jetty.version>9.4.24.v20191120</dep.jetty.version>
-        <dep.guava.version>28.1-jre</dep.guava.version>
+        <dep.guava.version>28.2-jre</dep.guava.version>
         <dep.guice.version>4.2.2</dep.guice.version>
         <dep.slf4j.version>1.7.26</dep.slf4j.version>
         <dep.logback.version>1.2.3</dep.logback.version>
