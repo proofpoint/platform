@@ -7,6 +7,7 @@ Platform 2.21
 
 * Library Upgrades
   - Guava to 28.2-jre (was 28.1-jre)
+  - hibernate-validator to 6.0.18.Final (was 6.0.16.Final)
 
 * Maven plugin upgrades
 
