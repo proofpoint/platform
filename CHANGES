@@ -8,6 +8,10 @@ Platform 2.21
 * Library Upgrades
   - Guava to 28.2-jre (was 28.1-jre)
 
+* Maven plugin upgrades
+
+ - duplicate-finder-maven-plugin to 1.4.0 (was 1.3.0)
+
 Platform 2.20
 
 * HttpClient
