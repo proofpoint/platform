@@ -1,6 +1,7 @@
 [Unit]
 Description=${project.artifactId} service
 After=network.target
+StartLimitIntervalSec=60
 
 [Service]
 Type=forking
@@ -11,7 +12,6 @@ ExecStop=/opt/proofpoint/${project.artifactId}/bin/launcher stop
 PIDFile=/opt/proofpoint/${project.artifactId}/var/run/platform.pid
 TimeoutSec=0
 Restart=always
-StartLimitIntervalSec=60
 StartLimitBurst=5
 PrivateTmp=true
 PrivateDevices=true
