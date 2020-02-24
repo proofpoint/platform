@@ -23,6 +23,7 @@ public class TestJaxrsConfig
                 .setHstsMaxAge(null)
                 .setIncludeSubDomains(false)
                 .setPreload(false)
+                .setOverrideMethodFilter(true)
         );
     }
 
@@ -33,12 +34,14 @@ public class TestJaxrsConfig
                 .put("jaxrs.hsts.max-age", "600s")
                 .put("jaxrs.hsts.include-sub-domains", "true")
                 .put("jaxrs.hsts.preload", "true")
+                .put("testing.jaxrs.override-method-filter", "false")
                 .build();
 
         JaxrsConfig expected = new JaxrsConfig()
                 .setHstsMaxAge(new Duration(600, TimeUnit.SECONDS))
                 .setIncludeSubDomains(true)
-                .setPreload(true);
+                .setPreload(true)
+                .setOverrideMethodFilter(false);
 
         assertFullMapping(properties, expected);
     }

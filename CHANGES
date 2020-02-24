@@ -9,6 +9,12 @@ Platform 2.25
 
   We removed support for Sealights under Docker.
 
+* JAX-RS
+
+  We added a "testing.jaxrs.override-method-filter" config option (default "true")
+  which can be set to "false" to disable the OverrideMethodFilter (allows overriding
+  POST requests with PUT or DELETE via header or query param)
+
 Platform 2.24
 
 * Library Upgrades

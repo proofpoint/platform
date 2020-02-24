@@ -13,6 +13,7 @@ public class JaxrsConfig
     private Duration hstsMaxAge = null;
     private boolean includeSubDomains = false;
     private boolean preload = false;
+    private boolean overrideMethodFilter = true;
 
     @Config("jaxrs.hsts.max-age")
     public JaxrsConfig setHstsMaxAge(Duration hstsMaxAge)
@@ -50,5 +51,17 @@ public class JaxrsConfig
     public boolean isPreload()
     {
         return preload;
+    }
+
+    @Config("testing.jaxrs.override-method-filter")
+    public JaxrsConfig setOverrideMethodFilter(boolean overrideMethodFilter)
+    {
+        this.overrideMethodFilter = overrideMethodFilter;
+        return this;
+    }
+
+    public boolean isOverrideMethodFilter()
+    {
+        return overrideMethodFilter;
     }
 }

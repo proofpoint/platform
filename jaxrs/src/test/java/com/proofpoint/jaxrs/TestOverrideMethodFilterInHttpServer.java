@@ -16,6 +16,7 @@
 package com.proofpoint.jaxrs;
 
 import com.google.inject.Injector;
+import com.proofpoint.bootstrap.Bootstrap;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request;
@@ -34,8 +35,6 @@ import org.testng.annotations.Test;
 
 import javax.management.MBeanServer;
 import javax.ws.rs.core.Response.Status;
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
@@ -63,10 +62,8 @@ public class TestOverrideMethodFilterInHttpServer
 
     @BeforeMethod
     public void setup()
-            throws Exception
     {
         resource = new TestingResource();
-        createServer(resource);
     }
 
     @AfterMethod
@@ -86,7 +83,10 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testDeleteViaQueryParam()
+            throws Exception
     {
+        createServer(resource, false);
+
         client.execute(buildRequestWithQueryParam(POST, DELETE), createStatusResponseHandler());
 
         assertFalse(resource.postCalled(), "POST");
@@ -97,7 +97,10 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testPutViaQueryParam()
+            throws Exception
     {
+        createServer(resource, false);
+
         client.execute(buildRequestWithQueryParam(POST, PUT), createStatusResponseHandler());
 
         assertFalse(resource.postCalled(), "POST");
@@ -109,7 +112,10 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testPostViaQueryParam()
+            throws Exception
     {
+        createServer(resource, false);
+
         client.execute(buildRequestWithQueryParam(POST, POST), createStatusResponseHandler());
 
         assertTrue(resource.postCalled(), "POST");
@@ -120,7 +126,10 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testDeleteViaHeader()
+            throws Exception
     {
+        createServer(resource, false);
+
         client.execute(buildRequestWithHeader(POST, DELETE), createStatusResponseHandler());
 
         assertFalse(resource.postCalled(), "POST");
@@ -131,7 +140,10 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testPutViaHeader()
+            throws Exception
     {
+        createServer(resource, false);
+
         client.execute(buildRequestWithHeader(POST, PUT), createStatusResponseHandler());
 
         assertFalse(resource.postCalled(), "POST");
@@ -143,8 +155,39 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testPostViaHeader()
+            throws Exception
     {
+        createServer(resource, false);
+
         client.execute(buildRequestWithHeader(POST, POST), createStatusResponseHandler());
+
+        assertTrue(resource.postCalled(), "POST");
+        assertFalse(resource.deleteCalled(), "DELETE");
+        assertFalse(resource.putCalled(), "PUT");
+        assertFalse(resource.getCalled(), "GET");
+    }
+
+    @Test
+    public void testDisableFilterWithHeader()
+            throws Exception
+    {
+        createServer(resource, true);
+
+        client.execute(buildRequestWithHeader(POST, PUT), createStatusResponseHandler());
+
+        assertTrue(resource.postCalled(), "POST");
+        assertFalse(resource.deleteCalled(), "DELETE");
+        assertFalse(resource.putCalled(), "PUT");
+        assertFalse(resource.getCalled(), "GET");
+    }
+
+    @Test
+    public void testDisableFilterWitQueryParam()
+            throws Exception
+    {
+        createServer(resource, true);
+
+        client.execute(buildRequestWithQueryParam(POST, PUT), createStatusResponseHandler());
 
         assertTrue(resource.postCalled(), "POST");
         assertFalse(resource.deleteCalled(), "DELETE");
@@ -176,8 +219,10 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testNonOverridableMethodsWithHeader()
-            throws IOException, ExecutionException, InterruptedException
+            throws Exception
     {
+        createServer(resource, false);
+
         assertNonOverridableMethod(buildRequestWithHeader(GET, POST));
         assertNonOverridableMethod(buildRequestWithHeader(GET, DELETE));
         assertNonOverridableMethod(buildRequestWithHeader(GET, PUT));
@@ -193,8 +238,10 @@ public class TestOverrideMethodFilterInHttpServer
 
     @Test
     public void testNonOverridableMethodsWithQueryParam()
-            throws IOException, ExecutionException, InterruptedException
+            throws Exception
     {
+        createServer(resource, false);
+
         assertNonOverridableMethod(buildRequestWithQueryParam(GET, POST));
         assertNonOverridableMethod(buildRequestWithQueryParam(GET, DELETE));
         assertNonOverridableMethod(buildRequestWithQueryParam(GET, PUT));
@@ -208,10 +255,10 @@ public class TestOverrideMethodFilterInHttpServer
         assertNonOverridableMethod(buildRequestWithQueryParam(PUT, GET));
     }
 
-    private void createServer(final TestingResource resource)
+    private void createServer(final TestingResource resource, boolean disable)
             throws Exception
     {
-        Injector injector = bootstrapTest()
+        Bootstrap.UnitTestBootstrap inProgress = bootstrapTest()
                 .withModules(
                         new TestingNodeModule(),
                         explicitJaxrsModule(),
@@ -219,8 +266,11 @@ public class TestOverrideMethodFilterInHttpServer
                         new ReportingModule(),
                         binder -> binder.bind(MBeanServer.class).toInstance(mock(MBeanServer.class)),
                         new TestingHttpServerModule(),
-                        binder -> jaxrsBinder(binder).bindInstance(resource))
-                .initialize();
+                        binder -> jaxrsBinder(binder).bindInstance(resource));
+        if (disable) {
+            inProgress.setRequiredConfigurationProperty("testing.jaxrs.override-method-filter", "false");
+        }
+        Injector injector = inProgress.initialize();
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         server = injector.getInstance(TestingHttpServer.class);
     }
