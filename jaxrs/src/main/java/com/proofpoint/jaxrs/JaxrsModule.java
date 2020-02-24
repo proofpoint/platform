@@ -26,6 +26,7 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
+import com.proofpoint.configuration.AbstractConfigurationAwareModule;
 import com.proofpoint.http.server.TheAdminServlet;
 import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.reporting.InRotationResource;
@@ -58,17 +59,19 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.Scopes.SINGLETON;
 import static com.google.inject.multibindings.MapBinder.newMapBinder;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import static com.google.inject.multibindings.OptionalBinder.newOptionalBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.reporting.HealthBinder.healthBinder;
 
 public class JaxrsModule
-        implements Module
+        extends AbstractConfigurationAwareModule
 {
     private final CommonJaxrsModule commonJaxrsModule = new CommonJaxrsModule();
     private boolean enableOptions = false;
 
-    public static JaxrsModule explicitJaxrsModule() {
+    public static JaxrsModule explicitJaxrsModule()
+    {
         return new JaxrsModule();
     }
 
@@ -78,7 +81,7 @@ public class JaxrsModule
     }
 
     @Override
-    public void configure(Binder binder)
+    public void setup(Binder binder)
     {
         binder.disableCircularProxies();
 
@@ -89,7 +92,12 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(SmileMapper.class);
         jaxrsBinder(binder).bind(ParsingExceptionMapper.class);
         jaxrsBinder(binder).bind(QueryParamExceptionMapper.class);
-        jaxrsBinder(binder).bind(OverrideMethodFilter.class);
+        newOptionalBinder(binder, Key.get(Ticker.class, JaxrsTicker.class))
+                .setDefault().toInstance(Ticker.systemTicker());
+        JaxrsConfig config = buildConfigObject(JaxrsConfig.class);
+        if (config.isOverrideMethodFilter()) {
+            jaxrsBinder(binder).bind(OverrideMethodFilter.class);
+        }
         jaxrsBinder(binder).bind(TimingResourceDynamicFeature.class);
         if (!enableOptions) {
             jaxrsBinder(binder).bind(DisallowOptionsModelProcessor.class);
@@ -193,12 +201,15 @@ public class JaxrsModule
             jaxrsBinder(binder).bindInjectionProvider(ClientInfo.class).to(ClientInfoSupplier.class);
             jaxrsBinder(binder).bindAdmin(ParsingExceptionMapper.class);
             jaxrsBinder(binder).bindAdmin(QueryParamExceptionMapper.class);
-            jaxrsBinder(binder).bindAdmin(OverrideMethodFilter.class);
             jaxrsBinder(binder).bindAdmin(ThreadDumpResource.class);
 
             newSetBinder(binder, Object.class, JaxrsResource.class).permitDuplicates();
             newSetBinder(binder, JaxrsBinding.class, JaxrsResource.class).permitDuplicates();
-            newMapBinder(binder, new TypeLiteral<Class<?>>() {}, new TypeLiteral<Supplier<?>>() {}, JaxrsInjectionProvider.class);
+            newMapBinder(binder, new TypeLiteral<Class<?>>()
+            {
+            }, new TypeLiteral<Supplier<?>>()
+            {
+            }, JaxrsInjectionProvider.class);
         }
 
         @Provides
@@ -286,7 +297,8 @@ public class JaxrsModule
 
         @Provides
         @TheAdminServlet
-        static Servlet createTheAdminServlet(@AdminJaxrsResource Set<Object> adminJaxRsSingletons, ObjectMapper objectMapper) {
+        static Servlet createTheAdminServlet(@AdminJaxrsResource Set<Object> adminJaxRsSingletons, ObjectMapper objectMapper)
+        {
             // The admin servlet needs its own JsonMapper object so that it references
             // the admin port's UriInfo
             ImmutableSet.Builder<Object> singletons = ImmutableSet.builder();
@@ -302,13 +314,6 @@ public class JaxrsModule
         static Map<String, String> createTheAdminServletParams()
         {
             return new HashMap<>();
-        }
-
-        @Provides
-        @JaxrsTicker
-        static Ticker createTicker()
-        {
-            return Ticker.systemTicker();
         }
 
         private static class JaxRsApplication

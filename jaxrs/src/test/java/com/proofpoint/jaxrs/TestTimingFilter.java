@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import com.google.inject.CreationException;
 import com.google.inject.Injector;
-import com.google.inject.util.Modules;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.Request.Builder;
@@ -56,6 +55,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.google.inject.multibindings.OptionalBinder.newOptionalBinder;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.Request.Builder.prepareDelete;
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
@@ -73,7 +73,7 @@ import static org.testng.Assert.assertEquals;
 
 public class TestTimingFilter
 {
-    private static TestingTicker ticker = new TestingTicker();
+    private static final TestingTicker ticker = new TestingTicker();
     private final HttpClient client = new JettyHttpClient();
 
     private LifeCycleManager lifeCycleManager;
@@ -89,13 +89,15 @@ public class TestTimingFilter
                         new TestingNodeModule(),
                         new TestingHttpServerModule(),
                         new JsonModule(),
-                        Modules.override(explicitJaxrsModule())
-                                .with(binder -> binder.bind(Ticker.class).annotatedWith(JaxrsTicker.class).toInstance(ticker)),
+                        explicitJaxrsModule(),
                         new TestingReportingModule(),
                         new TestingMBeanModule(),
                         binder -> {
                             jaxrsBinder(binder).bind(TestingTimingResource.class);
                             jaxrsBinder(binder).bind(TestingAnnotatedTimingResource.class);
+                            newOptionalBinder(binder,
+                                    com.google.inject.Key.get(Ticker.class, JaxrsTicker.class))
+                                    .setBinding().toInstance(ticker);
                         }
                 )
                 .initialize();
