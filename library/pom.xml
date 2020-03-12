@@ -1705,56 +1705,5 @@
                 </plugins>
             </build>
         </profile>
-
-        <profile>
-            <id>sealights</id>
-            <activation>
-                <property>
-                    <name>env.SL_TOKEN_FILE</name>
-                </property>
-                <file>
-                    <exists>.build-docker</exists>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <name>${project.docker.project}/${project.docker.name}:${project.version}</name>
-                                    <build>
-                                        <assembly>
-                                            <inline>
-                                                <files>
-                                                    <file>
-                                                        <source>${project.basedir}/target/sealights/sl-test-listener.jar</source>
-                                                        <destName>sl-test-listener.jar</destName>
-                                                        <outputDirectory>lib/</outputDirectory>
-                                                    </file>
-                                                    <file>
-                                                        <source>${project.basedir}/buildSessionId.txt</source>
-                                                        <destName>buildSessionId.txt</destName>
-                                                        <outputDirectory>lib/</outputDirectory>
-                                                    </file>
-                                                    <file>
-                                                        <source>${SL_TOKEN_FILE}</source>
-                                                        <destName>sl-token.txt</destName>
-                                                        <fileMode>0644</fileMode>
-                                                        <outputDirectory>lib/</outputDirectory>
-                                                    </file>
-                                                </files>
-                                            </inline>
-                                        </assembly>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 </project>
