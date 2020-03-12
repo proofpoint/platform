@@ -115,6 +115,7 @@ public class TestClientAddressExtractor
                 new Object[] {"172.16.1.2", true},
                 new Object[] {"10.0.0.1", true},
                 new Object[] {"10.1.2.3", true},
+                new Object[] {"100.126.2.3", true},
 
                 new Object[] {"1.2.3.4", false},
                 new Object[] {"172.33.0.0", false},

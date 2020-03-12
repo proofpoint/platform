@@ -31,7 +31,8 @@ public class ClientAddressExtractor
             "169.254.0.0/16," +
             "192.168.0.0/16," +
             "172.16.0.0/12," +
-            "10.0.0.0/8");
+            "10.0.0.0/8," +
+            "100.64.0.0/10");
 
     private final CidrSet trustedNetworks;
 
