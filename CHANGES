@@ -5,6 +5,10 @@ Platform 2.25
   We added 100.64.0.0/10 to the default set of networks trusted for following
   the X-Forwarded-For: header.
 
+* Docker
+
+  We removed support for Sealights under Docker.
+
 Platform 2.24
 
 * Library Upgrades
