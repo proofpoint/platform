@@ -113,18 +113,13 @@ public class TestConfigurationFactoryBuilder
             out.print("test: f\u014do");
         }
 
-        System.setProperty("config", file.getAbsolutePath());
-
         final Map<String, String> properties = new ConfigurationFactoryBuilder()
-                .withFile(System.getProperty("config"))
+                .withFile(file.getAbsolutePath())
                 .withSystemProperties()
                 .build()
                 .getProperties();
 
         assertEquals(properties.get("test"), "f\u014do");
-        assertEquals(properties.get("config"), file.getAbsolutePath());
-
-        System.getProperties().remove("config");
     }
 
     @Test
@@ -136,21 +131,16 @@ public class TestConfigurationFactoryBuilder
             out.println("key1: original");
             out.println("key2: original");
         }
-
-        System.setProperty("config", file.getAbsolutePath());
         System.setProperty("key1", "overridden");
 
         final Map<String, String> properties = new ConfigurationFactoryBuilder()
-                .withFile(System.getProperty("config"))
+                .withFile(file.getAbsolutePath())
                 .withSystemProperties()
                 .build()
                 .getProperties();
 
-        assertEquals(properties.get("config"), file.getAbsolutePath());
         assertEquals(properties.get("key1"), "overridden");
         assertEquals(properties.get("key2"), "original");
-
-        System.getProperties().remove("config");
     }
 
     @Test
@@ -162,16 +152,12 @@ public class TestConfigurationFactoryBuilder
             out.print("unused: foo");
         }
 
-        System.setProperty("config", file.getAbsolutePath());
-
         TestMonitor monitor = new TestMonitor();
         final ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
                 .withMonitor(monitor)
-                .withFile(System.getProperty("config"))
+                .withFile(file.getAbsolutePath())
                 .withSystemProperties()
                 .build();
-
-        System.getProperties().remove("config");
 
         try {
             createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
@@ -191,17 +177,13 @@ public class TestConfigurationFactoryBuilder
     {
         final File file = File.createTempFile("config", ".properties", tempDir);
 
-        System.setProperty("config", file.getAbsolutePath());
-
         TestMonitor monitor = new TestMonitor();
         final ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
                 .withMonitor(monitor)
                 .withModuleDefaults(ImmutableMap.of("unused", "foo"), ImmutableMap.of("unused", TEST_DEFAULTING_MODULE))
-                .withFile(System.getProperty("config"))
+                .withFile(file.getAbsolutePath())
                 .withSystemProperties()
                 .build();
-
-        System.getProperties().remove("config");
 
         try {
             createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
@@ -221,17 +203,13 @@ public class TestConfigurationFactoryBuilder
     {
         final File file = File.createTempFile("config", ".properties", tempDir);
 
-        System.setProperty("config", file.getAbsolutePath());
-
         TestMonitor monitor = new TestMonitor();
         final ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
                 .withMonitor(monitor)
                 .withApplicationDefaults(ImmutableMap.of("unused", "foo"))
-                .withFile(System.getProperty("config"))
+                .withFile(file.getAbsolutePath())
                 .withSystemProperties()
                 .build();
-
-        System.getProperties().remove("config");
 
         try {
             createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
@@ -255,16 +233,12 @@ public class TestConfigurationFactoryBuilder
             out.print("string-value: foo");
         }
 
-        System.setProperty("config", file.getAbsolutePath());
-
         TestMonitor monitor = new TestMonitor();
         final ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
                 .withMonitor(monitor)
-                .withFile(System.getProperty("config"))
+                .withFile(file.getAbsolutePath())
                 .withSystemProperties()
                 .build();
-
-        System.getProperties().remove("config");
 
         try {
             createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
@@ -276,8 +250,5 @@ public class TestConfigurationFactoryBuilder
             monitor.assertMatchingErrorRecorded("Duplicate configuration property 'string-value' in file " + file.getAbsolutePath());
             assertContainsAllOf(e.getMessage(), "Duplicate configuration property 'string-value' in file " + file.getAbsolutePath());
         }
-
     }
-
-
 }
