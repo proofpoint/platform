@@ -24,6 +24,7 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.spi.Message;
 import com.proofpoint.configuration.ConfigurationFactoryTest.AnnotatedSetter;
+import com.proofpoint.configuration.ConfigurationFactoryTest.StringDotValue;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -94,7 +95,7 @@ public class TestConfigurationFactoryBuilder
     {
         System.setProperty("test", "foo");
 
-        final Map<String, String> properties = new ConfigurationFactoryBuilder()
+        Map<String, String> properties = new ConfigurationFactoryBuilder()
                 .withSystemProperties()
                 .build()
                 .getProperties();
@@ -120,6 +121,23 @@ public class TestConfigurationFactoryBuilder
                 .getProperties();
 
         assertEquals(properties.get("test"), "f\u014do");
+    }
+
+    @Test
+    public void testLoadsFromJsonFile()
+            throws IOException
+    {
+        File file = File.createTempFile("config", ".json", tempDir);
+        try (PrintWriter out = new PrintWriter(file, "UTF-8")) {
+            out.print("{\"string\": \"foo\"}");
+        }
+
+        final Map<String, String> properties = new ConfigurationFactoryBuilder()
+                .withJsonFile(file.getAbsolutePath())
+                .build()
+                .getProperties();
+
+        assertEquals(properties, ImmutableMap.of("string", "foo"));
     }
 
     @Test
@@ -249,6 +267,36 @@ public class TestConfigurationFactoryBuilder
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Duplicate configuration property 'string-value' in file " + file.getAbsolutePath());
             assertContainsAllOf(e.getMessage(), "Duplicate configuration property 'string-value' in file " + file.getAbsolutePath());
+        }
+    }
+
+    @Test
+    public void testDuplicatePropertiesInJsonFileThrowsError()
+            throws IOException
+    {
+        File file = File.createTempFile("config", ".json", tempDir);
+        try (PrintStream out = new PrintStream(new FileOutputStream(file))) {
+            out.print("{\n" +
+                    "\"string.value\": \"foo\",\n" +
+                    "\"string\": {\"value\": \"foo\"}\n" +
+                    "}");
+        }
+
+        TestMonitor monitor = new TestMonitor();
+        ConfigurationFactory configurationFactory = new ConfigurationFactoryBuilder()
+                .withMonitor(monitor)
+                .withJsonFile(file.getAbsolutePath())
+                .build();
+
+        try {
+            createInjector(configurationFactory, binder -> bindConfig(binder).bind(StringDotValue.class));
+
+            fail("Expected an exception in object creation due to duplicate configuration");
+        } catch (CreationException e) {
+            monitor.assertNumberOfErrors(1);
+            monitor.assertNumberOfWarnings(0);
+            monitor.assertMatchingErrorRecorded("Duplicate configuration property 'string.value' in file " + file.getAbsolutePath());
+            assertContainsAllOf(e.getMessage(), "Duplicate configuration property 'string.value' in file " + file.getAbsolutePath());
         }
     }
 }

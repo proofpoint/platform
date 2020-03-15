@@ -15,6 +15,9 @@
  */
 package com.proofpoint.configuration;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -29,7 +32,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -40,6 +45,57 @@ public class PropertiesBuilder
     private final Map<String, String> properties = new HashMap<>();
     private final Set<String> expectToUse = new HashSet<>();
     private final Collection<String> errors = new ArrayList<>();
+
+    /**
+     * Loads properties from the given JSON-format file
+     *
+     * @param path file path
+     * @return self
+     * @throws java.io.IOException errors
+     */
+    public PropertiesBuilder withJsonFile(@Nullable String path)
+            throws IOException
+    {
+        if (path == null) {
+            return this;
+        }
+
+        JsonNode tree = new ObjectMapper(new JsonFactory()).readTree(new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8));
+        mergeTree("", tree, path);
+        return this;
+    }
+
+    private void mergeTree(String prefix, JsonNode tree, String path)
+    {
+        if (tree.isNull()) {
+            return;
+        }
+
+        if (tree.isValueNode()) {
+            if ("".equals(prefix)) {
+                errors.add(format("File %s has a JSON scalar; it must be an object", path));
+                return;
+            }
+            // "prefix.substring(1)" to skip over the leading "."
+            String key = prefix.substring(1);
+            String old = this.properties.put(key, tree.asText());
+            expectToUse.add(key);
+            if (old != null) {
+                errors.add(format("Duplicate configuration property '%s' in file %s", key, path));
+            }
+        } else if (tree.isArray()) {
+            int index = 0;
+            for (JsonNode child : tree) {
+                ++index;
+                mergeTree(format("%s.%d", prefix, index), child, path);
+            }
+        } else if (tree.isObject()) {
+            for (Iterator<Entry<String, JsonNode>> it = tree.fields(); it.hasNext();) {
+                Entry<String, JsonNode> entry = it.next();
+                mergeTree(prefix + "." + entry.getKey(), entry.getValue(), path);
+            }
+        }
+    }
 
     /**
      * Loads properties from the given file

@@ -130,4 +130,92 @@ public class TestPropertiesBuilder
 
         assertEquals(builder.getErrors(), ImmutableList.of("Duplicate configuration property 'string-value' in file " + file.getAbsolutePath()));
     }
+
+    @Test
+    public void testLoadsFromJsonFile()
+            throws IOException
+    {
+        File file = File.createTempFile("config", ".json", tempDir);
+        try (PrintWriter out = new PrintWriter(file, "UTF-8")) {
+            out.print("{\n" +
+                    "\"string\": \"f\u014do\",\n" +
+                    "\"number\": 2,\n" +
+                    "\"bool\": true,\n" +
+                    "\"list\": [\"b\", \"a\"],\n" +
+                    "\"map\": {\"c\": \"d\"},\n" +
+                    "\"map.c\": null\n" + // Ensure entries with null values ignored, even if duplicate
+                    "}");
+        }
+
+        PropertiesBuilder builder = new PropertiesBuilder()
+                .withJsonFile(file.getAbsolutePath());
+
+        assertEquals(builder.getProperties(), ImmutableMap.builder()
+                .put("string", "f\u014do")
+                .put("number", "2")
+                .put("bool", "true")
+                .put("list.1", "b")
+                .put("list.2", "a")
+                .put("map.c", "d")
+                .build()
+        );
+        assertEquals(builder.getExpectToUse(), ImmutableSet.of("string", "number", "bool", "list.1", "list.2", "map.c"));
+        assertEquals(builder.getErrors(), ImmutableList.of());
+    }
+
+    @Test
+    public void testNullJsonFile()
+            throws IOException
+    {
+        final File file = File.createTempFile("config", ".json", tempDir);
+        try (PrintWriter out = new PrintWriter(file, "UTF-8")) {
+            out.print("null");
+        }
+
+        PropertiesBuilder builder = new PropertiesBuilder()
+                .withJsonFile(file.getAbsolutePath());
+
+        assertEquals(builder.getProperties(), ImmutableMap.of());
+        assertEquals(builder.getExpectToUse(), ImmutableSet.of());
+        assertEquals(builder.getErrors(), ImmutableList.of());
+    }
+
+
+    @Test
+    public void testDuplicatePropertiesInJsonFileThrowsError()
+            throws IOException
+    {
+        final File file = File.createTempFile("config", ".json", tempDir);
+        try (PrintStream out = new PrintStream(new FileOutputStream(file))) {
+            out.print("{\n" +
+                    "\"string.value\": \"foo\",\n" +
+                    "\"string\": {\"value\": \"foo\"}\n" +
+                    "}");
+        }
+
+        PropertiesBuilder builder = new PropertiesBuilder()
+                .withJsonFile(file.getAbsolutePath());
+
+        assertEquals(builder.getErrors(), ImmutableList.of("Duplicate configuration property 'string.value' in file " + file.getAbsolutePath()));
+    }
+
+    @Test
+    public void testPropertyInMultipleJsonFilesReturnsError()
+            throws IOException
+    {
+        File file = File.createTempFile("config", ".json", tempDir);
+        try (PrintStream out = new PrintStream(new FileOutputStream(file))) {
+            out.print("{\"string\": \"foo\"}");
+        }
+        File secondFile = File.createTempFile("config", ".json", tempDir);
+        try (PrintStream out = new PrintStream(new FileOutputStream(secondFile))) {
+            out.print("{\"string\": \"foo\"}");
+        }
+
+        PropertiesBuilder builder = new PropertiesBuilder()
+                .withJsonFile(file.getAbsolutePath())
+                .withJsonFile(secondFile.getAbsolutePath());
+
+        assertEquals(builder.getErrors(), ImmutableList.of("Duplicate configuration property 'string' in file " + secondFile.getAbsolutePath()));
+    }
 }
