@@ -15,6 +15,9 @@
  */
 package com.proofpoint.configuration;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.inject.spi.Message;
@@ -29,8 +32,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -56,6 +61,20 @@ public final class ConfigurationFactoryBuilder
             throws IOException
     {
         propertiesBuilder = propertiesBuilder.withPropertiesFile(path);
+        return this;
+    }
+
+    /**
+     * Loads properties from the given JSON-format file
+     *
+     * @param path file path
+     * @return self
+     * @throws java.io.IOException errors
+     */
+    public ConfigurationFactoryBuilder withJsonFile(@Nullable String path)
+            throws IOException
+    {
+        propertiesBuilder = propertiesBuilder.withJsonFile(path);
         return this;
     }
 

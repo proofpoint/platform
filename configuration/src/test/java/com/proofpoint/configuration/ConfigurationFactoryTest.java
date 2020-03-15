@@ -1057,6 +1057,22 @@ public class ConfigurationFactoryTest
         }
     }
 
+    static class StringDotValue
+    {
+        private String stringValue;
+
+        String getStringValue()
+        {
+            return stringValue;
+        }
+
+        @Config("string.value")
+        void setStringValue(String stringValue)
+        {
+            this.stringValue = stringValue;
+        }
+    }
+
     private static class LegacyConfigPresent
     {
         private String stringA = "defaultA";
