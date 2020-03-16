@@ -110,7 +110,7 @@ public final class Main
         @Option(type = OptionType.GLOBAL, name = "--jvm-config", description = "Path to legacy jvm config file. Defaults to INSTALL_PATH/etc/jvm.config")
         public String jvmConfigPath = null;
 
-        @Option(type = OptionType.GLOBAL, name = "--config", description = "Path to configuration file. Defaults to INSTALL_PATH/etc/config.properties")
+        @Option(type = OptionType.GLOBAL, name = "--config", description = "Optional path to configuration file.")
         public String configPath = null;
 
         @Option(type = OptionType.GLOBAL, name = "--secrets-config", description = "Optional path to configuration file containing secrets.")
@@ -243,18 +243,9 @@ public final class Main
                 launcherArgs.add("--jvm-config");
                 launcherArgs.add(new File(jvmConfigPath).getAbsolutePath());
             }
-            if (configPath == null) {
-                configPath = installPath + "/etc/config.properties";
-            }
-            else {
+            if (configPath != null) {
                 launcherArgs.add("--config");
                 launcherArgs.add(new File(configPath).getAbsolutePath());
-            }
-            if (secretsConfigPath == null) {
-                secretsConfigPath = installPath + "/etc/secrets.properties";
-                if (!new File(secretsConfigPath).exists()) {
-                    secretsConfigPath = null;
-                }
             }
             if (secretsConfigPath != null) {
                 launcherArgs.add("--secrets-config");
@@ -369,16 +360,6 @@ public final class Main
                 System.exit(0);
             }
 
-            if (!new File(configPath).exists()) {
-                System.err.println("Config file is missing: " + configPath);
-                System.exit(STATUS_CONFIG_MISSING);
-            }
-
-            if (secretsConfigPath != null && !new File(secretsConfigPath).exists()) {
-                System.err.println("Secrets Config file is missing: " + secretsConfigPath);
-                System.exit(STATUS_CONFIG_MISSING);
-            }
-
             Collection<String> jvmConfigArgs = new ArrayList<>();
             try (InputStream jvmPropertiesFile = new FileInputStream(jvmPropertiesPath)) {
                 Properties jvmProperties = new Properties();
@@ -480,7 +461,9 @@ public final class Main
             for (String key : systemProperties.stringPropertyNames()) {
                 javaArgs.add("-D" + key + "=" + systemProperties.getProperty(key));
             }
-            javaArgs.add("-Dconfig=" + configPath);
+            if (configPath != null) {
+                javaArgs.add("-Dconfig=" + configPath);
+            }
             if (secretsConfigPath != null) {
                 javaArgs.add("-Dsecrets-config=" + secretsConfigPath);
             }
