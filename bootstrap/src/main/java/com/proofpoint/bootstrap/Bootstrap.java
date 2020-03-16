@@ -43,6 +43,7 @@ import com.proofpoint.log.LoggingConfiguration;
 import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.NodeInfo;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,6 +55,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
@@ -327,10 +329,17 @@ public class Bootstrap
         }
         if (requiredConfigurationProperties == null) {
             log.info("Loading configuration");
-            builder = builder
-                    .withFile(System.getProperty("config"))
-                    .withFile(System.getProperty("secrets-config"))
-                    .withSystemProperties();
+            builder = builder.withFile(firstNonNull(System.getProperty("config"), "etc/config.properties"));
+
+            String secretsConfigPath = System.getProperty("secrets-config");
+            if (secretsConfigPath == null && new File("etc/secrets.properties").exists()) {
+                secretsConfigPath = "etc/secrets.properties";
+            }
+            if (secretsConfigPath != null) {
+                builder = builder.withFile(secretsConfigPath);
+            }
+
+            builder = builder.withSystemProperties();
         }
         else {
             builder = builder.withRequiredProperties(requiredConfigurationProperties);
