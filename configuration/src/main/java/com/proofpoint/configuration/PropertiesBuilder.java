@@ -152,6 +152,13 @@ public class PropertiesBuilder
         return this;
     }
 
+    public PropertiesBuilder throwOnError() {
+        if (!errors.isEmpty()) {
+            throw new RuntimeException(String.join("\n", errors));
+        }
+        return this;
+    }
+
     public Map<String, String> getProperties()
     {
         return ImmutableMap.copyOf(properties);

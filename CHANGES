@@ -23,6 +23,12 @@ Platform 2.26
      object.a=b
      object.c=false
 
+* Logging
+
+  We added support for JSON-format configuration of log levels. If the file
+  "etc/config/log.json" exists, then it will be read instead of the default
+  "etc/log.properties".
+
 Platform 2.25
 
 * HttpServer

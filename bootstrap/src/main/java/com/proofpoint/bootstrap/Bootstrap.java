@@ -35,6 +35,7 @@ import com.proofpoint.configuration.ConfigurationInspector.ConfigAttribute;
 import com.proofpoint.configuration.ConfigurationInspector.ConfigRecord;
 import com.proofpoint.configuration.ConfigurationModule;
 import com.proofpoint.configuration.ConfigurationValidator;
+import com.proofpoint.configuration.PropertiesBuilder;
 import com.proofpoint.configuration.ValidationErrorModule;
 import com.proofpoint.configuration.WarningsMonitor;
 import com.proofpoint.log.Logger;
@@ -379,6 +380,15 @@ public class Bootstrap
             log.info("Initializing logging");
             LoggingConfiguration configuration = configurationFactory.build(LoggingConfiguration.class);
             logging.configure(configuration);
+
+            if (configuration.getLevelsFile() == null) {
+                if (new File("etc/config/log.json").exists()) {
+                    logging.setLevels(new PropertiesBuilder().withJsonFile("etc/config/log.json").throwOnError().getProperties());
+                }
+                else if (new File("etc/log.properties").exists()) {
+                    logging.setLevels(new File("etc/log.properties"));
+                }
+            }
         }
 
         warningsMonitor.loggingInitialized();
