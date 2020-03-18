@@ -44,7 +44,12 @@ import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.NodeInfo;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.PrintWriter;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -328,17 +333,38 @@ public class Bootstrap
             builder = builder.withApplicationDefaults(applicationDefaults);
         }
         if (requiredConfigurationProperties == null) {
-            log.info("Loading configuration");
-            builder = builder.withFile(firstNonNull(System.getProperty("config"), "etc/config.properties"));
+            String configPropertiesPath = System.getProperty("config");
+            if (configPropertiesPath == null && new File("etc/config/config.json").exists()) {
+                log.info("Loading configuration from etc/config/config.json");
+                builder = builder.withJsonFile("etc/config/config.json");
 
-            String secretsConfigPath = System.getProperty("secrets-config");
-            if (secretsConfigPath == null && new File("etc/secrets.properties").exists()) {
-                secretsConfigPath = "etc/secrets.properties";
+                File[] jsonConfigFiles = new File("etc").listFiles((FileFilter) file -> {
+                    if (!file.isDirectory() || "config".equals(file.getName()) || file.getName().startsWith(".")) {
+                        return false;
+                    }
+                    File configJsonPath = file.toPath().resolve("config.json").toFile();
+                    return configJsonPath.exists();
+                });
+                if (jsonConfigFiles == null) {
+                    throw new RuntimeException("Could not list directories under etc");
+                }
+                for (File jsonConfigFile : jsonConfigFiles) {
+                    builder = builder.withJsonFile(jsonConfigFile.toPath().resolve("config.json").toString());
+                }
             }
-            if (secretsConfigPath != null) {
-                builder = builder.withFile(secretsConfigPath);
-            }
+            else {
+                configPropertiesPath = firstNonNull(configPropertiesPath, "etc/config.properties");
+                log.info("Loading configuration from %s", configPropertiesPath);
+                builder = builder.withFile(configPropertiesPath);
 
+                String secretsConfigPath = System.getProperty("secrets-config");
+                if (secretsConfigPath == null && new File("etc/secrets.properties").exists()) {
+                    secretsConfigPath = "etc/secrets.properties";
+                }
+                if (secretsConfigPath != null) {
+                    builder = builder.withFile(secretsConfigPath);
+                }
+            }
             builder = builder.withSystemProperties();
         }
         else {

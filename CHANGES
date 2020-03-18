@@ -1,3 +1,28 @@
+Platform 2.26
+
+* Configuration
+
+  We added support for JSON-format configuration.
+
+  If the file "etc/config/config.json" exists, then it will be read instead
+  of the default "etc/config.properties" and "etc/secrets.properties".
+  Additionally, files matching the glob "etc/*/config.json" will be read.
+
+  In the read JSON, arrays and objects will be (recursively) flattened. Null
+  values will be ignored. For example, the JSON:
+
+      {
+        "array": [ "value", null, 6 ],
+        "object": { "a": "b", "c": false }
+      }
+
+  will be interpreted as:
+
+     array.1=value
+     array.3=6
+     object.a=b
+     object.c=false
+
 Platform 2.25
 
 * HttpServer
