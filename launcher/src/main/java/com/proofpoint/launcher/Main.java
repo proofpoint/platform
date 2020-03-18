@@ -126,7 +126,7 @@ public final class Main
         @Option(type = OptionType.GLOBAL, name = "--log-file", description = "Path to log file. Defaults to DATA_DIR/var/log/launcher.log")
         public String logPath = null;
 
-        @Option(type = OptionType.GLOBAL, name = "--log-levels-file", description = "Path to log config file. Defaults to INSTALL_PATH/etc/log.properties")
+        @Option(type = OptionType.GLOBAL, name = "--log-levels-file", description = "Optional path to log config file.")
         public String logLevelsPath = null;
 
         @Option(type = OptionType.GLOBAL, name = "--bootstrap-log-file", description = "Path to bootstrap log file. Defaults to DATA_DIR/var/log/bootstrap.log")
@@ -153,11 +153,6 @@ public final class Main
             catch (URISyntaxException e) {
                 // Can't happen
                 throw new RuntimeException(e);
-            }
-
-            logLevelsPath = installPath + "/etc/log.properties";
-            if (!(new File(logLevelsPath).canRead()) && new File(installPath + "/etc/log.config").canRead()) {
-                System.err.print("Did not find a log.properties file, but found a log.config instead.  log.config is no longer supported, please use log.properties.");
             }
         }
 
@@ -258,8 +253,10 @@ public final class Main
                 launcherArgs.add("--data");
                 launcherArgs.add(new File(dataDir).getAbsolutePath());
             }
-            launcherArgs.add("--log-levels-file");
-            launcherArgs.add(new File(logLevelsPath).getAbsolutePath());
+            if (logLevelsPath != null) {
+                launcherArgs.add("--log-levels-file");
+                launcherArgs.add(new File(logLevelsPath).getAbsolutePath());
+            }
 
             try (InputStream nodeFile = new FileInputStream(nodePropertiesPath)) {
                 systemProperties.load(nodeFile);
@@ -471,7 +468,7 @@ public final class Main
                 javaArgs.add("-Dlog.path=" + logPath);
                 javaArgs.add("-Dlog.enable-console=false");
             }
-            if (new File(logLevelsPath).exists()) {
+            if (logLevelsPath != null && new File(logLevelsPath).exists()) {
                 javaArgs.add("-Dlog.levels-file=" + logLevelsPath);
             }
             javaArgs.add("-Dlog.bootstrap.path=" + bootstrapLogPath);

@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
+import com.proofpoint.configuration.PropertiesBuilder;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.Duration;
 
@@ -298,12 +299,7 @@ public class Logging
     public void setLevels(File file)
             throws IOException
     {
-        Properties properties = new Properties();
-        try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
-            properties.load(reader);
-        }
-
-        processLevels(properties);
+        setLevels(new PropertiesBuilder().withPropertiesFile(file.getPath()).throwOnError().getProperties());
     }
 
     @SuppressWarnings("MethodMayBeStatic")
@@ -347,9 +343,9 @@ public class Logging
         return levels.build();
     }
 
-    private void processLevels(Properties properties)
+    public void setLevels(Map<String, String> properties)
     {
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
             String loggerName = entry.getKey().toString();
             Level level = Level.valueOf(entry.getValue().toString().toUpperCase(Locale.US));
 
