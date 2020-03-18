@@ -29,6 +29,12 @@ Platform 2.26
   "etc/config/log.json" exists, then it will be read instead of the default
   "etc/log.properties".
 
+* Launcher
+
+  We added support for JSON-format configuration of jvm arguments. If the file
+  "etc/config/jvm.json" exists, then it will be read instead of the default
+  "etc/jvm.properties" or "etc/jvm.config".
+
 Platform 2.25
 
 * HttpServer
