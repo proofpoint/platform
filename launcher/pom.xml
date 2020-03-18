@@ -157,6 +157,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.proofpoint.platform</groupId>
+            <artifactId>configuration</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
             <optional>true</optional>

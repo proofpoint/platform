@@ -16,6 +16,7 @@
 package com.proofpoint.launcher;
 
 import com.google.common.base.Joiner;
+import com.proofpoint.configuration.PropertiesBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airlift.command.Arguments;
 import io.airlift.command.Cli;
@@ -49,6 +50,7 @@ import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.locks.LockSupport;
@@ -224,20 +226,6 @@ public final class Main
                 launcherArgs.add("--node-config");
                 launcherArgs.add(new File(nodePropertiesPath).getAbsolutePath());
             }
-            if (jvmPropertiesPath == null) {
-                jvmPropertiesPath = installPath + "/etc/jvm.properties";
-            }
-            else {
-                launcherArgs.add("--jvm-properties");
-                launcherArgs.add(new File(jvmPropertiesPath).getAbsolutePath());
-            }
-            if (jvmConfigPath == null) {
-                jvmConfigPath = installPath + "/etc/jvm.config";
-            }
-            else {
-                launcherArgs.add("--jvm-config");
-                launcherArgs.add(new File(jvmConfigPath).getAbsolutePath());
-            }
             if (configPath != null) {
                 launcherArgs.add("--config");
                 launcherArgs.add(new File(configPath).getAbsolutePath());
@@ -358,27 +346,51 @@ public final class Main
             }
 
             Collection<String> jvmConfigArgs = new ArrayList<>();
-            try (InputStream jvmPropertiesFile = new FileInputStream(jvmPropertiesPath)) {
-                Properties jvmProperties = new Properties();
-                jvmProperties.load(jvmPropertiesFile);
-                // move all unlocking arguments to the front of the list
-                for (Entry<Object, Object> entry : jvmProperties.entrySet()) {
-                    if (entry.getKey().toString().startsWith("-XX:+Unlock")) {
-                        jvmConfigArgs.add(entry.getKey().toString() + entry.getValue().toString());
+            Map<String, String> jvmConfigProperties = null;
+            if (jvmPropertiesPath == null) {
+                try {
+                    jvmConfigProperties = new PropertiesBuilder().withJsonFile(installPath + "/etc/config/jvm.json").throwOnError().getProperties();
+                }
+                catch (FileNotFoundException ignore) {
+                }
+                catch (IOException e) {
+                    System.err.println("Error reading jvm.json file: " + e);
+                    System.exit(STATUS_CONFIG_MISSING);
+                }
+            }
+            if (jvmConfigProperties == null) {
+                // Fall back to jvm.properties
+                jvmPropertiesPath = firstNonNull(jvmPropertiesPath, installPath + "/etc/jvm.properties");
+                try {
+                    jvmConfigProperties = new PropertiesBuilder().withPropertiesFile(jvmPropertiesPath).throwOnError().getProperties();
+                }
+                catch (FileNotFoundException ignore) {
+                }
+                catch (IOException e) {
+                    System.err.println("Error reading " + jvmPropertiesPath + " file: " + e);
+                    System.exit(STATUS_CONFIG_MISSING);
+                }
+            }
+
+            if (jvmConfigProperties != null) {
+                for (Entry<String, String> entry : jvmConfigProperties.entrySet()) {
+                    if (entry.getKey().startsWith("-XX:+Unlock")) {
+                        jvmConfigArgs.add(entry.getKey() + entry.getValue());
                     }
                 }
-                for (Entry<Object, Object> entry : jvmProperties.entrySet()) {
+                for (Entry<String, String> entry : jvmConfigProperties.entrySet()) {
                     if ("-classpath".equals(entry.getKey())) {
-                        jvmConfigArgs.add(entry.getKey().toString());
-                        jvmConfigArgs.add(entry.getValue().toString());
+                        jvmConfigArgs.add(entry.getKey());
+                        jvmConfigArgs.add(entry.getValue());
                     }
-                    else if (!entry.getKey().toString().startsWith("-XX:+Unlock")) {
-                        jvmConfigArgs.add(entry.getKey().toString() + entry.getValue().toString());
+                    else if (!entry.getKey().startsWith("-XX:+Unlock")) {
+                        jvmConfigArgs.add(entry.getKey() + entry.getValue());
                     }
                 }
             }
-            catch (FileNotFoundException ignore) {
+            else {
                 // Fall back to jvm.config
+                jvmConfigPath = firstNonNull(jvmConfigPath, installPath + "/etc/jvm.config");
                 try (BufferedReader jvmReader = new BufferedReader(new InputStreamReader(new FileInputStream(jvmConfigPath), UTF_8))) {
                     String line;
                     boolean allowSpaces = false;
@@ -408,10 +420,6 @@ public final class Main
                     System.err.println("Error reading JVM config file: " + e);
                     System.exit(STATUS_CONFIG_MISSING);
                 }
-            }
-            catch (IOException e) {
-                System.err.println("Error reading JVM properties file: " + e);
-                System.exit(STATUS_CONFIG_MISSING);
             }
 
             boolean isJava8 = System.getProperty("java.version").startsWith("1.8.");
