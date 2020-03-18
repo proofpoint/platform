@@ -16,6 +16,7 @@
 package com.proofpoint.configuration;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import com.google.inject.spi.Message;
 import com.proofpoint.configuration.Problems.Monitor;
 
@@ -37,10 +38,9 @@ import static java.lang.String.format;
 
 public final class ConfigurationFactoryBuilder
 {
-    private final Map<String, String> properties = new HashMap<>();
+    private PropertiesBuilder propertiesBuilder = new PropertiesBuilder();
     private final Set<String> expectToUse = new HashSet<>();
     private Monitor monitor = Problems.NULL_MONITOR;
-    private final List<String> errors = new ArrayList<>();
     private Map<String,String> applicationDefaults = ImmutableMap.of();
     private Map<String,String> moduleDefaults = ImmutableMap.of();
     private Map<String, ConfigurationDefaultingModule> moduleDefaultSource = ImmutableMap.of();
@@ -55,41 +55,19 @@ public final class ConfigurationFactoryBuilder
     public ConfigurationFactoryBuilder withFile(@Nullable final String path)
             throws IOException
     {
-        if (path == null) {
-            return this;
-        }
-
-        final Properties properties = new Properties() {
-            @SuppressWarnings("UseOfPropertiesAsHashtable")
-            @Override
-            public synchronized Object put(Object key, Object value) {
-                final Object old = super.put(key, value);
-                if (old != null) {
-                    errors.add(format("Duplicate configuration property '%s' in file %s", key, path));
-                }
-                return old;
-            }
-        };
-
-        try (Reader reader = new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8)) {
-            properties.load(reader);
-        }
-
-        mergeProperties(properties);
-        expectToUse.addAll(properties.stringPropertyNames());
+        propertiesBuilder = propertiesBuilder.withPropertiesFile(path);
         return this;
     }
 
     public ConfigurationFactoryBuilder withSystemProperties()
     {
-        mergeProperties(System.getProperties());
+        propertiesBuilder = propertiesBuilder.withSystemProperties();
         return this;
     }
 
     public ConfigurationFactoryBuilder withRequiredProperties(Map<String, String> requiredConfigurationProperties)
     {
-        properties.putAll(requiredConfigurationProperties);
-        expectToUse.addAll(requiredConfigurationProperties.keySet());
+        propertiesBuilder = propertiesBuilder.withRequiredProperties(requiredConfigurationProperties);
         return this;
     }
 
@@ -134,13 +112,12 @@ public final class ConfigurationFactoryBuilder
 
     public ConfigurationFactory build()
     {
-        return new ConfigurationFactory(properties, applicationDefaults, moduleDefaults, moduleDefaultSource, expectToUse, errors, monitor);
-    }
-
-    private void mergeProperties(Properties properties)
-    {
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            this.properties.put(entry.getKey().toString(), entry.getValue().toString());
-        }
+        return new ConfigurationFactory(propertiesBuilder.getProperties(),
+                applicationDefaults,
+                moduleDefaults,
+                moduleDefaultSource,
+                Sets.union(expectToUse, propertiesBuilder.getExpectToUse()),
+                propertiesBuilder.getErrors(),
+                monitor);
     }
 }
