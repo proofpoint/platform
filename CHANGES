@@ -1,3 +1,9 @@
+Platform 2.27
+
+* Library Upgrades
+
+  - Guice to 4.2.3 (was 4.2.2)
+
 Platform 2.26
 
 * Configuration
