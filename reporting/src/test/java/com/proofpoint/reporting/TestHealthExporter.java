@@ -26,6 +26,8 @@ import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.TypeLiteral;
+import com.google.inject.spi.Element;
+import com.google.inject.spi.InjectionPoint;
 import com.google.inject.spi.TypeConverterBinding;
 import org.testng.annotations.BeforeMethod;
 
@@ -215,6 +217,18 @@ public class TestHealthExporter extends AbstractHealthBeanTest<TestHealthExporte
 
         @Override
         public Set<TypeConverterBinding> getTypeConverterBindings()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Element> getElements()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Map<TypeLiteral<?>, List<InjectionPoint>> getAllMembersInjectorInjectionPoints()
         {
             throw new UnsupportedOperationException();
         }
