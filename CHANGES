@@ -4,6 +4,10 @@ Platform 2.27
 
   - Guice to 4.2.3 (was 4.2.2)
 
+* Maven plugin upgrades
+
+  - jacoco-maven-plugin to 0.8.5 (was 0.8.4)
+
 Platform 2.26
 
 * Configuration
