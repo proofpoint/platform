@@ -17,6 +17,7 @@ Platform 2.27
   - spotbugs-maven-plugin to 4.0.0 (was 3.1.12)
   - maven-site-plugin to 3.9.0 (was 3.7.1)
   - plexus-compiler-javac-errorprone to 2.8.6 (was 2.8.5)
+  - error_prone_core to 2.3.4 (was 2.3.3)
 
 Platform 2.26
 
