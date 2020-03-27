@@ -15,6 +15,7 @@ Platform 2.27
   - maven-source-plugin to 3.2.1 (was 3.1.0)
   - dependency-scope-maven-plugin to 0.10 (was 0.8)
   - spotbugs-maven-plugin to 4.0.0 (was 3.1.12)
+  - maven-site-plugin to 3.9.0 (was 3.7.1)
 
 Platform 2.26
 
