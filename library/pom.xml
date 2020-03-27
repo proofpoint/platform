@@ -413,7 +413,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>3.1.12</version>
+                    <version>4.0.0</version>
                     <configuration>
                         <skip>${platform.check.skip-spotbugs}</skip>
                         <jvmArgs>-Xmx${platform.build.jvmsize}</jvmArgs>
