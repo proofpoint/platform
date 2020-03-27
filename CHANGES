@@ -12,6 +12,7 @@ Platform 2.27
   - maven-assembly-plugin to 3.2.0 (was 3.1.1)
   - maven-javadoc-plugin to 3.2.0 (was 3.1.0)
   - maven-jar-plugin to 3.2.0 (was 3.1.0)
+  - maven-source-plugin to 3.2.1 (was 3.1.0)
 
 Platform 2.26
 
