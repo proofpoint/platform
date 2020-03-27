@@ -396,7 +396,7 @@
                 <plugin>
                     <groupId>com.hubspot.maven.plugins</groupId>
                     <artifactId>dependency-scope-maven-plugin</artifactId>
-                    <version>0.8</version>
+                    <version>0.10</version>
                     <executions>
                         <execution>
                             <goals>
