@@ -10,6 +10,7 @@ Platform 2.27
   - sonar-maven-plugin 3.7.0.1746 (previously unspecified)
   - build-helper-maven-plugin to 3.1.0 (was 3.0.0)
   - maven-assembly-plugin to 3.2.0 (was 3.1.1)
+  - maven-javadoc-plugin to 3.2.0 (was 3.1.0)
 
 Platform 2.26
 
