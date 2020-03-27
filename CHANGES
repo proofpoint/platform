@@ -20,6 +20,7 @@ Platform 2.27
   - error_prone_core to 2.3.4 (was 2.3.3)
   - maven-dependency-plugin to 3.1.2 (was 3.1.1)
   - maven-invoker-plugin to 3.2.1 (was 3.2.0)
+  - maven-shade-plugin to 3.2.2 (was 3.2.1)
 
 Platform 2.26
 
