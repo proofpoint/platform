@@ -16,13 +16,13 @@
 package com.proofpoint.platform.sample;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.proofpoint.json.JsonCodec;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.proofpoint.json.JsonCodec.jsonCodec;
@@ -39,7 +39,7 @@ public class TestPersonRepresentation
 
     @BeforeMethod
     public void setup() {
-        jsonStructure = Maps.newHashMap(ImmutableMap.of(
+        jsonStructure = new HashMap<>(ImmutableMap.of(
                 "name", "Mr Foo",
                 "email", "foo@example.com"));
     }

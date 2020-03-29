@@ -20,6 +20,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.net.MediaType;
 import com.google.common.primitives.Ints;
 import com.proofpoint.json.JsonCodec;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.IOException;
 import java.util.Set;
@@ -63,6 +64,7 @@ public class JsonResponseHandler<T> implements ResponseHandler<T, RuntimeExcepti
     }
 
     @Override
+    @SuppressFBWarnings("VA_FORMAT_STRING_USES_NEWLINE")
     public T handle(Request request, Response response)
     {
         if (!successfulResponseCodes.contains(response.getStatusCode())) {

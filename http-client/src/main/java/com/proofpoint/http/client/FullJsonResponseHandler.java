@@ -104,7 +104,7 @@ public class FullJsonResponseHandler<T>
         }
 
         @SuppressWarnings("ThrowableInstanceNeverThrown")
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
+        @SuppressFBWarnings({"EI_EXPOSE_REP2","VA_FORMAT_STRING_USES_NEWLINE"})
         public JsonResponse(int statusCode, String statusMessage, ListMultimap<HeaderName, String> headers, JsonCodec<T> jsonCodec, byte[] jsonBytes)
         {
             this.statusCode = statusCode;
