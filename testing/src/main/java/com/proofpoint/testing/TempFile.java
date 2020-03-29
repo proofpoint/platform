@@ -15,6 +15,8 @@
  */
 package com.proofpoint.testing;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +45,7 @@ public class TempFile
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @Override
     public void close()
     {

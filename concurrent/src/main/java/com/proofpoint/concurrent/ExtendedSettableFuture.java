@@ -3,8 +3,8 @@ package com.proofpoint.concurrent;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.ExecutionException;
 
 import static com.google.common.util.concurrent.Futures.getDone;

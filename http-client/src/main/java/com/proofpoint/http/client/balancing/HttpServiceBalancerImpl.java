@@ -25,6 +25,7 @@ import com.google.common.collect.Multiset.Entry;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats.Status;
 import com.proofpoint.stats.MaxGauge;
 import com.proofpoint.units.Duration;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.weakref.jmx.Nested;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -239,6 +240,7 @@ public class HttpServiceBalancerImpl
         return concurrency;
     }
 
+    @SuppressFBWarnings(value = "EQ_COMPARETO_USE_OBJECT_EQUALS", justification = "Object does not implement Comparable")
     private static class InstanceState
     {
         Liveness liveness;

@@ -10,6 +10,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.util.concurrent.AtomicDouble;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airlift.slice.BasicSliceInput;
 import io.airlift.slice.DynamicSliceOutput;
 import io.airlift.slice.SizeOf;
@@ -1100,6 +1101,7 @@ public class QuantileDigest
         return freeSlots;
     }
 
+    @SuppressFBWarnings("VA_FORMAT_STRING_USES_NEWLINE")
     public String toGraphviz()
     {
         StringBuilder builder = new StringBuilder();

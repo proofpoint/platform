@@ -18,6 +18,7 @@ package com.proofpoint.http.client.balancing;
 import com.google.common.base.Ticker;
 import com.google.common.primitives.Ints;
 import com.proofpoint.units.Duration;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -104,6 +105,7 @@ class LeakyTokenBucket
             return sum;
         }
 
+        @SuppressFBWarnings(value = "VO_VOLATILE_INCREMENT", justification = "The expiredGen.compareAndSet() ensures only one writer to gen at a time")
         private void expired()
         {
             if (!expiredGen.compareAndSet(gen, gen + 1)) {

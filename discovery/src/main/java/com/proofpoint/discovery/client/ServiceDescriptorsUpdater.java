@@ -22,6 +22,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.units.Duration;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.Executor;
@@ -103,6 +104,7 @@ public final class ServiceDescriptorsUpdater
         return chainedCallback(future, new FutureCallback<ServiceDescriptors>()
         {
             @Override
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
             public void onSuccess(ServiceDescriptors newDescriptors)
             {
                 serviceDescriptors.set(newDescriptors);
