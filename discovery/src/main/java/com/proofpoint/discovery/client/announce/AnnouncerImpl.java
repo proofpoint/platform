@@ -25,6 +25,7 @@ import com.proofpoint.discovery.client.DiscoveryException;
 import com.proofpoint.discovery.client.ExponentialBackOff;
 import com.proofpoint.log.Logger;
 import com.proofpoint.units.Duration;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.inject.Inject;
 import java.net.ConnectException;
@@ -152,6 +153,7 @@ public class AnnouncerImpl
         Futures.addCallback(future, new FutureCallback<Duration>()
         {
             @Override
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
             public void onSuccess(Duration duration)
             {
                 errorBackOff.success();

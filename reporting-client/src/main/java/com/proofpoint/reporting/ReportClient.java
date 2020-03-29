@@ -30,6 +30,7 @@ import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.inject.Inject;
 import java.io.OutputStream;
@@ -106,6 +107,8 @@ class ReportClient
         @JsonProperty
         private final Map<String, String> tags;
 
+        @SuppressWarnings("ConstantConditions")
+        @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
         DataPoint(long systemTimeMillis, Cell<String, Map<String, String>, Object> cell, Map<String, String> instanceTags)
         {
             name = NOT_ACCEPTED_CHARACTER_PATTERN.matcher(cell.getRowKey()).replaceAll("_");

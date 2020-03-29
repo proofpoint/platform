@@ -159,6 +159,7 @@ public final class Main
         }
 
         // Copies default truststore to accessable path. Adds k8s ca root cert to truststore. Returns path of new truststore or null
+        @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
         private String addKubernetesToTrustStore()
         {
             File certFile = new File("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt");

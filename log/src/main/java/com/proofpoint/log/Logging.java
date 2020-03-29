@@ -404,7 +404,10 @@ public class Logging
             throws IOException
     {
         Path path = Paths.get(logPath);
-        Files.createDirectories(path.getParent());
+        Path parent = path.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
         BufferedWriter writer = Files.newBufferedWriter(path, WRITE, CREATE, TRUNCATE_EXISTING);
         BOOTSTRAP_LOGGER.addHandler(new Handler()
         {
