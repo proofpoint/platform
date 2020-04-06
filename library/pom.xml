@@ -9,7 +9,7 @@
     <description>Library POM</description>
     <url>http://github.com/proofpoint/platform</url>
 
-    <inceptionYear>2010</inceptionYear>
+    <inceptionYear>2010</inceptionYear> 
     <organization>
         <name>Proofpoint, Inc.</name>
         <url>http://www.proofpoint.com</url>
@@ -97,13 +97,13 @@
         <!-- jacoco params -->
         <!-- ut = Unit tests -->
         <!-- it = Integration tests -->
-        <jacoco.coverage-directory>${project.build.directory}/coverage-reports</jacoco.coverage-diretory>
+        <jacoco.coverage-directory>${project.build.directory}/coverage-reports</jacoco.coverage-directory>
         <jacoco.ut-report-path>${jacoco.coverage-directory}/jacoco-ut.exec</jacoco.ut-report-path>
         <jacoco.ut-out-directory>${project.reporting.outputDirectory}/jacoco-ut</jacoco.ut-out-directory>
         <jacoco.it-report-path>${jacoco.coverage-directory}/jacoco-it.exec</jacoco.it-report-path>
         <jacoco.it-out-directory>${project.reporting.outputDirectory}/jacoco-it</jacoco.it-out-directory>
         <jacoco.merged-report-path>${jacoco.coverage-directory}/merged.exec</jacoco.merged-report-path>
-        <jacoco.merged-out-directory></jacoco.merged-out-directory>
+        <jacoco.merged-out-directory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</jacoco.merged-out-directory>
     </properties>
 
     <scm>
@@ -467,16 +467,10 @@
                         -->
                         <execution>
                             <id>post-unit-test</id>
-                            <phase>test</phase>
+                            <phase>prepare-package</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
-                            <configuration>
-                                <!-- Sets the path to the file which contains the unit tests execution data. -->
-                                <dataFile>${jacoco.ut-report-path}</dataFile>
-                                <!-- Sets the output directory for the unit tests code coverage report. -->
-                                <outputDirectory>${jacoco.ut-out-directory}</outputDirectory>
-                            </configuration>
                         </execution>
                         <!--
                         Prepares the property pointing to the JaCoCo runtime agent which
@@ -526,12 +520,12 @@
                             </goals>
                             <configuration>
                                 <fileSets>
-                                <fileSet>
-                                    <directory></directory>
-                                    <includes>
-                                    <include>*.exec</include>
-                                    </includes>
-                                </fileSet>
+                                    <fileSet>
+                                        <directory>${jacoco.coverage-directory}</directory>
+                                        <includes>
+                                            <include>*.exec</include>
+                                        </includes>
+                                    </fileSet>
                                 </fileSets>
                                 <destFile>${jacoco.merged-report-path}</destFile>
                             </configuration>
