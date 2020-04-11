@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.proofpoint.platform</groupId>
     <artifactId>library</artifactId>
@@ -9,7 +10,7 @@
     <description>Library POM</description>
     <url>http://github.com/proofpoint/platform</url>
 
-    <inceptionYear>2010</inceptionYear> 
+    <inceptionYear>2010</inceptionYear>
     <organization>
         <name>Proofpoint, Inc.</name>
         <url>http://www.proofpoint.com</url>
@@ -97,21 +98,22 @@
         <!-- jacoco params -->
         <!-- ut = Unit tests -->
         <!-- it = Integration tests -->
-        <jacoco.coverage-directory>${project.build.directory}/coverage-reports</jacoco.coverage-directory>
+        <jacoco.coverage-directory>${project.build.directory}/site</jacoco.coverage-directory>
         <jacoco.ut-report-path>${jacoco.coverage-directory}/jacoco-ut.exec</jacoco.ut-report-path>
-        <jacoco.ut-out-directory>${project.reporting.outputDirectory}/jacoco-ut</jacoco.ut-out-directory>
+        <jacoco.ut-out-directory>${project.reporting.outputDirectory}/jacoco</jacoco.ut-out-directory>
         <jacoco.it-report-path>${jacoco.coverage-directory}/jacoco-it.exec</jacoco.it-report-path>
         <jacoco.it-out-directory>${project.reporting.outputDirectory}/jacoco-it</jacoco.it-out-directory>
         <jacoco.merged-report-path>${jacoco.coverage-directory}/merged.exec</jacoco.merged-report-path>
         <jacoco.merged-out-directory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</jacoco.merged-out-directory>
+
     </properties>
 
     <scm>
         <connection>scm:git:git://github.com/proofpoint/platform.git</connection>
         <developerConnection>scm:git:git@github.com:proofpoint/platform.git</developerConnection>
         <url>http://github.com/proofpoint/platform/tree/master</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <build>
         <pluginManagement>
@@ -158,7 +160,7 @@
                         <fail>${platform.check.fail-enforcer}</fail>
                         <failFast>false</failFast>
                         <rules>
-                            <requirePluginVersions />
+                            <requirePluginVersions/>
                             <bannedDependencies>
                                 <excludes>
                                     <!-- clashes with commons-logging:commons-logging -->
@@ -191,10 +193,11 @@
                                     <!-- whitelist the well numbered guava releases -->
                                     <include>com.google.guava:guava:[10.0.1,)</include>
                                     <!-- newer versions of junit do not repackage hamcrest -->
-                                    <include>junit:junit:[4.11,)</include>                                </includes>
+                                    <include>junit:junit:[4.11,)</include>
+                                </includes>
                             </bannedDependencies>
-                            <banDuplicatePomDependencyVersions />
-                            <requireUpperBoundDeps />
+                            <banDuplicatePomDependencyVersions/>
+                            <requireUpperBoundDeps/>
                             <requireMavenVersion>
                                 <version>3.2.3</version>
                             </requireMavenVersion>
@@ -442,12 +445,8 @@
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>0.8.5</version>
                     <executions>
-                        <!--
-                        Prepares the property pointing to the JaCoCo runtime agent which
-                        is passed as VM argument when the Maven Surefire plugin is executed.
-                        -->
                         <execution>
-                            <id>pre-unit-test</id>
+                            <id>default</id>
                             <goals>
                                 <goal>prepare-agent</goal>
                             </goals>
@@ -461,20 +460,22 @@
                                 <propertyName>surefireArgLine</propertyName>
                             </configuration>
                         </execution>
-                        <!--
-                        Ensures that the code coverage report for unit tests is created after
-                        unit tests have been run.
-                        -->
                         <execution>
-                            <id>post-unit-test</id>
+                            <id>report</id>
                             <phase>prepare-package</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
+                            <configuration>
+                                <!-- Sets the path to the file which contains the unit tests execution data. -->
+                                <dataFile>${jacoco.ut-report-path}</dataFile>
+                                <!-- Sets the output directory for the unit tests code coverage report. -->
+                                <outputDirectory>${jacoco.ut-out-directory}</outputDirectory>
+                            </configuration>
                         </execution>
                         <!--
-                        Prepares the property pointing to the JaCoCo runtime agent which
-                        is passed as VM argument when the Maven Failsafe plugin is executed.
+                            Prepares the property pointing to the JaCoCo runtime agent which
+                            is passed as VM argument when the Maven Failsafe plugin is executed.
                         -->
                         <execution>
                             <id>pre-integration-test</id>
@@ -509,7 +510,7 @@
                                 <outputDirectory>${jacoco.it-out-directory}</outputDirectory>
                             </configuration>
                         </execution>
-                        <!-- 
+                        <!--
                         To create a merged report of the unit and integration tests
                         -->
                         <execution>
@@ -540,18 +541,16 @@
                                 <dataFile>${jacoco.merged-report-path}</dataFile>
                                 <outputDirectory>${jacoco.merged-out-directory}</outputDirectory>
                             </configuration>
-                            </execution>
+                        </execution>
                     </executions>
-                    <configuration>
-                        <skip>${platform.check.skip-jacoco}</skip>
-                    </configuration>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.22.2</version>
                     <configuration>
+                        <forkCount>1</forkCount>
+                        <reuseForks>true</reuseForks>
                         <systemPropertyVariables>
                             <sun.jnu.encoding>${project.build.sourceEncoding}</sun.jnu.encoding>
                             <java.awt.headless>true</java.awt.headless>
@@ -559,7 +558,7 @@
                         <trimStackTrace>false</trimStackTrace>
                         <runOrder>random</runOrder>
                         <argLine>
-                            ${argLine}
+                            ${surefireArgLine}
                             -Duser.timezone=UTC
                             -Dfile.encoding=${project.build.sourceEncoding}
                             -Xmx${platform.test.jvmsize}
@@ -567,35 +566,8 @@
                             -XX:+ExitOnOutOfMemoryError
                             -XX:+HeapDumpOnOutOfMemoryError
                             -XX:-OmitStackTraceInFastThrow
-                            ${surefireArgLine}
                         </argLine>
                     </configuration>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.0.0-M1</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <systemPropertyVariables>
-                            <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
-                        </systemPropertyVariables>
-                        <argLine>${failsafeArgLine}</argLine>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>integration-test</id>
-                            <goals>
-                                <goal>integration-test</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>verify</id>
-                            <goals>
-                                <goal>verify</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
 
                 <plugin>
@@ -1562,7 +1534,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
-            			<version>3.1.2</version>
+                        <version>3.1.2</version>
                         <executions>
                             <execution>
                                 <id>unpack launcher</id>
@@ -1604,96 +1576,96 @@
                             <defaultUsername>root</defaultUsername>
                             <defaultGroupname>root</defaultGroupname>
                             <mappings combine.children="append">
-                            <!-- Root directory and README -->
-                                 <mapping>
-                                     <directory>/opt/proofpoint/${project.artifactId}</directory>
-                                     <directoryIncluded>true</directoryIncluded>
-                                     <sources>
-                                         <source>
-                                             <location>README.txt</location>
-                                         </source>
-                                     </sources>
-                                 </mapping>
-                            <!-- Launch scripts (copied from the dir that was unpacked by the dependency plugin) -->
-                                 <mapping>
-                                     <directory>/opt/proofpoint/${project.artifactId}/bin</directory>
-                                     <directoryIncluded>true</directoryIncluded>
-                                     <sources>
-                                         <source>
-                                             <location>${project.build.directory}/launcher/bin</location>
-                                             <excludes>
-                                                 <exclude>**/init.redhat</exclude>
-                                                 <exclude>**/platform.service</exclude>
-                                             </excludes>
-                                         </source>
-                                         <source>
-                                             <location>${project.build.directory}/launcher/bin/init.redhat</location>
-                                             <filter>true</filter>
-                                         </source>
-                                     </sources>
-                                     <username>root</username>
-                                     <groupname>root</groupname>
-                                     <filemode>755</filemode>
-                                 </mapping>
-                            <!-- Service control -->
-                                 <mapping>
-                                     <directory>/etc/init.d</directory>
-                                     <directoryIncluded>false</directoryIncluded>
-                                     <sources>
-                                         <softlinkSource>
-                                             <location>/opt/proofpoint/${project.artifactId}/bin/init.redhat</location>
-                                             <destination>${project.artifactId}</destination>
-                                         </softlinkSource>
-                                     </sources>
-                                     <username>root</username>
-                                     <groupname>root</groupname>
-                                     <filemode>755</filemode>
-                                 </mapping>
-                                 <mapping>
-                                     <directory>/usr/lib/systemd/system</directory>
-                                     <directoryIncluded>false</directoryIncluded>
-                                     <sources>
-                                         <source>
-                                             <location>${project.build.directory}/launcher/bin/platform.service</location>
-                                             <destination>${project.artifactId}.service</destination>
-                                             <filter>true</filter>
-                                         </source>
-                                     </sources>
-                                     <username>root</username>
-                                     <groupname>root</groupname>
-                                     <filemode>644</filemode>
-                                 </mapping>
-                            <!-- Libraries -->
-                                 <mapping>
-                                     <directory>/opt/proofpoint/${project.artifactId}/lib</directory>
-                                     <directoryIncluded>true</directoryIncluded>
-                                     <dependency />
-                                     <!-- Manually include the JAR containing the application code -->
-                                     <sources>
-                                         <source>
-                                             <location>${project.build.directory}/${project.artifactId}-${project.version}.jar</location>
-                                             <destination>main.jar</destination>
-                                         </source>
-                                         <source>
-                                             <location>${project.build.directory}/launcher/lib/launcher.jar</location>
-                                             <destination>launcher.jar</destination>
-                                         </source>
-                                     </sources>
-                                 </mapping>
-                            <!-- Configuration directory should be owned by this package -->
-                                 <mapping>
-                                     <directory>/opt/proofpoint/${project.artifactId}/etc</directory>
-                                     <directoryIncluded>true</directoryIncluded>
-                                     <configuration>noreplace</configuration>
-                                 </mapping>
-                            <!-- local output directory for logging and so on -->
-                                 <mapping>
-                                     <directory>/opt/proofpoint/${project.artifactId}/var</directory>
-                                     <directoryIncluded>true</directoryIncluded>
-                                     <username>${project.rpm.username}</username>
-                                     <groupname>${project.rpm.username}</groupname>
-                                     <filemode>755</filemode>
-                                 </mapping>
+                                <!-- Root directory and README -->
+                                <mapping>
+                                    <directory>/opt/proofpoint/${project.artifactId}</directory>
+                                    <directoryIncluded>true</directoryIncluded>
+                                    <sources>
+                                        <source>
+                                            <location>README.txt</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+                                <!-- Launch scripts (copied from the dir that was unpacked by the dependency plugin) -->
+                                <mapping>
+                                    <directory>/opt/proofpoint/${project.artifactId}/bin</directory>
+                                    <directoryIncluded>true</directoryIncluded>
+                                    <sources>
+                                        <source>
+                                            <location>${project.build.directory}/launcher/bin</location>
+                                            <excludes>
+                                                <exclude>**/init.redhat</exclude>
+                                                <exclude>**/platform.service</exclude>
+                                            </excludes>
+                                        </source>
+                                        <source>
+                                            <location>${project.build.directory}/launcher/bin/init.redhat</location>
+                                            <filter>true</filter>
+                                        </source>
+                                    </sources>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <filemode>755</filemode>
+                                </mapping>
+                                <!-- Service control -->
+                                <mapping>
+                                    <directory>/etc/init.d</directory>
+                                    <directoryIncluded>false</directoryIncluded>
+                                    <sources>
+                                        <softlinkSource>
+                                            <location>/opt/proofpoint/${project.artifactId}/bin/init.redhat</location>
+                                            <destination>${project.artifactId}</destination>
+                                        </softlinkSource>
+                                    </sources>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <filemode>755</filemode>
+                                </mapping>
+                                <mapping>
+                                    <directory>/usr/lib/systemd/system</directory>
+                                    <directoryIncluded>false</directoryIncluded>
+                                    <sources>
+                                        <source>
+                                            <location>${project.build.directory}/launcher/bin/platform.service</location>
+                                            <destination>${project.artifactId}.service</destination>
+                                            <filter>true</filter>
+                                        </source>
+                                    </sources>
+                                    <username>root</username>
+                                    <groupname>root</groupname>
+                                    <filemode>644</filemode>
+                                </mapping>
+                                <!-- Libraries -->
+                                <mapping>
+                                    <directory>/opt/proofpoint/${project.artifactId}/lib</directory>
+                                    <directoryIncluded>true</directoryIncluded>
+                                    <dependency/>
+                                    <!-- Manually include the JAR containing the application code -->
+                                    <sources>
+                                        <source>
+                                            <location>${project.build.directory}/${project.artifactId}-${project.version}.jar</location>
+                                            <destination>main.jar</destination>
+                                        </source>
+                                        <source>
+                                            <location>${project.build.directory}/launcher/lib/launcher.jar</location>
+                                            <destination>launcher.jar</destination>
+                                        </source>
+                                    </sources>
+                                </mapping>
+                                <!-- Configuration directory should be owned by this package -->
+                                <mapping>
+                                    <directory>/opt/proofpoint/${project.artifactId}/etc</directory>
+                                    <directoryIncluded>true</directoryIncluded>
+                                    <configuration>noreplace</configuration>
+                                </mapping>
+                                <!-- local output directory for logging and so on -->
+                                <mapping>
+                                    <directory>/opt/proofpoint/${project.artifactId}/var</directory>
+                                    <directoryIncluded>true</directoryIncluded>
+                                    <username>${project.rpm.username}</username>
+                                    <groupname>${project.rpm.username}</groupname>
+                                    <filemode>755</filemode>
+                                </mapping>
                             </mappings>
                             <preinstallScriptlet>
                                 <script>if ! id ${project.rpm.username} &gt;/dev/null ; then exit 1; fi</script>
@@ -1793,7 +1765,8 @@
                                                         <scope>runtime</scope>
                                                         <useProjectArtifact>false</useProjectArtifact>
                                                         <outputDirectory>lib/</outputDirectory>
-                                                        <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}${dashClassifier?}.${artifact.extension}</outputFileNameMapping>
+                                                        <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}${dashClassifier?}.${artifact.extension}
+                                                        </outputFileNameMapping>
                                                         <useTransitiveFiltering>true</useTransitiveFiltering>
                                                         <includes>
                                                             <include>*:jar:*</include>
