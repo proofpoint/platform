@@ -1,3 +1,11 @@
+Platform 2.28
+
+* Library Upgrades
+
+  - Base Docker image to proofpoint/platform-zulu-11:1.6
+     based on azul/zulu-openjdk-debian:11.0.7-11.39.15
+    (was proofpoint/platform-zulu-11:1.5)
+
 Platform 2.27
 
 * Library Upgrades
