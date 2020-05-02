@@ -93,6 +93,8 @@
         <dep.jackson.version>2.10.0</dep.jackson.version>
         <dep.jersey.version>2.27</dep.jersey.version>
         <dep.jmh.version>1.13</dep.jmh.version>
+
+        <platform.jacoco.merged-data-file>${project.build.directory}/merged.exec</platform.jacoco.merged-data-file>
     </properties>
 
     <scm>
@@ -469,6 +471,52 @@
                                 <goal>report</goal>
                             </goals>
                         </execution>
+                        <execution>
+                            <id>pre-integration-test</id>
+                            <phase>pre-integration-test</phase>
+                            <goals>
+                                <goal>prepare-agent-integration</goal>
+                            </goals>
+                            <configuration>
+                                <propertyName>failsafeArgLine</propertyName>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>post-integration-test</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>report-integration</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>merge-unit-and-integration</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>merge</goal>
+                            </goals>
+                            <configuration>
+                                <fileSets>
+                                    <fileSet>
+                                        <directory>${project.build.directory}</directory>
+                                        <includes>
+                                            <include>*.exec</include>
+                                        </includes>
+                                    </fileSet>
+                                </fileSets>
+                                <destFile>${platform.jacoco.merged-data-file}</destFile>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>create-merged-report</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                            <configuration>
+                                <dataFile>${platform.jacoco.merged-data-file}</dataFile>
+                                <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged</outputDirectory>
+                            </configuration>
+                        </execution>                        
                     </executions>
                     <configuration>
                         <skip>${platform.check.skip-jacoco}</skip>
@@ -1713,5 +1761,38 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>build-sonar</id>
+            <activation>
+                <file>
+                    <exists>.build-sonar</exists>
+                </file>
+            </activation>
+            <properties>
+                <sonar.branch.name>${env.BRANCH_NAME}</sonar.branch.name>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sonar-scan-unit-tests</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>sonar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>        
     </profiles>
 </project>
