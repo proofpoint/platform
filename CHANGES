@@ -1,3 +1,10 @@
+Platform 2.29
+
+* Launcher
+
+  We moved the StartLimitIntervalSecs setting back from [Unit] to [Service] and
+  changed its name to StartLimitInterval.
+
 Platform 2.28
 
 * Library Upgrades
