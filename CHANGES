@@ -1,5 +1,12 @@
 Platform 2.29
 
+* Build
+
+  We now enable JaCoCo code coverage of (Maven) integration tests.
+
+  If the project has a .build-sonar file we now report code coverage to
+  SonarQube.
+
 * Launcher
 
   We moved the StartLimitIntervalSecs setting back from [Unit] to [Service] and
