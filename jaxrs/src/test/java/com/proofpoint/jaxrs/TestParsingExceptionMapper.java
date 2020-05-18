@@ -126,7 +126,7 @@ public class TestParsingExceptionMapper
         StringResponse response = client.execute(buildRequestWithBody("/nested", "{\"foo\": [\"bar\", \"baz\" }"), createStringResponseHandler());
         assertEquals(response.getStatusCode(), Status.BAD_REQUEST.getStatusCode());
         assertEquals(response.getHeader("Content-Type"), "text/plain");
-        assertEquals(response.getBody(), "Invalid json line 1 column 23 field foo.[2]");
+        assertEquals(response.getBody(), "Invalid json line 1 column 24 field foo.[2]");
     }
 
     private Request buildRequestWithBody(String resource, String body)
