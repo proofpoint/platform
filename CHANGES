@@ -2,6 +2,7 @@ Platform 2.30
 
 * Library Upgrades
 
+  - Guava to 29.0-jre (was 28.2-jre)
   - Jackson to 2.11.0 (was 2.10.0) (fixes deserialization vulnerabilities
     when using @JsonTypeInfo or "default typing")
 
