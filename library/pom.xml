@@ -1771,6 +1771,7 @@
             </activation>
             <properties>
                 <sonar.branch.name>${env.BRANCH_NAME}</sonar.branch.name>
+                <sonar.projectKey>${env.BITBUCKET_PROJECT_KEY}:${env.BITBUCKET_REPO_NAME}</sonar.projectKey>
             </properties>
             <build>
                 <plugins>
