@@ -1,4 +1,4 @@
-Platform 2.31
+Platform 2.32
 
 * Library Upgrades
   - Base Docker image to proofpoint/platform-zulu-11:1.7
