@@ -1763,14 +1763,56 @@
         </profile>
 
         <profile>
-            <id>build-sonar</id>
+            <id>sonar-branch</id>
             <activation>
                 <file>
                     <exists>.build-sonar</exists>
                 </file>
+                <property>
+                    <name>!env.CHANGE_ID</name>
+                </property>
             </activation>
             <properties>
                 <sonar.branch.name>${env.BRANCH_NAME}</sonar.branch.name>
+                <sonar.projectKey>${env.BITBUCKET_PROJECT_KEY}:${env.BITBUCKET_REPO_NAME}</sonar.projectKey>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sonar-scan-unit-tests</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>sonar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>sonar-PR</id>
+            <activation>
+                <file>
+                    <exists>.build-sonar</exists>
+                </file>
+                <property>
+                    <name>env.CHANGE_ID</name>
+                </property>
+            </activation>
+            <properties>
+                <sonar.pullrequest.key>${env.CHANGE_ID}</sonar.pullrequest.key>
+                <sonar.pullrequest.branch>${env.CHANGE_BRANCH}</sonar.pullrequest.branch>
+                <sonar.pullrequest.base>${env.CHANGE_TARGET}</sonar.pullrequest.base>
                 <sonar.projectKey>${env.BITBUCKET_PROJECT_KEY}:${env.BITBUCKET_REPO_NAME}</sonar.projectKey>
             </properties>
             <build>
