@@ -1774,7 +1774,7 @@
             </activation>
             <properties>
                 <sonar.branch.name>${env.BRANCH_NAME}</sonar.branch.name>
-                <sonar.projectKey>${env.SONAR_PROJECT_KET}</sonar.projectKey>
+                <sonar.projectKey>${env.SONAR_PROJECT_KEY}</sonar.projectKey>
             </properties>
             <build>
                 <plugins>
@@ -1813,7 +1813,7 @@
                 <sonar.pullrequest.key>${env.CHANGE_ID}</sonar.pullrequest.key>
                 <sonar.pullrequest.branch>${env.CHANGE_BRANCH}</sonar.pullrequest.branch>
                 <sonar.pullrequest.base>${env.CHANGE_TARGET}</sonar.pullrequest.base>
-                <sonar.projectKey>${env.SONAR_PROJECT_KET}</sonar.projectKey>
+                <sonar.projectKey>${env.SONAR_PROJECT_KEY}</sonar.projectKey>
             </properties>
             <build>
                 <plugins>
