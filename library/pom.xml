@@ -1765,10 +1765,8 @@
         <profile>
             <id>sonar-branch</id>
             <activation>
-                <file>
-                    <exists>.build-sonar</exists>
-                </file>
                 <property>
+                    <name>env.SONAR_HOST_URL</name>
                     <name>!env.CHANGE_ID</name>
                 </property>
             </activation>
@@ -1802,10 +1800,8 @@
         <profile>
             <id>sonar-PR</id>
             <activation>
-                <file>
-                    <exists>.build-sonar</exists>
-                </file>
                 <property>
+                    <name>env.SONAR_HOST_URL</name>
                     <name>env.CHANGE_ID</name>
                 </property>
             </activation>
