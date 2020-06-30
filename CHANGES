@@ -1,3 +1,10 @@
+Platform 2.34
+
+* Build
+
+  We now use the SONAR_HOST_URL instead of a .build-sonar file to enable
+  SonarQube reporting.
+
 Platform 2.33
 
 * Build
