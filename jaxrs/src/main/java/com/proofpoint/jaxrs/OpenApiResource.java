@@ -2,10 +2,12 @@ package com.proofpoint.jaxrs;
 
 import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 import com.proofpoint.jaxrs.JaxrsResource;
+import com.proofpoint.node.NodeInfo;
 import io.swagger.v3.jaxrs2.integration.resources.BaseOpenApiResource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -28,12 +30,15 @@ import static java.util.Objects.requireNonNull;
 public class OpenApiResource extends BaseOpenApiResource
 {
     private final Set<Object> jaxrsResources;
+    private final NodeInfo nodeInfo;
     private static final String SWAGGER_JAXRS_ANNOTATION_SCANNER = "io.swagger.v3.oas.integration.GenericOpenApiScanner";
 
+
     @Inject
-    public OpenApiResource(@JaxrsResource Set<Object> jaxrsResources)
+    public OpenApiResource(@JaxrsResource Set<Object> jaxrsResources, NodeInfo nodeInfo)
     {
         this.jaxrsResources = requireNonNull(jaxrsResources, "jaxrsResources is null");
+        this.nodeInfo = nodeInfo;
     }
 
     @GET
@@ -54,8 +59,13 @@ public class OpenApiResource extends BaseOpenApiResource
     @PostConstruct
     void configureSwagger()
     {
+        Info info = new Info();
+        info.setTitle(nodeInfo.getApplication());
+        info.setVersion(nodeInfo.getApplicationVersion());
+        OpenAPI openAPI = new OpenAPI().info(info);
+
         SwaggerConfiguration oasConfig = new SwaggerConfiguration()
-                .openAPI(new OpenAPI())
+                .openAPI(openAPI)
                 .prettyPrint(true);
         oasConfig.setResourceClasses(jaxrsResources.stream().map(classame -> classame.getClass().getName()).collect(Collectors.toSet()));
         oasConfig.setScannerClass(SWAGGER_JAXRS_ANNOTATION_SCANNER);

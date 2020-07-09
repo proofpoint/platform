@@ -80,6 +80,10 @@ public class TestOpenApi
         resourceList.add("TestingResource");
         Object expected = ImmutableMap.of(
                 "openapi", "3.0.1",
+                "info", ImmutableMap.of(
+                        "title", "test-application",
+                        "version", ""
+                ),
                 "paths", ImmutableMap.of(
                         "/", ImmutableMap.of(
                                 "get", ImmutableMap.of(
