@@ -1769,9 +1769,6 @@
                     <name>env.SONAR_HOST_URL</name>
                 </property>
             </activation>
-            <properties>
-                <sonar.projectKey>${env.SONAR_PROJECT_KEY}</sonar.projectKey>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -1796,6 +1793,18 @@
         </profile>
 
         <profile>
+            <id>sonar-project-key</id>
+            <activation>
+                <property>
+                    <name>env.SONAR_PROJECT_KEY</name>
+                </property>
+            </activation>
+            <properties>
+                <sonar.projectKey>${env.SONAR_PROJECT_KEY}</sonar.projectKey>
+            </properties>
+        </profile>
+
+        <profile>
             <id>sonar-branch</id>
             <activation>
                 <property>
@@ -1803,12 +1812,12 @@
                 </property>
             </activation>
             <properties>
-                <sonar.branch.name>${env.BRANCH_NAME}</sonar.branch.name>
+                <sonar.branch.name>${env.GIT_BRANCH}</sonar.branch.name>
             </properties>
         </profile>
 
         <profile>
-            <id>sonar-PR</id>
+            <id>sonar-pull-request</id>
             <activation>
                 <property>
                     <name>env.CHANGE_ID</name>
