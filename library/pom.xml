@@ -1812,7 +1812,7 @@
                 </property>
             </activation>
             <properties>
-                <sonar.branch.name>${GIT_BRANCH}</sonar.branch.name>
+                <sonar.branch.name>${env.GIT_BRANCH}</sonar.branch.name>
             </properties>
         </profile>
 
