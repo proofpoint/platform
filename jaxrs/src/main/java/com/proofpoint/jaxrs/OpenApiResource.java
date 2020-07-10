@@ -33,7 +33,6 @@ public class OpenApiResource extends BaseOpenApiResource
     private final NodeInfo nodeInfo;
     private static final String SWAGGER_JAXRS_ANNOTATION_SCANNER = "io.swagger.v3.oas.integration.GenericOpenApiScanner";
 
-
     @Inject
     public OpenApiResource(@JaxrsResource Set<Object> jaxrsResources, NodeInfo nodeInfo)
     {
