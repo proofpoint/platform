@@ -90,7 +90,7 @@ public class TestingNodeModule
     @Singleton
     NodeInfo createNodeInfo(NodeConfig config)
     {
-        return new NodeInfo("test-application", "1.0.0", "", config);
+        return new NodeInfo("test-application", config);
     }
 
     @SuppressWarnings("ImplicitNumericConversion")

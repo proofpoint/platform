@@ -82,7 +82,7 @@ public class TestOpenApi
                 "openapi", "3.0.1",
                 "info", ImmutableMap.of(
                         "title", "test-application",
-                        "version", "1.0.0"
+                        "version", ""
                 ),
                 "paths", ImmutableMap.of(
                         "/", ImmutableMap.of(
@@ -181,7 +181,7 @@ public class TestOpenApi
                                                         "content", ImmutableMap.of(
                                                                 "text/plain", ImmutableMap.of(
                                                                         "schema", ImmutableMap.of("type", "string")))))
-                                ))
+                                        ))
                 )
         );
         Object response = client.execute(
