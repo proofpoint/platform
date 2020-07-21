@@ -1,3 +1,9 @@
+Platform 2.35
+
+* Library Upgrades
+  - Base Docker image to proofpoint/platform-zulu-11:1.8
+    update libsystemd0 to 241-7~deb10u4 for CVE-2020-1712
+
 Platform 2.34
 
 * Build
