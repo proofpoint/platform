@@ -110,6 +110,9 @@ public class HttpServer
     private final RequestLog requestLog;
     private final ClientAddressExtractor clientAddressExtractor;
 
+    private final HttpServerInfo httpServerInfo;
+    private final NodeInfo nodeInfo;
+    private final HttpServerConfig config;
     private final Optional<ZonedDateTime> certificateExpiration;
 
     public HttpServer(HttpServerInfo httpServerInfo,
@@ -129,11 +132,10 @@ public class HttpServer
             DetailedRequestStats detailedRequestStats,
             @Nullable RequestLog requestLog,
             ClientAddressExtractor clientAddressExtractor)
-            throws IOException
     {
-        requireNonNull(httpServerInfo, "httpServerInfo is null");
-        requireNonNull(nodeInfo, "nodeInfo is null");
-        requireNonNull(config, "config is null");
+        this.httpServerInfo = requireNonNull(httpServerInfo, "httpServerInfo is null");
+        this.nodeInfo = requireNonNull(nodeInfo, "nodeInfo is null");
+        this.config = requireNonNull(config, "config is null");
         requireNonNull(theServlet, "theServlet is null");
         requireNonNull(parameters, "parameters is null");
         requireNonNull(filters, "filters is null");
@@ -169,131 +171,6 @@ public class HttpServer
             // export jmx mbeans if a server was provided
             MBeanContainer mbeanContainer = new MBeanContainer(mbeanServer);
             server.addBean(mbeanContainer);
-        }
-
-        HttpConfiguration baseHttpConfiguration = new HttpConfiguration();
-        baseHttpConfiguration.setSendServerVersion(false);
-        baseHttpConfiguration.setSendXPoweredBy(false);
-        if (config.getMaxRequestHeaderSize() != null) {
-            baseHttpConfiguration.setRequestHeaderSize(toIntExact(config.getMaxRequestHeaderSize().toBytes()));
-        }
-
-        // disable async error notifications to work around https://github.com/jersey/jersey/issues/3691
-        baseHttpConfiguration.setNotifyRemoteAsyncErrors(false);
-
-        // register a channel listener if logging is enabled
-        HttpServerChannelListener channelListener = null;
-        if (requestLog != null) {
-            channelListener = new HttpServerChannelListener(requestLog, clientAddressExtractor);
-        }
-
-        // set up HTTP connector
-        ServerConnector httpConnector;
-        if (config.isHttpEnabled()) {
-            HttpConfiguration httpConfiguration = new HttpConfiguration(baseHttpConfiguration);
-            // if https is enabled, set the CONFIDENTIAL and INTEGRAL redirection information
-            if (config.isHttpsEnabled()) {
-                httpConfiguration.setSecureScheme("https");
-                httpConfiguration.setSecurePort(httpServerInfo.getHttpsUri().getPort());
-            }
-
-            Integer acceptors = config.getHttpAcceptorThreads();
-            Integer selectors = config.getHttpSelectorThreads();
-            HttpConnectionFactory http1 = new HttpConnectionFactory(httpConfiguration);
-            HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(httpConfiguration);
-            http2c.setInitialSessionRecvWindow(toIntExact(config.getHttp2InitialSessionReceiveWindowSize().toBytes()));
-            http2c.setInitialStreamRecvWindow(toIntExact(config.getHttp2InitialStreamReceiveWindowSize().toBytes()));
-            http2c.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
-            http2c.setInputBufferSize(toIntExact(config.getHttp2InputBufferSize().toBytes()));
-            http2c.setStreamIdleTimeout(config.getHttp2StreamIdleTimeout().toMillis());
-            httpConnector = createServerConnector(
-                    httpServerInfo.getHttpChannel(),
-                    server,
-                    null,
-                    firstNonNull(acceptors, -1),
-                    firstNonNull(selectors, -1),
-                    http1,
-                    http2c);
-            httpConnector.setName("http");
-            httpConnector.setPort(httpServerInfo.getHttpUri().getPort());
-            httpConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
-            httpConnector.setHost(nodeInfo.getBindIp().getHostAddress());
-            httpConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
-
-            if (channelListener != null) {
-                httpConnector.addBean(channelListener);
-            }
-
-            server.addConnector(httpConnector);
-        }
-
-        // set up NIO-based HTTPS connector
-        ServerConnector httpsConnector;
-        if (config.isHttpsEnabled()) {
-            HttpConfiguration httpsConfiguration = new HttpConfiguration(baseHttpConfiguration);
-
-            Integer acceptors = config.getHttpsAcceptorThreads();
-            Integer selectors = config.getHttpsSelectorThreads();
-            httpsConnector = createHttpsServerConnector(
-                    config,
-                    httpServerInfo.getHttpsChannel(),
-                    httpsConfiguration,
-                    null,
-                    firstNonNull(acceptors, -1),
-                    firstNonNull(selectors, -1));
-            httpsConnector.setName("https");
-            httpsConnector.setPort(httpServerInfo.getHttpsUri().getPort());
-            httpsConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
-            httpsConnector.setHost(nodeInfo.getBindIp().getHostAddress());
-            httpsConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
-
-            if (channelListener != null) {
-                httpsConnector.addBean(channelListener);
-            }
-
-            server.addConnector(httpsConnector);
-        }
-
-        // set up NIO-based Admin connector
-        ServerConnector adminConnector;
-        if (config.isAdminEnabled()) {
-            HttpConfiguration adminConfiguration = new HttpConfiguration(baseHttpConfiguration);
-
-            QueuedThreadPool adminThreadPool = new QueuedThreadPool(config.getAdminMaxThreads());
-            adminThreadPool.setName("http-admin-worker");
-            adminThreadPool.setMinThreads(config.getAdminMinThreads());
-            adminThreadPool.setIdleTimeout(Ints.checkedCast(config.getThreadMaxIdleTime().toMillis()));
-
-            if (config.isHttpsEnabled()) {
-                adminConnector = createHttpsServerConnector(
-                        config,
-                        httpServerInfo.getAdminChannel(),
-                        adminConfiguration,
-                        adminThreadPool,
-                        0,
-                        -1);
-            }
-            else {
-                HttpConnectionFactory http1 = new HttpConnectionFactory(adminConfiguration);
-                HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(adminConfiguration);
-                http2c.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
-                adminConnector = createServerConnector(
-                        httpServerInfo.getAdminChannel(),
-                        server,
-                        adminThreadPool,
-                        -1,
-                        -1,
-                        http1,
-                        http2c);
-            }
-
-            adminConnector.setName("admin");
-            adminConnector.setPort(httpServerInfo.getAdminUri().getPort());
-            adminConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
-            adminConnector.setHost(nodeInfo.getBindIp().getHostAddress());
-            adminConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
-
-            server.addConnector(adminConnector);
         }
 
         /*
@@ -476,6 +353,131 @@ public class HttpServer
     public void start()
             throws Exception
     {
+        HttpConfiguration baseHttpConfiguration = new HttpConfiguration();
+        baseHttpConfiguration.setSendServerVersion(false);
+        baseHttpConfiguration.setSendXPoweredBy(false);
+        if (config.getMaxRequestHeaderSize() != null) {
+            baseHttpConfiguration.setRequestHeaderSize(toIntExact(config.getMaxRequestHeaderSize().toBytes()));
+        }
+
+        // disable async error notifications to work around https://github.com/jersey/jersey/issues/3691
+        baseHttpConfiguration.setNotifyRemoteAsyncErrors(false);
+
+        // register a channel listener if logging is enabled
+        HttpServerChannelListener channelListener = null;
+        if (requestLog != null) {
+            channelListener = new HttpServerChannelListener(requestLog, clientAddressExtractor);
+        }
+
+        // set up HTTP connector
+        ServerConnector httpConnector;
+        if (config.isHttpEnabled()) {
+            HttpConfiguration httpConfiguration = new HttpConfiguration(baseHttpConfiguration);
+            // if https is enabled, set the CONFIDENTIAL and INTEGRAL redirection information
+            if (config.isHttpsEnabled()) {
+                httpConfiguration.setSecureScheme("https");
+                httpConfiguration.setSecurePort(httpServerInfo.getHttpsUri().getPort());
+            }
+
+            Integer acceptors = config.getHttpAcceptorThreads();
+            Integer selectors = config.getHttpSelectorThreads();
+            HttpConnectionFactory http1 = new HttpConnectionFactory(httpConfiguration);
+            HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(httpConfiguration);
+            http2c.setInitialSessionRecvWindow(toIntExact(config.getHttp2InitialSessionReceiveWindowSize().toBytes()));
+            http2c.setInitialStreamRecvWindow(toIntExact(config.getHttp2InitialStreamReceiveWindowSize().toBytes()));
+            http2c.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
+            http2c.setInputBufferSize(toIntExact(config.getHttp2InputBufferSize().toBytes()));
+            http2c.setStreamIdleTimeout(config.getHttp2StreamIdleTimeout().toMillis());
+            httpConnector = createServerConnector(
+                    httpServerInfo.getHttpChannel(),
+                    server,
+                    null,
+                    firstNonNull(acceptors, -1),
+                    firstNonNull(selectors, -1),
+                    http1,
+                    http2c);
+            httpConnector.setName("http");
+            httpConnector.setPort(httpServerInfo.getHttpUri().getPort());
+            httpConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
+            httpConnector.setHost(nodeInfo.getBindIp().getHostAddress());
+            httpConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
+
+            if (channelListener != null) {
+                httpConnector.addBean(channelListener);
+            }
+
+            server.addConnector(httpConnector);
+        }
+
+        // set up NIO-based HTTPS connector
+        ServerConnector httpsConnector;
+        if (config.isHttpsEnabled()) {
+            HttpConfiguration httpsConfiguration = new HttpConfiguration(baseHttpConfiguration);
+
+            Integer acceptors = config.getHttpsAcceptorThreads();
+            Integer selectors = config.getHttpsSelectorThreads();
+            httpsConnector = createHttpsServerConnector(
+                    config,
+                    httpServerInfo.getHttpsChannel(),
+                    httpsConfiguration,
+                    null,
+                    firstNonNull(acceptors, -1),
+                    firstNonNull(selectors, -1));
+            httpsConnector.setName("https");
+            httpsConnector.setPort(httpServerInfo.getHttpsUri().getPort());
+            httpsConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
+            httpsConnector.setHost(nodeInfo.getBindIp().getHostAddress());
+            httpsConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
+
+            if (channelListener != null) {
+                httpsConnector.addBean(channelListener);
+            }
+
+            server.addConnector(httpsConnector);
+        }
+
+        // set up NIO-based Admin connector
+        ServerConnector adminConnector;
+        if (config.isAdminEnabled()) {
+            HttpConfiguration adminConfiguration = new HttpConfiguration(baseHttpConfiguration);
+
+            QueuedThreadPool adminThreadPool = new QueuedThreadPool(config.getAdminMaxThreads());
+            adminThreadPool.setName("http-admin-worker");
+            adminThreadPool.setMinThreads(config.getAdminMinThreads());
+            adminThreadPool.setIdleTimeout(Ints.checkedCast(config.getThreadMaxIdleTime().toMillis()));
+
+            if (config.isHttpsEnabled()) {
+                adminConnector = createHttpsServerConnector(
+                        config,
+                        httpServerInfo.getAdminChannel(),
+                        adminConfiguration,
+                        adminThreadPool,
+                        0,
+                        -1);
+            }
+            else {
+                HttpConnectionFactory http1 = new HttpConnectionFactory(adminConfiguration);
+                HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(adminConfiguration);
+                http2c.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
+                adminConnector = createServerConnector(
+                        httpServerInfo.getAdminChannel(),
+                        server,
+                        adminThreadPool,
+                        -1,
+                        -1,
+                        http1,
+                        http2c);
+            }
+
+            adminConnector.setName("admin");
+            adminConnector.setPort(httpServerInfo.getAdminUri().getPort());
+            adminConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
+            adminConnector.setHost(nodeInfo.getBindIp().getHostAddress());
+            adminConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
+
+            server.addConnector(adminConnector);
+        }
+
         server.start();
         // clear the error handler registered by start()
         if (!registerErrorHandler) {
