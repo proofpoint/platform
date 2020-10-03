@@ -1,3 +1,9 @@
+Platform 2.37
+
+* Library Upgrades
+
+  - Jetty to 9.4.32 (was 9.4.24)
+
 Platform 2.36
 
 * Library Upgrades
