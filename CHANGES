@@ -1,5 +1,9 @@
 Platform 2.37
 
+* HTTP Server
+
+  We now delay creating the listen sockets until the @AcceptRequests phase.
+
 * Library Upgrades
 
   - Jetty to 9.4.32 (was 9.4.24)

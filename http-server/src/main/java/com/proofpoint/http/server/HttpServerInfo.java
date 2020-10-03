@@ -32,104 +32,117 @@ import java.nio.channels.ServerSocketChannel;
 
 public class HttpServerInfo
 {
-    private final URI httpUri;
-    private final URI httpExternalUri;
-    private final URI httpsUri;
-    private final URI adminUri;
-    private final URI adminExternalUri;
-
-    private final ServerSocketChannel httpChannel;
-    private final ServerSocketChannel httpsChannel;
-    private final ServerSocketChannel adminChannel;
+    private final ChannelHolder httpChannel;
+    private final ChannelHolder httpsChannel;
+    private final ChannelHolder adminChannel;
 
     @Inject
     public HttpServerInfo(HttpServerConfig config, NodeInfo nodeInfo)
     {
         if (config.isHttpEnabled()) {
-            httpChannel = createChannel(nodeInfo.getBindIp(), config.getHttpPort(), config.getHttpAcceptQueueSize());
-            httpUri = buildUri("http", InetAddresses.toUriString(nodeInfo.getInternalIp()), port(httpChannel));
-            httpExternalUri = buildUri("http", nodeInfo.getExternalAddress(), httpUri.getPort());
+            httpChannel = new LazyChannel(
+                    "http",
+                    InetAddresses.toUriString(nodeInfo.getInternalIp()),
+                    nodeInfo.getExternalAddress(),
+                    nodeInfo.getBindIp(),
+                    config.getHttpPort(),
+                    config.getHttpAcceptQueueSize(),
+                    false
+            );
         }
         else {
-            httpChannel = null;
-            httpUri = null;
-            httpExternalUri = null;
+            httpChannel = new NullChannel();
         }
 
         if (config.isHttpsEnabled()) {
-            httpsChannel = createChannel(nodeInfo.getBindIp(), config.getHttpsPort(), config.getHttpAcceptQueueSize());
-            httpsUri = buildUri("https", nodeInfo.getInternalHostname(), port(httpsChannel));
+            httpsChannel = new LazyChannel("https",
+                    nodeInfo.getInternalHostname(),
+                    null,
+                    nodeInfo.getBindIp(),
+                    config.getHttpsPort(),
+                    config.getHttpAcceptQueueSize(),
+                    false
+            );
         }
         else {
-            httpsChannel = null;
-            httpsUri = null;
+            httpsChannel = new NullChannel();
         }
 
         if (config.isAdminEnabled()) {
-            adminChannel = createChannel(nodeInfo.getBindIp(), config.getAdminPort(), config.getHttpAcceptQueueSize());
             if (config.isHttpsEnabled()) {
-                adminUri = buildUri("https", nodeInfo.getInternalHostname(), port(adminChannel));
-                adminExternalUri = null;
+                adminChannel = new LazyChannel(
+                        "https",
+                        nodeInfo.getInternalHostname(),
+                        null,
+                        nodeInfo.getBindIp(),
+                        config.getAdminPort(),
+                        config.getHttpAcceptQueueSize(),
+                        true
+                );
             }
             else {
-                adminUri = buildUri("http", InetAddresses.toUriString(nodeInfo.getInternalIp()), port(adminChannel));
-                adminExternalUri = buildUri("http", nodeInfo.getExternalAddress(), adminUri.getPort());
+                adminChannel = new LazyChannel(
+                        "http",
+                        InetAddresses.toUriString(nodeInfo.getInternalIp()),
+                        nodeInfo.getExternalAddress(),
+                        nodeInfo.getBindIp(),
+                        config.getAdminPort(),
+                        config.getHttpAcceptQueueSize(),
+                        true
+                );
             }
-            Logger.get("Bootstrap").info("Admin service on %s", adminUri);
         }
         else {
-            adminChannel = null;
-            adminUri = null;
-            adminExternalUri = null;
+            adminChannel = new NullChannel();
         }
     }
 
     @Nullable
     public URI getHttpUri()
     {
-        return httpUri;
+        return httpChannel.getUri();
     }
 
     @Nullable
     public URI getHttpExternalUri()
     {
-        return httpExternalUri;
+        return httpChannel.getExternalUri();
     }
 
     @Nullable
     public URI getHttpsUri()
     {
-        return httpsUri;
+        return httpsChannel.getUri();
     }
 
     @Nullable
     public URI getAdminUri()
     {
-        return adminUri;
+        return adminChannel.getUri();
     }
 
     @Nullable
     public URI getAdminExternalUri()
     {
-        return adminExternalUri;
+        return adminChannel.getExternalUri();
     }
 
     @Nullable
     ServerSocketChannel getHttpChannel()
     {
-        return httpChannel;
+        return httpChannel.getChannel();
     }
 
     @Nullable
     ServerSocketChannel getHttpsChannel()
     {
-        return httpsChannel;
+        return httpsChannel.getChannel();
     }
 
     @Nullable
     ServerSocketChannel getAdminChannel()
     {
-        return adminChannel;
+        return adminChannel.getChannel();
     }
 
     private static URI buildUri(String scheme, String host, int port)
@@ -163,6 +176,118 @@ public class HttpServerInfo
         }
         catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    interface ChannelHolder
+    {
+        ServerSocketChannel getChannel();
+
+        URI getUri();
+
+        URI getExternalUri();
+    }
+
+    static class NullChannel implements ChannelHolder
+    {
+        @Override
+        public ServerSocketChannel getChannel()
+        {
+            return null;
+        }
+
+        @Override
+        public URI getUri()
+        {
+            return null;
+        }
+
+        @Override
+        public URI getExternalUri()
+        {
+            return null;
+        }
+    }
+
+    static class LazyChannel implements ChannelHolder
+    {
+        private final String scheme;
+        private final String hostname;
+        private final String externalHostname;
+        private final InetAddress address;
+        private final int port;
+        private final int acceptQueueSize;
+        private boolean isAdmin;
+
+        private volatile ServerSocketChannel channel;
+        private volatile URI uri;
+        private volatile URI externalUri;
+
+        LazyChannel(String scheme, String hostname, String externalHostname, InetAddress address, int port, int acceptQueueSize, boolean isAdmin)
+        {
+            this.scheme = scheme;
+            this.hostname = hostname;
+            this.externalHostname = externalHostname;
+            this.address = address;
+            this.port = port;
+            this.acceptQueueSize = acceptQueueSize;
+            this.isAdmin = isAdmin;
+        }
+
+        @Override
+        public ServerSocketChannel getChannel()
+        {
+            if (channel != null) {
+                return channel;
+            }
+            synchronized (this) {
+                if (channel == null) {
+                    try {
+                        ServerSocketChannel newChannel = ServerSocketChannel.open();
+                        newChannel.socket().setReuseAddress(true);
+                        newChannel.socket().bind(new InetSocketAddress(address, port), acceptQueueSize);
+                        channel = newChannel;
+                    }
+                    catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }
+            }
+            return channel;
+        }
+
+        @Override
+        public URI getUri()
+        {
+            if (uri != null) {
+                return uri;
+            }
+            synchronized (this) {
+                if (uri == null) {
+                    uri = buildUri(scheme, hostname, port(getChannel()));
+                    if (isAdmin) {
+                        Logger.get("Bootstrap").info("Admin service on %s", uri);
+                    }
+                }
+            }
+            return uri;
+        }
+
+        @Override
+        public URI getExternalUri()
+        {
+            if (externalUri != null) {
+                return externalUri;
+            }
+            if (externalHostname == null) {
+                return null;
+            }
+            synchronized (this) {
+                if (externalUri == null) {
+                    externalUri = buildUri(scheme, externalHostname, port(getChannel()));
+                }
+            }
+            return externalUri;
         }
     }
 }
