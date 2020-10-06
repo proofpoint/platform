@@ -43,7 +43,7 @@ public class TestHttpServerConfig
         assertRecordedDefaults(ConfigAssertions.recordDefaults(HttpServerConfig.class)
                 .setHttpEnabled(true)
                 .setHttpPort(8080)
-                .setHttpAcceptQueueSize(128)
+                .setHttpAcceptQueueSize(10)
                 .setHttpsEnabled(false)
                 .setHttpsPort(8443)
                 .setSslSessionTimeout(new Duration(4, HOURS))
