@@ -21,6 +21,7 @@ import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -166,19 +167,6 @@ public class HttpServerInfo
         }
     }
 
-    private static ServerSocketChannel createChannel(InetAddress address, int port, int acceptQueueSize)
-    {
-        try {
-            ServerSocketChannel channel = ServerSocketChannel.open();
-            channel.socket().setReuseAddress(true);
-            channel.socket().bind(new InetSocketAddress(address, port), acceptQueueSize);
-            return channel;
-        }
-        catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
     interface ChannelHolder
     {
         ServerSocketChannel getChannel();
@@ -217,10 +205,13 @@ public class HttpServerInfo
         private final InetAddress address;
         private final int port;
         private final int acceptQueueSize;
-        private boolean isAdmin;
+        private final boolean isAdmin;
 
+        @GuardedBy("this")
         private volatile ServerSocketChannel channel;
+        @GuardedBy("this")
         private volatile URI uri;
+        @GuardedBy("this")
         private volatile URI externalUri;
 
         LazyChannel(String scheme, String hostname, String externalHostname, InetAddress address, int port, int acceptQueueSize, boolean isAdmin)
@@ -244,9 +235,15 @@ public class HttpServerInfo
                 if (channel == null) {
                     try {
                         ServerSocketChannel newChannel = ServerSocketChannel.open();
-                        newChannel.socket().setReuseAddress(true);
-                        newChannel.socket().bind(new InetSocketAddress(address, port), acceptQueueSize);
-                        channel = newChannel;
+                        try {
+                            newChannel.socket().setReuseAddress(true);
+                            newChannel.socket().bind(new InetSocketAddress(address, port), acceptQueueSize);
+                            channel = newChannel;
+                        }
+                        catch (IOException e) {
+                            newChannel.close();
+                            throw new UncheckedIOException(e);
+                        }
                     }
                     catch (IOException e) {
                         throw new UncheckedIOException(e);
