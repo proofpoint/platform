@@ -4,6 +4,9 @@ Platform 2.37
 
   We now delay creating the listen sockets until the @AcceptRequests phase.
 
+  We reduced the default accept queue size to 10 from 128 in order to shed
+  load during connection storms.
+
 * Library Upgrades
   - Jetty to 9.4.32 (was 9.4.24)
   - Base Docker image to proofpoint/platform-zulu-11:1.10
