@@ -1,3 +1,8 @@
+Platform 2.38
+
+* Library Upgrades
+  - Jetty to 9.4.33 (was 9.4.32) (fixes CVE-2020-27216)
+
 Platform 2.37
 
 * HTTP Server
