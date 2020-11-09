@@ -2,6 +2,8 @@ Platform 2.38
 
 * Library Upgrades
   - Jetty to 9.4.33 (was 9.4.32) (fixes CVE-2020-27216)
+  - Base Docker image to proofpoint/platform-zulu-11:1.11
+    based on 11.0.9. Pull image through repocache docker-remote.
 
 Platform 2.37
 
