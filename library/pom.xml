@@ -1726,6 +1726,7 @@
                                                         </includes>
                                                         <excludes>
                                                             <exclude>*:zip:*</exclude>
+                                                            <exclude>*:test-jar:*</exclude>
                                                         </excludes>
                                                     </dependencySet>
                                                     <dependencySet>
