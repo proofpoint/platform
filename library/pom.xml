@@ -1726,7 +1726,7 @@
                                                         </includes>
                                                         <excludes>
                                                             <exclude>*:zip:*</exclude>
-                                                            <exclude>*:test:*</exclude>
+                                                            <exclude>*:tests:*</exclude>
                                                         </excludes>
                                                     </dependencySet>
                                                     <dependencySet>
