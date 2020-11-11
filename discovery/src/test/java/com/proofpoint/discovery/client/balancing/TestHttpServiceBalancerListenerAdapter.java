@@ -31,20 +31,22 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertEquals;
 
 public class TestHttpServiceBalancerListenerAdapter
 {
     private static final ServiceDescriptor APPLE_1_SERVICE = new ServiceDescriptor(UUID.randomUUID(), "node-A", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-a.example.com"));
+    private static final ServiceDescriptor APPLE_1_SERVICE_REPLACEMENT = new ServiceDescriptor(APPLE_1_SERVICE.getId(), "node-A", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-b.example.com"));
     private static final ServiceDescriptor APPLE_2_SERVICE = new ServiceDescriptor(UUID.randomUUID(), "node-B", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-c.example.com", "https", "https://apple-b.example.com"));
     private static final ServiceDescriptor APPLE_2_SERVICE_WEIGHTED = new ServiceDescriptor(UUID.randomUUID(), "node-B", "apple", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("http", "http://apple-c.example.com", "https", "https://apple-b.example.com", "weight", "2.5"));
     private static final ServiceDescriptor DIFFERENT_TYPE = new ServiceDescriptor(UUID.randomUUID(), "node-A", "banana", "pool", "location", ServiceState.RUNNING, ImmutableMap.of("https", "https://banana.example.com"));
@@ -119,6 +121,49 @@ public class TestHttpServiceBalancerListenerAdapter
         verify(httpServiceBalancer).updateHttpUris(captor.capture());
 
         assertEqualsIgnoreOrder(captor.getValue(), ImmutableMultiset.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-b.example.com")));
+    }
+
+    @Test
+    public void testServiceReplacedWithEmptySet() throws InterruptedException {
+        discoveryClient.addDiscoveredService(APPLE_1_SERVICE);
+
+        // start the updater and verify that we get the initial call
+        updater.start();
+        ArgumentCaptor<Multiset> captor = ArgumentCaptor.forClass(Multiset.class);
+        verify(httpServiceBalancer).updateHttpUris(captor.capture());
+
+        // we remove the service we just added.
+        discoveryClient.remove(APPLE_1_SERVICE.getId());
+
+        // a bit on the long side, but this is the default delay to ensure our updater re-triggers.
+        Thread.sleep(10000);
+
+        // verify that even though we removed the service, it was not removed from the balancer.
+        verifyNoMoreInteractions(httpServiceBalancer);
+
+        assertEqualsIgnoreOrder(captor.getValue(), ImmutableMultiset.of(URI.create("http://apple-a.example.com")));
+    }
+
+    @Test
+    public void testServiceReplacedWithNonEmptySet() throws InterruptedException {
+        discoveryClient.addDiscoveredService(APPLE_1_SERVICE);
+
+        // start the updater and verify that we get the initial call
+        updater.start();
+
+        // we replace the service we just added with an updated descriptor for the same ID and node ID.
+        discoveryClient.addDiscoveredService(APPLE_1_SERVICE_REPLACEMENT);
+
+        // a bit on the long side, but this is the default delay to ensure our updater re-triggers.
+        Thread.sleep(10000);
+
+        ArgumentCaptor<Multiset> captor = ArgumentCaptor.forClass(Multiset.class);
+
+        // we verify that our update method is called twice...
+        verify(httpServiceBalancer, times(2)).updateHttpUris(captor.capture());
+
+        // ...and that each time the argument points to the (single) correct URL for that point in time.
+        assertEquals(captor.getAllValues(), Arrays.asList(ImmutableMultiset.of(URI.create("http://apple-a.example.com")), ImmutableMultiset.of(URI.create("http://apple-b.example.com"))));
     }
 
     @Test

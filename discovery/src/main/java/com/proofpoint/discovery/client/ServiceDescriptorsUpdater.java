@@ -107,11 +107,22 @@ public final class ServiceDescriptorsUpdater
             @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
             public void onSuccess(ServiceDescriptors newDescriptors)
             {
-                serviceDescriptors.set(newDescriptors);
-                target.updateServiceDescriptors(newDescriptors.getServiceDescriptors());
+                Duration delay = null;
+
+                // Starting case:  current descriptors null.
+                if(serviceDescriptors.compareAndSet(null, newDescriptors)){
+                    target.updateServiceDescriptors(newDescriptors.getServiceDescriptors());
+                    delay = newDescriptors.getMaxAge();
+                } else if(!newDescriptors.getServiceDescriptors().isEmpty()) {
+                    // Typical case:  new descriptors are populated
+                    serviceDescriptors.set(newDescriptors);
+                    target.updateServiceDescriptors(newDescriptors.getServiceDescriptors());
+                    delay = newDescriptors.getMaxAge();
+                }
+                // else current descriptors are not null (i.e. have previously been set), *and* new descriptors are empty;
+                // therefore do not replace.  a little bit of robustness for degraded operation.
                 errorBackOff.success();
 
-                Duration delay = newDescriptors.getMaxAge();
                 if (delay == null) {
                     delay = DEFAULT_DELAY;
                 }
