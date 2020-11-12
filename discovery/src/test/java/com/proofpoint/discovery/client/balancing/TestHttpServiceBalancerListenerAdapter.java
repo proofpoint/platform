@@ -25,6 +25,7 @@ import com.proofpoint.discovery.client.ServiceState;
 import com.proofpoint.discovery.client.testing.InMemoryDiscoveryClient;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.node.NodeInfo;
+import com.proofpoint.testing.SerialScheduledExecutorService;
 import org.mockito.ArgumentCaptor;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -37,6 +38,7 @@ import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
@@ -127,6 +129,14 @@ public class TestHttpServiceBalancerListenerAdapter
     public void testServiceReplacedWithEmptySet()
             throws InterruptedException
     {
+        SerialScheduledExecutorService serialExecutor = new SerialScheduledExecutorService();
+        updater = new ServiceDescriptorsUpdater(new HttpServiceBalancerListenerAdapter(httpServiceBalancer),
+                "apple",
+                new ServiceSelectorConfig().setPool("pool"),
+                nodeInfo,
+                discoveryClient,
+                serialExecutor);
+
         discoveryClient.addDiscoveredService(APPLE_1_SERVICE);
 
         // start the updater and verify that we get the initial call
@@ -137,8 +147,8 @@ public class TestHttpServiceBalancerListenerAdapter
         // we remove the service we just added.
         discoveryClient.remove(APPLE_1_SERVICE.getId());
 
-        // a bit on the long side, but this is the default delay to ensure our updater re-triggers.
-        Thread.sleep(10000);
+        // this is the default delay to ensure our updater re-triggers, plus 1s padding.
+        serialExecutor.elapseTime(11, TimeUnit.SECONDS);
 
         // verify that even though we removed the service, it was not removed from the balancer.
         verifyNoMoreInteractions(httpServiceBalancer);
@@ -150,6 +160,14 @@ public class TestHttpServiceBalancerListenerAdapter
     public void testServiceReplacedWithNonEmptySet()
             throws InterruptedException
     {
+        SerialScheduledExecutorService serialExecutor = new SerialScheduledExecutorService();
+        updater = new ServiceDescriptorsUpdater(new HttpServiceBalancerListenerAdapter(httpServiceBalancer),
+                "apple",
+                new ServiceSelectorConfig().setPool("pool"),
+                nodeInfo,
+                discoveryClient,
+                serialExecutor);
+
         discoveryClient.addDiscoveredService(APPLE_1_SERVICE);
 
         // start the updater and verify that we get the initial call
@@ -158,8 +176,8 @@ public class TestHttpServiceBalancerListenerAdapter
         // we replace the service we just added with an updated descriptor for the same ID and node ID.
         discoveryClient.addDiscoveredService(APPLE_1_SERVICE_REPLACEMENT);
 
-        // a bit on the long side, but this is the default delay to ensure our updater re-triggers.
-        Thread.sleep(11000);
+        // this is the default delay to ensure our updater re-triggers, plus 1s padding.
+        serialExecutor.elapseTime(11, TimeUnit.SECONDS);
 
         ArgumentCaptor<Multiset> captor = ArgumentCaptor.forClass(Multiset.class);
 
