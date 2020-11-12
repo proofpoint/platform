@@ -155,7 +155,7 @@ public class TestHttpServiceBalancerListenerAdapter
         discoveryClient.addDiscoveredService(APPLE_1_SERVICE_REPLACEMENT);
 
         // a bit on the long side, but this is the default delay to ensure our updater re-triggers.
-        Thread.sleep(10000);
+        Thread.sleep(11000);
 
         ArgumentCaptor<Multiset> captor = ArgumentCaptor.forClass(Multiset.class);
 
