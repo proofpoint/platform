@@ -1,3 +1,10 @@
+Platform 2.39
+
+* Packaging
+
+  We now exclude test-scope jar files from distribution tar files and
+  Docker images.
+
 Platform 2.38
 
 * Library Upgrades
