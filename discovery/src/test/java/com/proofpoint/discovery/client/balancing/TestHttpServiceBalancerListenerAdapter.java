@@ -124,7 +124,9 @@ public class TestHttpServiceBalancerListenerAdapter
     }
 
     @Test
-    public void testServiceReplacedWithEmptySet() throws InterruptedException {
+    public void testServiceReplacedWithEmptySet()
+            throws InterruptedException
+    {
         discoveryClient.addDiscoveredService(APPLE_1_SERVICE);
 
         // start the updater and verify that we get the initial call
@@ -145,7 +147,9 @@ public class TestHttpServiceBalancerListenerAdapter
     }
 
     @Test
-    public void testServiceReplacedWithNonEmptySet() throws InterruptedException {
+    public void testServiceReplacedWithNonEmptySet()
+            throws InterruptedException
+    {
         discoveryClient.addDiscoveredService(APPLE_1_SERVICE);
 
         // start the updater and verify that we get the initial call

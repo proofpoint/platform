@@ -110,10 +110,11 @@ public final class ServiceDescriptorsUpdater
                 Duration delay = null;
 
                 // Starting case:  current descriptors null.
-                if(serviceDescriptors.compareAndSet(null, newDescriptors)){
+                if (serviceDescriptors.compareAndSet(null, newDescriptors)) {
                     target.updateServiceDescriptors(newDescriptors.getServiceDescriptors());
                     delay = newDescriptors.getMaxAge();
-                } else if(!newDescriptors.getServiceDescriptors().isEmpty()) {
+                }
+                else if (!newDescriptors.getServiceDescriptors().isEmpty()) {
                     // Typical case:  new descriptors are populated
                     serviceDescriptors.set(newDescriptors);
                     target.updateServiceDescriptors(newDescriptors.getServiceDescriptors());
