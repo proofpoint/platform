@@ -1,8 +1,10 @@
 Platform 2.39
 
-* Base image changes
+* Library Upgrades
+
+  - Jetty to 9.4.35 (was 9.4.33)
   - Base Docker image to repocache.nonprod.ppops.net/dev-docker-local/c15-java11:2.13
-  - Base image needs to have the "service" user and /service/var directory
+    Base image needs to have the "service" user and /service/var directory.
 
 * Packaging
 
