@@ -3,6 +3,7 @@ Platform 2.39
 * Library Upgrades
 
   - Jetty to 9.4.35 (was 9.4.33)
+  - Guava to 30.0 (was 29.0)
   - Base Docker image to repocache.nonprod.ppops.net/dev-docker-local/c15-java11:2.13
     Base image needs to have the "service" user and /service/var directory.
 
