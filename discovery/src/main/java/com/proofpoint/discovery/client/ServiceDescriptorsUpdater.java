@@ -110,7 +110,7 @@ public final class ServiceDescriptorsUpdater
                 Duration delay = null;
 
                 // If we have no current descriptors, or the new descriptors have contents, perform the set.
-                if(serviceDescriptors.get() == null || !newDescriptors.getServiceDescriptors().isEmpty()){
+                if (serviceDescriptors.get() == null || !newDescriptors.getServiceDescriptors().isEmpty()) {
                     serviceDescriptors.set(newDescriptors);
                     target.updateServiceDescriptors(newDescriptors.getServiceDescriptors());
                     delay = newDescriptors.getMaxAge();
