@@ -1,3 +1,11 @@
+Platform 2.40
+
+* We fixed an issue in the JMX module when running on a version of Java with
+  a four-segment version number.
+
+* We no longer replace a previous set of discovered instances when the
+  discovery service returns an empty set of instances.
+
 Platform 2.39
 
 * Library Upgrades
