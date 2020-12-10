@@ -6,6 +6,9 @@ Platform 2.40
 * We no longer replace a previous set of discovered instances when the
   discovery service returns an empty set of instances.
 
+* Library Upgrades
+  - Base Docker image to c15-java11:2.17 (was 2.13)
+
 Platform 2.39
 
 * Library Upgrades
