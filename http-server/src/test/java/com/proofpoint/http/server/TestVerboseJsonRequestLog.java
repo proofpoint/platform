@@ -17,12 +17,12 @@ package com.proofpoint.http.server;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
 
-public class TestJsonRequestLog extends AbstractTestRequestLog
+public class TestVerboseJsonRequestLog extends AbstractTestRequestLog
 {
     @Override
     protected void setup(HttpServerConfig httpServerConfig)
     {
-        logger = new JsonRequestLog(httpServerConfig);
+        logger = new JsonVerboseRequestLog(httpServerConfig);
     }
 
     @Override
@@ -45,21 +45,26 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
             long timeResponseContent,
             long responseContentChunkCount, long responseContentChunkMax, long timeToLastByte)
     {
-        return String.format("{\"t\":\"%s\",\"tt\":\"%s\",\"ip\":\"%s\"," +
-                        "\"m\":\"%s\",\"u\":\"%s\",\"user\":\"%s\"," +
-                        "\"c\":%d,\"qs\":%d,\"rs\":%d," +
-                        "\"td\":\"%d.00ms\",\"tq\":\"%d.00ms\"," +
-                        "\"tr\":\"%d.00ms\",\"rc\":{\"count\":%d,\"max\":\"%d.00ms\"}," +
-                        "\"tl\":\"%d.00ms\"}\n",
+        return String.format("{\"time\":\"%s\",\"traceToken\":\"%s\",\"sourceIp\":\"%s\"," +
+                        "\"method\":\"%s\",\"requestUri\":\"%s\",\"username\":\"%s\",\"userAgent\":\"%s\"," +
+                        "\"responseCode\":%d,\"requestSize\":%d,\"responseSize\":%d,\"protocolVersion\":\"%s\"," +
+                        "\"tlsProtocolVersion\":\"%s\",\"tlsCipherSuite\":\"%s\"," +
+                        "\"timeToDispatch\":\"%d.00ms\",\"timeToRequestEnd\":\"%d.00ms\"," +
+                        "\"timeResponseContent\":\"%d.00ms\",\"responseContentChunk\":{\"count\":%d,\"max\":\"%d.00ms\"}," +
+                        "\"timeToLastByte\":\"%d.00ms\"}\n",
                 "2018-09-29T03:41:11.000Z",
                 getCurrentRequestToken(),
                 clientAddr,
                 method,
                 pathQuery,
                 user,
+                agent,
                 responseCode,
                 requestSize,
                 responseSize,
+                protocolVersion,
+                tlsProtocolVersion,
+                tlsCipherSuite,
                 timeToDispatch,
                 timeToRequestEnd,
                 timeResponseContent,

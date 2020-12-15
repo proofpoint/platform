@@ -1,3 +1,11 @@
+Platform 2.41
+
+* HttpServer
+
+  We changed the format of the JSON request log to take less space and omit
+  less-used fields. The previous format may be selected by setting the
+  "http-server.log.format" config option to "JSON_VERBOSE".
+
 Platform 2.40
 
 * We fixed an issue in the JMX module when running on a version of Java with
