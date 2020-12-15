@@ -580,7 +580,20 @@ public class HttpServerConfig
 
     public enum LogFormat
     {
-        TSV,
-        JSON,
+        TSV(DelimitedRequestLog::new),
+        JSON(JsonRequestLog::new),
+        JSON_VERBOSE(JsonVerboseRequestLog::new);
+
+        private interface LogFactory {
+            RequestLog create(HttpServerConfig config);
+        }
+        private final LogFactory factory;
+        LogFormat(LogFactory factory) {
+            this.factory = factory;
+        }
+
+        RequestLog createLog(HttpServerConfig config) {
+            return factory.create(config);
+        }
     }
 }

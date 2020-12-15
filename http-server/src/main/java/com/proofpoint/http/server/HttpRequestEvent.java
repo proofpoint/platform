@@ -31,9 +31,9 @@ import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken
 import static java.lang.Math.max;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-@JsonPropertyOrder({ "time", "traceToken", "sourceIp", "method", "requestUri", "username", "userAgent",
-        "responseCode", "requestSize", "responseSize", "protocolVersion", "tlsProtocolVersion", "tlsCipherSuite",
-        "timeToDispatch", "timeToRequestEnd", "timeResponseContent", "responseContentChunk", "timeToLastByte"})
+@JsonPropertyOrder({ "t", "tt", "ip", "m", "u", "user",
+        "c", "qs", "rs",
+        "td", "tq", "tr", "rc", "tl"})
 class HttpRequestEvent
 {
     static HttpRequestEvent createHttpRequestEvent(
@@ -149,62 +149,61 @@ class HttpRequestEvent
         this.tlsCipherSuite = tlsCipherSuite;
     }
 
-    @JsonProperty("time")
+    @JsonProperty("t")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
     public Instant getTimeStamp()
     {
         return timeStamp;
     }
 
-    @JsonProperty
+    @JsonProperty("tt")
     public String getTraceToken()
     {
         return traceToken;
     }
 
-    @JsonProperty("sourceIp")
+    @JsonProperty("ip")
     public String getClientAddress()
     {
         return clientAddress;
     }
 
-    @JsonProperty
+    @JsonProperty("m")
     public String getMethod()
     {
         return method;
     }
 
-    @JsonProperty
+    @JsonProperty("u")
     public String getRequestUri()
     {
         return requestUri;
     }
 
-    @JsonProperty("username")
+    @JsonProperty
     public String getUser()
     {
         return user;
     }
 
-    @JsonProperty("userAgent")
     public String getAgent()
     {
         return agent;
     }
 
-    @JsonProperty
+    @JsonProperty("qs")
     public long getRequestSize()
     {
         return requestSize;
     }
 
-    @JsonProperty
+    @JsonProperty("rs")
     public long getResponseSize()
     {
         return responseSize;
     }
 
-    @JsonProperty
+    @JsonProperty("c")
     public int getResponseCode()
     {
         return responseCode;
@@ -215,25 +214,25 @@ class HttpRequestEvent
         return timeToLastByte;
     }
 
-    @JsonProperty("timeToLastByte")
+    @JsonProperty("tl")
     public Duration getTimeToLastByteDuration() {
         return new Duration(timeToLastByte, MILLISECONDS);
     }
 
-    @JsonProperty
+    @JsonProperty("td")
     public Duration getTimeToDispatch()
     {
         return new Duration(beginToDispatchMillis, MILLISECONDS);
     }
 
-    @JsonProperty
+    @JsonProperty("tq")
     public Duration getTimeToRequestEnd()
     {
         return new Duration(beginToEndMillis, MILLISECONDS);
     }
 
     @Nullable
-    @JsonProperty
+    @JsonProperty("tr")
     public Duration getTimeResponseContent()
     {
         if (firstToLastContentTimeInMillis < 0) {
@@ -243,25 +242,22 @@ class HttpRequestEvent
     }
 
     @Nullable
-    @JsonProperty
+    @JsonProperty("rc")
     public DoubleSummaryStats getResponseContentChunk()
     {
         return responseContentInterarrivalStats;
     }
 
-    @JsonProperty
     public String getProtocolVersion()
     {
         return protocolVersion;
     }
 
-    @JsonProperty
     public String getTlsProtocolVersion()
     {
         return tlsProtocolVersion;
     }
 
-    @JsonProperty
     public String getTlsCipherSuite()
     {
         return tlsCipherSuite;
