@@ -18,6 +18,8 @@ package com.proofpoint.http.server;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.google.common.collect.ImmutableMap;
+import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -26,8 +28,9 @@ import javax.annotation.Nullable;
 import javax.net.ssl.SSLSession;
 import java.security.Principal;
 import java.time.Instant;
+import java.util.Map;
 
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
+import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static java.lang.Math.max;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -53,9 +56,6 @@ class HttpRequestEvent
             user = principal.getName();
         }
 
-        @SuppressWarnings("deprecation")
-        String token = getCurrentRequestToken();
-
         long timeToLastByte = max(currentTimeInMillis - request.getTimeStamp(), 0);
 
         String requestUri = null;
@@ -70,7 +70,7 @@ class HttpRequestEvent
 
         return new HttpRequestEvent(
                 Instant.ofEpochMilli(request.getTimeStamp()),
-                token,
+                getCurrentTraceToken(),
                 clientAddressExtractor.clientAddressFor(request),
                 method,
                 requestUri,
@@ -91,7 +91,7 @@ class HttpRequestEvent
     }
 
     private final Instant timeStamp;
-    private final String traceToken;
+    private final TraceToken traceToken;
     private final String clientAddress;
     private final String method;
     private final String requestUri;
@@ -111,7 +111,7 @@ class HttpRequestEvent
 
     private HttpRequestEvent(
             Instant timeStamp,
-            String traceToken,
+            TraceToken traceToken,
             String clientAddress,
             String method,
             String requestUri,
@@ -156,10 +156,18 @@ class HttpRequestEvent
         return timeStamp;
     }
 
-    @JsonProperty("tt")
-    public String getTraceToken()
+    public TraceToken getTraceToken()
     {
         return traceToken;
+    }
+
+    @JsonProperty("tt")
+    Map<String, String> getTraceTokenForLog()
+    {
+        if (traceToken == null) {
+            return null;
+        }
+        return ImmutableMap.copyOf(traceToken);
     }
 
     @JsonProperty("ip")
