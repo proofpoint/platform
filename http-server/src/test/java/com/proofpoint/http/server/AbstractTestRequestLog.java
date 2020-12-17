@@ -17,6 +17,7 @@ package com.proofpoint.http.server;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
+import com.proofpoint.tracetoken.TraceTokenManager;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 import org.eclipse.jetty.http.HttpURI;
@@ -35,6 +36,7 @@ import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
 
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
+import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.jetty.http.HttpVersion.HTTP_2;
@@ -164,7 +166,33 @@ public abstract class AbstractTestRequestLog
     }
 
     @Test
-    public void testWriteLog()
+    public void testWriteLogSimpleToken()
+            throws Exception
+    {
+        createAndRegisterNewRequestToken();
+        testWriteLog();
+        clearRequestToken();
+    }
+
+    @Test
+    public void testWriteLogComplexToken()
+            throws Exception
+    {
+        createAndRegisterNewRequestToken("key", "value");
+        testWriteLog();
+        clearRequestToken();
+    }
+
+    @Test
+    public void testWriteLogLocalComplexToken()
+            throws Exception
+    {
+        createAndRegisterNewRequestToken("_key", "value");
+        testWriteLog();
+        clearRequestToken();
+    }
+
+    private void testWriteLog()
             throws Exception
     {
         DoubleSummaryStatistics summaryStatistics = new DoubleSummaryStatistics();
