@@ -19,17 +19,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.proofpoint.units.Duration;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
 
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLSession;
-import java.security.Principal;
 import java.time.Instant;
-
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentRequestToken;
-import static java.lang.Math.max;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @JsonPropertyOrder({ "time", "traceToken", "sourceIp", "method", "requestUri", "username", "userAgent",
         "responseCode", "requestSize", "responseSize", "protocolVersion", "tlsProtocolVersion", "tlsCipherSuite",
@@ -54,7 +46,7 @@ class VerboseHttpRequestEvent
     @JsonProperty
     public String getTraceToken()
     {
-        return delegate.getTraceToken();
+        return delegate.getTraceToken().toString();
     }
 
     @JsonProperty("sourceIp")
