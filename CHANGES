@@ -1,3 +1,20 @@
+Platform 2.42
+
+* Deprecation removals
+
+  We have removed the empty OpenApiModule. Its functionality has long since
+  been incorporated into JaxrsModule and references to it should be deleted.
+
+  We removed the following deprecated APIs:
+
+  - Logging.logToFile(String, int, DataSize, DataSize)
+  - Logging.addShutdownHookToWaitFor(Thread)
+  - Logging.removeShutdownHookToWaitFor(Thread)
+  - RollingFileHander(String, int, DataSize, DataSize) constructor
+  - ShutdownWaitingLogManager.addWaitForShutdownHook(Thread)
+  - ShutdownWaitingLogManager.removeWaitForShutdownHook(Thread)
+  - log.max-size-in-bytes configuration option
+
 Platform 2.41
 
 * HttpServer

@@ -17,12 +17,14 @@ package com.proofpoint.log;
 
 import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.ConfigDescription;
+import com.proofpoint.configuration.DefunctConfig;
 import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 
 import javax.validation.constraints.Min;
 
+@DefunctConfig("log.max-size-in-bytes")
 public class LoggingConfiguration
 {
     private boolean consoleEnabled = true;
@@ -81,14 +83,6 @@ public class LoggingConfiguration
     public LoggingConfiguration setMaxSegmentSize(DataSize maxSegmentSize)
     {
         this.maxSegmentSize = maxSegmentSize;
-        return this;
-    }
-
-    @LegacyConfig(value = "log.max-size-in-bytes", replacedBy = "log.max-size")
-    @Deprecated
-    public LoggingConfiguration setMaxSegmentSizeInBytes(long maxSegmentSizeInBytes)
-    {
-        this.maxSegmentSize = new DataSize(maxSegmentSizeInBytes, Unit.BYTE);
         return this;
     }
 
