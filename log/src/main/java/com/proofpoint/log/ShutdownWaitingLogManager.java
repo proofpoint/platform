@@ -54,26 +54,4 @@ public class ShutdownWaitingLogManager
             latchesToWaitFor.add(latch);
         }
     }
-
-    /**
-     * @deprecated Use {@link #addWaitFor(CountDownLatch)} instead.
-     */
-    @Deprecated
-    public void addWaitForShutdownHook(Thread shutdownHook)
-    {
-        synchronized (shutdownHooksToWaitFor) {
-            shutdownHooksToWaitFor.add(shutdownHook);
-        }
-    }
-
-    /**
-     * @deprecated Use a {@link CountDownLatch} instead.
-     */
-    @Deprecated
-    public void removeWaitForShutdownHook(Thread shutdownHook)
-    {
-        synchronized (shutdownHooksToWaitFor) {
-            shutdownHooksToWaitFor.remove(shutdownHook);
-        }
-    }
 }

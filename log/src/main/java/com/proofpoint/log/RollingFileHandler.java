@@ -21,15 +21,6 @@ final class RollingFileHandler
 {
     private final Appender<String> fileAppender;
 
-    /**
-     * @deprecated use {@link #RollingFileHandler(String, int, int, DataSize, DataSize)}
-     */
-    @Deprecated
-    RollingFileHandler(String filename, int maxHistory, DataSize maxFileSize, DataSize maxTotalSize)
-    {
-        this(filename, maxHistory, 0, maxFileSize, maxTotalSize);
-    }
-
     RollingFileHandler(String filename, int maxHistory, int queueSize, DataSize maxFileSize, DataSize maxTotalSize)
     {
         setFormatter(new StaticFormatter());
