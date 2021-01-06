@@ -58,12 +58,10 @@ public class TestLoggingConfiguration
     {
         Map<String, String> currentProperties = new ImmutableMap.Builder<String, String>()
                 .put("log.path", "var/log/foo.log")
-                .put("log.max-size", "300B")
                 .build();
 
         Map<String, String> oldProperties = new ImmutableMap.Builder<String, String>()
                 .put("log.output-file", "var/log/foo.log")
-                .put("log.max-size-in-bytes", "300")
                 .build();
 
         ConfigAssertions.assertLegacyEquivalence(LoggingConfiguration.class, currentProperties, oldProperties);
