@@ -1,3 +1,9 @@
+Platform 2.43
+
+* Library Upgrades
+
+  - Jetty to 9.4.38 (was 9.4.35)
+
 Platform 2.42
 
 * Deprecation removals
