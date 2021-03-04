@@ -6,6 +6,7 @@ Platform 2.43
   - Guava to 30.1 (was 30.0)
   - Guice to 5.0.1 (was 4.2.3)
   - Jetty to 9.4.38 (was 9.4.35)
+  - Base Docker image to c15-java11:2.22 (was 2.21)
 
 Platform 2.42
 
