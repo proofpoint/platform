@@ -3,6 +3,7 @@ Platform 2.43
 * Library Upgrades
 
   - auto-value to 1.7.4 (was 1.6.5)
+  - Guava to 30.1 (was 30.0)
   - Jetty to 9.4.38 (was 9.4.35)
 
 Platform 2.42
