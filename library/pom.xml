@@ -83,7 +83,7 @@
         <platform.check.fail-spotbugs>false</platform.check.fail-spotbugs>
         <platform.check.fail-modernizer>false</platform.check.fail-modernizer>
 
-        <dep.auto-value.version>1.6.5</dep.auto-value.version>
+        <dep.auto-value.version>1.7.4</dep.auto-value.version>
         <dep.jetty.version>9.4.38.v20210224</dep.jetty.version>
         <dep.guava.version>30.0-jre</dep.guava.version>
         <dep.guice.version>4.2.3</dep.guice.version>
