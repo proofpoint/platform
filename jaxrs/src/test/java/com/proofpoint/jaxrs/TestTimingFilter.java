@@ -227,7 +227,7 @@ public class TestTimingFilter
     }
 
     @Test(expectedExceptions = CreationException.class,
-            expectedExceptionsMessageRegExp = ".*Caused by: java\\.lang\\.RuntimeException: \"method\" tag name in @Key annotation on parameter of method.*testGet.*duplicates standard tag name.*")
+            expectedExceptionsMessageRegExp = ".*Caused by: RuntimeException: \"method\" tag name in @Key annotation on parameter of method.*testGet.*duplicates standard tag name.*")
     public void testDuplicateMethodTagThrowsException()
         throws Exception
     {
@@ -247,7 +247,7 @@ public class TestTimingFilter
     }
 
     @Test(expectedExceptions = CreationException.class,
-            expectedExceptionsMessageRegExp = ".*Caused by: java\\.lang\\.RuntimeException: \"responseCode\" tag name in @Key annotation on parameter of method.*testGet.*duplicates standard tag name.*")
+            expectedExceptionsMessageRegExp = ".*Caused by: RuntimeException: \"responseCode\" tag name in @Key annotation on parameter of method.*testGet.*duplicates standard tag name.*")
     public void testDuplicateResponseCodeTagThrowsException()
         throws Exception
     {
@@ -267,7 +267,7 @@ public class TestTimingFilter
     }
 
     @Test(expectedExceptions = CreationException.class,
-            expectedExceptionsMessageRegExp = ".*Caused by: java\\.lang\\.RuntimeException: Duplicate \"foo\" tag name in @Key annotation on parameter of method.*testGet.*")
+            expectedExceptionsMessageRegExp = ".*Caused by: RuntimeException: Duplicate \"foo\" tag name in @Key annotation on parameter of method.*testGet.*")
     public void testDuplicateTagsThrowsException()
         throws Exception
     {

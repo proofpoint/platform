@@ -522,7 +522,7 @@ public class TestReportBinder
     }
 
     @Test(expectedExceptions = ProvisionException.class,
-            expectedExceptionsMessageRegExp = ".*KeyedDistribution\\.add\\(java\\.lang\\.String, boolean\\) @Key\\(\"foo\"\\) duplicates tag on entire report collection.*")
+            expectedExceptionsMessageRegExp = ".*KeyedDistribution\\.add\\(String, boolean\\) @Key\\(\"foo\"\\) duplicates tag on entire report collection.*")
     public void testReportCollectionWithConflictingTags()
     {
         Injector injector = Guice.createInjector(
