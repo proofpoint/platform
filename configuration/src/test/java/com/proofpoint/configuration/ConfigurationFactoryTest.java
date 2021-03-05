@@ -948,7 +948,7 @@ public class ConfigurationFactoryTest
         catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
-            assertContainsAllOf(e.getMessage(), "Configuration map has non-configuration value class java.lang.String, so key '1337' cannot be followed by '.'",
+            assertContainsAllOf(e.getMessage(), "Configuration map has non-configuration value class String, so key '1337' cannot be followed by '.'",
                     "property 'map-a.1337.string-a'", "setMapA");
         }
     }
@@ -967,7 +967,7 @@ public class ConfigurationFactoryTest
         catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
-            assertContainsAllOf(e.getMessage(), "Could not coerce map key 'k' to java.lang.Integer", "property prefix 'map-a.k'", "setMapA");
+            assertContainsAllOf(e.getMessage(), "Could not coerce map key 'k' to Integer", "property prefix 'map-a.k'", "setMapA");
         }
     }
 
