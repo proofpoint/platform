@@ -31,7 +31,8 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.fail;
 
-public class TestSmileResponseHandler
+public class
+TestSmileResponseHandler
 {
     private static final MediaType MEDIA_TYPE_SMILE = MediaType.create("application", "x-jackson-smile");
 
@@ -69,7 +70,7 @@ public class TestSmileResponseHandler
         catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), "Unable to create " + User.class + " from SMILE response");
             assertInstanceOf(e.getCause(), InvalidFormatException.class);
-            assertContains(e.getCause().getMessage(), "Cannot deserialize value of type `int` from String \"foo\": not a valid Integer value");
+            assertContains(e.getCause().getMessage(), "Cannot deserialize value of type `int` from String \"foo\": not a valid `int` value");
         }
     }
 

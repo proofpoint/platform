@@ -4,6 +4,7 @@ Platform 2.44
 
   - slf4j to 1.7.30 (was 1.7.26)
   - Joda-Time to 2.10.10 (was 2.10.1)
+  - Jackson to 2.12.2 (was 2.11.0)
 
 Platform 2.43
 
