@@ -10,6 +10,7 @@ Platform 2.44
   - assertj-guava to 3.4.0 (was 3.2.1)
   - assertj-db to 2.0.2 (was 1.2.0)
   - Objenesis to 3.1 (was 3.0.1)
+  - Mockito to 3.8.0 (was 2.28.2)
   - byte-buddy to 1.10.22 (was 1.9.13)
 
 Platform 2.43
