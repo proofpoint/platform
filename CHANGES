@@ -9,6 +9,7 @@ Platform 2.44
   - assertj-core to 3.19.0 (was 3.12.2)
   - assertj-guava to 3.4.0 (was 3.2.1)
   - assertj-db to 2.0.2 (was 1.2.0)
+  - Objenesis to 3.1 (was 3.0.1)
 
 Platform 2.43
 
