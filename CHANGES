@@ -6,6 +6,7 @@ Platform 2.44
   - Joda-Time to 2.10.10 (was 2.10.1)
   - Jackson to 2.12.2 (was 2.11.0)
   - hibernate-validator to 6.0.21.Final (was 6.0.18.Final)
+  - assertj-core to 3.19.0 (was 3.12.2)
 
 Platform 2.43
 
