@@ -139,7 +139,7 @@ public class JsonCodec<T>
             return mapper.readValue(json, javaType);
         }
         catch (IOException e) {
-            throw new IllegalArgumentException(format("Invalid JSON string for %s", javaType), e);
+            throw new IllegalArgumentException(format("Invalid JSON string for %s: %s", javaType, e.getMessage()), e);
         }
     }
 

@@ -157,13 +157,13 @@ public class TestJsonTester
         assertEquals(simpleDecoder.get(0).intValue, 3);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Invalid JSON string for \\[simple type, class com\\.proofpoint\\.json\\.testing\\.TestJsonTester\\$SimpleDecoder\\]")
+    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Invalid JSON string for \\[simple type, class com\\.proofpoint\\.json\\.testing\\.TestJsonTester\\$SimpleDecoder\\].*")
     public void testDecodeConstructionException()
     {
         decodeJson(SimpleDecoder.class, ImmutableMap.of());
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Invalid JSON string for \\[collection type; class java\\.util\\.List, contains \\[simple type, class com\\.proofpoint\\.json\\.testing\\.TestJsonTester\\$SimpleDecoder\\]\\]")
+    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Invalid JSON string for \\[collection type; class java\\.util\\.List, contains \\[simple type, class com\\.proofpoint\\.json\\.testing\\.TestJsonTester\\$SimpleDecoder\\]\\].*")
     public void testDecodeWrongType()
     {
         decodeJson(listJsonCodec(SimpleDecoder.class), ImmutableMap.of("intValue", 3));
