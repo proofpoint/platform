@@ -16,8 +16,10 @@
 package com.proofpoint.configuration;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -60,7 +62,15 @@ public class PropertiesBuilder
             return this;
         }
 
-        JsonNode tree = new ObjectMapper(new JsonFactory()).readTree(new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8));
+        ObjectMapper mapper = new ObjectMapper(new JsonFactory()).enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+        JsonNode tree = null;
+        try {
+            tree = mapper.readTree(new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8));
+        }
+        catch (MismatchedInputException e) {
+            errors.add(e.getMessage());
+            return this;
+        }
         mergeTree("", tree, path);
         return this;
     }

@@ -180,6 +180,23 @@ public class TestPropertiesBuilder
         assertEquals(builder.getErrors(), ImmutableList.of());
     }
 
+    @Test
+    public void testDuplicateMapKeyInJsonFileThrowsError()
+            throws IOException
+    {
+        final File file = File.createTempFile("config", ".json", tempDir);
+        try (PrintStream out = new PrintStream(new FileOutputStream(file))) {
+            out.print("{\n" +
+                    "\"string.value\": \"foo\",\n" +
+                    "\"string.value\": \"foo\"}\n" +
+                    "}");
+        }
+
+        PropertiesBuilder builder = new PropertiesBuilder()
+                .withJsonFile(file.getAbsolutePath());
+
+        assertEquals(builder.getErrors().size(), 1);
+    }
 
     @Test
     public void testDuplicatePropertiesInJsonFileThrowsError()
