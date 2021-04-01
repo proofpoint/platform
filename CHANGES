@@ -1,12 +1,8 @@
-Platform 2.46
-
-* Library Upgrades
-  - Jetty to 9.4.39 (was 9.4.38) (CVE-2021-28163, CVE-2021-28164, CVE-2021-28165)
-
 Platform 2.45
 
 * Library Upgrades
 
+  - Jetty to 9.4.39 (was 9.4.38) (CVE-2021-28163, CVE-2021-28164, CVE-2021-28165)
   - Base Docker image to c15-java11:2.24 (was 2.22)
 
 Platform 2.44
