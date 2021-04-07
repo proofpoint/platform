@@ -11,6 +11,7 @@ Platform 2.47
   - maven-assembly-plugin to 3.3.0 (was 3.2.0)
   - duplicate-finder-maven-plugin to 1.5.0 (was 1.4.0)
   - spotbugs-maven-plugin to 4.2.2 (was 4.0.0)
+  - maven-site-plugin to 3.9.1 (was 3.9.0)
 
 Platform 2.46
 
