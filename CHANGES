@@ -4,6 +4,10 @@ Platform 2.47
 
   We now specify a version for the JaCoCo agent in the dependencyManagment section.
 
+* Maven plugin upgrades
+
+  - build-helper-maven-plugin to 3.2.0 (was 3.1.0)
+
 Platform 2.46
 
 * Library Upgrades
