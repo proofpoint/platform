@@ -1,3 +1,9 @@
+Platform 2.47
+
+* Maven
+
+  We now specify a version for the JaCoCo agent in the dependencyManagment section.
+
 Platform 2.46
 
 * Library Upgrades
