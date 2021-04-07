@@ -12,6 +12,7 @@ Platform 2.47
   - duplicate-finder-maven-plugin to 1.5.0 (was 1.4.0)
   - spotbugs-maven-plugin to 4.2.2 (was 4.0.0)
   - maven-site-plugin to 3.9.1 (was 3.9.0)
+  - docker-maven-plugin to 0.35.0 (was 0.33.0)
 
 Platform 2.46
 
