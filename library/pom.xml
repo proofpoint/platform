@@ -93,6 +93,7 @@
         <dep.jackson.version>2.12.2</dep.jackson.version>
         <dep.jersey.version>2.27</dep.jersey.version>
         <dep.jmh.version>1.13</dep.jmh.version>
+        <dep.jacoco.version>0.8.5</dep.jacoco.version>
 
         <platform.jacoco.merged-data-file>${project.build.directory}/merged.exec</platform.jacoco.merged-data-file>
     </properties>
@@ -456,7 +457,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.5</version>
+                    <version>${dep.jacoco.version}</version>
                     <executions>
                         <execution>
                             <id>default</id>
@@ -1281,8 +1282,7 @@
             <dependency>
                 <groupId>org.jacoco</groupId>
                 <artifactId>org.jacoco.agent</artifactId>
-                <classifier>runtime</classifier>
-                <version>0.8.5</version>
+                <version>${dep.jacoco.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
