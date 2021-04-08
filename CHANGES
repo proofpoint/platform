@@ -14,6 +14,10 @@ Platform 2.47
   - maven-site-plugin to 3.9.1 (was 3.9.0)
   - docker-maven-plugin to 0.35.0 (was 0.33.0)
 
+* Library Changes
+
+  - guice-multibindings has been removed as it is no longer a standalone library.
+
 Platform 2.46
 
 * Library Upgrades
