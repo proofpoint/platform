@@ -1,5 +1,9 @@
 Platform 2.47
 
+* Jetty
+
+  - We reverted Jetty to 9.4.38 due to a bug that causes TLS connection failures.
+
 * Maven
 
   We now specify a version for the JaCoCo agent in the dependencyManagment section.
