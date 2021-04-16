@@ -33,7 +33,9 @@ import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Nested;
 
 import javax.management.InstanceAlreadyExistsException;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -112,6 +114,8 @@ public class TestReportingPrometheusModule
                                         new NodeConfig().setEnvironment("test_environment")
                                                 .setNodeInternalHostname("test.hostname")
                                                 .setPool("test_pool")
+                                                .setNodeInternalIp(getV4Localhost())
+                                                .setNodeBindIp(getV4Localhost())
                                 )),
                         new TestingAdminHttpServerModule(),
                         explicitJaxrsModule(),
@@ -708,7 +712,10 @@ public class TestReportingPrometheusModule
                             binder -> binder.bind(NodeInfo.class).toInstance(new NodeInfo("test-application", new NodeConfig()
                                     .setEnvironment("test_environment")
                                     .setNodeInternalHostname("test.hostname")
-                                    .setPool("test_pool"))),
+                                    .setPool("test_pool")
+                                    .setNodeInternalIp(getV4Localhost())
+                                    .setNodeBindIp(getV4Localhost())
+                            )),
                             new TestingAdminHttpServerModule(),
                             explicitJaxrsModule(),
                             new JsonModule(),
@@ -780,6 +787,17 @@ public class TestReportingPrometheusModule
         public void add(int value)
         {
             distributionStat.add(value);
+        }
+    }
+
+    @SuppressWarnings("ImplicitNumericConversion")
+    private static InetAddress getV4Localhost()
+    {
+        try {
+            return InetAddress.getByAddress("localhost", new byte[] {127, 0, 0, 1});
+        }
+        catch (UnknownHostException e) {
+            throw new AssertionError("Could not create localhost address");
         }
     }
 }
