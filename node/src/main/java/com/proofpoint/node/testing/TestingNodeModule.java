@@ -93,6 +93,13 @@ public class TestingNodeModule
         return new NodeInfo("test-application", config);
     }
 
+    static public NodeInfo createNodeInfo() {
+        return new NodeInfo("test-application", new NodeConfig()
+                        .setEnvironment("test" + nextId.getAndIncrement())
+                        .setNodeInternalIp(getV4Localhost())
+                        .setNodeBindIp(getV4Localhost()));
+    }
+
     @SuppressWarnings("ImplicitNumericConversion")
     private static InetAddress getV4Localhost()
     {
