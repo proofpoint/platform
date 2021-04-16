@@ -1277,6 +1277,7 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>org.jacoco.agent</artifactId>
                 <version>${dep.jacoco.version}</version>
+                <classifier>runtime</classifier>
             </dependency>
         </dependencies>
     </dependencyManagement>
