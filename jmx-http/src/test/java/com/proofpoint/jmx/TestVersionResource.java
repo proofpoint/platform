@@ -35,7 +35,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.weakref.jmx.testing.TestingMBeanModule;
 
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.Map;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
@@ -115,7 +117,11 @@ public class TestVersionResource
     private Map<String, String> queryServer(String application, String applicationVersion, String platformVersion)
             throws Exception
     {
-        NodeInfo nodeInfo = new NodeInfo(application, applicationVersion, platformVersion, new NodeConfig().setEnvironment("testing"));
+        NodeConfig nodeConfig = new NodeConfig()
+                .setEnvironment("testing")
+                .setNodeInternalIp(getV4Localhost())
+                .setNodeBindIp(getV4Localhost());
+        NodeInfo nodeInfo = new NodeInfo(application, applicationVersion, platformVersion, nodeConfig);
         Injector injector = bootstrapTest()
                 .withModules(
                         binder -> binder.bind(NodeInfo.class).toInstance(nodeInfo),
@@ -141,5 +147,16 @@ public class TestVersionResource
     private URI uriFor(String path)
     {
         return server.getBaseUrl().resolve(path);
+    }
+
+    @SuppressWarnings("ImplicitNumericConversion")
+    private static InetAddress getV4Localhost()
+    {
+        try {
+            return InetAddress.getByAddress("localhost", new byte[] {127, 0, 0, 1});
+        }
+        catch (UnknownHostException e) {
+            throw new AssertionError("Could not create localhost address");
+        }
     }
 }
