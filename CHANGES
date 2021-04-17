@@ -4,6 +4,10 @@ Platform 2.48
 
   - Jetty to 9.4.40 (was 9.4.38) (CVE-2021-28163, CVE-2021-28164, CVE-2021-28165)
 
+* Maven
+
+  We fixed the specification for the JaCoCo agent in the dependencyManagment section.
+
 Platform 2.47
 
 * Jetty
