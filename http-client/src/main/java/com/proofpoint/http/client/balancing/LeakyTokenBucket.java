@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.Math.toIntExact;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 class LeakyTokenBucket
@@ -56,7 +57,7 @@ class LeakyTokenBucket
 
     private int count()
     {
-        return Ints.checkedCast(windowedAdder.sum() + reserve);
+        return toIntExact(windowedAdder.sum() + reserve);
     }
 
     private static class WindowedAdder
@@ -77,7 +78,7 @@ class LeakyTokenBucket
         WindowedAdder(long range, int slices, Ticker ticker)
         {
             checkArgument(slices > 1, "slices must be greater than one");
-            window = Ints.checkedCast(range / slices);
+            window = toIntExact(range / slices);
             buckets = slices - 1;
             this.ticker = ticker;
             buf = new long[buckets];
@@ -119,7 +120,7 @@ class LeakyTokenBucket
 
             // If it turns out we've skipped a number of
             // slices, we adjust for that here.
-            int nSkip = Math.min((Ints.checkedCast((ticker.read() - old) / window - 1)), buckets);
+            int nSkip = Math.min((toIntExact((ticker.read() - old) / window - 1)), buckets);
             if (nSkip > 0) {
                 int r = Math.min(nSkip, buckets - i);
                 Arrays.fill(buf, i, i + r, 0L);

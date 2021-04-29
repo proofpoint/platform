@@ -24,6 +24,7 @@ import org.weakref.jmx.Nested;
 import java.math.BigDecimal;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.Math.toIntExact;
 import static java.math.BigDecimal.ROUND_HALF_UP;
 import static java.math.BigDecimal.ZERO;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -52,7 +53,7 @@ class TokenRetryBudget
 
         // compute the reserve by scaling retryBudgetMinPerSecond by retryBudgetRatioPeriod and retry cost
         // to allow for clients that've just started or have low rps
-        int reserve = retryBudgetMinPerSecond * Ints.checkedCast(retryBudgetRatioPeriod.roundTo(SECONDS)) * withdrawalAmount;
+        int reserve = retryBudgetMinPerSecond * toIntExact(retryBudgetRatioPeriod.roundTo(SECONDS)) * withdrawalAmount;
         tokenBucket = new LeakyTokenBucket(retryBudgetRatioPeriod, reserve, ticker);
     }
 
