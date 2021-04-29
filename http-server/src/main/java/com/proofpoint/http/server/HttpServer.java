@@ -161,7 +161,7 @@ public class HttpServer
             }
         };
         threadPool.setMinThreads(config.getMinThreads());
-        threadPool.setIdleTimeout(Ints.checkedCast(config.getThreadMaxIdleTime().toMillis()));
+        threadPool.setIdleTimeout(toIntExact(config.getThreadMaxIdleTime().toMillis()));
         threadPool.setName("http-worker");
         server = new Server(threadPool);
         server.setStopTimeout(config.getStopTimeout().toMillis());
@@ -444,7 +444,7 @@ public class HttpServer
             QueuedThreadPool adminThreadPool = new QueuedThreadPool(config.getAdminMaxThreads());
             adminThreadPool.setName("http-admin-worker");
             adminThreadPool.setMinThreads(config.getAdminMinThreads());
-            adminThreadPool.setIdleTimeout(Ints.checkedCast(config.getThreadMaxIdleTime().toMillis()));
+            adminThreadPool.setIdleTimeout(toIntExact(config.getThreadMaxIdleTime().toMillis()));
 
             if (config.isHttpsEnabled()) {
                 adminConnector = createHttpsServerConnector(
