@@ -1,7 +1,11 @@
 Platform 2.49
 
+* Library Upgrades
+
+  - Base Docker image to c15-java11:2.29 (was 2.24)
+
 * Maven plugin upgrades
-  - odernizer-maven-plugin to 2.2.0 (was 1.8.0)
+  - modernizer-maven-plugin to 2.2.0 (was 1.8.0)
 
 Platform 2.48
 
