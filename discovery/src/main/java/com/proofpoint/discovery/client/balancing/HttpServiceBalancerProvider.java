@@ -33,6 +33,7 @@ import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig;
 import com.proofpoint.node.NodeInfo;
 
 import java.util.Collection;
@@ -96,7 +97,7 @@ public final class HttpServiceBalancerProvider
         }
 
         if (factoryKeys.contains(STATIC_HTTP_SERVICE_BALANCER_FACTORY_KEY)) {
-            configurationFactory.build(StaticHttpServiceConfig.class, "service-balancer." + type);
+            configurationFactory.build(HttpServiceBalancerUriConfig.class, "service-balancer." + type);
         }
         else if (factoryKeys.contains(HTTP_SERVICE_BALANCER_FACTORY_KEY)) {
             configurationFactory.build(ServiceSelectorConfig.class, "discovery." + type);
@@ -128,8 +129,8 @@ public final class HttpServiceBalancerProvider
         HttpServiceBalancerConfig balancerConfig = configurationFactory.build(HttpServiceBalancerConfig.class, "service-balancer." + type);
 
         if (staticServiceBalancerFactory != null) {
-            StaticHttpServiceConfig staticHttpServiceConfig = configurationFactory.build(StaticHttpServiceConfig.class, "service-balancer." + type);
-            return staticServiceBalancerFactory.createHttpServiceBalancer(type, staticHttpServiceConfig, balancerConfig);
+            HttpServiceBalancerUriConfig httpServiceBalancerUriConfig = configurationFactory.build(HttpServiceBalancerUriConfig.class, "service-balancer." + type);
+            return staticServiceBalancerFactory.createHttpServiceBalancer(type, httpServiceBalancerUriConfig, balancerConfig);
         }
 
         requireNonNull(serviceBalancerFactory, "serviceBalancerFactory is null");
