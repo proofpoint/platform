@@ -20,6 +20,7 @@ import com.proofpoint.discovery.client.DiscoveryLookupClient;
 import com.proofpoint.discovery.client.ForDiscoveryClient;
 import com.proofpoint.discovery.client.ServiceDescriptorsUpdater;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
+import com.proofpoint.discovery.client.balancing.StaticHttpServiceConfig.UriMultiset;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
@@ -29,6 +30,8 @@ import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
 
 import javax.inject.Inject;
+import java.net.URI;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -69,6 +72,21 @@ public final class HttpServiceBalancerFactory
         reportExporter.export(balancer, false, "ServiceClient", tags);
         ServiceDescriptorsUpdater updater = new ServiceDescriptorsUpdater(new HttpServiceBalancerListenerAdapter(balancer), type, selectorConfig, nodeInfo, lookupClient, executor);
         updater.start();
+
+        return balancer;
+    }
+
+    public HttpServiceBalancer createHttpServiceBalancer(String type, HttpServiceBalancerConfig balancerConfig, Collection<URI> uris)
+    {
+        requireNonNull(type, "type is null");
+        requireNonNull(balancerConfig, "balancerConfig is null");
+        requireNonNull(uris, "uris is null");
+
+        Map<String, String> tags = ImmutableMap.of("serviceType", type);
+        HttpServiceBalancerStats httpServiceBalancerStats = reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags);
+        HttpServiceBalancerImpl balancer = new HttpServiceBalancerImpl(format("type=[%s]", type), httpServiceBalancerStats, balancerConfig);
+        balancer.updateHttpUris(uris);
+        reportExporter.export(balancer, false, "ServiceClient", tags);
 
         return balancer;
     }

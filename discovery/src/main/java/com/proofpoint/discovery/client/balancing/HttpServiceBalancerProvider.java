@@ -31,11 +31,13 @@ import com.google.inject.spi.Message;
 import com.proofpoint.configuration.ConfigurationAwareProvider;
 import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
+import com.proofpoint.discovery.client.balancing.StaticHttpServiceConfig.UriMultiset;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig;
 import com.proofpoint.node.NodeInfo;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
@@ -100,7 +102,10 @@ public final class HttpServiceBalancerProvider
             configurationFactory.build(HttpServiceBalancerUriConfig.class, "service-balancer." + type);
         }
         else if (factoryKeys.contains(HTTP_SERVICE_BALANCER_FACTORY_KEY)) {
-            configurationFactory.build(ServiceSelectorConfig.class, "discovery." + type);
+            Collection<URI> uris = configurationFactory.build((StaticHttpServiceConfig.class), "service-balancer." + type).getUris();
+            if (uris == null) {
+                configurationFactory.build(ServiceSelectorConfig.class, "discovery." + type);
+            }
         }
         else {
             throw new ConfigurationException(ImmutableSet.of(new Message("Could not find a factory for HttpServiceBalancer")));
@@ -134,8 +139,13 @@ public final class HttpServiceBalancerProvider
         }
 
         requireNonNull(serviceBalancerFactory, "serviceBalancerFactory is null");
-        requireNonNull(nodeInfo, "nodeInfo is null");
 
+        Collection<URI> uris = configurationFactory.build(StaticHttpServiceConfig.class, "service-balancer." + type).getUris();
+        if (uris != null) {
+            return serviceBalancerFactory.createHttpServiceBalancer(type, balancerConfig, uris);
+        }
+
+        requireNonNull(nodeInfo, "nodeInfo is null");
         ServiceSelectorConfig selectorConfig = configurationFactory.build(ServiceSelectorConfig.class, "discovery." + type);
 
         return serviceBalancerFactory.createHttpServiceBalancer(type, selectorConfig, balancerConfig, nodeInfo);

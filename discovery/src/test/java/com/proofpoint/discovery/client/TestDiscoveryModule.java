@@ -21,6 +21,7 @@ import com.google.inject.Key;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.discovery.client.announce.Announcer;
+import com.proofpoint.discovery.client.announce.AnnouncerImpl;
 import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
 import com.proofpoint.discovery.client.announce.NullAnnouncer;
 import com.proofpoint.discovery.client.announce.StaticAnnouncementHttpServerInfoImpl;
@@ -109,6 +110,35 @@ public class TestDiscoveryModule
 
     @Test
     public void testStaticBindHttpBalancer()
+            throws Exception
+    {
+        injector = bootstrapTest()
+                .withModules(
+                        new JsonModule(),
+                        new TestingNodeModule(),
+                        new ReportingModule(),
+                        new DiscoveryModule(),
+                        binder -> discoveryBinder(binder).bindHttpBalancer("foo"),
+                        binder -> discoveryBinder(binder).bindHttpBalancer("bar")
+                )
+                .setRequiredConfigurationProperties(ImmutableMap.of(
+                        "service-balancer.foo.uri", "http://127.0.0.1/foo",
+                        "service-balancer.bar.uri", "http://127.0.0.1/bar"))
+                .initialize();
+
+        HttpServiceBalancer fooBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType("foo")));
+        assertThat(fooBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/foo"));
+        HttpServiceBalancer barBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, com.proofpoint.http.client.ServiceTypes.serviceType("bar")));
+        assertThat(barBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/bar"));
+        HttpServiceBalancer fooLegacyBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("foo")));
+        assertThat(fooLegacyBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/foo"));
+        HttpServiceBalancer barLegacyBalancer = injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("bar")));
+        assertThat(barLegacyBalancer.createAttempt().getUri()).isEqualTo(URI.create("http://127.0.0.1/bar"));
+        assertThat(injector.getInstance(Announcer.class)).isInstanceOf(AnnouncerImpl.class);
+    }
+
+    @Test
+    public void testDebugStaticBindHttpBalancer()
             throws Exception
     {
         injector = bootstrapTest()

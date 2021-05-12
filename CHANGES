@@ -2,6 +2,10 @@ Platform 2.50
 
 * Discovery and Balancing HTTPClient
 
+  DiscoveryModule now permits statically configuring the set of URIs for a
+  service by setting the "service-balancer.SERVICENAME.uri" configuration
+  option to a comma-separated list of URIs.
+
   StaticDiscoveryModule now requires the "service-balancer.SERVICENAME.uri"
   configuration option for each discovered service to have at least one URI.
 
