@@ -20,10 +20,13 @@ import com.proofpoint.configuration.testing.ConfigAssertions;
 import com.proofpoint.discovery.client.balancing.StaticHttpServiceConfig.UriMultiset;
 import org.testng.annotations.Test;
 
+import javax.validation.constraints.Size;
 import java.net.URI;
 import java.util.Map;
 
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertLegacyEquivalence;
+import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
+import static com.proofpoint.testing.ValidationAssertions.assertValidates;
 
 public class TestStaticHttpServiceConfig
 {
@@ -31,7 +34,7 @@ public class TestStaticHttpServiceConfig
     public void testDefaults()
     {
         ConfigAssertions.assertRecordedDefaults(ConfigAssertions.recordDefaults(StaticHttpServiceConfig.class)
-                .setUris(UriMultiset.of()));
+                .setUris(null));
     }
 
     @Test
@@ -52,5 +55,13 @@ public class TestStaticHttpServiceConfig
     {
         assertLegacyEquivalence(StaticHttpServiceConfig.class,
                 ImmutableMap.of());
+    }
+
+    @Test
+    public void testUrisBeanValidation()
+    {
+        assertValidates(new StaticHttpServiceConfig(), "uris");
+        assertFailsValidation(new StaticHttpServiceConfig().setUris(StaticHttpServiceConfig.UriMultiset.of()), "uris", "size must be between 1 and 2147483647", Size.class);
+        assertValidates(new StaticHttpServiceConfig().setUris(StaticHttpServiceConfig.UriMultiset.of(URI.create("https://invalid.invalid"))));
     }
 }

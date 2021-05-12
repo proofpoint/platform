@@ -19,7 +19,10 @@ import com.google.common.collect.ForwardingMultiset;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.proofpoint.configuration.Config;
+import com.proofpoint.configuration.ConfigDescription;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.Size;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,14 +31,17 @@ import static com.google.common.collect.ImmutableMultiset.toImmutableMultiset;
 
 public class StaticHttpServiceConfig
 {
-    private UriMultiset uris = UriMultiset.of();
+    private UriMultiset uris;
 
+    @Nullable
+    @Size(min = 1)
     public UriMultiset getUris()
     {
         return uris;
     }
 
     @Config("uri")
+    @ConfigDescription("Set of URIs for the service. Default is to use Discovery service.")
     public StaticHttpServiceConfig setUris(UriMultiset uris)
     {
         this.uris = uris;
