@@ -16,10 +16,11 @@
 package com.proofpoint.discovery.client.balancing;
 
 import com.google.common.collect.ImmutableMap;
-import com.proofpoint.discovery.client.balancing.StaticHttpServiceConfig.UriMultiset;
 import com.proofpoint.http.client.balancing.HttpServiceAttempt;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig.UriMultiset;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
 import com.proofpoint.stats.SparseTimeStat;
@@ -45,7 +46,7 @@ public class TestStaticHttpServiceBalancerFactory
 
         HttpServiceBalancer balancer = factory.createHttpServiceBalancer(
                 "foo",
-                new StaticHttpServiceConfig().setUris(UriMultiset.valueOf("http://invalid.invalid")),
+                new HttpServiceBalancerUriConfig().setUris(UriMultiset.valueOf("http://invalid.invalid")),
                 new HttpServiceBalancerConfig());
 
         HttpServiceAttempt attempt = balancer.createAttempt();

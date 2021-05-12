@@ -2,6 +2,9 @@ Platform 2.50
 
 * Discovery and Balancing HTTPClient
 
+  StaticDiscoveryModule now requires the "service-balancer.SERVICENAME.uri"
+  configuration option for each discovered service to have at least one URI.
+
   HttpClientBinder now includes additional bindBalancingHttpClient() methods
   which use URIs provided in configuration.
 

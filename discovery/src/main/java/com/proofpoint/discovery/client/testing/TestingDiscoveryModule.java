@@ -41,6 +41,9 @@ public class TestingDiscoveryModule
     @Override
     public void configure(Binder binder)
     {
+        binder.disableCircularProxies();
+        binder.requireExplicitBindings();
+
         // bind discovery client and dependencies
         binder.bind(InMemoryDiscoveryClient.class).in(Scopes.SINGLETON);
         binder.bind(DiscoveryAnnouncementClient.class).to(Key.get(InMemoryDiscoveryClient.class)).in(Scopes.SINGLETON);

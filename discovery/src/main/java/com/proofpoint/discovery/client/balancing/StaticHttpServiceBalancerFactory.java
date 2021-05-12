@@ -20,6 +20,7 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
 
@@ -43,7 +44,7 @@ public class StaticHttpServiceBalancerFactory
         this.reportCollectionFactory = requireNonNull(reportCollectionFactory, "reportCollectionFactory is null");
     }
 
-    HttpServiceBalancer createHttpServiceBalancer(String type, StaticHttpServiceConfig staticHttpServiceConfig, HttpServiceBalancerConfig balancerConfig)
+    HttpServiceBalancer createHttpServiceBalancer(String type, HttpServiceBalancerUriConfig httpServiceBalancerUriConfig, HttpServiceBalancerConfig balancerConfig)
     {
         requireNonNull(type, "type is null");
         requireNonNull(balancerConfig, "balancerConfig is null");
@@ -51,7 +52,7 @@ public class StaticHttpServiceBalancerFactory
         Map<String, String> tags = ImmutableMap.of("serviceType", type);
         HttpServiceBalancerStats httpServiceBalancerStats = reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags);
         HttpServiceBalancerImpl balancer = new HttpServiceBalancerImpl(format("type=[%s]", type), httpServiceBalancerStats, balancerConfig);
-        balancer.updateHttpUris(staticHttpServiceConfig.getUris());
+        balancer.updateHttpUris(httpServiceBalancerUriConfig.getUris());
         reportExporter.export(balancer, false, "ServiceClient", tags);
 
         return balancer;
