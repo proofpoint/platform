@@ -28,6 +28,7 @@ import com.proofpoint.http.client.balancing.BalancingHttpClientConfig;
 import com.proofpoint.http.client.balancing.ForBalancingHttpClient;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
+import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig;
 import org.weakref.jmx.ObjectNameBuilder;
 
 import java.lang.annotation.Annotation;
@@ -92,6 +93,14 @@ import static org.weakref.jmx.guice.ExportBinder.newExporter;
  * {@code @BarClient} annotation.
  *
  * <pre>
+ *     httpClientBinder(binder).bindBalancingHttpClient("foo");</pre>
+ *
+ * Binds an {@link HttpClient} annotated with the {@code @ServiceType("foo")}
+ * annotation to an implementation that takes relative {@link URI}s in
+ * requests, interpreting them relative to URIs specified in configuration.
+ * The string {@code "foo"} also specifies the prefix for configuration.
+ *
+ * <pre>
  *     httpClientBinder(binder).bindBalancingHttpClient("foo", "https://foo.example.com");</pre>
  *
  * Binds an {@link HttpClient} annotated with the {@code @ServiceType("foo")}
@@ -152,7 +161,7 @@ public class HttpClientBinder
      * Binds an {@link HttpClient} to an implementation that takes absolute
      * {@link URI}s. See the EDSL examples at {@link HttpClientBinder}.
      *
-     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param name The configuration prefix. Should be lowercase hyphen-separated.
      * @param annotation The binding annotation.
      */
     public HttpClientBindingBuilder bindHttpClient(String name, Class<? extends Annotation> annotation)
@@ -162,6 +171,23 @@ public class HttpClientBinder
         HttpClientBindOptions options = new HttpClientBindOptions();
         binder.bind(HttpClientBindOptions.class).annotatedWith(annotation).toInstance(options);
         return new HttpClientBindingBuilder(module, newSetBinder(binder, HttpRequestFilter.class, annotation), options);
+    }
+
+    /**
+     * Binds an {@link HttpClient} annotated with {@code @ServiceType(type)}
+     * to an implementation that takes relative
+     * {@link URI}s. The requests are balanced against a static set of prefixes
+     * taken from configuration.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param type The service type.
+     */
+    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String type)
+    {
+        requireNonNull(type, "type is null");
+
+        return bindBalancingHttpClient(type, ServiceTypes.serviceType(type), type);
     }
 
     /**
@@ -186,12 +212,37 @@ public class HttpClientBinder
 
     /**
      * Binds an {@link HttpClient} to an implementation that takes relative
+     * {@link URI}s. The requests are balanced against the set of prefixes
+     * specified in configuration.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param name The configuration prefix. Should be lowercase hyphen-separated.
+     * @param annotation The binding annotation.
+     */
+    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Class<? extends Annotation> annotation)
+    {
+        requireNonNull(name, "name is null");
+        requireNonNull(annotation, "annotation is null");
+
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(annotation).prefixedWith("service-client." + annotation.getSimpleName());
+        bindConfig(binder).bind(HttpServiceBalancerUriConfig.class).annotatedWith(annotation).prefixedWith("service-client." + annotation.getSimpleName());
+        PrivateBinder privateBinder = binder.newPrivateBinder();
+        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
+                .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(annotation.getSimpleName(),
+                        Key.get(HttpServiceBalancerConfig.class, annotation),
+                        Key.get(HttpServiceBalancerUriConfig.class, annotation)));
+        return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation);
+    }
+
+    /**
+     * Binds an {@link HttpClient} to an implementation that takes relative
      * {@link URI}s. The requests are balanced against the provided static set
      * of prefixes.
      *
      * See the EDSL examples at {@link HttpClientBinder}.
      *
-     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param name The configuration prefix. Should be lowercase hyphen-separated.
      * @param annotation The binding annotation.
      * @param baseUris The {@link URI} prefixes to balance across.
      */
@@ -216,7 +267,7 @@ public class HttpClientBinder
      *
      * See the EDSL examples at {@link HttpClientBinder}.
      *
-     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param name The configuration prefix. Should be lowercase hyphen-separated.
      * @param annotation The binding annotation.
      * @param balancerKey The {@link Key} specifying the {@link HttpServiceBalancer} to use.
      */
@@ -229,6 +280,34 @@ public class HttpClientBinder
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class).to(balancerKey);
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation);
+    }
+
+    /**
+     * Binds an {@link HttpClient} to an implementation that takes relative
+     * {@link URI}s. The requests are balanced against the set of prefixes
+     * specified in configuration.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param name The configuration prefix for the HttpClient. Should be lowercase hyphen-separated.
+     * @param annotation The binding annotation.
+     * @param serviceName The name of the service being balanced.
+     * Used in metrics and in the configuration prefix for the service balancer.
+     * Ordinarily this is the value of the binding annotation.
+     */
+    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Annotation annotation, String serviceName)
+    {
+        requireNonNull(name, "name is null");
+        requireNonNull(annotation, "annotation is null");
+
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(annotation).prefixedWith("service-client." + serviceName);
+        bindConfig(binder).bind(HttpServiceBalancerUriConfig.class).annotatedWith(annotation).prefixedWith("service-client." + serviceName);
+        PrivateBinder privateBinder = binder.newPrivateBinder();
+        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
+                .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(serviceName,
+                        Key.get(HttpServiceBalancerConfig.class, annotation),
+                        Key.get(HttpServiceBalancerUriConfig.class, annotation)));
+        return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
     }
 
     private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Class<? extends Annotation> annotation)
@@ -251,7 +330,7 @@ public class HttpClientBinder
      *
      * See the EDSL examples at {@link HttpClientBinder}.
      *
-     * @param name The configuration prefix for the HttpClient. Should be lowercase hypen-separated.
+     * @param name The configuration prefix for the HttpClient. Should be lowercase hyphen-separated.
      * @param annotation The binding annotation.
      * @param serviceName The name of the service being balanced.
      * Used in metrics and in the configuration prefix for the service balancer.
@@ -279,7 +358,7 @@ public class HttpClientBinder
      *
      * See the EDSL examples at {@link HttpClientBinder}.
      *
-     * @param name The configuration prefix. Should be lowercase hypen-separated.
+     * @param name The configuration prefix. Should be lowercase hyphen-separated.
      * @param annotation The binding annotation.
      * @param serviceName The name of the service being balanced. Used in metrics. Ordinarily this is the value of the binding annotation.
      * @param balancerKey The {@link Key} specifying the {@link HttpServiceBalancer} to use.

@@ -1,3 +1,10 @@
+Platform 2.50
+
+* Discovery and Balancing HTTPClient
+
+  HttpClientBinder now includes additional bindBalancingHttpClient() methods
+  which use URIs provided in configuration.
+
 Platform 2.49
 
 * Library Upgrades
