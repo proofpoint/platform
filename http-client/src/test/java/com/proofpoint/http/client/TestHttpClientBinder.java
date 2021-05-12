@@ -189,6 +189,21 @@ public class TestHttpClientBinder
     }
 
     @Test
+    public void testBindBalancingHttpClientConfigured()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo"),
+                        new ReportingModule(),
+                        new TestingMBeanModule())
+                .setRequiredConfigurationProperty("service-client.foo.uri", "http://nonexistent.nonexistent")
+                .initialize();
+
+        assertNotNull(injector.getInstance(Key.get(HttpClient.class, serviceType("foo"))));
+    }
+
+    @Test
     public void testBindBalancingHttpClientSimple()
             throws Exception
     {
@@ -203,6 +218,21 @@ public class TestHttpClientBinder
     }
 
     @Test
+    public void testBindBalancingHttpClientConfiguredUris()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", FooClient.class),
+                        new ReportingModule(),
+                        new TestingMBeanModule())
+                .setRequiredConfigurationProperty("service-client.FooClient.uri", "http://nonexistent.nonexistent")
+                .initialize();
+
+        assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
+    }
+
+    @Test
     public void testBindBalancingHttpClientUris()
             throws Exception
     {
@@ -214,6 +244,21 @@ public class TestHttpClientBinder
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
+    }
+
+    @Test
+    public void testBindBalancingHttpClientConfigParameterizedAnnotation()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", named("bar"), "baz"),
+                        new ReportingModule(),
+                        new TestingMBeanModule())
+                .setRequiredConfigurationProperty("service-client.baz.uri", "http://nonexistent.nonexistent")
+                .initialize();
+
+        assertNotNull(injector.getInstance(Key.get(HttpClient.class, named("bar"))));
     }
 
     @Test
