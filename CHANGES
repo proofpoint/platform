@@ -3,6 +3,7 @@ Platform 2.52
 * Library Upgrades
 
   - Jetty to 9.4.42 (was 9.4.40)
+  - Base Docker image to c15-java11:2.30 (was 2.29)
 
 Platform 2.51
 
