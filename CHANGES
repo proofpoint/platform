@@ -1,4 +1,11 @@
-Platform 2.52
+Platform 2.54
+
+* HTTPServer and HTTPClient
+
+  We disabled the TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 and
+  TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 ciphers.
+
+Platform 2.53
 
 * Library Upgrades
 
