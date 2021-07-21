@@ -1,5 +1,9 @@
 Platform 2.54
 
+* Java 8
+
+  We increased the minimum Java version to 11.0.3.
+
 * HTTPServer and HTTPClient
 
   We disabled the TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 and

@@ -14,32 +14,11 @@ import static org.testng.Assert.assertNull;
 
 public class TestJmxAgent
 {
-    @Test(enabled = false) // GitHub Actions appears to have created a host firewall that makes this fail
-    public void testJava8Agent()
-            throws Exception
-    {
-        HostAndPort address = JmxAgent8.getRunningAgentAddress(null, null);
-
-        JmxAgent agent = new JmxAgent8(new JmxConfig().setEnabled(true));
-        if (address == null) {
-            // if agent wasn't running, it must have been started by the instantiation of JmxAgent
-            address = JmxAgent8.getRunningAgentAddress(null, null);
-            assertNotNull(address);
-        }
-
-        JMXServiceURL url = agent.getUrl();
-
-        assertEquals(url.toString(), format("service:jmx:rmi:///jndi/rmi://%s:%s/jmxrmi", address.getHost(), address.getPort()));
-
-        JMXConnector connector = JMXConnectorFactory.connect(url);
-        connector.connect();
-    }
-
     @Test
     public void testDisabled()
             throws Exception
     {
-        JmxAgent agent = new JmxAgent8(new JmxConfig().setEnabled(false));
+        JmxAgent agent = new JmxAgent9(new JmxConfig().setEnabled(false));
         assertNull(agent.getUrl(), "agent url");
     }
 }

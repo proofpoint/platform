@@ -39,13 +39,7 @@ public class JmxModule
         newExporter(binder).export(StackTraceMBean.class).withGeneratedName();
         binder.bind(StackTraceMBean.class).in(Scopes.SINGLETON);
 
-        if (JavaVersion.current().getMajor() < 9) {
-            binder.bind(JmxAgent8.class).in(Scopes.SINGLETON);
-            binder.bind(JmxAgent.class).to(JmxAgent8.class);
-        }
-        else {
-            binder.bind(JmxAgent9.class).in(Scopes.SINGLETON);
-            binder.bind(JmxAgent.class).to(JmxAgent9.class);
-        }
+        binder.bind(JmxAgent9.class).in(Scopes.SINGLETON);
+        binder.bind(JmxAgent.class).to(JmxAgent9.class);
     }
 }
