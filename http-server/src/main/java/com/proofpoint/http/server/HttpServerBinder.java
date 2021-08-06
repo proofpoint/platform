@@ -1,6 +1,5 @@
 package com.proofpoint.http.server;
 
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Binder;
 
 import java.lang.annotation.Annotation;
@@ -62,7 +61,7 @@ public class HttpServerBinder
 
         public List<String> getWelcomeFiles()
         {
-            return ImmutableList.copyOf(welcomeFiles);
+            return List.copyOf(welcomeFiles);
         }
 
         public HttpResourceBinding withWelcomeFile(String welcomeFile)

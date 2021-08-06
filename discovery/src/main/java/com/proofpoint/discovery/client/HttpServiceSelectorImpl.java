@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.net.URI;
@@ -80,6 +79,6 @@ public class HttpServiceSelectorImpl implements HttpServiceSelector
         }
 
         Collections.shuffle(httpUri);
-        return ImmutableList.copyOf(httpUri);
+        return List.copyOf(httpUri);
     }
 }

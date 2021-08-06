@@ -15,7 +15,6 @@
  */
 package com.proofpoint.configuration;
 
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.spi.Message;
@@ -28,7 +27,7 @@ public class ValidationErrorModule implements Module
 
     public ValidationErrorModule(List<Message> messages)
     {
-        this.messages = ImmutableList.copyOf(messages);
+        this.messages = List.copyOf(messages);
     }
 
     @Override

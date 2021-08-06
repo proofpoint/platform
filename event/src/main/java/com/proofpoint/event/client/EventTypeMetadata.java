@@ -18,7 +18,6 @@ package com.proofpoint.event.client;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
@@ -361,7 +360,7 @@ final class EventTypeMetadata<T>
 
     List<String> getErrors()
     {
-        return ImmutableList.copyOf(errors);
+        return List.copyOf(errors);
     }
 
     public Class<T> getEventClass()

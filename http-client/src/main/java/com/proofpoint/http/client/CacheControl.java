@@ -303,7 +303,7 @@ public class CacheControl
                     values.add(val);
                 }
             }
-            return ImmutableList.copyOf(values);
+            return List.copyOf(values);
         }
         else {
             return ImmutableList.copyOf(Splitter.on(SEPARATOR).split(string));

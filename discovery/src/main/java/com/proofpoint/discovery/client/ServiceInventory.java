@@ -16,7 +16,6 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerListenerAdapter;
@@ -225,7 +224,7 @@ public class ServiceInventory
             }
         }
         Collections.shuffle(descriptors);
-        serviceDescriptors.set(ImmutableList.copyOf(descriptors));
+        serviceDescriptors.set(List.copyOf(descriptors));
         discoveryListener.updateServiceDescriptors(Collections2.filter(descriptors, input -> "discovery".equals(input.getType())));
 
         if (serverUp.compareAndSet(false, true)) {
