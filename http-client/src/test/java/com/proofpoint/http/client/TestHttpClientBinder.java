@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
@@ -33,6 +32,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.inject.name.Names.named;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
@@ -238,7 +238,7 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", FooClient.class, ImmutableSet.of(URI.create("http://nonexistent.nonexistent"))),
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", FooClient.class, Set.of(URI.create("http://nonexistent.nonexistent"))),
                         new ReportingModule(),
                         new TestingMBeanModule())
                 .initialize();
@@ -267,7 +267,7 @@ public class TestHttpClientBinder
     {
         Injector injector = bootstrapTest()
                 .withModules(
-                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", named("bar"), "baz", ImmutableSet.of(URI.create("http://nonexistent.nonexistent"))),
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", named("bar"), "baz", Set.of(URI.create("http://nonexistent.nonexistent"))),
                         new ReportingModule(),
                         new TestingMBeanModule())
                 .initialize();

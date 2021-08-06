@@ -16,7 +16,6 @@
 package com.proofpoint.discovery.client.announce;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.proofpoint.discovery.client.DiscoveryException;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceDescriptors;
@@ -31,6 +30,7 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +58,7 @@ public class TestAnnouncerImpl
         nodeInfo = new NodeInfo("test-application", new NodeConfig().setEnvironment("test").setPool("pool"));
         discoveryClient = new InMemoryDiscoveryClient(nodeInfo, MAX_AGE);
         serviceAnnouncement = ServiceAnnouncement.serviceAnnouncement(serviceType.value()).addProperty("a", "apple").build();
-        announcer = new AnnouncerImpl(discoveryClient, ImmutableSet.of(serviceAnnouncement));
+        announcer = new AnnouncerImpl(discoveryClient, Set.of(serviceAnnouncement));
     }
 
     @AfterMethod
@@ -114,7 +114,7 @@ public class TestAnnouncerImpl
     public void destroyNoStart()
     {
         discoveryClient = spy(discoveryClient);
-        announcer = new AnnouncerImpl(discoveryClient, ImmutableSet.of(serviceAnnouncement));
+        announcer = new AnnouncerImpl(discoveryClient, Set.of(serviceAnnouncement));
 
         announcer.destroy();
 

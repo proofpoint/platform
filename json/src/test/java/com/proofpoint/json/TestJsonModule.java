@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.joda.time.DateTime;
@@ -40,6 +39,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.proofpoint.json.JsonBinder.jsonBinder;
@@ -98,7 +98,7 @@ public class TestJsonModule
 
         // notes is not annotated so should not be included
         // color is null so should not be included
-        assertEquals(actual.keySet(), ImmutableSet.of("make", "model", "year", "purchased", "nameList"));
+        assertEquals(actual.keySet(), Set.of("make", "model", "year", "purchased", "nameList"));
     }
 
     @Test

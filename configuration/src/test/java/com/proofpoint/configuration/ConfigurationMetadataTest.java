@@ -17,7 +17,6 @@ package com.proofpoint.configuration;
 
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.ConfigurationException;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
 import org.testng.annotations.Test;
@@ -66,7 +65,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(SetterConfigClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
         
         verifyMetaData(metadata, SetterConfigClass.class, "description", false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -80,7 +79,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(SetterSensitiveClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, SetterSensitiveClass.class, "description", true, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -94,7 +93,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(SetterSubConfigClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, SetterSubConfigClass.class, "description", false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -108,7 +107,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(SetterInterfaceImpl.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, SetterInterfaceImpl.class, "description", false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -144,7 +143,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(AbstractClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, AbstractClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -174,7 +173,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(NotPublicClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, NotPublicClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -188,7 +187,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(NotPublicConstructorClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, NotPublicConstructorClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -202,7 +201,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(NoNoArgConstructorClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, NoNoArgConstructorClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -244,7 +243,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(GetterAndSetterAnnotatedClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, GetterAndSetterAnnotatedClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -273,7 +272,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(NotPublicAttributeClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, NotPublicAttributeClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -343,7 +342,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(GetterMultipleSettersClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, GetterMultipleSettersClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -357,7 +356,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(GetterPrivateSetterClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, GetterPrivateSetterClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -414,7 +413,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(IsMethodMultipleSettersClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, IsMethodMultipleSettersClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -428,7 +427,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(IsMethodPrivateSetterClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, IsMethodPrivateSetterClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -493,7 +492,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(CurrentAndLegacyConfigOnSetterClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value", "replacedValue"));
+        expectedAttributes.put("Value", Set.of("value", "replacedValue"));
 
         verifyMetaData(metadata, CurrentAndLegacyConfigOnSetterClass.class, "description", false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -557,7 +556,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(MultipleLegacyConfigClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("legacy1", "legacy2", "value"));
+        expectedAttributes.put("Value", Set.of("legacy1", "legacy2", "value"));
 
 
         verifyMetaData(metadata, MultipleLegacyConfigClass.class, "description", false, expectedAttributes);
@@ -628,7 +627,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(LegacyConfigDuplicatesConfigOnOtherMethodClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, LegacyConfigDuplicatesConfigOnOtherMethodClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(2);
@@ -644,7 +643,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(LegacyConfigDuplicatesConfigOnLinkedMethodClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, LegacyConfigDuplicatesConfigOnLinkedMethodClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(2);
@@ -660,8 +659,8 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DeprecatedConfigClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
-        expectedAttributes.put("Deprecated", ImmutableSet.of("deprecated-value"));
+        expectedAttributes.put("Value", Set.of("value"));
+        expectedAttributes.put("Deprecated", Set.of("deprecated-value"));
 
         verifyMetaData(metadata, DeprecatedConfigClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -676,8 +675,8 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DeprecatedConfigOnSetterOnlyClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
-        expectedAttributes.put("Deprecated", ImmutableSet.of("deprecated-value"));
+        expectedAttributes.put("Value", Set.of("value"));
+        expectedAttributes.put("Deprecated", Set.of("deprecated-value"));
 
         verifyMetaData(metadata, DeprecatedConfigOnSetterOnlyClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -693,8 +692,8 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DeprecatedConfigOnGetterOnlyClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
-        expectedAttributes.put("Deprecated", ImmutableSet.of("deprecated-value"));
+        expectedAttributes.put("Value", Set.of("value"));
+        expectedAttributes.put("Deprecated", Set.of("deprecated-value"));
 
         verifyMetaData(metadata, DeprecatedConfigOnGetterOnlyClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -709,7 +708,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DefunctConfigClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, DefunctConfigClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -723,7 +722,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DefunctConfigEmptyArrayClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, DefunctConfigEmptyArrayClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -738,7 +737,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DefunctConfigEmptyStringClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, DefunctConfigEmptyStringClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -753,7 +752,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DefunctConfigInUseClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, DefunctConfigInUseClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -768,7 +767,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DefunctConfigInLegacyUseClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value", "replacedValue"));
+        expectedAttributes.put("Value", Set.of("value", "replacedValue"));
 
         verifyMetaData(metadata, DefunctConfigInLegacyUseClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -783,7 +782,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DefunctConfigInLinkedLegacyUseClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value", "replacedValue"));
+        expectedAttributes.put("Value", Set.of("value", "replacedValue"));
 
         verifyMetaData(metadata, DefunctConfigInLinkedLegacyUseClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -798,7 +797,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DuplicateDefunctConfigClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, DuplicateDefunctConfigClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -813,7 +812,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(LegacyConfigSensitiveClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value", "replacedValue"));
+        expectedAttributes.put("Value", Set.of("value", "replacedValue"));
 
         verifyMetaData(metadata, LegacyConfigSensitiveClass.class, null, false /* don't care */, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -828,7 +827,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(ConfigMapSimple.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Map", ImmutableSet.of("map"));
+        expectedAttributes.put("Map", Set.of("map"));
 
         verifyMetaData(metadata, ConfigMapSimple.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -842,7 +841,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(ConfigMapComplex.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Map", ImmutableSet.of("map"));
+        expectedAttributes.put("Map", Set.of("map"));
 
         verifyMetaData(metadata, ConfigMapComplex.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -856,7 +855,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DeprecatedMapConfigClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value", "replacedValue"));
+        expectedAttributes.put("Value", Set.of("value", "replacedValue"));
 
         verifyMetaData(metadata, DeprecatedMapConfigClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -899,7 +898,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(MapConfigValueTypeErrorClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, MapConfigValueTypeErrorClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(1);
@@ -914,7 +913,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(MapConfigValueTypeWarningClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, MapConfigValueTypeWarningClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
@@ -929,7 +928,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(DeprecatedMapConfigTypesNotConcreteClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, DeprecatedMapConfigTypesNotConcreteClass.class, null, false, expectedAttributes);
         // This condition unfortunately generates cascades, so don't test number of errors/warnings
@@ -944,7 +943,7 @@ public class ConfigurationMetadataTest
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(ConfigValueImplementsMapClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("Value", ImmutableSet.of("value"));
+        expectedAttributes.put("Value", Set.of("value"));
 
         verifyMetaData(metadata, ConfigValueImplementsMapClass.class, null, false, expectedAttributes);
         monitor.assertNumberOfErrors(0);

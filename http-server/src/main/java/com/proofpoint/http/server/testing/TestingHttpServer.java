@@ -58,8 +58,8 @@ public class TestingHttpServer extends HttpServer
                 config,
                 servlet,
                 initParameters,
-                ImmutableSet.of(),
-                ImmutableSet.of(),
+                Set.of(),
+                Set.of(),
                 new QueryStringFilter(),
                 new ClientAddressExtractor()
         );
@@ -86,7 +86,7 @@ public class TestingHttpServer extends HttpServer
                 resources,
                 null,
                 ImmutableMap.of(),
-                ImmutableSet.of(),
+                Set.of(),
                 null,
                 null,
                 queryStringFilter,

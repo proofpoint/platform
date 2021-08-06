@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client.balancing;
 
-import com.google.common.collect.ImmutableSet;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats.Status;
 import com.proofpoint.stats.SparseCounterStat;
 import com.proofpoint.stats.SparseTimeStat;
@@ -77,7 +76,7 @@ public class TestHttpServiceBalancerImpl
     @Test(expectedExceptions = ServiceUnavailableException.class)
     public void testStartedEmpty()
     {
-        httpServiceBalancer.updateHttpUris(ImmutableSet.of());
+        httpServiceBalancer.updateHttpUris(Set.of());
 
         httpServiceBalancer.createAttempt();
     }
@@ -85,7 +84,7 @@ public class TestHttpServiceBalancerImpl
     @Test
     public void testStartedWithServices()
     {
-        ImmutableSet<URI> expected = ImmutableSet.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-a.example.com"));
+        Set<URI> expected = Set.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-a.example.com"));
 
         httpServiceBalancer.updateHttpUris(expected);
 
@@ -128,7 +127,7 @@ public class TestHttpServiceBalancerImpl
         URI secondUri = URI.create("https://apple-a.example.com");
         when(httpServiceBalancerStats.failure(any(URI.class), eq("testing failure"), eq("testing category"))).thenReturn(counterStat);
 
-        httpServiceBalancer.updateHttpUris(ImmutableSet.of(firstUri));
+        httpServiceBalancer.updateHttpUris(Set.of(firstUri));
 
         HttpServiceAttempt attempt = httpServiceBalancer.createAttempt();
         assertEquals(attempt.getUri(), firstUri);
@@ -137,7 +136,7 @@ public class TestHttpServiceBalancerImpl
         verify(httpServiceBalancerStats).requestTime(firstUri, Status.FAILURE);
         verify(httpServiceBalancerStats).failure(firstUri, "testing failure", "testing category");
 
-        httpServiceBalancer.updateHttpUris(ImmutableSet.of(firstUri, secondUri));
+        httpServiceBalancer.updateHttpUris(Set.of(firstUri, secondUri));
         attempt = attempt.next();
         assertEquals(attempt.getUri(), secondUri);
         attempt.markGood();
@@ -146,7 +145,7 @@ public class TestHttpServiceBalancerImpl
     @Test
     public void testReuseUri()
     {
-        ImmutableSet<URI> expected = ImmutableSet.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-a.example.com"));
+        Set<URI> expected = Set.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-a.example.com"));
 
         httpServiceBalancer.updateHttpUris(expected);
 
@@ -169,7 +168,7 @@ public class TestHttpServiceBalancerImpl
     @Test
     public void testMinimizeConcurrentAttempts()
     {
-        ImmutableSet<URI> expected = ImmutableSet.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-a.example.com"));
+        Set<URI> expected = Set.of(URI.create("http://apple-a.example.com"), URI.create("https://apple-a.example.com"));
 
         httpServiceBalancer.updateHttpUris(expected);
 
@@ -259,7 +258,7 @@ public class TestHttpServiceBalancerImpl
     public void testPersistentlyFailingInstanceRemoved()
     {
         URI goodUri = URI.create("http://good.example.com");
-        ImmutableSet<URI> expected = ImmutableSet.of(goodUri, URI.create("https://bad.example.com"));
+        Set<URI> expected = Set.of(goodUri, URI.create("https://bad.example.com"));
         SparseTimeStat removalStat = mock(SparseTimeStat.class);
         when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(removalStat);
 
@@ -295,7 +294,7 @@ public class TestHttpServiceBalancerImpl
     {
         URI goodUri = URI.create("http://good.example.com");
         URI badUri = URI.create("https://bad.example.com");
-        ImmutableSet<URI> expected = ImmutableSet.of(goodUri, badUri);
+        Set<URI> expected = Set.of(goodUri, badUri);
         SparseTimeStat removalStat = mock(SparseTimeStat.class);
         when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(removalStat);
         SparseCounterStat probeStat = mock(SparseCounterStat.class);
@@ -344,7 +343,7 @@ public class TestHttpServiceBalancerImpl
     {
         URI goodUri = URI.create("http://good.example.com");
         URI badUri = URI.create("https://bad.example.com");
-        ImmutableSet<URI> expected = ImmutableSet.of(goodUri, badUri);
+        Set<URI> expected = Set.of(goodUri, badUri);
         SparseTimeStat removalStat = mock(SparseTimeStat.class);
         when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(removalStat);
         SparseCounterStat probeStat = mock(SparseCounterStat.class);
@@ -388,7 +387,7 @@ public class TestHttpServiceBalancerImpl
     {
         URI goodUri = URI.create("http://good.example.com");
         URI badUri = URI.create("https://bad.example.com");
-        ImmutableSet<URI> expected = ImmutableSet.of(goodUri, badUri);
+        Set<URI> expected = Set.of(goodUri, badUri);
         SparseTimeStat removalStat = mock(SparseTimeStat.class);
         when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(removalStat);
         SparseCounterStat revivalStat = mock(SparseCounterStat.class);
@@ -443,7 +442,7 @@ public class TestHttpServiceBalancerImpl
         URI goodUri1 = URI.create("http://good1.example.com");
         URI goodUri2 = URI.create("http://good2.example.com");
         URI badUri = URI.create("https://bad.example.com");
-        ImmutableSet<URI> expected = ImmutableSet.of(goodUri1, goodUri2, badUri);
+        Set<URI> expected = Set.of(goodUri1, goodUri2, badUri);
         SparseTimeStat badRemovalStat = mock(SparseTimeStat.class);
         when(httpServiceBalancerStats.removal(URI.create("https://bad.example.com"))).thenReturn(badRemovalStat);
         SparseTimeStat good1RemovalStat = mock(SparseTimeStat.class);

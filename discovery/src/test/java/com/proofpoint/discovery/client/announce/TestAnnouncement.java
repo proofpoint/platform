@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
 import com.proofpoint.json.JsonCodec;
@@ -23,6 +22,7 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.io.Resources.getResource;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
@@ -42,7 +42,7 @@ public class TestAnnouncement
     public void testJsonEncode()
             throws Exception
     {
-        Announcement announcement = new Announcement("environment", "node", "pool", "location", ImmutableSet.of(
+        Announcement announcement = new Announcement("environment", "node", "pool", "location", Set.of(
                 serviceAnnouncement("foo")
                         .addProperty("http", "http://localhost:8080")
                         .addProperty("jmx", "jmx://localhost:1234")
@@ -69,7 +69,7 @@ public class TestAnnouncement
     @Test
     public void testToString()
     {
-        assertNotNull(new Announcement("environment", "node", "pool", "location", ImmutableSet.of(
+        assertNotNull(new Announcement("environment", "node", "pool", "location", Set.of(
                 serviceAnnouncement("foo")
                         .addProperty("http", "http://localhost:8080")
                         .addProperty("jmx", "jmx://localhost:1234")
@@ -82,16 +82,16 @@ public class TestAnnouncement
     {
         equivalenceTester()
                 .addEquivalentGroup(
-                        new Announcement("environment", "node-A", "pool", "location", ImmutableSet.of(serviceAnnouncement("foo").build())),
-                        new Announcement("ENVIRONMENT", "node-A", "pool", "location", ImmutableSet.of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment", "node-A", "pool", "LOCATION", ImmutableSet.of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment", "node-A", "pool", "location", ImmutableSet.of(serviceAnnouncement("FOO").build()))
+                        new Announcement("environment", "node-A", "pool", "location", Set.of(serviceAnnouncement("foo").build())),
+                        new Announcement("ENVIRONMENT", "node-A", "pool", "location", Set.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment", "node-A", "pool", "LOCATION", Set.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment", "node-A", "pool", "location", Set.of(serviceAnnouncement("FOO").build()))
                 )
                 .addEquivalentGroup(
-                        new Announcement("environment", "node-B", "pool", "location", ImmutableSet.of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment-X", "node-B", "pool", "location", ImmutableSet.of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment", "node-B", "pool", "location-X", ImmutableSet.of(serviceAnnouncement("foo").build())),
-                        new Announcement("environment", "node-B", "pool", "location", ImmutableSet.of(serviceAnnouncement("bar").build()))
+                        new Announcement("environment", "node-B", "pool", "location", Set.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment-X", "node-B", "pool", "location", Set.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment", "node-B", "pool", "location-X", Set.of(serviceAnnouncement("foo").build())),
+                        new Announcement("environment", "node-B", "pool", "location", Set.of(serviceAnnouncement("bar").build()))
                 )
                 .check();
     }

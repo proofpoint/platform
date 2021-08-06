@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import com.google.common.collect.ImmutableSet;
 import com.proofpoint.discovery.client.DiscoveryException;
 import com.proofpoint.http.client.testing.TestingHttpClient;
 import com.proofpoint.node.NodeInfo;
@@ -52,7 +51,7 @@ public class TestHttpDiscoveryAnnouncementClient
     {
         httpClient = new TestingHttpClient();
         client = new HttpDiscoveryAnnouncementClient(nodeInfo, jsonCodec(Announcement.class), httpClient);
-        announcements = ImmutableSet.of(
+        announcements = Set.of(
                 serviceAnnouncement("foo").addProperty("bar", "baz").build(),
                 serviceAnnouncement("quux").addProperty("a", "b").build()
         );
@@ -132,7 +131,7 @@ public class TestHttpDiscoveryAnnouncementClient
 
             return mockResponse(NOT_FOUND);
         }));
-        Duration duration = client.announce(ImmutableSet.of()).get();
+        Duration duration = client.announce(Set.of()).get();
 
         assertEquals(duration, new Duration(10, TimeUnit.SECONDS));
         assertEquals(httpClient.getRequestCount(), 1);
@@ -145,7 +144,7 @@ public class TestHttpDiscoveryAnnouncementClient
     {
         httpClient.setProcessor((request -> mockResponse(INTERNAL_SERVER_ERROR)));
         try {
-            client.announce(ImmutableSet.of()).get();
+            client.announce(Set.of()).get();
             fail("expected ExecutionException");
         }
         catch (ExecutionException e) {

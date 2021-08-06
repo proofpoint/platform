@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.proofpoint.http.client.HttpClient;
@@ -39,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import static com.google.common.base.Throwables.throwIfUnchecked;
@@ -89,7 +89,7 @@ public class TestReportClient
         assertEquals(sentJson.size(), 2);
 
         for (Map<String, Object> map : sentJson) {
-            assertEquals(map.keySet(), ImmutableSet.of("name", "timestamp", "value", "tags"));
+            assertEquals(map.keySet(), Set.of("name", "timestamp", "value", "tags"));
             assertEquals(map.get("timestamp"), TEST_TIME);
             Map<String, String> tags = (Map<String, String>) map.get("tags");
             assertEquals(tags.get("application"), "test-application");
@@ -102,10 +102,10 @@ public class TestReportClient
         assertEquals(sentJson.get(0).get("value"), 1.2);
         assertEquals(sentJson.get(1).get("value"), 1.1);
         Map<String, String> tags = (Map<String, String>) sentJson.get(0).get("tags");
-        assertEquals(tags.keySet(), ImmutableSet.of("application", "host", "environment", "pool", "tag1"));
+        assertEquals(tags.keySet(), Set.of("application", "host", "environment", "pool", "tag1"));
         assertEquals(tags.get("tag1"), "B_a_z"); // "B\\a\"z");
         tags = (Map<String, String>) sentJson.get(1).get("tags");
-        assertEquals(tags.keySet(), ImmutableSet.of("application", "host", "environment", "pool"));
+        assertEquals(tags.keySet(), Set.of("application", "host", "environment", "pool"));
     }
 
     @Test
@@ -142,15 +142,15 @@ public class TestReportClient
         assertEquals(sentJson.size(), 2);
 
         for (Map<String, Object> map : sentJson) {
-            assertEquals(map.keySet(), ImmutableSet.of("name", "timestamp", "value", "tags"));
+            assertEquals(map.keySet(), Set.of("name", "timestamp", "value", "tags"));
             Map<String, String> tags = (Map<String, String>) map.get("tags");
             assertEquals(tags.get("foo"), "ba:r");
             assertEquals(tags.get("baz"), "quux");
         }
         Map<String, String> tags = (Map<String, String>) sentJson.get(0).get("tags");
-        assertEquals(tags.keySet(), ImmutableSet.of("application", "host", "environment", "pool", "foo", "baz", "tag1"));
+        assertEquals(tags.keySet(), Set.of("application", "host", "environment", "pool", "foo", "baz", "tag1"));
         tags = (Map<String, String>) sentJson.get(1).get("tags");
-        assertEquals(tags.keySet(), ImmutableSet.of("application", "host", "environment", "pool", "foo", "baz"));
+        assertEquals(tags.keySet(), Set.of("application", "host", "environment", "pool", "foo", "baz"));
     }
 
     @Test
@@ -163,15 +163,15 @@ public class TestReportClient
         assertEquals(sentJson.size(), 2);
 
         for (Map<String, Object> map : sentJson) {
-            assertEquals(map.keySet(), ImmutableSet.of("name", "timestamp", "value", "tags"));
+            assertEquals(map.keySet(), Set.of("name", "timestamp", "value", "tags"));
             Map<String, String> tags = (Map<String, String>) map.get("tags");
             assertEquals(tags.get("foo"), "ba:r");
             assertEquals(tags.get("baz"), "quux");
         }
         Map<String, String> tags = (Map<String, String>) sentJson.get(0).get("tags");
-        assertEquals(tags.keySet(), ImmutableSet.of("application", "environment", "pool", "foo", "baz", "tag1"));
+        assertEquals(tags.keySet(), Set.of("application", "environment", "pool", "foo", "baz", "tag1"));
         tags = (Map<String, String>) sentJson.get(1).get("tags");
-        assertEquals(tags.keySet(), ImmutableSet.of("application", "environment", "pool", "foo", "baz"));
+        assertEquals(tags.keySet(), Set.of("application", "environment", "pool", "foo", "baz"));
     }
 
     private class TestingResponseFunction

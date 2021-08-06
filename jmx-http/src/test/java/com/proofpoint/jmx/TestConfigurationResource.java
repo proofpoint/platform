@@ -16,7 +16,6 @@
 package com.proofpoint.jmx;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Injector;
 import com.proofpoint.bootstrap.LifeCycleManager;
@@ -44,6 +43,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
@@ -136,8 +136,8 @@ public class TestConfigurationResource
     {
         for (Entry<String, Map<String, String>> entry : response.entrySet()) {
             HashSet<String> extraKeys = newHashSet(entry.getValue().keySet());
-            extraKeys.removeAll(ImmutableSet.of("defaultValue", "currentValue", "description"));
-            assertEquals(extraKeys, ImmutableSet.of(), "keys in map entry " + entry.getKey());
+            extraKeys.removeAll(Set.of("defaultValue", "currentValue", "description"));
+            assertEquals(extraKeys, Set.of(), "keys in map entry " + entry.getKey());
         }
     }
 

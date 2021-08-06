@@ -2,7 +2,6 @@ package com.proofpoint.http.client.testing;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.net.MediaType;
 import com.proofpoint.http.client.HeaderName;
 import com.proofpoint.http.client.HttpStatus;
@@ -193,7 +192,7 @@ public class TestTestingResponse
     @DataProvider(name = "bodyMethodPossibleCombinations")
     public Object[][] bodyMethodPossibleCombinations()
     {
-        Set<Function<Builder, Builder>> bodyMethods = ImmutableSet.of(
+        Set<Function<Builder, Builder>> bodyMethods = Set.of(
                 builder -> builder.body(new byte[0]),
                 builder -> builder.body(""),
                 builder -> builder.body(new ByteArrayInputStream(new byte[0])),

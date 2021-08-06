@@ -16,7 +16,6 @@
 package com.proofpoint.configuration;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -29,6 +28,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.io.MoreFiles.deleteRecursively;
 import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
@@ -60,7 +60,7 @@ public class TestPropertiesBuilder
                 .withSystemProperties();
 
         assertEquals(builder.getProperties().get("test"), "foo");
-        assertEquals(builder.getExpectToUse(), ImmutableSet.of());
+        assertEquals(builder.getExpectToUse(), Set.of());
         assertEquals(builder.getErrors(), List.of());
 
         System.getProperties().remove("test");
@@ -80,7 +80,7 @@ public class TestPropertiesBuilder
                 .withSystemProperties();
 
         assertEquals(builder.getProperties().get("test"), "f\u014do");
-        assertEquals(builder.getExpectToUse(), ImmutableSet.of("test"));
+        assertEquals(builder.getExpectToUse(), Set.of("test"));
         assertEquals(builder.getErrors(), List.of());
     }
 
@@ -148,7 +148,7 @@ public class TestPropertiesBuilder
                 .put("map.c", "d")
                 .build()
         );
-        assertEquals(builder.getExpectToUse(), ImmutableSet.of("string", "number", "bool", "list.1", "list.2", "map.c"));
+        assertEquals(builder.getExpectToUse(), Set.of("string", "number", "bool", "list.1", "list.2", "map.c"));
         assertEquals(builder.getErrors(), List.of());
     }
 
@@ -165,7 +165,7 @@ public class TestPropertiesBuilder
                 .withJsonFile(file.getAbsolutePath());
 
         assertEquals(builder.getProperties(), ImmutableMap.of());
-        assertEquals(builder.getExpectToUse(), ImmutableSet.of());
+        assertEquals(builder.getExpectToUse(), Set.of());
         assertEquals(builder.getErrors(), List.of());
     }
 

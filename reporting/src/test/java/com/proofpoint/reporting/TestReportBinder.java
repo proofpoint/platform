@@ -87,7 +87,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class);
                 });
-        assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -97,7 +97,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class);
                 });
-        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -107,7 +107,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).annotatedWith(Names.named("TestingAnnotation"));
                 });
-        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -117,7 +117,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).annotatedWith(TESTING_ANNOTATION);
                 });
-        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @SuppressWarnings("deprecation")
@@ -128,7 +128,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).as(testingClassName.getCanonicalName());
                 });
-        assertReportRegistration(injector, false, "TestingClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "TestingClass.TestingAnnotation", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -138,7 +138,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(Key.get(GaugeClass.class));
                 });
-        assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -148,7 +148,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(Key.get(GaugeClass.class, TestingAnnotation.class));
                 });
-        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -158,7 +158,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(Key.get(GaugeClass.class, Names.named("TestingAnnotation")));
                 });
-        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -168,7 +168,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(Key.get(GaugeClass.class, TESTING_ANNOTATION));
                 });
-        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass.TestingAnnotation", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @SuppressWarnings("deprecation")
@@ -179,7 +179,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(Key.get(GaugeClass.class)).as(testingClassName.getCanonicalName());
                 });
-        assertReportRegistration(injector, false, "TestingClass.TestingAnnotation", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "TestingClass.TestingAnnotation", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -189,7 +189,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).withNamePrefix("TestingNamePrefix");
                 });
-        assertReportRegistration(injector, false, "TestingNamePrefix", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "TestingNamePrefix", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -199,7 +199,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).withTags(ImmutableMap.of("foo", "bar", "baz", "quux"));
                 });
-        assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of("foo", "bar", "baz", "quux"), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of("foo", "bar", "baz", "quux"), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -209,7 +209,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).withNamePrefix("TestingNamePrefix").withTags(ImmutableMap.of("foo", "bar", "baz", "quux"));
                 });
-        assertReportRegistration(injector, false, "TestingNamePrefix", ImmutableMap.of("foo", "bar", "baz", "quux"), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "TestingNamePrefix", ImmutableMap.of("foo", "bar", "baz", "quux"), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -219,7 +219,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).withApplicationPrefix();
                 });
-        assertReportRegistration(injector, true, "GaugeClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, true, "GaugeClass", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -229,7 +229,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).withApplicationPrefix().withNamePrefix("TestingNamePrefix");
                 });
-        assertReportRegistration(injector, true, "TestingNamePrefix", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, true, "TestingNamePrefix", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -239,7 +239,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).withApplicationPrefix().withTags(ImmutableMap.of("foo", "bar", "baz", "quux"));
                 });
-        assertReportRegistration(injector, true, "GaugeClass", ImmutableMap.of("foo", "bar", "baz", "quux"), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, true, "GaugeClass", ImmutableMap.of("foo", "bar", "baz", "quux"), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -249,7 +249,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(GaugeClass.class).withApplicationPrefix().withNamePrefix("TestingNamePrefix").withTags(ImmutableMap.of("foo", "bar", "baz", "quux"));
                 });
-        assertReportRegistration(injector, true, "TestingNamePrefix", ImmutableMap.of("foo", "bar", "baz", "quux"), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, true, "TestingNamePrefix", ImmutableMap.of("foo", "bar", "baz", "quux"), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -259,7 +259,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(ReportedClass.class);
                 });
-        assertReportRegistration(injector, false, "ReportedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Reported")));
+        assertReportRegistration(injector, false, "ReportedClass", ImmutableMap.of(), Optional.of(Set.of("Reported")));
     }
 
     @Test
@@ -280,7 +280,7 @@ public class TestReportBinder
                     reportBinder(binder).export(NestedClass.class);
                 });
         injector.getInstance(NestedClass.class);
-        assertReportRegistration(injector, false, "NestedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Nested.Gauge", "Nested.Reported")));
+        assertReportRegistration(injector, false, "NestedClass", ImmutableMap.of(), Optional.of(Set.of("Nested.Gauge", "Nested.Reported")));
     }
 
     @Test
@@ -290,7 +290,7 @@ public class TestReportBinder
                 binder -> {
                     reportBinder(binder).export(FlattenClass.class);
                 });
-        assertReportRegistration(injector, false, "FlattenClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "FlattenClass", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -301,7 +301,7 @@ public class TestReportBinder
                     reportBinder(binder).export(BucketedClass.class);
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(BucketedClass.class));
-        assertReportRegistration(injector, false, "BucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "BucketedClass", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -313,7 +313,7 @@ public class TestReportBinder
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(NestedBucketedClass.class));
         BucketedClass.assertProviderSupplied(injector.getInstance(NestedBucketedClass.class).getNested());
-        assertReportRegistration(injector, false, "NestedBucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of(
+        assertReportRegistration(injector, false, "NestedBucketedClass", ImmutableMap.of(), Optional.of(Set.of(
                 "Gauge", "Reported",
                 "Nested.Gauge", "Nested.Reported"
         )));
@@ -327,7 +327,7 @@ public class TestReportBinder
                     reportBinder(binder).export(FlattenBucketedClass.class);
                 });
         BucketedClass.assertProviderSupplied(injector.getInstance(FlattenBucketedClass.class).getFlatten());
-        assertReportRegistration(injector, false, "FlattenBucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "FlattenBucketedClass", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -340,7 +340,7 @@ public class TestReportBinder
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getNested());
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getFlatten());
         BucketedClass.assertProviderSupplied(injector.getInstance(DeepBucketedClass.class).getFlatten().getNested());
-        assertReportRegistration(injector, false, "DeepBucketedClass", ImmutableMap.of(), Optional.of(ImmutableSet.of(
+        assertReportRegistration(injector, false, "DeepBucketedClass", ImmutableMap.of(), Optional.of(Set.of(
                 "Gauge", "Reported",
                 "Nested.Gauge", "Nested.Reported"
         )));
@@ -354,7 +354,7 @@ public class TestReportBinder
                     reportBinder(binder).export(GaugeClass.class);
                     reportBinder(binder).export(GaugeClass.class);
                 });
-        assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of(), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, false, "GaugeClass", ImmutableMap.of(), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test
@@ -365,7 +365,7 @@ public class TestReportBinder
                     reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class).withApplicationPrefix().withNamePrefix("Prefix").withTags(ImmutableMap.of("foo", "bar"));
                     reportBinder(binder).export(GaugeClass.class).annotatedWith(TestingAnnotation.class).withApplicationPrefix().withNamePrefix("Prefix").withTags(ImmutableMap.of("foo", "bar"));
                 });
-        assertReportRegistration(injector, true, "Prefix", ImmutableMap.of("foo", "bar"), Optional.of(ImmutableSet.of("Gauge", "Reported")));
+        assertReportRegistration(injector, true, "Prefix", ImmutableMap.of("foo", "bar"), Optional.of(Set.of("Gauge", "Reported")));
     }
 
     @Test(expectedExceptions = ReportException.class)

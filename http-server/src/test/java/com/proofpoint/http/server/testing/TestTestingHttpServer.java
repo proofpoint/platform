@@ -16,7 +16,6 @@
 package com.proofpoint.http.server.testing;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
 import com.google.inject.Injector;
@@ -55,6 +54,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
@@ -281,8 +281,8 @@ public class TestTestingHttpServer
         NodeInfo nodeInfo = TestingNodeModule.createNodeInfo();
         HttpServerConfig config = new HttpServerConfig().setHttpPort(0);
         HttpServerInfo httpServerInfo = new HttpServerInfo(config, nodeInfo);
-        return new TestingHttpServer(httpServerInfo, nodeInfo, config, servlet, params, ImmutableSet.of(filter),
-                ImmutableSet.of(), new QueryStringFilter(), new ClientAddressExtractor());
+        return new TestingHttpServer(httpServerInfo, nodeInfo, config, servlet, params, Set.of(filter),
+                Set.of(), new QueryStringFilter(), new ClientAddressExtractor());
     }
 
     static class DummyServlet

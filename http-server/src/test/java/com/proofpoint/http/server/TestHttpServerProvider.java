@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import com.google.common.net.InetAddresses;
 import com.proofpoint.bootstrap.LifeCycleConfig;
@@ -41,6 +40,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.common.io.MoreFiles.deleteRecursively;
 import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
@@ -584,10 +584,10 @@ public class TestHttpServerProvider
                 nodeInfo,
                 config,
                 servlet,
-                ImmutableSet.of(new DummyFilter()),
-                ImmutableSet.of(),
+                Set.of(new DummyFilter()),
+                Set.of(),
                 new DummyServlet(),
-                ImmutableSet.of(),
+                Set.of(),
                 new RequestStats(),
                 new TestingHttpServer.DetailedRequestStats(),
                 new QueryStringFilter(),
