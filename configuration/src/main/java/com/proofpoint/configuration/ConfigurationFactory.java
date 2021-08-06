@@ -19,7 +19,6 @@ import com.google.common.annotations.Beta;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
@@ -90,7 +89,7 @@ public final class ConfigurationFactory
         this.moduleDefaults = ImmutableMap.copyOf(moduleDefaults);
         this.moduleDefaultSource = ImmutableMap.copyOf(moduleDefaultSource);
         unusedProperties.addAll(expectToUse);
-        initialErrors = ImmutableList.copyOf(errors);
+        initialErrors = List.copyOf(errors);
     }
 
     public Map<String, String> getProperties()
@@ -126,7 +125,7 @@ public final class ConfigurationFactory
 
     Iterable<ConfigurationIdentity<?>> getRegisteredConfigs()
     {
-        return ImmutableList.copyOf(registeredConfigs);
+        return List.copyOf(registeredConfigs);
     }
 
     public <T> T build(Class<T> configClass)

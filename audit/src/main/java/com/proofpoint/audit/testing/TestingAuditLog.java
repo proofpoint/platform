@@ -15,8 +15,6 @@
  */
 package com.proofpoint.audit.testing;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +24,7 @@ public class TestingAuditLog
 
     public List<Object> getRecords()
     {
-        return ImmutableList.copyOf(records);
+        return List.copyOf(records);
     }
 
     void add(Object record)

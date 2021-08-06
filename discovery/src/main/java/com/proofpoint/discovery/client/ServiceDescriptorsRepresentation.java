@@ -17,7 +17,6 @@ package com.proofpoint.discovery.client;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
@@ -36,7 +35,7 @@ public class ServiceDescriptorsRepresentation
     {
         requireNonNull(serviceDescriptors);
         this.environment = environment;
-        this.serviceDescriptors = ImmutableList.copyOf(serviceDescriptors);
+        this.serviceDescriptors = List.copyOf(serviceDescriptors);
     }
 
     @JsonProperty

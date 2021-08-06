@@ -73,7 +73,7 @@ class Problems
 
     public List<Message> getErrors()
     {
-        return ImmutableList.copyOf(errors);
+        return List.copyOf(errors);
     }
 
     public void addError(String format, Object... params)
@@ -92,7 +92,7 @@ class Problems
 
     public List<Message> getWarnings()
     {
-        return ImmutableList.copyOf(warnings);
+        return List.copyOf(warnings);
     }
 
     public void addWarning(String format, Object... params)

@@ -16,16 +16,16 @@
 package com.proofpoint.reporting;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.collect.ImmutableList;
 
 import java.util.Collection;
+import java.util.List;
 
 @AutoValue
 abstract class ReportedMethodInfo
 {
     static ReportedMethodInfo reportedMethodInfo(Collection<ReportedBeanAttribute> attributes, Collection<PrometheusBeanAttribute> prometheusAttributes)
     {
-        return new AutoValue_ReportedMethodInfo(ImmutableList.copyOf(attributes), ImmutableList.copyOf(prometheusAttributes));
+        return new AutoValue_ReportedMethodInfo(List.copyOf(attributes), List.copyOf(prometheusAttributes));
     }
 
     abstract Collection<ReportedBeanAttribute> getAttributes();

@@ -15,8 +15,6 @@
  */
 package com.proofpoint.event.client;
 
-import com.google.common.collect.ImmutableList;
-
 import javax.annotation.concurrent.GuardedBy;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +33,6 @@ public class InMemoryEventClient
 
     public synchronized List<Object> getEvents()
     {
-        return ImmutableList.copyOf(events);
+        return List.copyOf(events);
     }
 }
