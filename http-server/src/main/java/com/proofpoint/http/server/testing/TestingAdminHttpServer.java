@@ -59,7 +59,7 @@ public class TestingAdminHttpServer extends HttpServer
                 new NullServlet(),
                 adminServlet,
                 initParameters,
-                ImmutableSet.of(),
+                Set.of(),
                 new QueryStringFilter(),
                 new ClientAddressExtractor()
         );
@@ -82,8 +82,8 @@ public class TestingAdminHttpServer extends HttpServer
                 config,
                 servlet,
                 ImmutableMap.of(),
-                ImmutableSet.of(),
-                ImmutableSet.of(),
+                Set.of(),
+                Set.of(),
                 adminServlet,
                 initParameters,
                 ImmutableSet.copyOf(filters),

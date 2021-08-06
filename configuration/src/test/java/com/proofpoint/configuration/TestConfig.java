@@ -17,7 +17,6 @@ package com.proofpoint.configuration;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -35,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import static com.google.inject.name.Names.named;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
@@ -74,7 +74,7 @@ public class TestConfig
     @Test
     public void testConfigMapComplex()
     {
-        final ImmutableSet<Integer> keys = ImmutableSet.of(1, 2, 3, 5, 8);
+        final Set<Integer> keys = Set.of(1, 2, 3, 5, 8);
         final Builder<String, String> builder = ImmutableMap.builder();
         for (Integer key : keys) {
             for (Entry<String, String> entry : properties.entrySet()) {

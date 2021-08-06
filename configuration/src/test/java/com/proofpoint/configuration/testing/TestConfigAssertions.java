@@ -16,7 +16,6 @@
 package com.proofpoint.configuration.testing;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.Config1;
 import com.proofpoint.configuration.LegacyConfig;
@@ -29,6 +28,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertFullMapping;
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertLegacyEquivalence;
@@ -410,7 +410,7 @@ public class TestConfigAssertions
         PersonConfig instance = data.getInstance();
         assertNotSame(instance, config);
 
-        assertEquals(data.getInvokedMethods(), ImmutableSet.of(
+        assertEquals(data.getInvokedMethods(), Set.of(
                 PersonConfig.class.getDeclaredMethod("setName", String.class),
                 PersonConfig.class.getDeclaredMethod("setEmail", String.class),
                 PersonConfig.class.getDeclaredMethod("setPhone", String.class),

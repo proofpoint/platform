@@ -79,7 +79,7 @@ public class HttpServiceBalancerImpl
     @Override
     public HttpServiceAttempt createAttempt()
     {
-        return new HttpServiceAttemptImpl(ImmutableSet.of());
+        return new HttpServiceAttemptImpl(Set.of());
     }
 
     @Beta
@@ -105,7 +105,7 @@ public class HttpServiceBalancerImpl
 
             if (httpUris.isEmpty()) {
                 httpUris = HttpServiceBalancerImpl.this.httpUris.get();
-                attempted = ImmutableSet.of();
+                attempted = Set.of();
 
                 if (httpUris.isEmpty()) {
                     throw new ServiceUnavailableException(description);
@@ -143,7 +143,7 @@ public class HttpServiceBalancerImpl
                     }
 
                     httpUris = HttpServiceBalancerImpl.this.httpUris.get();
-                    attempted = ImmutableSet.of();
+                    attempted = Set.of();
                 }
 
                 uri = leastUris.get(ThreadLocalRandom.current().nextInt(0, leastUris.size()));

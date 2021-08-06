@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -44,7 +43,7 @@ public class TestHealthBinder
                 binder -> {
                     healthBinder(binder).export(HealthClass.class);
                 });
-        assertHealthRegistration(injector, ImmutableSet.of("Health check", "Not Bean Getter"));
+        assertHealthRegistration(injector, Set.of("Health check", "Not Bean Getter"));
     }
 
     @Test
@@ -54,7 +53,7 @@ public class TestHealthBinder
                 binder -> {
                     healthBinder(binder).export(HealthClass.class).annotatedWith(TestingAnnotation.class);
                 });
-        assertHealthRegistration(injector, ImmutableSet.of("Health check (TestingAnnotation)", "Not Bean Getter (TestingAnnotation)"));
+        assertHealthRegistration(injector, Set.of("Health check (TestingAnnotation)", "Not Bean Getter (TestingAnnotation)"));
     }
 
     @Test
@@ -64,7 +63,7 @@ public class TestHealthBinder
                 binder -> {
                     healthBinder(binder).export(HealthClass.class).annotatedWith(Names.named("TestingAnnotation"));
                 });
-        assertHealthRegistration(injector, ImmutableSet.of("Health check (TestingAnnotation)", "Not Bean Getter (TestingAnnotation)"));
+        assertHealthRegistration(injector, Set.of("Health check (TestingAnnotation)", "Not Bean Getter (TestingAnnotation)"));
     }
 
     @Test
@@ -74,7 +73,7 @@ public class TestHealthBinder
                 binder -> {
                     healthBinder(binder).export(HealthClass.class).withNameSuffix("Specified name");
                 });
-        assertHealthRegistration(injector, ImmutableSet.of("Health check (Specified name)", "Not Bean Getter (Specified name)"));
+        assertHealthRegistration(injector, Set.of("Health check (Specified name)", "Not Bean Getter (Specified name)"));
     }
 
     @Test
@@ -85,7 +84,7 @@ public class TestHealthBinder
                     healthBinder(binder).export(NestedClass.class);
                 });
         injector.getInstance(NestedClass.class);
-        assertHealthRegistration(injector, ImmutableSet.of("Health check", "Not Bean Getter"));
+        assertHealthRegistration(injector, Set.of("Health check", "Not Bean Getter"));
     }
 
     @Test
@@ -95,7 +94,7 @@ public class TestHealthBinder
                 binder -> {
                     healthBinder(binder).export(FlattenClass.class);
                 });
-        assertHealthRegistration(injector, ImmutableSet.of("Health check", "Not Bean Getter"));
+        assertHealthRegistration(injector, Set.of("Health check", "Not Bean Getter"));
     }
 
     private static void assertHealthRegistration(Injector injector, Set<String> expectedAttributes)

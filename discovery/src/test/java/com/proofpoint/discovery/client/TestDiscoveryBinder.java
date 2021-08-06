@@ -16,7 +16,6 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
@@ -64,7 +63,7 @@ public class TestDiscoveryBinder
         Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
         {
         }));
-        assertEquals(announcements, ImmutableSet.of(ANNOUNCEMENT));
+        assertEquals(announcements, Set.of(ANNOUNCEMENT));
     }
 
     @Test
@@ -79,7 +78,7 @@ public class TestDiscoveryBinder
         Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
         {
         }));
-        assertEquals(announcements, ImmutableSet.of(ANNOUNCEMENT));
+        assertEquals(announcements, Set.of(ANNOUNCEMENT));
     }
 
     @Test
@@ -94,7 +93,7 @@ public class TestDiscoveryBinder
         Set<ServiceAnnouncement> announcements = injector.getInstance(Key.get(new TypeLiteral<Set<ServiceAnnouncement>>()
         {
         }));
-        assertEquals(announcements, ImmutableSet.of(ANNOUNCEMENT));
+        assertEquals(announcements, Set.of(ANNOUNCEMENT));
     }
 
     @Test

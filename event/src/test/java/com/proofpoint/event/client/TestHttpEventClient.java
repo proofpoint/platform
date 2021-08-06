@@ -16,7 +16,6 @@
 package com.proofpoint.event.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.CharStreams;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.proofpoint.http.client.HttpClient;
@@ -86,7 +85,7 @@ public class TestHttpEventClient
     public void testFutureFailsWhenServiceUnavailable()
             throws InterruptedException
     {
-        client = newEventClient(ImmutableSet.of());
+        client = newEventClient(Set.of());
 
         try {
             client.post(new FixedDummyEventClass("host", new DateTime(), UUID.randomUUID(), 1, "foo")).get();
@@ -100,7 +99,7 @@ public class TestHttpEventClient
     @Test
     public void testCallSucceedsWhenServiceUnavailable()
     {
-        client = newEventClient(ImmutableSet.of());
+        client = newEventClient(Set.of());
 
         client.post(new FixedDummyEventClass("host", new DateTime(), UUID.randomUUID(), 1, "foo"));
 
@@ -113,7 +112,7 @@ public class TestHttpEventClient
             throws InterruptedException
     {
         responseCode = 503;
-        client = newEventClient(ImmutableSet.of(baseUri));
+        client = newEventClient(Set.of(baseUri));
 
         ListenableFuture<Void> future = client.post(TestingUtils.getEvents());
 
@@ -132,7 +131,7 @@ public class TestHttpEventClient
     public void testReceivesEvent()
             throws ExecutionException, InterruptedException, IOException
     {
-        client = newEventClient(ImmutableSet.of(baseUri));
+        client = newEventClient(Set.of(baseUri));
 
         client.post(TestingUtils.getEvents()).get();
 
@@ -144,7 +143,7 @@ public class TestHttpEventClient
     public void loadTest()
             throws ExecutionException, InterruptedException, IOException
     {
-        client = newEventClient(ImmutableSet.of(baseUri));
+        client = newEventClient(Set.of(baseUri));
 
         List<Future<Void>> futures = new ArrayList<>();
         for (int i = 0; i < 100; i++) {

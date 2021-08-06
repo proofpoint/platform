@@ -16,7 +16,6 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -32,6 +31,7 @@ import org.testng.annotations.Test;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
@@ -64,7 +64,7 @@ public class TestHttpServiceSelectorBinder
     public void testHttpSelectorString()
     {
         InMemoryDiscoveryClient discoveryClient = injector.getInstance(InMemoryDiscoveryClient.class);
-        discoveryClient.announce(ImmutableSet.of(serviceAnnouncement("apple").addProperty("http", "fake://server-http").build()));
+        discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("http", "fake://server-http").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
         assertEquals(getOnlyElement(selector.selectHttpService()), URI.create("fake://server-http"));
@@ -87,7 +87,7 @@ public class TestHttpServiceSelectorBinder
         );
 
         InMemoryDiscoveryClient discoveryClient = injector.getInstance(InMemoryDiscoveryClient.class);
-        discoveryClient.announce(ImmutableSet.of(serviceAnnouncement("apple").addProperty("http", "fake://server-http").build()));
+        discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("http", "fake://server-http").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
         assertEquals(getOnlyElement(selector.selectHttpService()), URI.create("fake://server-http"));
@@ -97,7 +97,7 @@ public class TestHttpServiceSelectorBinder
     public void testHttpsSelector()
     {
         InMemoryDiscoveryClient discoveryClient = injector.getInstance(InMemoryDiscoveryClient.class);
-        discoveryClient.announce(ImmutableSet.of(serviceAnnouncement("apple").addProperty("https", "fake://server-https").build()));
+        discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("https", "fake://server-https").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
         assertEquals(getOnlyElement(selector.selectHttpService()), URI.create("fake://server-https"));
@@ -109,7 +109,7 @@ public class TestHttpServiceSelectorBinder
     public void testFavorHttpsOverHttpSelector()
     {
         InMemoryDiscoveryClient discoveryClient = injector.getInstance(InMemoryDiscoveryClient.class);
-        discoveryClient.announce(ImmutableSet.of(serviceAnnouncement("apple").addProperty("http", "fake://server-http").build(),
+        discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("http", "fake://server-http").build(),
                 serviceAnnouncement("apple").addProperty("http", "fake://server-http-dontuse").addProperty("https", "fake://server-https").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
@@ -120,7 +120,7 @@ public class TestHttpServiceSelectorBinder
     public void testNoHttpServices()
     {
         InMemoryDiscoveryClient discoveryClient = injector.getInstance(InMemoryDiscoveryClient.class);
-        discoveryClient.announce(ImmutableSet.of(serviceAnnouncement("apple").addProperty("foo", "fake://server-https").build()));
+        discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("foo", "fake://server-https").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
         assertEquals(selector.selectHttpService(), List.of());
@@ -131,8 +131,8 @@ public class TestHttpServiceSelectorBinder
     public void testInvalidUris()
     {
         InMemoryDiscoveryClient discoveryClient = injector.getInstance(InMemoryDiscoveryClient.class);
-        discoveryClient.announce(ImmutableSet.of(serviceAnnouncement("apple").addProperty("http", ":::INVALID:::").build()));
-        discoveryClient.announce(ImmutableSet.of(serviceAnnouncement("apple").addProperty("https", ":::INVALID:::").build()));
+        discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("http", ":::INVALID:::").build()));
+        discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("https", ":::INVALID:::").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
         assertEquals(selector.selectHttpService(), List.of());

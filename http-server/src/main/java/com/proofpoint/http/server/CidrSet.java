@@ -51,7 +51,7 @@ public class CidrSet
      */
     public static CidrSet empty()
     {
-        return new CidrSet(ImmutableSet.of());
+        return new CidrSet(Set.of());
     }
 
     /**
