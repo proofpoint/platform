@@ -114,7 +114,7 @@ public class TestJsonModule
     public void testGuavaRoundTrip()
             throws Exception
     {
-        ImmutableList<Integer> list = ImmutableList.of(3, 5, 8);
+        List<Integer> list = List.of(3, 5, 8);
 
         String json = objectMapper.writeValueAsString(list);
         ImmutableList<Integer> actual = objectMapper.readValue(json, new TypeReference<ImmutableList<Integer>>() {});

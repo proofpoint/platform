@@ -1,6 +1,5 @@
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.collect.ImmutableList;
 import com.proofpoint.http.client.AbstractHttpClientTest;
 import com.proofpoint.http.client.HttpClientConfig;
 import com.proofpoint.http.client.Request;
@@ -13,6 +12,7 @@ import javax.net.ssl.SSLHandshakeException;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import static com.google.common.io.Resources.getResource;
@@ -47,7 +47,7 @@ public class TestJettyHttpsClient
 
         return new ClientTester()
         {
-            JettyHttpClient client = new JettyHttpClient("test-private", config, ImmutableList.of(new TestingRequestFilter()));
+            JettyHttpClient client = new JettyHttpClient("test-private", config, List.of(new TestingRequestFilter()));
 
             @Override
             public <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)

@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
@@ -32,6 +31,7 @@ import org.testng.annotations.Test;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Set;
 
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
@@ -126,7 +126,7 @@ public class TestServiceInventory
             throws Exception
     {
         discoveryAddressLookup = mock(DiscoveryAddressLookup.class);
-        when(discoveryAddressLookup.get()).thenReturn(ImmutableList.of(
+        when(discoveryAddressLookup.get()).thenReturn(List.of(
                 InetAddress.getByName("1.2.3.4"),
                 InetAddress.getByName("1:2:3:4:5:6:7:8")
         ));
@@ -141,7 +141,7 @@ public class TestServiceInventory
         ImmutableMultiset<URI> expectedUris = ImmutableMultiset.of(URI.create("http://1.2.3.4:4111"), URI.create("http://[1:2:3:4:5:6:7:8]:4111"));
         assertEqualsIgnoreOrder(uriMultisetCaptor.getValue(), expectedUris);
 
-        when(discoveryAddressLookup.get()).thenReturn(ImmutableList.of(
+        when(discoveryAddressLookup.get()).thenReturn(List.of(
                 InetAddress.getByName("5.6.7.8"),
                 InetAddress.getByName("1:2:3:4:5:6:7:8")
         ));

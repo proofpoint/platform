@@ -15,13 +15,13 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.collect.ImmutableList;
 import org.eclipse.jetty.server.Request;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -41,7 +41,7 @@ public class TestClientAddressExtractor
     public void testIgnoreForwardedFor()
     {
         when(request.getRemoteAddr()).thenReturn("9.9.9.9");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), "9.9.9.9");
     }
@@ -50,7 +50,7 @@ public class TestClientAddressExtractor
     public void testUseForwardedFor()
     {
         when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), "4.4.4.4");
     }
@@ -59,7 +59,7 @@ public class TestClientAddressExtractor
     public void testUseForwardedForTwoHops()
     {
         when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 10.11.12.13")));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 10.11.12.13")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), "3.3.3.3");
     }
@@ -68,7 +68,7 @@ public class TestClientAddressExtractor
     public void testUseForwardedForThreeHops()
     {
         when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "10.14.15.16, 10.11.12.13")));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "10.14.15.16, 10.11.12.13")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), "2.2.2.2");
     }
@@ -77,7 +77,7 @@ public class TestClientAddressExtractor
     public void testUseForwardedForInternal()
     {
         when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("10.11.12.13")));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("10.11.12.13")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), "10.11.12.13");
     }
@@ -86,7 +86,7 @@ public class TestClientAddressExtractor
     public void testUseForwardedForInternalTwoHops()
     {
         when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("10.14.15.16, 10.11.12.13")));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("10.14.15.16, 10.11.12.13")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), "10.14.15.16");
     }
@@ -95,7 +95,7 @@ public class TestClientAddressExtractor
     public void testInvalidIpAddress()
     {
         when(request.getRemoteAddr()).thenReturn("10.10.10.10");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of("notanaddr, 10.14.15.16, 10.11.12.13")));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("notanaddr, 10.14.15.16, 10.11.12.13")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), "10.14.15.16");
     }
@@ -127,7 +127,7 @@ public class TestClientAddressExtractor
     public void testAddressUsed(String address, boolean isPrivate)
     {
         when(request.getRemoteAddr()).thenReturn(address);
-        when(request.getHeaders("X-FORWARDED-FOR")).thenAnswer(invocation -> Collections.enumeration(ImmutableList.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenAnswer(invocation -> Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
 
         assertEquals(new ClientAddressExtractor().clientAddressFor(request), isPrivate ? "4.4.4.4" : address);
         assertEquals(new ClientAddressExtractor(new InternalNetworkConfig()).clientAddressFor(request), isPrivate ? "4.4.4.4" : address);

@@ -16,10 +16,11 @@
 package com.proofpoint.http.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.json.JsonCodec;
 import org.testng.annotations.Test;
+
+import java.util.List;
 
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static com.proofpoint.json.JsonCodec.listJsonCodec;
@@ -50,8 +51,8 @@ public abstract class AbstractCodecBodyGeneratorTest
             throws Exception
     {
         StaticBodyGenerator bodyGenerator = createBodyGenerator(listJsonCodec(JsonClass.class),
-                ImmutableList.of(new JsonClass("first", "second"), new JsonClass("third", "fourth")));
-        ImmutableList<ImmutableMap<String, String>> expected = ImmutableList.of(
+                List.of(new JsonClass("first", "second"), new JsonClass("third", "fourth")));
+        List<ImmutableMap<String, String>> expected = List.of(
                 ImmutableMap.of(
                         "firstField", "first",
                         "secondField", "second"

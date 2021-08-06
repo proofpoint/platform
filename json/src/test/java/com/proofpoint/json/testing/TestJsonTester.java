@@ -17,7 +17,6 @@ package com.proofpoint.json.testing;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -49,7 +48,7 @@ public class TestJsonTester
         simpleExpected.put("b", true);
 
         complexExpected = new HashMap<>();
-        complexExpected.put("list", ImmutableList.of("a", "b", "a"));
+        complexExpected.put("list", List.of("a", "b", "a"));
         complexExpected.put("obj", simpleExpected);
     }
 
@@ -117,21 +116,21 @@ public class TestJsonTester
     @Test(expectedExceptions = AssertionError.class)
     public void testWrongListMember()
     {
-        complexExpected.put("list", ImmutableList.of("a", "b", "b"));
+        complexExpected.put("list", List.of("a", "b", "b"));
         assertJsonEncode(complexEncoder, complexExpected);
     }
 
     @Test(expectedExceptions = AssertionError.class)
     public void testWrongListOrder()
     {
-        complexExpected.put("list", ImmutableList.of("a", "a", "b"));
+        complexExpected.put("list", List.of("a", "a", "b"));
         assertJsonEncode(complexEncoder, complexExpected);
     }
 
     @Test(expectedExceptions = AssertionError.class)
     public void testMissingListMember()
     {
-        complexExpected.put("list", ImmutableList.of("a", "b"));
+        complexExpected.put("list", List.of("a", "b"));
         assertJsonEncode(complexEncoder, complexExpected);
     }
 
@@ -152,7 +151,7 @@ public class TestJsonTester
     @Test
     public void testDecodeCodec()
     {
-        List<SimpleDecoder> simpleDecoder = decodeJson(listJsonCodec(SimpleDecoder.class), ImmutableList.of(ImmutableMap.of("intValue", 3, "extra", "value")));
+        List<SimpleDecoder> simpleDecoder = decodeJson(listJsonCodec(SimpleDecoder.class), List.of(ImmutableMap.of("intValue", 3, "extra", "value")));
         assertEquals(simpleDecoder.size(), 1);
         assertEquals(simpleDecoder.get(0).intValue, 3);
     }
@@ -184,7 +183,7 @@ public class TestJsonTester
     private static class ComplexEncoder
     {
         @JsonProperty
-        private final List<String> list = ImmutableList.of("a", "b", "a");
+        private final List<String> list = List.of("a", "b", "a");
         @JsonProperty
         private final SimpleEncoder obj = new SimpleEncoder();
     }

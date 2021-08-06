@@ -1,7 +1,6 @@
 package com.proofpoint.stats;
 
 import com.google.common.base.Ticker;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.proofpoint.testing.TestingTicker;
 import io.airlift.slice.Slice;
@@ -170,8 +169,8 @@ public class TestQuantileDigest
         }
 
         assertEquals(
-                digest.getQuantilesLowerBound(ImmutableList.of(0.0, 0.1, 0.2)),
-                ImmutableList.of(digest.getQuantileLowerBound(0.0), digest.getQuantileLowerBound(0.1), digest.getQuantileLowerBound(0.2)));
+                digest.getQuantilesLowerBound(List.of(0.0, 0.1, 0.2)),
+                List.of(digest.getQuantileLowerBound(0.0), digest.getQuantileLowerBound(0.1), digest.getQuantileLowerBound(0.2)));
     }
 
     @Test
@@ -190,8 +189,8 @@ public class TestQuantileDigest
         }
 
         assertEquals(
-                digest.getQuantilesUpperBound(ImmutableList.of(0.8, 0.9, 1.0)),
-                ImmutableList.of(digest.getQuantileUpperBound(0.8), digest.getQuantileUpperBound(0.9), digest.getQuantileUpperBound(1.0)));
+                digest.getQuantilesUpperBound(List.of(0.8, 0.9, 1.0)),
+                List.of(digest.getQuantileUpperBound(0.8), digest.getQuantileUpperBound(0.9), digest.getQuantileUpperBound(1.0)));
     }
 
     @Test

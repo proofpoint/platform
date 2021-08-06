@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -33,6 +32,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.net.URI;
+import java.util.List;
 
 import static com.google.inject.name.Names.named;
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
@@ -115,7 +115,7 @@ public class TestHttpClientBinder
                 .withModules(
                         binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
                                 .withAlias(FooAlias1.class)
-                                .withAliases(ImmutableList.of(FooAlias2.class, FooAlias3.class)),
+                                .withAliases(List.of(FooAlias2.class, FooAlias3.class)),
                         new ReportingModule()
                 )
 

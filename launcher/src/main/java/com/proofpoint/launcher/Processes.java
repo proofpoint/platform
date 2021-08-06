@@ -15,7 +15,6 @@
  */
 package com.proofpoint.launcher;
 
-import com.google.common.collect.ImmutableList;
 import jnr.constants.platform.Errno;
 import jnr.posix.POSIX;
 import jnr.posix.POSIXFactory;
@@ -68,7 +67,7 @@ class Processes
     static void kill(int pid, boolean graceful)
     {
         if (System.getProperty("os.name").startsWith("Windows")) {
-            List<String> args = ImmutableList.of("taskkill", "/f", "/pid", Integer.toString(pid));
+            List<String> args = List.of("taskkill", "/f", "/pid", Integer.toString(pid));
             try {
                 new ProcessBuilder(args)
                         .redirectInput(Redirect.from(NULL_FILE))

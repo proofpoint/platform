@@ -16,7 +16,6 @@
 package com.proofpoint.testing;
 
 import com.google.common.base.Ticker;
-import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Longs;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -659,22 +658,22 @@ public class TestSerialScheduledExecutorService
     private void checkNestedScheduleWithLongerInnerTask(List<String> collector, long outerTaskDelay, long innerTaskDelay)
     {
         executorService.elapseTime(outerTaskDelay - 1, TimeUnit.MILLISECONDS);
-        assertEquals(collector, ImmutableList.of());
+        assertEquals(collector, List.of());
 
         executorService.elapseTime(1, TimeUnit.MILLISECONDS);
-        assertEquals(collector, ImmutableList.of(OUTER));
+        assertEquals(collector, List.of(OUTER));
 
         executorService.elapseTime(innerTaskDelay - 1, TimeUnit.MILLISECONDS);
-        assertEquals(collector, ImmutableList.of(OUTER));
+        assertEquals(collector, List.of(OUTER));
 
         executorService.elapseTime(1, TimeUnit.MILLISECONDS);
-        assertEquals(collector, ImmutableList.of(OUTER, INNER));
+        assertEquals(collector, List.of(OUTER, INNER));
     }
 
     private void checkNestedScheduleWithShorterInnerTask(List<String> collector, long outerTaskDelay, long innerTaskDelay)
     {
         executorService.elapseTime(outerTaskDelay + innerTaskDelay, TimeUnit.MILLISECONDS);
-        assertEquals(collector, ImmutableList.of(OUTER, INNER));
+        assertEquals(collector, List.of(OUTER, INNER));
     }
 
     static class Counter

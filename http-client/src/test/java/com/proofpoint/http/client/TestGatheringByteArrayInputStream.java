@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.collect.ImmutableList;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ public class TestGatheringByteArrayInputStream
         byte[] lastArray = Arrays.copyOf(lastStringArray, lastStringArray.length + 32);
         arraycopy(lastStringArray, 0, lastArray, 0, lastStringArray.length);
 
-        List<byte[]> buffers = ImmutableList.of(
+        List<byte[]> buffers = List.of(
                 "hello ".getBytes(UTF_8),
                 "this ".getBytes(UTF_8),
                 "is ".getBytes(UTF_8),
@@ -70,7 +69,7 @@ public class TestGatheringByteArrayInputStream
     public void testSingleByteRead()
     {
         byte[] expected = "This is a test for single byte read".getBytes(UTF_8);
-        List<byte[]> buffers = ImmutableList.of(
+        List<byte[]> buffers = List.of(
                 "This ".getBytes(UTF_8),
                 "is ".getBytes(UTF_8),
                 "a test ".getBytes(UTF_8),
@@ -92,7 +91,7 @@ public class TestGatheringByteArrayInputStream
     {
         byte[] expected = new byte[1];
         expected[0] = -100;
-        try (GatheringByteArrayInputStream in = new GatheringByteArrayInputStream(ImmutableList.of(expected), expected.length)) {
+        try (GatheringByteArrayInputStream in = new GatheringByteArrayInputStream(List.of(expected), expected.length)) {
             assertEquals(in.read(), expected[0] & 0x000000ff);
             assertEquals(in.read(), -1);
         }
@@ -104,7 +103,7 @@ public class TestGatheringByteArrayInputStream
         byte[] allDataBytes = "Hello, this is http client package, and I am just a test for GatheringByteArrayInputStream".getBytes(UTF_8);
         int length = allDataBytes.length;
         try (GatheringByteArrayInputStream in = new GatheringByteArrayInputStream(
-                ImmutableList.of(
+                List.of(
                         Arrays.copyOfRange(allDataBytes, 0, length / 3),
                         Arrays.copyOfRange(allDataBytes, length / 3, length / 3 + length / 2),
                         Arrays.copyOfRange(allDataBytes, length / 3 + length / 2, length)),

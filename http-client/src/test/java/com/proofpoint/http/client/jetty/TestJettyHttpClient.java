@@ -1,12 +1,13 @@
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.collect.ImmutableList;
 import com.proofpoint.http.client.AbstractHttpClientTest;
 import com.proofpoint.http.client.HttpClientConfig;
 import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.TestingRequestFilter;
+
+import java.util.List;
 
 public class TestJettyHttpClient
         extends AbstractHttpClientTest
@@ -23,7 +24,7 @@ public class TestJettyHttpClient
     {
         return new ClientTester()
         {
-            JettyHttpClient client = new JettyHttpClient("test-private", config, ImmutableList.of(new TestingRequestFilter()));
+            JettyHttpClient client = new JettyHttpClient("test-private", config, List.of(new TestingRequestFilter()));
 
             @Override
             public <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)

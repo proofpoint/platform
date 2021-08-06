@@ -15,17 +15,9 @@
  */
 package com.proofpoint.configuration;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
-import com.google.inject.Binder;
-import com.google.inject.CreationException;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.spi.Message;
-import com.proofpoint.configuration.ConfigurationFactoryTest.AnnotatedSetter;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -40,10 +32,7 @@ import java.util.Map;
 
 import static com.google.common.io.MoreFiles.deleteRecursively;
 import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
-import static com.proofpoint.configuration.ConfigBinder.bindConfig;
-import static com.proofpoint.testing.Assertions.assertContainsAllOf;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
 
 public class TestPropertiesBuilder
 {
@@ -72,7 +61,7 @@ public class TestPropertiesBuilder
 
         assertEquals(builder.getProperties().get("test"), "foo");
         assertEquals(builder.getExpectToUse(), ImmutableSet.of());
-        assertEquals(builder.getErrors(), ImmutableList.of());
+        assertEquals(builder.getErrors(), List.of());
 
         System.getProperties().remove("test");
     }
@@ -92,7 +81,7 @@ public class TestPropertiesBuilder
 
         assertEquals(builder.getProperties().get("test"), "f\u014do");
         assertEquals(builder.getExpectToUse(), ImmutableSet.of("test"));
-        assertEquals(builder.getErrors(), ImmutableList.of());
+        assertEquals(builder.getErrors(), List.of());
     }
 
     @Test
@@ -128,7 +117,7 @@ public class TestPropertiesBuilder
         PropertiesBuilder builder = new PropertiesBuilder()
                 .withPropertiesFile(file.getAbsolutePath());
 
-        assertEquals(builder.getErrors(), ImmutableList.of("Duplicate configuration property 'string-value' in file " + file.getAbsolutePath()));
+        assertEquals(builder.getErrors(), List.of("Duplicate configuration property 'string-value' in file " + file.getAbsolutePath()));
     }
 
     @Test
@@ -160,7 +149,7 @@ public class TestPropertiesBuilder
                 .build()
         );
         assertEquals(builder.getExpectToUse(), ImmutableSet.of("string", "number", "bool", "list.1", "list.2", "map.c"));
-        assertEquals(builder.getErrors(), ImmutableList.of());
+        assertEquals(builder.getErrors(), List.of());
     }
 
     @Test
@@ -177,7 +166,7 @@ public class TestPropertiesBuilder
 
         assertEquals(builder.getProperties(), ImmutableMap.of());
         assertEquals(builder.getExpectToUse(), ImmutableSet.of());
-        assertEquals(builder.getErrors(), ImmutableList.of());
+        assertEquals(builder.getErrors(), List.of());
     }
 
     @Test
@@ -213,7 +202,7 @@ public class TestPropertiesBuilder
         PropertiesBuilder builder = new PropertiesBuilder()
                 .withJsonFile(file.getAbsolutePath());
 
-        assertEquals(builder.getErrors(), ImmutableList.of("Duplicate configuration property 'string.value' in file " + file.getAbsolutePath()));
+        assertEquals(builder.getErrors(), List.of("Duplicate configuration property 'string.value' in file " + file.getAbsolutePath()));
     }
 
     @Test
@@ -233,6 +222,6 @@ public class TestPropertiesBuilder
                 .withJsonFile(file.getAbsolutePath())
                 .withJsonFile(secondFile.getAbsolutePath());
 
-        assertEquals(builder.getErrors(), ImmutableList.of("Duplicate configuration property 'string' in file " + secondFile.getAbsolutePath()));
+        assertEquals(builder.getErrors(), List.of("Duplicate configuration property 'string' in file " + secondFile.getAbsolutePath()));
     }
 }

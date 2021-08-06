@@ -1,6 +1,5 @@
 package com.proofpoint.stats;
 
-import com.google.common.collect.ImmutableList;
 import com.proofpoint.stats.QuantileDigest.Bucket;
 import io.airlift.slice.Slice;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -125,7 +124,7 @@ public class BenchmarkQuantileDigest
     public List<Bucket> benchmarkHistogram(Digest data)
     {
         return data.digest1.getHistogram(
-                ImmutableList.of(0L, 100_000_000L, 200_000_000L, 300_000_000L, 400_000_000L, 500_000_000L, 600_000_000L, 700_000_000L, 800_000_000L, 900_000_000L, 1_000_000_000L));
+                List.of(0L, 100_000_000L, 200_000_000L, 300_000_000L, 400_000_000L, 500_000_000L, 600_000_000L, 700_000_000L, 800_000_000L, 900_000_000L, 1_000_000_000L));
     }
 
     public static void main(String[] args)

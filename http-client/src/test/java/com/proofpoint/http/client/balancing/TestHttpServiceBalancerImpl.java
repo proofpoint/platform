@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.client.balancing;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats.Status;
 import com.proofpoint.stats.SparseCounterStat;
@@ -27,6 +26,7 @@ import org.testng.annotations.Test;
 
 import java.net.URI;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -214,7 +214,7 @@ public class TestHttpServiceBalancerImpl
     {
         URI uriLowWeight = URI.create("http://apple-a.example.com");
         URI uriHighWeight = URI.create("https://apple-a.example.com");
-        httpServiceBalancer.updateHttpUris(ImmutableList.of(uriLowWeight, uriHighWeight, uriHighWeight, uriHighWeight));
+        httpServiceBalancer.updateHttpUris(List.of(uriLowWeight, uriHighWeight, uriHighWeight, uriHighWeight));
 
         consumeUri(uriHighWeight);
         assertThat(frequencyOfUri(uriLowWeight)).isBetween(25.0, 40.0);

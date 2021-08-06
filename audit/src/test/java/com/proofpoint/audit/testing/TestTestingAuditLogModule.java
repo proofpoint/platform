@@ -17,7 +17,6 @@ package com.proofpoint.audit.testing;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -28,6 +27,8 @@ import com.proofpoint.json.JsonModule;
 import com.proofpoint.tracetoken.TraceTokenManager;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.List;
 
 import static com.proofpoint.audit.AuditLoggerBinder.auditLoggerBinder;
 import static org.testng.Assert.assertEquals;
@@ -58,7 +59,7 @@ public class TestTestingAuditLogModule
     {
         logger.audit(record1);
 
-        assertEquals(auditLog.getRecords(), ImmutableList.of(ImmutableMap.of(
+        assertEquals(auditLog.getRecords(), List.of(ImmutableMap.of(
                 "type", "com.proofpoint.audit.testing.TestTestingAuditLogModule.TestingRecord",
                 "value", "record1"))
         );
@@ -73,7 +74,7 @@ public class TestTestingAuditLogModule
         TraceTokenManager.clearRequestToken();
         logger.audit(record3);
 
-        assertEquals(auditLog.getRecords(), ImmutableList.of(
+        assertEquals(auditLog.getRecords(), List.of(
                 ImmutableMap.of("type", "com.proofpoint.audit.testing.TestTestingAuditLogModule.TestingRecord",
                                 "value", "record1"),
                 ImmutableMap.of("type", "com.proofpoint.audit.testing.TestTestingAuditLogModule.TestingRecord",

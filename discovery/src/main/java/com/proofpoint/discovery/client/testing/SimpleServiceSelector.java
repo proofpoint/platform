@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.testing;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.proofpoint.discovery.client.DiscoveryException;
 import com.proofpoint.discovery.client.DiscoveryLookupClient;
@@ -73,7 +72,7 @@ public class SimpleServiceSelector implements ServiceSelector
         }
         catch (DiscoveryException e) {
             log.error(e);
-            return ImmutableList.of();
+            return List.of();
         }
     }
 }

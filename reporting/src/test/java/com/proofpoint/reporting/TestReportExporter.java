@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.proofpoint.reporting.ReportException.Reason;
@@ -27,6 +26,7 @@ import org.weakref.jmx.Nested;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
@@ -97,7 +97,7 @@ public class TestReportExporter
     public void testExportNoAttributes()
     {
         reportExporter.export(new Object(), false, "TestingObject", ImmutableMap.of());
-        assertEquals(registry.getReportedBeans(), ImmutableList.of());
+        assertEquals(registry.getReportedBeans(), List.of());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class TestReportExporter
     {
         reportExporter.export(TESTING_OBJECT, false, "TestingObject", ImmutableMap.of());
         reportExporter.unexportObject(TESTING_OBJECT);
-        assertEquals(registry.getReportedBeans(), ImmutableList.of());
+        assertEquals(registry.getReportedBeans(), List.of());
     }
 
     @Test
@@ -156,7 +156,7 @@ public class TestReportExporter
     public void testLegacyExportStringNoAttributes()
     {
         reportExporter.export(TESTING_OBJECT_NAME.getCanonicalName(), new Object());
-        assertEquals(registry.getReportedBeans(), ImmutableList.of());
+        assertEquals(registry.getReportedBeans(), List.of());
     }
 
     @Test
@@ -197,7 +197,7 @@ public class TestReportExporter
     public void testLegacyExportObjectNameNoAttributes()
     {
         reportExporter.export(TESTING_OBJECT_NAME, new Object());
-        assertEquals(registry.getReportedBeans(), ImmutableList.of());
+        assertEquals(registry.getReportedBeans(), List.of());
     }
 
     @Test
@@ -219,7 +219,7 @@ public class TestReportExporter
     {
         reportExporter.export(TESTING_OBJECT_NAME, TESTING_OBJECT);
         reportExporter.unexport(TESTING_OBJECT_NAME.getCanonicalName());
-        assertEquals(registry.getReportedBeans(), ImmutableList.of());
+        assertEquals(registry.getReportedBeans(), List.of());
     }
 
     @Test
@@ -253,7 +253,7 @@ public class TestReportExporter
     {
         reportExporter.export(TESTING_OBJECT_NAME, TESTING_OBJECT);
         reportExporter.unexport(TESTING_OBJECT_NAME);
-        assertEquals(registry.getReportedBeans(), ImmutableList.of());
+        assertEquals(registry.getReportedBeans(), List.of());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.proofpoint.http.client.AbstractHttpClientTest;
 import com.proofpoint.http.client.HttpClient.HttpResponseFuture;
@@ -15,6 +14,7 @@ import com.proofpoint.units.Duration;
 import org.testng.annotations.Test;
 
 import java.net.URI;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,7 +41,7 @@ public class TestAsyncJettyHttpClient
     {
         return new ClientTester()
         {
-            JettyHttpClient client = new JettyHttpClient("test-private", config, ImmutableList.of(new TestingRequestFilter()));
+            JettyHttpClient client = new JettyHttpClient("test-private", config, List.of(new TestingRequestFilter()));
 
             @Override
             public <T, E extends Exception> T executeRequest(Request request, ResponseHandler<T, E> responseHandler)
@@ -77,7 +77,7 @@ public class TestAsyncJettyHttpClient
         HttpClientConfig config = createClientConfig();
         config.setConnectTimeout(new Duration(5, MILLISECONDS));
 
-        try (JettyHttpClient client = new JettyHttpClient("test-private", config, ImmutableList.of(new TestingRequestFilter()))) {
+        try (JettyHttpClient client = new JettyHttpClient("test-private", config, List.of(new TestingRequestFilter()))) {
             Request request = prepareGet()
                     .setUri(new URI("http", null, "127.0.0.1", port, "/", null, null))
                     .build();
@@ -139,7 +139,7 @@ public class TestAsyncJettyHttpClient
                 .build();
 
         HttpResponseFuture<Void> future = null;
-        try (JettyHttpClient client = new JettyHttpClient("test-private", createClientConfig(), ImmutableList.of(new TestingRequestFilter()))) {
+        try (JettyHttpClient client = new JettyHttpClient("test-private", createClientConfig(), List.of(new TestingRequestFilter()))) {
             future = client.executeAsync(request, new ResponseHandler<Void, RuntimeException>()
         {
             @Override

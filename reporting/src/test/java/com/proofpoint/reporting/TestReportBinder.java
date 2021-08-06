@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -45,6 +44,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -658,7 +658,7 @@ public class TestReportBinder
     private void assertNoReportRegistration(Injector injector)
     {
         ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
-        assertEquals(reportedBeanRegistry.getReportedBeans(), ImmutableList.<RegistrationInfo>of());
+        assertEquals(reportedBeanRegistry.getReportedBeans(), List.of());
     }
 
     private void assertReportRegistration(Injector injector, boolean applicationPrefix, String namePrefix, Map<String, String> tags, Optional<Set<String>> expectedAttributes)

@@ -15,7 +15,6 @@
  */
 package com.proofpoint.log;
 
-import com.google.common.collect.ImmutableList;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -226,7 +225,7 @@ public class TestLogger
         logger.trace(format, param);
 
 
-        assertLogLike(Level.SEVERE, ImmutableList.of("Invalid format", "TRACE", format, param), IllegalArgumentException.class);
+        assertLogLike(Level.SEVERE, List.of("Invalid format", "TRACE", format, param), IllegalArgumentException.class);
         assertLog(Level.FINEST, String.format("'%s' [%s]", format, param));
     }
 
@@ -239,7 +238,7 @@ public class TestLogger
         logger.debug(format, param);
 
 
-        assertLogLike(Level.SEVERE, ImmutableList.of("Invalid format", "DEBUG", format, param), IllegalArgumentException.class);
+        assertLogLike(Level.SEVERE, List.of("Invalid format", "DEBUG", format, param), IllegalArgumentException.class);
         assertLog(Level.FINE, String.format("'%s' [%s]", format, param));
     }
 
@@ -251,7 +250,7 @@ public class TestLogger
         logger.info(format, param);
 
 
-        assertLogLike(Level.SEVERE, ImmutableList.of("Invalid format", "INFO", format, param), IllegalArgumentException.class);
+        assertLogLike(Level.SEVERE, List.of("Invalid format", "INFO", format, param), IllegalArgumentException.class);
         assertLog(Level.INFO, String.format("'%s' [%s]", format, param));
     }
 
@@ -262,7 +261,7 @@ public class TestLogger
         String param = "blah";
         logger.warn(format, param);
 
-        assertLogLike(Level.SEVERE, ImmutableList.of("Invalid format", "WARN", format, param), IllegalArgumentException.class);
+        assertLogLike(Level.SEVERE, List.of("Invalid format", "WARN", format, param), IllegalArgumentException.class);
         assertLog(Level.WARNING, String.format("'%s' [%s]", format, param));
     }
 
@@ -273,7 +272,7 @@ public class TestLogger
         String param = "blah";
         logger.error(format, param);
 
-        assertLogLike(Level.SEVERE, ImmutableList.of("Invalid format", "ERROR", format, param), IllegalArgumentException.class);
+        assertLogLike(Level.SEVERE, List.of("Invalid format", "ERROR", format, param), IllegalArgumentException.class);
         assertLog(Level.SEVERE, String.format("'%s' [%s]", format, param));
     }
 
@@ -285,7 +284,7 @@ public class TestLogger
         String param = "blah";
         logger.warn(exception, format, param);
 
-        assertLogLike(Level.SEVERE, ImmutableList.of("Invalid format", "WARN", format, param), IllegalArgumentException.class);
+        assertLogLike(Level.SEVERE, List.of("Invalid format", "WARN", format, param), IllegalArgumentException.class);
         assertLog(Level.WARNING, String.format("'%s' [%s]", format, param), exception);
     }
 
@@ -297,7 +296,7 @@ public class TestLogger
         String param = "blah";
         logger.error(exception, format, param);
 
-        assertLogLike(Level.SEVERE, ImmutableList.of("Invalid format", "ERROR", format, param), IllegalArgumentException.class);
+        assertLogLike(Level.SEVERE, List.of("Invalid format", "ERROR", format, param), IllegalArgumentException.class);
         assertLog(Level.SEVERE, String.format("'%s' [%s]", format, param), exception);
     }
 

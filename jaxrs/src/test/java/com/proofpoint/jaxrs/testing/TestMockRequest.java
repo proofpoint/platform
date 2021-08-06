@@ -15,7 +15,6 @@
  */
 package com.proofpoint.jaxrs.testing;
 
-import com.google.common.collect.ImmutableList;
 import com.proofpoint.jaxrs.testing.MockRequest.ConditionalRequestBuilder;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -26,6 +25,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import static com.proofpoint.jaxrs.testing.MockRequest.delete;
@@ -64,7 +64,7 @@ public class TestMockRequest
     public static final Date BEFORE = new Date(1111);
     public static final Date AFTER = new Date(9999);
     public static final Variant VARIANT = new Variant(TEXT_PLAIN_TYPE, Locale.UK, "UTF-8");
-    public static final ImmutableList<Variant> VARIANTS = ImmutableList.of(new Variant(TEXT_XML_TYPE, US, "UTF-8"));
+    public static final List<Variant> VARIANTS = List.of(new Variant(TEXT_XML_TYPE, US, "UTF-8"));
 
     @Test(dataProvider = "requestBuilders")
     public void testMethod(ConditionalRequestBuilder request, String method, Variant variant)

@@ -16,7 +16,6 @@
 package com.proofpoint.http.client.jetty;
 
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.proofpoint.http.client.DynamicBodySource;
@@ -49,6 +48,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -208,7 +208,7 @@ public class TestStressJetty
     {
         final CountDownLatch completionLatch = new CountDownLatch(NUM_REQUESTS);
         try (
-                JettyHttpClient client = new JettyHttpClient("test-private", new HttpClientConfig().setMaxRequestsQueuedPerDestination(NUM_REQUESTS), ImmutableList.of(new TestingRequestFilter()))
+                JettyHttpClient client = new JettyHttpClient("test-private", new HttpClientConfig().setMaxRequestsQueuedPerDestination(NUM_REQUESTS), List.of(new TestingRequestFilter()))
         ) {
             for (int i = 0; i < NUM_REQUESTS; i++) {
                 HttpResponseFuture<Integer> future = client.executeAsync(requestSupplier.get(), new ResponseStatusCodeHandler());

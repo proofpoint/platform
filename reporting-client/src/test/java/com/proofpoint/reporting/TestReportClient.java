@@ -18,7 +18,6 @@ package com.proofpoint.reporting;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -117,7 +116,7 @@ public class TestReportClient
         collectedData = HashBasedTable.create();
         collectedData.put("Foo.String", ImmutableMap.of(), "test value");
         client.report(TEST_TIME, collectedData);
-        assertEquals(sentJson, ImmutableList.of(
+        assertEquals(sentJson, List.of(
                 ImmutableMap.of(
                         "name", "Foo.String",
                         "timestamp", TEST_TIME,

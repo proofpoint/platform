@@ -16,7 +16,6 @@
 package com.proofpoint.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.List;
@@ -70,7 +69,7 @@ public class Person
 
     public static void validatePersonListJsonCodec(JsonCodec<List<Person>> jsonCodec)
     {
-        ImmutableList<Person> expected = ImmutableList.of(
+        List<Person> expected = List.of(
                 new Person().setName("dain").setRocks(true),
                 new Person().setName("martin").setRocks(true),
                 new Person().setName("mark").setRocks(true));

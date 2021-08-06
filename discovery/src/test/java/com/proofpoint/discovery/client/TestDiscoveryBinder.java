@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
@@ -39,6 +38,7 @@ import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.List;
 import java.util.Set;
 
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
@@ -248,7 +248,7 @@ public class TestDiscoveryBinder
                 ImmutableMap.of("discovery.foo.pool", "foo-pool"),
                 binder -> discoveryBinder(binder).bindDiscoveredHttpClient("foo", FooClient.class)
                         .withAlias(FooAlias1.class)
-                        .withAliases(ImmutableList.of(FooAlias2.class, FooAlias3.class))
+                        .withAliases(List.of(FooAlias2.class, FooAlias3.class))
         );
 
         HttpClient client = injector.getInstance(Key.get(HttpClient.class, FooClient.class));

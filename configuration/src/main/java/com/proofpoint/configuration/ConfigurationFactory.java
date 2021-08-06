@@ -41,6 +41,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -78,7 +79,7 @@ public final class ConfigurationFactory
 
     public ConfigurationFactory(Map<String, String> properties)
     {
-        this(properties, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of(), properties.keySet(), ImmutableList.of(), Problems.NULL_MONITOR);
+        this(properties, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of(), properties.keySet(), List.of(), Problems.NULL_MONITOR);
     }
 
     ConfigurationFactory(Map<String, String> properties, Map<String, String> applicationDefaults, Map<String, String> moduleDefaults, Map<String, ConfigurationDefaultingModule> moduleDefaultSource, Set<String> expectToUse, Collection<String> errors, final Monitor monitor)

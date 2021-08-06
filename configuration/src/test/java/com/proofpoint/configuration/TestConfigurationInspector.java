@@ -1,6 +1,5 @@
 package com.proofpoint.configuration;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.inject.Binder;
@@ -63,7 +62,7 @@ public class TestConfigurationInspector
                 firstNonNull(moduleDefaults, ImmutableMap.of()),
                 firstNonNull(moduleDefaultSource, ImmutableMap.of()),
                 properties.keySet(),
-                ImmutableList.of(),
+                List.of(),
                 Problems.NULL_MONITOR
         );
         List<Message> messages = new ConfigurationValidator(configurationFactory).validate(module);

@@ -15,10 +15,10 @@
  */
 package com.proofpoint.http.client;
 
-import com.google.common.collect.ImmutableList;
 import org.testng.annotations.Test;
 
 import java.net.URI;
+import java.util.List;
 
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.TraceTokenRequestFilter.TRACETOKEN_HEADER;
@@ -44,7 +44,7 @@ public class TestTraceTokenRequestFilter
         assertEquals(filtered.getUri(), original.getUri());
         assertEquals(original.getHeaders().size(), 0);
         assertEquals(filtered.getHeaders().size(), 1);
-        assertEquals(filtered.getHeaders().get(TRACETOKEN_HEADER), ImmutableList.of("testBasic"));
+        assertEquals(filtered.getHeaders().get(TRACETOKEN_HEADER), List.of("testBasic"));
     }
 
     @Test
@@ -61,7 +61,7 @@ public class TestTraceTokenRequestFilter
         assertEquals(filtered.getUri(), original.getUri());
         assertEquals(original.getHeaders().size(), 0);
         assertEquals(filtered.getHeaders().size(), 1);
-        assertEquals(filtered.getHeaders().get(TRACETOKEN_HEADER), ImmutableList.of("{\"id\":\"testBasic\",\"key-b\":\"value-b\",\"key-a\":\"value-a\",\"key-c\":\"value-c\"}"));
+        assertEquals(filtered.getHeaders().get(TRACETOKEN_HEADER), List.of("{\"id\":\"testBasic\",\"key-b\":\"value-b\",\"key-a\":\"value-a\",\"key-c\":\"value-c\"}"));
     }
 
     @Test
@@ -78,7 +78,7 @@ public class TestTraceTokenRequestFilter
         assertEquals(filtered.getUri(), original.getUri());
         assertEquals(original.getHeaders().size(), 0);
         assertEquals(filtered.getHeaders().size(), 1);
-        assertEquals(filtered.getHeaders().get(TRACETOKEN_HEADER), ImmutableList.of("{\"id\":\"testBasic\",\"key-b\":\"value-b\",\"key-a\":\"value-a\"}"));
+        assertEquals(filtered.getHeaders().get(TRACETOKEN_HEADER), List.of("{\"id\":\"testBasic\",\"key-b\":\"value-b\",\"key-a\":\"value-a\"}"));
     }
 
     @Test

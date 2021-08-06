@@ -18,7 +18,6 @@ package com.proofpoint.jaxrs;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 import com.proofpoint.jaxrs.testing.GuavaMultivaluedMap;
@@ -189,7 +188,7 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
             fail("Should have thrown an BeanValidationException");
         }
         catch (BeanValidationException e) {
-            assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
+            assertEqualsIgnoreOrder(e.getErrorMessages(), List.of(
                     "secondField must not be null",
                     "firstField must not be null"
             ));
@@ -211,7 +210,7 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
             fail("Should have thrown an BeanValidationException");
         }
         catch (BeanValidationException e) {
-            assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
+            assertEqualsIgnoreOrder(e.getErrorMessages(), List.of(
                     "list[1].secondField must not be null",
                     "list[1].firstField must not be null"
             ));
@@ -222,7 +221,7 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
     public void testBeanValidationOfSetThrowsBeanValidationException() throws IOException
     {
         try {
-            InputStream is = getInputStream(ImmutableList.of(ImmutableMap.of()));
+            InputStream is = getInputStream(List.of(ImmutableMap.of()));
             Type setJsonClassType = new TypeToken<Set<JsonClass>>()
             {
             }.getType();
@@ -230,7 +229,7 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
             fail("Should have thrown an BeanValidationException");
         }
         catch (BeanValidationException e) {
-            assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
+            assertEqualsIgnoreOrder(e.getErrorMessages(), List.of(
                     "collection[].secondField must not be null",
                     "collection[].firstField must not be null"
             ));
@@ -249,7 +248,7 @@ public abstract class AbstractMapperTest<T extends MessageBodyReader<Object> & M
             fail("Should have thrown an BeanValidationException");
         }
         catch (BeanValidationException e) {
-            assertEqualsIgnoreOrder(e.getErrorMessages(), ImmutableList.of(
+            assertEqualsIgnoreOrder(e.getErrorMessages(), List.of(
                     "map[foo].secondField must not be null",
                     "map[foo].firstField must not be null"
             ));

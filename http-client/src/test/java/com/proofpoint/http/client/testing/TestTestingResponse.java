@@ -1,7 +1,6 @@
 package com.proofpoint.http.client.testing;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.MediaType;
@@ -176,7 +175,7 @@ public class TestTestingResponse
     public void testBuilderJsonSpecifiedContentType()
     {
         assertResponse(mockResponse()
-                        .jsonBody(ImmutableList.of("neé"))
+                        .jsonBody(List.of("neé"))
                         .header("conTeNt-tyPE", "foo/bar")
                         .status(HttpStatus.BAD_REQUEST)
                         .build(),
