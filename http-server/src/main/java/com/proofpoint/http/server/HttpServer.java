@@ -15,11 +15,9 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
-import com.google.common.primitives.Ints;
 import com.proofpoint.bootstrap.AcceptRequests;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.node.NodeInfo;
@@ -61,7 +59,6 @@ import javax.management.MBeanServer;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.ServerSocketChannel;
@@ -336,7 +333,7 @@ public class HttpServer
 
         // TODO: support for other auth schemes (digest, etc)
         securityHandler.setAuthenticator(new BasicAuthenticator());
-        securityHandler.setConstraintMappings(ImmutableList.of(constraintMapping));
+        securityHandler.setConstraintMappings(List.of(constraintMapping));
         return securityHandler;
     }
 

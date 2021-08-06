@@ -15,7 +15,6 @@
  */
 package com.proofpoint.bootstrap;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
@@ -73,7 +72,7 @@ public class TestLifeCycleManager
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
 
-        assertEquals(stateLog, ImmutableList.of("InstanceThatUsesInstanceThatRequiresStart:OK"));
+        assertEquals(stateLog, List.of("InstanceThatUsesInstanceThatRequiresStart:OK"));
     }
 
     @Test
@@ -99,10 +98,10 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl"));
+        assertEquals(stateLog, List.of("postSimpleBaseImpl"));
 
         lifeCycleManager.stop();
-        assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl", "preSimpleBaseImpl"));
+        assertEquals(stateLog, List.of("postSimpleBaseImpl", "preSimpleBaseImpl"));
     }
 
     @Test
@@ -120,11 +119,11 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl"));
+        assertEquals(stateLog, List.of("postSimpleBaseImpl"));
 
         lifeCycleManager.stop();
 
-        assertEquals(stateLog, ImmutableList.of("postSimpleBaseImpl", "preSimpleBaseImpl"));
+        assertEquals(stateLog, List.of("postSimpleBaseImpl", "preSimpleBaseImpl"));
     }
 
     @Test
@@ -144,12 +143,12 @@ public class TestLifeCycleManager
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
         instance.waitForStart();
-        assertEquals(stateLog, ImmutableList.of("Starting"));
+        assertEquals(stateLog, List.of("Starting"));
 
         lifeCycleManager.stop();
         instance.waitForEnd();
 
-        assertEquals(stateLog, ImmutableList.of("Starting", "Done"));
+        assertEquals(stateLog, List.of("Starting", "Done"));
     }
 
     @Test
@@ -171,10 +170,10 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        assertEquals(stateLog, ImmutableList.of("postDependentInstance"));
+        assertEquals(stateLog, List.of("postDependentInstance"));
 
         lifeCycleManager.stop();
-        assertEquals(stateLog, ImmutableList.of("postDependentInstance", "preDependentInstance"));
+        assertEquals(stateLog, List.of("postDependentInstance", "preDependentInstance"));
     }
 
     @Test
@@ -195,10 +194,10 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        assertEquals(stateLog, ImmutableList.of("postDependentInstance", "postDependingInstance"));
+        assertEquals(stateLog, List.of("postDependentInstance", "postDependingInstance"));
 
         lifeCycleManager.stop();
-        assertEquals(stateLog, ImmutableList.of("postDependentInstance", "postDependingInstance", "preDependingInstance", "preDependentInstance"));
+        assertEquals(stateLog, List.of("postDependentInstance", "postDependingInstance", "preDependingInstance", "preDependentInstance"));
     }
 
     @Test
@@ -219,10 +218,10 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        assertEquals(stateLog, ImmutableList.of("postDependingInstance", "postDependentInstance", "acceptRequestsInstance"));
+        assertEquals(stateLog, List.of("postDependingInstance", "postDependentInstance", "acceptRequestsInstance"));
 
         lifeCycleManager.stop();
-        assertEquals(stateLog, ImmutableList.of("postDependingInstance", "postDependentInstance", "acceptRequestsInstance", "preAcceptRequestsInstance", "preDependentInstance", "preDependingInstance"));
+        assertEquals(stateLog, List.of("postDependingInstance", "postDependentInstance", "acceptRequestsInstance", "preAcceptRequestsInstance", "preDependentInstance", "preDependingInstance"));
     }
 
     @Test
@@ -241,12 +240,12 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        assertEquals(stateLog, ImmutableList.of("acceptRequestsInstance"));
+        assertEquals(stateLog, List.of("acceptRequestsInstance"));
 
         long beforeStopNanos = System.nanoTime();
         lifeCycleManager.stop();
         long afterStopNanos = System.nanoTime();
-        assertEquals(stateLog, ImmutableList.of("acceptRequestsInstance", "stopTrafficInstance", "preAcceptRequestsInstance"));
+        assertEquals(stateLog, List.of("acceptRequestsInstance", "stopTrafficInstance", "preAcceptRequestsInstance"));
         assertGreaterThanOrEqual(afterStopNanos - beforeStopNanos, 100_000_000L);
     }
 
@@ -285,7 +284,7 @@ public class TestLifeCycleManager
         lifeCycleManager.start();
         lifeCycleManager.stop();
 
-        assertEquals(stateLog, ImmutableList.of("foo"));
+        assertEquals(stateLog, List.of("foo"));
     }
 
     @Test
@@ -307,7 +306,7 @@ public class TestLifeCycleManager
         lifeCycleManager.start();
         lifeCycleManager.stop();
 
-        assertEquals(stateLog, ImmutableList.of("postDependentInstance", "preDependentInstance"));
+        assertEquals(stateLog, List.of("postDependentInstance", "preDependentInstance"));
     }
 
     @Test
@@ -327,10 +326,10 @@ public class TestLifeCycleManager
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
-        assertEquals(stateLog, ImmutableList.of("makeMe"));
+        assertEquals(stateLog, List.of("makeMe"));
 
         lifeCycleManager.stop();
-        assertEquals(stateLog, ImmutableList.of("makeMe", "unmakeMe"));
+        assertEquals(stateLog, List.of("makeMe", "unmakeMe"));
     }
 
     @Test

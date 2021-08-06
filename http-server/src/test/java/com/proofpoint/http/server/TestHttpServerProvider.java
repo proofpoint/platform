@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import com.google.common.net.InetAddresses;
@@ -109,7 +108,7 @@ public class TestHttpServerProvider
             }
         }));
         httpServerInfo = new HttpServerInfo(config, nodeInfo);
-        lifeCycleManager = new LifeCycleManager(ImmutableList.of(), null, new LifeCycleConfig());
+        lifeCycleManager = new LifeCycleManager(List.of(), null, new LifeCycleConfig());
     }
 
     @AfterMethod(alwaysRun = true)

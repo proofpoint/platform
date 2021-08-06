@@ -1,6 +1,5 @@
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.net.InetAddresses;
 import org.eclipse.jetty.util.Promise;
 import org.eclipse.jetty.util.SocketAddressResolver;
@@ -30,7 +29,7 @@ class JettyAsyncSocketAddressResolver
     {
         Optional<InetAddress> address = resolve(host);
         if (address.isPresent()) {
-            promise.succeeded(ImmutableList.of(new InetSocketAddress(address.get(), port)));
+            promise.succeeded(List.of(new InetSocketAddress(address.get(), port)));
             return;
         }
         super.resolve(host, port, promise);

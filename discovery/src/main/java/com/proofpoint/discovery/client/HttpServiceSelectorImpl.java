@@ -54,7 +54,7 @@ public class HttpServiceSelectorImpl implements HttpServiceSelector
     {
         List<ServiceDescriptor> serviceDescriptors = Lists.newArrayList(serviceSelector.selectAllServices());
         if (serviceDescriptors.isEmpty()) {
-            return ImmutableList.of();
+            return List.of();
         }
 
         List<URI> httpUri = new ArrayList<>();

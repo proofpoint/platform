@@ -124,7 +124,7 @@ public class JettyHttpClient
 
     public JettyHttpClient(String name, HttpClientConfig config)
     {
-        this(name, config, ImmutableList.of());
+        this(name, config, List.of());
     }
 
     public JettyHttpClient(

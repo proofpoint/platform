@@ -15,11 +15,12 @@
  */
 package com.proofpoint.tracetoken;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.List;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.addTraceTokenProperties;
 import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
@@ -57,7 +58,7 @@ public class TestTraceTokenManager
         String tokenId = createAndRegisterNewRequestToken();
 
         assertEquals(getCurrentRequestToken(), tokenId);
-        assertEquals(getCurrentTraceToken().keySet(), ImmutableList.of("id"));
+        assertEquals(getCurrentTraceToken().keySet(), List.of("id"));
         assertEquals(currentThread().getName(), "testing thread name " + tokenId);
     }
 
@@ -69,7 +70,7 @@ public class TestTraceTokenManager
         assertEquals(getCurrentRequestToken(), "{id=" + tokenId + ", key-b=value-b, key-a=value-a, key-c=value-c}");
         TraceToken token = getCurrentTraceToken();
         assertEquals(token, ImmutableMap.of("id", tokenId, "key-b", "value-b", "key-a", "value-a", "key-c", "value-c"));
-        assertEquals(token.keySet(), ImmutableList.of("id", "key-b", "key-a", "key-c"));
+        assertEquals(token.keySet(), List.of("id", "key-b", "key-a", "key-c"));
         assertEquals(currentThread().getName(), "testing thread name {id=" + tokenId + ", key-b=value-b, key-a=value-a, key-c=value-c}");
     }
 
@@ -90,7 +91,7 @@ public class TestTraceTokenManager
 
         assertEquals(getCurrentRequestToken(), "{id=testing-id, key-d=value-d}");
         assertEquals(getCurrentTraceToken(), TESTING_TRACE_TOKEN);
-        assertEquals(getCurrentTraceToken().keySet(), ImmutableList.of("id", "key-d"));
+        assertEquals(getCurrentTraceToken().keySet(), List.of("id", "key-d"));
         assertEquals(currentThread().getName(), "testing thread name {id=testing-id, key-d=value-d}");
     }
 
@@ -222,7 +223,7 @@ public class TestTraceTokenManager
         {
             assertEquals(getCurrentRequestToken(), "{id=testing-id, key-d=value-d, key-f=value-f, key-a=value-a}");
             assertEquals(getCurrentTraceToken(), ImmutableMap.of("id", "testing-id", "key-d", "value-d", "key-f", "value-f", "key-a", "value-a"));
-            assertEquals(getCurrentTraceToken().keySet(), ImmutableList.of("id", "key-d", "key-f", "key-a"));
+            assertEquals(getCurrentTraceToken().keySet(), List.of("id", "key-d", "key-f", "key-a"));
             assertEquals(currentThread().getName(), "testing thread name {id=testing-id, key-d=value-d, key-f=value-f, key-a=value-a}");
         }
         assertEquals(getCurrentRequestToken(), "{id=testing-id, key-d=value-d}");
@@ -239,7 +240,7 @@ public class TestTraceTokenManager
         {
             assertEquals(getCurrentRequestToken(), "{id=testing-id, key-d=value-d, _key-f=value-f, _key-a=value-a}");
             assertEquals(getCurrentTraceToken(), ImmutableMap.of("id", "testing-id", "key-d", "value-d", "_key-f", "value-f", "_key-a", "value-a"));
-            assertEquals(getCurrentTraceToken().keySet(), ImmutableList.of("id", "key-d", "_key-f", "_key-a"));
+            assertEquals(getCurrentTraceToken().keySet(), List.of("id", "key-d", "_key-f", "_key-a"));
             assertEquals(currentThread().getName(), "testing thread name {id=testing-id, key-d=value-d, _key-f=value-f, _key-a=value-a}");
         }
         assertEquals(getCurrentRequestToken(), "{id=testing-id, key-d=value-d}");

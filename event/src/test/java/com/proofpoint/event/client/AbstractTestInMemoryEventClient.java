@@ -15,8 +15,9 @@
  */
 package com.proofpoint.event.client;
 
-import com.google.common.collect.ImmutableList;
 import org.testng.annotations.Test;
+
+import java.util.List;
 
 import static com.proofpoint.event.client.DummyEventClass.dummyEventClass;
 import static org.testng.Assert.assertEquals;
@@ -33,7 +34,7 @@ public abstract class AbstractTestInMemoryEventClient
     {
         eventClient.post(event1);
 
-        assertEquals(eventClient.getEvents(), ImmutableList.of(event1));
+        assertEquals(eventClient.getEvents(), List.of(event1));
     }
 
     @Test
@@ -44,7 +45,7 @@ public abstract class AbstractTestInMemoryEventClient
         eventClient.post(event3);
 
         assertEquals(eventClient.getEvents(),
-                ImmutableList.of(event1, event2, event3));
+                List.of(event1, event2, event3));
     }
 
     @Test
@@ -53,15 +54,15 @@ public abstract class AbstractTestInMemoryEventClient
         eventClient.post(event1, event2, event3);
 
         assertEquals(eventClient.getEvents(),
-                ImmutableList.of(event1, event2, event3));
+                List.of(event1, event2, event3));
     }
 
     @Test
     public void testPostIterable()
     {
-        eventClient.post(ImmutableList.of(event1, event2, event3));
+        eventClient.post(List.of(event1,event2,event3));
 
         assertEquals(eventClient.getEvents(),
-                ImmutableList.of(event1, event2, event3));
+                List.of(event1, event2, event3));
     }
 }

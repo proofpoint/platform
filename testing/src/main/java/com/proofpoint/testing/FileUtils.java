@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
@@ -62,11 +63,11 @@ public class FileUtils
      * @deprecated Use {@link com.google.common.io.MoreFiles#listFiles(Path)}
      */
     @Deprecated
-    public static ImmutableList<File> listFiles(File dir)
+    public static List<File> listFiles(File dir)
     {
         File[] files = dir.listFiles();
         if (files == null) {
-            return ImmutableList.of();
+            return List.of();
         }
         return ImmutableList.copyOf(files);
     }
@@ -75,11 +76,11 @@ public class FileUtils
      * @deprecated Use {@link java.nio.file.Files#newDirectoryStream(Path, Filter)} or something like that.
      */
     @Deprecated
-    public static ImmutableList<File> listFiles(File dir, FilenameFilter filter)
+    public static List<File> listFiles(File dir, FilenameFilter filter)
     {
         File[] files = dir.listFiles(filter);
         if (files == null) {
-            return ImmutableList.of();
+            return List.of();
         }
         return ImmutableList.copyOf(files);
     }

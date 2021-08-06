@@ -16,7 +16,6 @@
 package com.proofpoint.event.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
@@ -76,7 +75,7 @@ public abstract class AbstractTestJsonEventWriter
     public void testNullValue()
             throws Exception
     {
-        List<Map<String, Object>> expected = ImmutableList.of(ImmutableMap.<String, Object>builder()
+        List<Map<String, Object>> expected = List.of(ImmutableMap.<String, Object>builder()
                 .put("type", "FixedDummy")
                 .put("uuid", "1ea8ca34-db36-11e0-b76f-8b7d505ab1ad")
                 .put("host", "localhost")
@@ -93,7 +92,7 @@ public abstract class AbstractTestJsonEventWriter
         FixedDummyEventClass event = new FixedDummyEventClass(
                 "localhost", new DateTime("2011-09-09T01:59:59.999Z"), UUID.fromString("1ea8ca34-db36-11e0-b76f-8b7d505ab1ad"), 123, null);
 
-        assertEventJson(ImmutableList.of(event), traceToken, expected);
+        assertEventJson(List.of(event), traceToken, expected);
     }
 
     @Test
@@ -156,7 +155,7 @@ public abstract class AbstractTestJsonEventWriter
                 .build()
         ));
 
-        assertEventJson(ImmutableList.of(event), callerTraceToken, expected1);
+        assertEventJson(List.of(event), callerTraceToken, expected1);
     }
 
     @Test
@@ -185,14 +184,14 @@ public abstract class AbstractTestJsonEventWriter
                 .build()
         ));
 
-        assertEventJson(ImmutableList.of(event), traceToken, expected);
+        assertEventJson(List.of(event), traceToken, expected);
     }
 
     @Test
     public void testNestedEvent()
             throws Exception
     {
-        List<Map<String, Object>> expected = ImmutableList.of(ImmutableMap.<String, Object>builder()
+        List<Map<String, Object>> expected = List.of(ImmutableMap.<String, Object>builder()
                 .put("type", "NestedDummy")
                 .put("uuid", "6b598c2a-0a95-4f3f-9298-5a4d70ca13fc")
                 .put("host", "localhost")
@@ -206,8 +205,8 @@ public abstract class AbstractTestJsonEventWriter
                                         "part", ImmutableMap.of("name", "listSecond")),
                                 "listThird", ImmutableMap.of("name", "listThird")))
                         .put("namedStringList", ImmutableMap.of(
-                                "abc", ImmutableList.of("abc", "abc", "abc"),
-                                "xyz", ImmutableList.of("xyz", "xyz", "xyz")))
+                                "abc", List.of("abc", "abc", "abc"),
+                                "xyz", List.of("xyz", "xyz", "xyz")))
                         .put("namedStrings", ImmutableMap.of(
                                 "abc", "abc",
                                 "xyz", "xyz"))
@@ -216,13 +215,13 @@ public abstract class AbstractTestJsonEventWriter
                                 "part", ImmutableMap.of(
                                         "name", "second",
                                         "part", ImmutableMap.of("name", "third"))))
-                        .put("nestedParts", ImmutableList.of(
-                                 ImmutableMap.of(
+                        .put("nestedParts", List.of(
+                                ImmutableMap.of(
                                          "name", "listFirst",
                                          "part", ImmutableMap.of("name", "listSecond")),
-                                 ImmutableMap.of("name", "listThird")))
+                                ImmutableMap.of("name", "listThird")))
                         .put("stringValue", "nested")
-                        .put("strings", ImmutableList.of("abc", "xyz"))
+                        .put("strings", List.of("abc", "xyz"))
                         .build())
                 .build()
         );
@@ -233,19 +232,19 @@ public abstract class AbstractTestJsonEventWriter
 
         NestedDummyEventClass nestedEvent = new NestedDummyEventClass(
                 "localhost", new DateTime("2011-09-09T01:48:08.888Z"), UUID.fromString("6b598c2a-0a95-4f3f-9298-5a4d70ca13fc"), 9999, "nested",
-                ImmutableList.of("abc", "xyz"),
+                List.of("abc", "xyz"),
                 nestedPart("first", nestedPart("second", nestedPart("third", null))),
-                ImmutableList.of(nestedPart("listFirst", nestedPart("listSecond", null)), nestedPart("listThird", null))
+                List.of(nestedPart("listFirst", nestedPart("listSecond", null)), nestedPart("listThird", null))
         );
 
-        assertEventJson(ImmutableList.of(nestedEvent), traceToken, expected);
+        assertEventJson(List.of(nestedEvent), traceToken, expected);
     }
 
     @Test(expectedExceptions = InvalidEventException.class, expectedExceptionsMessageRegExp = "Cycle detected in event data:.*")
     public void testCircularEvent()
             throws Exception
     {
-        writeEvents(ImmutableList.of(new CircularEventClass()), null, nullOutputStream());
+        writeEvents(List.of(new CircularEventClass()), null, nullOutputStream());
     }
 
     @Test(expectedExceptions = InvalidEventException.class, expectedExceptionsMessageRegExp = "Cycle detected in event data:.*")
@@ -261,7 +260,7 @@ public abstract class AbstractTestJsonEventWriter
 
         ChainedCircularEventClass event = chainedCircularEventClass(a);
 
-        writeEvents(ImmutableList.of(event), null, nullOutputStream());
+        writeEvents(List.of(event), null, nullOutputStream());
     }
 
     @Test(expectedExceptions = InvalidEventException.class)
@@ -269,7 +268,7 @@ public abstract class AbstractTestJsonEventWriter
             throws Exception
     {
         DummyEventClass event = dummyEventClass(1.1, 1, "foo", false);
-        writeEvents(ImmutableList.of(event), null, nullOutputStream());
+        writeEvents(List.of(event), null, nullOutputStream());
     }
 
     @Test(expectedExceptions = InvalidEventException.class)
@@ -277,14 +276,14 @@ public abstract class AbstractTestJsonEventWriter
             throws Exception
     {
         FixedDummyEventClass event = new SubclassOfFixedDummyEventClass();
-        writeEvents(ImmutableList.of(event), null, nullOutputStream());
+        writeEvents(List.of(event), null, nullOutputStream());
     }
 
     @Test(expectedExceptions = InvalidEventException.class)
     public void testNotAnEventClass()
             throws Exception
     {
-        writeEvents(ImmutableList.of("foo"), null, nullOutputStream());
+        writeEvents(List.of("foo"), null, nullOutputStream());
     }
 
     private <T> void assertEventJson(Iterable<T> events, TraceToken token, List<Map<String, Object>> expected)

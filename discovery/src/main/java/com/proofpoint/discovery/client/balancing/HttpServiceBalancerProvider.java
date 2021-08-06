@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.balancing;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Sets;
@@ -31,7 +30,6 @@ import com.google.inject.spi.Message;
 import com.proofpoint.configuration.ConfigurationAwareProvider;
 import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
-import com.proofpoint.discovery.client.balancing.StaticHttpServiceConfig.UriMultiset;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig;
@@ -39,6 +37,7 @@ import com.proofpoint.node.NodeInfo;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -88,7 +87,7 @@ public final class HttpServiceBalancerProvider
                     return Sets.filter(BALANCER_FACTORY_KEYS, k -> k.equals(key));
                 }
             });
-            builder.addAll(firstNonNull(factoryKey, ImmutableList.of()));
+            builder.addAll(firstNonNull(factoryKey, List.of()));
         }
         Set<Key<?>> factoryKeys = builder.build();
 

@@ -29,7 +29,7 @@ public class CachingServiceSelector
 {
     private final String type;
     private final String pool;
-    private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<>((List<ServiceDescriptor>) ImmutableList.<ServiceDescriptor>of());
+    private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<>((List<ServiceDescriptor>) List.<ServiceDescriptor>of());
 
     public CachingServiceSelector(String type, ServiceSelectorConfig selectorConfig, NodeInfo nodeInfo)
     {

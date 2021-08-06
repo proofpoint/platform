@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Guice;
@@ -32,6 +31,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.net.URI;
+import java.util.List;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
@@ -113,7 +113,7 @@ public class TestHttpServiceSelectorBinder
                 serviceAnnouncement("apple").addProperty("http", "fake://server-http-dontuse").addProperty("https", "fake://server-https").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
-        assertEqualsIgnoreOrder(selector.selectHttpService(), ImmutableList.of(URI.create("fake://server-https"), URI.create("fake://server-http")));
+        assertEqualsIgnoreOrder(selector.selectHttpService(), List.of(URI.create("fake://server-https"), URI.create("fake://server-http")));
     }
 
     @Test
@@ -123,7 +123,7 @@ public class TestHttpServiceSelectorBinder
         discoveryClient.announce(ImmutableSet.of(serviceAnnouncement("apple").addProperty("foo", "fake://server-https").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
-        assertEquals(selector.selectHttpService(), ImmutableList.of());
+        assertEquals(selector.selectHttpService(), List.of());
     }
 
 
@@ -135,6 +135,6 @@ public class TestHttpServiceSelectorBinder
         discoveryClient.announce(ImmutableSet.of(serviceAnnouncement("apple").addProperty("https", ":::INVALID:::").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
-        assertEquals(selector.selectHttpService(), ImmutableList.of());
+        assertEquals(selector.selectHttpService(), List.of());
     }
 }

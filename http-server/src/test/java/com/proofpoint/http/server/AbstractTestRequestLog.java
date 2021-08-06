@@ -15,9 +15,7 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-import com.proofpoint.tracetoken.TraceTokenManager;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
 import org.eclipse.jetty.http.HttpURI;
@@ -34,6 +32,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
+import java.util.List;
 
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
@@ -138,7 +137,7 @@ public abstract class AbstractTestRequestLog
         when(request.getHeader("User-Agent")).thenReturn(agent);
         when(request.getHeader("Referer")).thenReturn(referrer);
         when(request.getRemoteAddr()).thenReturn("8.8.8.8");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(ImmutableList.of()));
+        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of()));
         when(request.getProtocol()).thenReturn("unknown");
         when(request.getHeader("X-FORWARDED-PROTO")).thenReturn(protocol);
         when(request.getAttribute(TimingFilter.FIRST_BYTE_TIME)).thenReturn(timestamp + timeToFirstByte);

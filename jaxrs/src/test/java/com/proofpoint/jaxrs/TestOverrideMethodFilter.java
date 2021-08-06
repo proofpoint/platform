@@ -15,7 +15,6 @@
  */
 package com.proofpoint.jaxrs;
 
-import com.google.common.collect.ImmutableList;
 import org.glassfish.jersey.internal.PropertiesDelegate;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.testng.annotations.DataProvider;
@@ -27,6 +26,7 @@ import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.List;
 
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreCase;
 import static org.testng.Assert.assertEquals;
@@ -199,7 +199,7 @@ public class TestOverrideMethodFilter
         @Override
         public Collection<String> getPropertyNames()
         {
-            return ImmutableList.of();
+            return List.of();
         }
 
         @Override

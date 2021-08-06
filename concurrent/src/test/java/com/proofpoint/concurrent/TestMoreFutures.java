@@ -1,6 +1,5 @@
 package com.proofpoint.concurrent;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.proofpoint.units.Duration;
@@ -397,13 +396,13 @@ public class TestMoreFutures
     public void testWhenAnyComplete()
             throws Exception
     {
-        assertGetUncheckedListenable(future -> getFutureValue(whenAnyComplete(ImmutableList.of(SettableFuture.create(), future, SettableFuture.create()))));
+        assertGetUncheckedListenable(future -> getFutureValue(whenAnyComplete(List.of(SettableFuture.create(), future, SettableFuture.create()))));
 
         assertFailure(() -> whenAnyComplete(null), e -> assertInstanceOf(e, NullPointerException.class));
-        assertFailure(() -> whenAnyComplete(ImmutableList.of()), e -> assertInstanceOf(e, IllegalArgumentException.class));
+        assertFailure(() -> whenAnyComplete(List.of()), e -> assertInstanceOf(e, IllegalArgumentException.class));
 
         assertEquals(
-                tryGetFutureValue(whenAnyComplete(ImmutableList.of(SettableFuture.create(), SettableFuture.create())), 10, MILLISECONDS),
+                tryGetFutureValue(whenAnyComplete(List.of(SettableFuture.create(), SettableFuture.create())), 10, MILLISECONDS),
                 Optional.empty());
     }
 
@@ -414,17 +413,17 @@ public class TestMoreFutures
         assertGetUncheckedListenable(future -> {
             SettableFuture<Object> future1 = SettableFuture.create();
             SettableFuture<Object> future3 = SettableFuture.create();
-            Object result = getFutureValue(whenAnyCompleteCancelOthers(ImmutableList.of(future1, future, future3)));
+            Object result = getFutureValue(whenAnyCompleteCancelOthers(List.of(future1, future, future3)));
             assertTrue(future1.isCancelled());
             assertTrue(future3.isCancelled());
             return result;
         });
 
         assertFailure(() -> whenAnyComplete(null), e -> assertInstanceOf(e, NullPointerException.class));
-        assertFailure(() -> whenAnyComplete(ImmutableList.of()), e -> assertInstanceOf(e, IllegalArgumentException.class));
+        assertFailure(() -> whenAnyComplete(List.of()), e -> assertInstanceOf(e, IllegalArgumentException.class));
 
         assertEquals(
-                tryGetFutureValue(whenAnyComplete(ImmutableList.of(SettableFuture.create(), SettableFuture.create())), 10, MILLISECONDS),
+                tryGetFutureValue(whenAnyComplete(List.of(SettableFuture.create(), SettableFuture.create())), 10, MILLISECONDS),
                 Optional.empty());
     }
 
@@ -432,13 +431,13 @@ public class TestMoreFutures
     public void testAnyOf()
             throws Exception
     {
-        assertGetUnchecked(future -> getFutureValue(firstCompletedFuture(ImmutableList.of(new CompletableFuture<>(), future, new CompletableFuture<>()))));
+        assertGetUnchecked(future -> getFutureValue(firstCompletedFuture(List.of(new CompletableFuture<>(), future, new CompletableFuture<>()))));
 
         assertFailure(() -> firstCompletedFuture(null), e -> assertInstanceOf(e, NullPointerException.class));
-        assertFailure(() -> firstCompletedFuture(ImmutableList.of()), e -> assertInstanceOf(e, IllegalArgumentException.class));
+        assertFailure(() -> firstCompletedFuture(List.of()), e -> assertInstanceOf(e, IllegalArgumentException.class));
 
         assertEquals(
-                tryGetFutureValue(firstCompletedFuture(ImmutableList.of(new CompletableFuture<>(), new CompletableFuture<>())), 10, MILLISECONDS),
+                tryGetFutureValue(firstCompletedFuture(List.of(new CompletableFuture<>(), new CompletableFuture<>())), 10, MILLISECONDS),
                 Optional.empty());
     }
 
@@ -463,11 +462,11 @@ public class TestMoreFutures
     @Test
     public void testEmptyAllAsList()
     {
-        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of());
+        CompletableFuture<List<Object>> future = allAsList(List.of());
         assertTrue(future.isDone());
         assertFalse(future.isCompletedExceptionally());
         assertFalse(future.isCancelled());
-        assertEquals(future.join(), ImmutableList.of());
+        assertEquals(future.join(), List.of());
     }
 
     @Test
@@ -475,7 +474,7 @@ public class TestMoreFutures
     {
         CompletableFuture<String> element1 = new CompletableFuture<>();
 
-        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(element1));
+        CompletableFuture<List<Object>> future = allAsList(List.of(element1));
         assertFalse(future.isDone());
         assertFalse(future.isCancelled());
 
@@ -483,7 +482,7 @@ public class TestMoreFutures
         assertTrue(future.isDone());
         assertFalse(future.isCompletedExceptionally());
         assertFalse(future.isCancelled());
-        assertEquals(future.join(), ImmutableList.of("a"));
+        assertEquals(future.join(), List.of("a"));
     }
 
     @Test
@@ -491,7 +490,7 @@ public class TestMoreFutures
     {
         CompletableFuture<String> element1 = new CompletableFuture<>();
 
-        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(element1));
+        CompletableFuture<List<Object>> future = allAsList(List.of(element1));
         assertFalse(future.isDone());
         assertFalse(future.isCancelled());
 
@@ -507,7 +506,7 @@ public class TestMoreFutures
         CompletableFuture<String> element1 = new CompletableFuture<>();
         CompletableFuture<String> element2 = new CompletableFuture<>();
 
-        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(element1, element2));
+        CompletableFuture<List<Object>> future = allAsList(List.of(element1, element2));
         assertFalse(future.isDone());
         assertFalse(future.isCancelled());
 
@@ -520,7 +519,7 @@ public class TestMoreFutures
         assertTrue(future.isDone());
         assertFalse(future.isCompletedExceptionally());
         assertFalse(future.isCancelled());
-        assertEquals(future.join(), ImmutableList.of("a", "b"));
+        assertEquals(future.join(), List.of("a", "b"));
     }
 
     @Test
@@ -529,7 +528,7 @@ public class TestMoreFutures
         CompletableFuture<String> element1 = new CompletableFuture<>();
         CompletableFuture<String> element2 = new CompletableFuture<>();
 
-        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(element1, element2));
+        CompletableFuture<List<Object>> future = allAsList(List.of(element1, element2));
         assertFalse(future.isDone());
         assertFalse(future.isCompletedExceptionally());
         assertFalse(future.isCancelled());
@@ -543,7 +542,7 @@ public class TestMoreFutures
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testUnmodifiableAllAsList()
     {
-        CompletableFuture<List<Object>> future = allAsList(ImmutableList.of(new CompletableFuture<String>()));
+        CompletableFuture<List<Object>> future = allAsList(List.of(new CompletableFuture<String>()));
         future.complete(null);
     }
 

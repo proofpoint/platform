@@ -15,8 +15,9 @@
  */
 package com.proofpoint.event.client;
 
-import com.google.common.collect.ImmutableList;
 import org.testng.annotations.Test;
+
+import java.util.List;
 
 public abstract class AbstractTestNullEventClient
 {
@@ -26,6 +27,6 @@ public abstract class AbstractTestNullEventClient
     public void testPostEvents()
     {
         eventClient.post(new Object());
-        eventClient.post(ImmutableList.of(new Object()));
+        eventClient.post(List.of(new Object()));
     }
 }

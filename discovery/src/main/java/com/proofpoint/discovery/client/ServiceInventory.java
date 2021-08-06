@@ -66,7 +66,7 @@ public class ServiceInventory
     private final DiscoveryAddressLookup discoveryAddressLookup;
     private final ServiceDescriptorsListener discoveryListener;
 
-    private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<>(ImmutableList.of());
+    private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<>(List.of());
     private final ScheduledExecutorService executorService = newSingleThreadScheduledExecutor(daemonThreadsNamed("service-inventory-%s"));
     private final AtomicBoolean serverUp = new AtomicBoolean(true);
     private ScheduledFuture<?> scheduledFuture = null;

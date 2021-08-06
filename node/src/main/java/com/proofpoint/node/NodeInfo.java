@@ -348,7 +348,7 @@ public class NodeInfo
         ImmutableList.Builder<NetworkInterface> builder = ImmutableList.builder();
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            for (NetworkInterface networkInterface : interfaces != null ? Collections.list(interfaces) : ImmutableList.<NetworkInterface>of()) {
+            for (NetworkInterface networkInterface : interfaces != null ? Collections.list(interfaces) : List.<NetworkInterface>of()) {
                 try {
                     if (!networkInterface.isLoopback() && networkInterface.isUp()) {
                         builder.add(networkInterface);

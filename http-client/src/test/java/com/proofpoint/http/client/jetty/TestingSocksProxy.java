@@ -1,6 +1,5 @@
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.net.HostAndPort;
@@ -382,7 +381,7 @@ public class TestingSocksProxy
         private void proxyData(InputStream sourceInput, OutputStream sourceOutput, InputStream targetInput, OutputStream targetOutput)
         {
             // pipe in to out and out to in
-            List<ListenableFuture<?>> jobs = ImmutableList.of(
+            List<ListenableFuture<?>> jobs = List.of(
                     executor.submit(new Pipe(sourceInput, targetOutput)),
                     executor.submit(new Pipe(targetInput, sourceOutput)));
 

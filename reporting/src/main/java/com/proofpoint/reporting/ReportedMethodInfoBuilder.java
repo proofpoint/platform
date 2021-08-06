@@ -15,8 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.common.collect.ImmutableList;
-
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -84,7 +82,7 @@ class ReportedMethodInfoBuilder
                 // todo log me
             }
             if (value == null) {
-                return reportedMethodInfo(ImmutableList.of(), ImmutableList.of());
+                return reportedMethodInfo(List.of(), List.of());
             }
 
             ReportedBean reportedBean = ReportedBean.forTarget(value, bucketIdProvider);
@@ -107,7 +105,7 @@ class ReportedMethodInfoBuilder
                 // todo log me
             }
             if (value == null) {
-                return reportedMethodInfo(ImmutableList.of(), ImmutableList.of());
+                return reportedMethodInfo(List.of(), List.of());
             }
 
             ReportedBean reportedBean = ReportedBean.forTarget(value, bucketIdProvider);
@@ -127,17 +125,17 @@ class ReportedMethodInfoBuilder
             if (Boolean.class.isAssignableFrom(attributeType) || attributeType == boolean.class) {
                 return reportedMethodInfo(
                         AnnotationUtils.isReported(annotatedGetter) ?
-                                ImmutableList.of(new BooleanReportedBeanAttribute(name, target, concreteGetter)) :
-                                ImmutableList.of(),
-                        ImmutableList.of(new BooleanPrometheusBeanAttribute(name, target, concreteGetter))
+                                List.of(new BooleanReportedBeanAttribute(name, target, concreteGetter)) :
+                                List.of(),
+                        List.of(new BooleanPrometheusBeanAttribute(name, target, concreteGetter))
                 );
             }
 
             return reportedMethodInfo(
                     AnnotationUtils.isReported(annotatedGetter) ?
-                            ImmutableList.of(new ObjectReportedBeanAttribute(name, target, concreteGetter)) :
-                            ImmutableList.of(),
-                    ImmutableList.of(new ObjectPrometheusBeanAttribute(name, target, concreteGetter))
+                            List.of(new ObjectReportedBeanAttribute(name, target, concreteGetter)) :
+                            List.of(),
+                    List.of(new ObjectPrometheusBeanAttribute(name, target, concreteGetter))
             );
         }
     }

@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
@@ -32,6 +31,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -67,7 +67,7 @@ public class TestHttpDiscoveryLookupClient
             "property3", "value3",
             "property4", "value4"
     );
-    public static final ImmutableList<ServiceDescriptor> EXPECTED_SERVICE_DESCRIPTOR_LIST = ImmutableList.of(
+    public static final List<ServiceDescriptor> EXPECTED_SERVICE_DESCRIPTOR_LIST = List.of(
             new ServiceDescriptor(UUID_ID_1, UUID_NODEID_1.toString(), "testService", "testPool", "testLocation", RUNNING, TEST_PROPERTIES_1),
             new ServiceDescriptor(UUID_ID_2, UUID_NODEID_2.toString(), "testService", "testPool", null, STOPPED, TEST_PROPERTIES_2)
     );
@@ -109,7 +109,7 @@ public class TestHttpDiscoveryLookupClient
             throws Exception
     {
         ServiceDescriptors descriptors = createClient(createProcessor(null, null, "testingenvironment"))
-                .refreshServices(new ServiceDescriptors("testService", "testPool", ImmutableList.of(), new Duration(1, HOURS), null))
+                .refreshServices(new ServiceDescriptors("testService", "testPool", List.of(), new Duration(1, HOURS), null))
                 .get();
         assertDescriptorsExpected(descriptors, null, DEFAULT_DELAY);
     }
@@ -119,7 +119,7 @@ public class TestHttpDiscoveryLookupClient
             throws Exception
     {
         ServiceDescriptors descriptors = createClient(createProcessor(null, "oldEtag", "testingenvironment"))
-                .refreshServices(new ServiceDescriptors("testService", "testPool", ImmutableList.of(), new Duration(1, HOURS), "oldEtag"))
+                .refreshServices(new ServiceDescriptors("testService", "testPool", List.of(), new Duration(1, HOURS), "oldEtag"))
                 .get();
         assertDescriptorsExpected(descriptors, null, DEFAULT_DELAY);
     }
@@ -271,7 +271,7 @@ public class TestHttpDiscoveryLookupClient
             TestingResponse.Builder response = mockResponse()
                     .jsonBody(ImmutableMap.of(
                             "environment", environment,
-                            "services", ImmutableList.of(
+                            "services", List.of(
                                     ImmutableMap.builder()
                                             .put("id", UUID_ID_1.toString())
                                             .put("nodeId", UUID_NODEID_1.toString())

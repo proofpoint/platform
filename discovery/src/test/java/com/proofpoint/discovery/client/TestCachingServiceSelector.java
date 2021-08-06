@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.discovery.client.testing.InMemoryDiscoveryClient;
 import com.proofpoint.node.NodeConfig;
@@ -24,6 +23,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -87,7 +87,7 @@ public class TestCachingServiceSelector
     @Test
     public void testNotStartedEmpty()
     {
-        assertEquals(serviceSelector.selectAllServices(), ImmutableList.of());
+        assertEquals(serviceSelector.selectAllServices(), List.of());
     }
 
     @Test
@@ -95,7 +95,7 @@ public class TestCachingServiceSelector
     {
         updater.start();
 
-        assertEquals(serviceSelector.selectAllServices(), ImmutableList.of());
+        assertEquals(serviceSelector.selectAllServices(), List.of());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class TestCachingServiceSelector
         discoveryClient.addDiscoveredService(DIFFERENT_TYPE);
         discoveryClient.addDiscoveredService(DIFFERENT_POOL);
 
-        assertEquals(serviceSelector.selectAllServices(), ImmutableList.of());
+        assertEquals(serviceSelector.selectAllServices(), List.of());
     }
 
     @Test
@@ -122,7 +122,7 @@ public class TestCachingServiceSelector
 
         Thread.sleep(100);
 
-        assertEqualsIgnoreOrder(serviceSelector.selectAllServices(), ImmutableList.of(APPLE_1_SERVICE, APPLE_2_SERVICE));
+        assertEqualsIgnoreOrder(serviceSelector.selectAllServices(), List.of(APPLE_1_SERVICE, APPLE_2_SERVICE));
     }
 
     @Test
@@ -143,6 +143,6 @@ public class TestCachingServiceSelector
 
         Thread.sleep(100);
 
-        assertEqualsIgnoreOrder(serviceSelector.selectAllServices(), ImmutableList.of(APPLE_1_SERVICE, APPLE_2_SERVICE));
+        assertEqualsIgnoreOrder(serviceSelector.selectAllServices(), List.of(APPLE_1_SERVICE, APPLE_2_SERVICE));
     }
 }

@@ -15,11 +15,11 @@
  */
 package com.proofpoint.units;
 
-import com.google.common.collect.ImmutableList;
 import com.proofpoint.json.JsonCodec;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.util.List;
 import java.util.Locale;
 
 import static com.proofpoint.testing.EquivalenceTester.comparisonTester;
@@ -83,7 +83,7 @@ public class TestDataSize
 
     private static Iterable<DataSize> group(double bytes)
     {
-        return ImmutableList.of(
+        return List.of(
                 new DataSize(bytes, BYTE),
                 new DataSize(bytes / 1024, KILOBYTE),
                 new DataSize(bytes / 1024 / 1024, MEGABYTE),

@@ -2,7 +2,6 @@ package com.proofpoint.stats;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import org.weakref.jmx.Managed;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -170,7 +169,7 @@ public class Distribution
 
     public synchronized DistributionSnapshot snapshot()
     {
-        List<Long> quantiles = digest.getQuantiles(ImmutableList.of(0.01, 0.05, 0.10, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99));
+        List<Long> quantiles = digest.getQuantiles(List.of(0.01, 0.05, 0.10, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99));
         return new DistributionSnapshot(
                 getMaxError(),
                 getCount(),
