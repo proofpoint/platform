@@ -17,6 +17,7 @@ import io.airlift.slice.SizeOf;
 import io.airlift.slice.Slice;
 import io.airlift.slice.SliceInput;
 import io.airlift.slice.SliceOutput;
+import org.gaul.modernizer_maven_annotations.SuppressModernizer;
 import org.openjdk.jol.info.ClassLayout;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -308,6 +309,7 @@ public class QuantileDigest
      * <p>
      * The input list of quantile proportions must be sorted in increasing order, and each value must be in the range [0, 1]
      */
+    @SuppressModernizer
     public List<Long> getQuantilesLowerBound(List<Double> quantiles)
     {
         checkArgument(Ordering.natural().isOrdered(quantiles), "quantiles must be sorted in increasing order");
