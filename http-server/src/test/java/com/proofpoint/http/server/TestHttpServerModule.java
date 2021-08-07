@@ -18,7 +18,6 @@ package com.proofpoint.http.server;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.MediaType;
@@ -63,6 +62,7 @@ import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.http.server.HttpServerBinder.httpServerBinder;
+import static java.io.OutputStream.nullOutputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -241,7 +241,7 @@ public class TestHttpServerModule
         protected void service(HttpServletRequest request, HttpServletResponse response)
                 throws IOException
         {
-            request.getInputStream().transferTo(ByteStreams.nullOutputStream());
+            request.getInputStream().transferTo(nullOutputStream());
 
             remoteAddress = request.getRemoteAddr();
             for (Entry<String, String> entry : responseHeaders.entries()) {

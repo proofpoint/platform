@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.google.common.io.ByteStreams.nullOutputStream;
 import static com.proofpoint.event.client.ChainedCircularEventClass.ChainedPart;
 import static com.proofpoint.event.client.ChainedCircularEventClass.chainedCircularEventClass;
 import static com.proofpoint.event.client.DummyEventClass.dummyEventClass;
@@ -42,6 +41,7 @@ import static com.proofpoint.tracetoken.TraceTokenManager.addTraceTokenPropertie
 import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
+import static java.io.OutputStream.nullOutputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
 
