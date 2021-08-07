@@ -29,9 +29,9 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.event.client.EventDataType.validateFieldValueType;
 import static java.util.Comparator.comparing;
+import static java.util.Objects.requireNonNullElse;
 
 class EventFieldMetadata
 {
@@ -73,7 +73,7 @@ class EventFieldMetadata
             return method.invoke(event);
         }
         catch (Exception e) {
-            throw new InvalidEventException(firstNonNull(e.getCause(), e),
+            throw new InvalidEventException(requireNonNullElse(e.getCause(), e),
                     "Unable to get value of event field %s: Exception occurred while invoking [%s]", name, method.toGenericString());
         }
     }

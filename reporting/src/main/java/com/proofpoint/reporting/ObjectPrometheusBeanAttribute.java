@@ -20,11 +20,11 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp.valueAndTimestamp;
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
 import static com.proofpoint.reporting.SimplePrometheusValue.simplePrometheusValue;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 class ObjectPrometheusBeanAttribute implements PrometheusBeanAttribute
 {
@@ -49,6 +49,6 @@ class ObjectPrometheusBeanAttribute implements PrometheusBeanAttribute
     public ValueAndTimestamp getValue(@Nullable Object target)
             throws MBeanException, ReflectionException
     {
-        return valueAndTimestamp(simplePrometheusValue(invoke(firstNonNull(target, this.target), getter)), null);
+        return valueAndTimestamp(simplePrometheusValue(invoke(requireNonNullElse(target, this.target), getter)), null);
     }
 }

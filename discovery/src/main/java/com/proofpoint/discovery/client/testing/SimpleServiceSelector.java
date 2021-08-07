@@ -27,9 +27,9 @@ import com.proofpoint.node.NodeInfo;
 
 import java.util.List;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.concurrent.MoreFutures.getFutureValue;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 public class SimpleServiceSelector implements ServiceSelector
 {
@@ -46,7 +46,7 @@ public class SimpleServiceSelector implements ServiceSelector
         requireNonNull(lookupClient, "client is null");
 
         this.type = type;
-        this.pool = firstNonNull(selectorConfig.getPool(), nodeInfo.getPool());
+        this.pool = requireNonNullElse(selectorConfig.getPool(), nodeInfo.getPool());
         this.lookupClient = lookupClient;
     }
 

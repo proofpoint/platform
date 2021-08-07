@@ -77,13 +77,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Math.toIntExact;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Collections.list;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class HttpServer
@@ -387,8 +387,8 @@ public class HttpServer
                     httpServerInfo.getHttpChannel(),
                     server,
                     null,
-                    firstNonNull(acceptors, -1),
-                    firstNonNull(selectors, -1),
+                    requireNonNullElse(acceptors, -1),
+                    requireNonNullElse(selectors, -1),
                     http1,
                     http2c);
             httpConnector.setName("http");
@@ -416,8 +416,8 @@ public class HttpServer
                     httpServerInfo.getHttpsChannel(),
                     httpsConfiguration,
                     null,
-                    firstNonNull(acceptors, -1),
-                    firstNonNull(selectors, -1));
+                    requireNonNullElse(acceptors, -1),
+                    requireNonNullElse(selectors, -1));
             httpsConnector.setName("https");
             httpsConnector.setPort(httpServerInfo.getHttpsUri().getPort());
             httpsConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());

@@ -47,12 +47,12 @@ import java.util.function.Supplier;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 public class ReportCollectionFactory
 {
@@ -217,7 +217,7 @@ public class ReportCollectionFactory
                 throws Throwable
         {
             ImmutableList.Builder<Optional<String>> argBuilder = ImmutableList.builder();
-            for (Object arg : firstNonNull(args, EMPTY_OBJECT_ARRAY)) {
+            for (Object arg : requireNonNullElse(args, EMPTY_OBJECT_ARRAY)) {
                 if (arg == null) {
                     argBuilder.add(Optional.empty());
                 }

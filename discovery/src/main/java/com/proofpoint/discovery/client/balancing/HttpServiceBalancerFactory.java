@@ -20,7 +20,6 @@ import com.proofpoint.discovery.client.DiscoveryLookupClient;
 import com.proofpoint.discovery.client.ForDiscoveryClient;
 import com.proofpoint.discovery.client.ServiceDescriptorsUpdater;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
-import com.proofpoint.discovery.client.balancing.StaticHttpServiceConfig.UriMultiset;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
@@ -35,9 +34,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 public final class HttpServiceBalancerFactory
 {
@@ -65,7 +64,7 @@ public final class HttpServiceBalancerFactory
         requireNonNull(selectorConfig, "selectorConfig is null");
         requireNonNull(balancerConfig, "balancerConfig is null");
 
-        String pool = firstNonNull(selectorConfig.getPool(), nodeInfo.getPool());
+        String pool = requireNonNullElse(selectorConfig.getPool(), nodeInfo.getPool());
         Map<String, String> tags = ImmutableMap.of("serviceType", type);
         HttpServiceBalancerStats httpServiceBalancerStats = reportCollectionFactory.createReportCollection(HttpServiceBalancerStats.class, false, "ServiceClient", tags);
         HttpServiceBalancerImpl balancer = new HttpServiceBalancerImpl(format("type=[%s], pool=[%s]", type, pool), httpServiceBalancerStats, balancerConfig);

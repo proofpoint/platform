@@ -19,11 +19,11 @@ import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Map;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkState;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 public class TestingResponse
@@ -250,7 +250,7 @@ public class TestingResponse
                 return new TestingResponse(status, headers, inputStream);
             }
 
-            return new TestingResponse(status, headers, firstNonNull(bytes, ZERO_LENGTH_BYTES));
+            return new TestingResponse(status, headers, requireNonNullElse(bytes, ZERO_LENGTH_BYTES));
         }
     }
 

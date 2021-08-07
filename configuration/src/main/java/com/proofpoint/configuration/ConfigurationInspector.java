@@ -29,11 +29,11 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.SortedSet;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.proofpoint.configuration.ConfigurationMetadata.getConfigurationMetadata;
 import static com.proofpoint.configuration.ConfigurationMetadata.isConfigClass;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 public class ConfigurationInspector
 {
@@ -124,7 +124,7 @@ public class ConfigurationInspector
                 String propertyName = prefix + attribute.getInjectionPoint().getProperty();
                 Method getter = attribute.getGetter();
 
-                String description = firstNonNull(attribute.getDescription(), "");
+                String description = requireNonNullElse(attribute.getDescription(), "");
 
                 final MapClasses mapClasses = attribute.getMapClasses();
                 if (getter != null && instance != null && !attribute.isSecuritySensitive() && mapClasses != null) {

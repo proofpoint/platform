@@ -21,8 +21,8 @@ import com.proofpoint.node.NodeInfo;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 public class CachingServiceSelector
         implements ServiceSelector, ServiceDescriptorsListener
@@ -38,7 +38,7 @@ public class CachingServiceSelector
         requireNonNull(nodeInfo, "nodeInfo is null");
 
         this.type = type;
-        this.pool = firstNonNull(selectorConfig.getPool(), nodeInfo.getPool());
+        this.pool = requireNonNullElse(selectorConfig.getPool(), nodeInfo.getPool());
     }
 
     @Override

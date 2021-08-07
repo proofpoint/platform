@@ -20,10 +20,10 @@ import com.proofpoint.reporting.Bucketed.BucketInfo;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
 import static com.proofpoint.reporting.ReportedBean.GET_PREVIOUS_BUCKET;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 class BucketedReportedBeanAttribute implements ReportedBeanAttribute
 {
@@ -48,7 +48,7 @@ class BucketedReportedBeanAttribute implements ReportedBeanAttribute
     public Object getValue(Object target)
             throws MBeanException, ReflectionException
     {
-        BucketInfo bucketInfo = (BucketInfo) invoke(firstNonNull(target, holder), GET_PREVIOUS_BUCKET);
+        BucketInfo bucketInfo = (BucketInfo) invoke(requireNonNullElse(target, holder), GET_PREVIOUS_BUCKET);
         return delegate.getValue(bucketInfo.getBucket());
     }
 }

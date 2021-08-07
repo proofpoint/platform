@@ -31,10 +31,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient.DEFAULT_DELAY;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -63,7 +63,7 @@ public final class ServiceDescriptorsUpdater
 
         this.target = target;
         this.type = type;
-        this.pool = firstNonNull(selectorConfig.getPool(), nodeInfo.getPool());
+        this.pool = requireNonNullElse(selectorConfig.getPool(), nodeInfo.getPool());
         this.discoveryClient = discoveryClient;
         this.executor = executor;
         this.errorBackOff = new ExponentialBackOff(
