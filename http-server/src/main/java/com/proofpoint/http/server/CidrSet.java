@@ -30,7 +30,7 @@ public class CidrSet
     private final Set<Inet4Network> cidrs;
 
     private CidrSet(Collection<Inet4Network> cidrs) {
-        this.cidrs = ImmutableSet.copyOf(cidrs);
+        this.cidrs = Set.copyOf(cidrs);
     }
 
     /**

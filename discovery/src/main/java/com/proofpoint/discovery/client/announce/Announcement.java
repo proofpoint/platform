@@ -17,7 +17,6 @@ package com.proofpoint.discovery.client.announce;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
 
@@ -44,7 +43,7 @@ public class Announcement
         this.nodeId = nodeId;
         this.location = location;
         this.pool = pool;
-        this.services = ImmutableSet.copyOf(services);
+        this.services = Set.copyOf(services);
     }
 
     @JsonProperty

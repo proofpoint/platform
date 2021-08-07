@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 import javax.annotation.Nullable;
 import java.io.FileInputStream;
@@ -176,7 +175,7 @@ public class PropertiesBuilder
 
     public Set<String> getExpectToUse()
     {
-        return ImmutableSet.copyOf(expectToUse);
+        return Set.copyOf(expectToUse);
     }
 
     public Collection<String> getErrors()

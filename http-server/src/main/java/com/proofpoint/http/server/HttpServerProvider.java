@@ -16,7 +16,6 @@
 package com.proofpoint.http.server;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
@@ -94,10 +93,10 @@ public class HttpServerProvider
         this.nodeInfo = nodeInfo;
         this.config = config;
         this.theServlet = theServlet;
-        this.filters = ImmutableSet.copyOf(filters);
-        this.resources = ImmutableSet.copyOf(resources);
+        this.filters = Set.copyOf(filters);
+        this.resources = Set.copyOf(resources);
         this.theAdminServlet = theAdminServlet;
-        this.adminFilters = ImmutableSet.copyOf(adminFilters);
+        this.adminFilters = Set.copyOf(adminFilters);
         this.stats = stats;
         this.detailedRequestStats = detailedRequestStats;
         this.queryStringFilter = queryStringFilter;
