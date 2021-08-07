@@ -158,7 +158,7 @@ public class HttpServiceBalancerImpl
                 }
             }
 
-            this.attempted = ImmutableSet.copyOf(attempted);
+            this.attempted = Set.copyOf(attempted);
             startTick = ticker.read();
         }
 

@@ -17,7 +17,6 @@ package com.proofpoint.configuration;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Table;
 import com.google.inject.ConfigurationException;
@@ -514,7 +513,7 @@ public class ConfigurationMetadata<T>
             this.getter = getter;
 
             this.injectionPoint = injectionPoint;
-            this.legacyInjectionPoints = ImmutableSet.copyOf(legacyInjectionPoints);
+            this.legacyInjectionPoints = Set.copyOf(legacyInjectionPoints);
         }
 
         public Class<?> getConfigClass()

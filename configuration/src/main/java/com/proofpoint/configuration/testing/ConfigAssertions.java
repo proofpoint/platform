@@ -15,7 +15,6 @@
  */
 package com.proofpoint.configuration.testing;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.configuration.ConfigurationMetadata;
@@ -344,7 +343,7 @@ public final class ConfigAssertions
                     throws Throwable
             {
                 if (GET_RECORDING_CONFIG_METHOD.equals(method)) {
-                    return new $$RecordedConfigData<>(instance, ImmutableSet.copyOf(invokedMethods.keySet()));
+                    return new $$RecordedConfigData<>(instance, Set.copyOf(invokedMethods.keySet()));
                 }
 
                 invokedMethods.put(method, Boolean.TRUE);
@@ -380,7 +379,7 @@ public final class ConfigAssertions
         public $$RecordedConfigData(T instance, Set<Method> invokedMethods)
         {
             this.instance = instance;
-            this.invokedMethods = ImmutableSet.copyOf(invokedMethods);
+            this.invokedMethods = Set.copyOf(invokedMethods);
         }
 
         public T getInstance()

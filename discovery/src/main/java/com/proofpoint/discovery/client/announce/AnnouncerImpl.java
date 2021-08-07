@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -137,7 +136,7 @@ public class AnnouncerImpl
 
     private Set<ServiceAnnouncement> getServiceAnnouncements()
     {
-        Set<ServiceAnnouncement> announcements = ImmutableSet.copyOf(this.announcements.values());
+        Set<ServiceAnnouncement> announcements = Set.copyOf(this.announcements.values());
         announcements.forEach(serviceAnnouncement -> {
             if (serviceAnnouncement.getError() != null) {
                 throw new IllegalStateException(serviceAnnouncement.getError());

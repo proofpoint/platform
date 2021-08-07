@@ -16,7 +16,6 @@
 package com.proofpoint.http.server.testing;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.proofpoint.http.server.ClientAddressExtractor;
 import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerConfig;
@@ -86,7 +85,7 @@ public class TestingAdminHttpServer extends HttpServer
                 Set.of(),
                 adminServlet,
                 initParameters,
-                ImmutableSet.copyOf(filters),
+                Set.copyOf(filters),
                 null,
                 null,
                 queryStringFilter,

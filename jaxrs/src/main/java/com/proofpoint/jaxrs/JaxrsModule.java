@@ -323,7 +323,7 @@ public class JaxrsModule
 
             JaxRsApplication(Set<Object> jaxRsSingletons)
             {
-                this.jaxRsSingletons = ImmutableSet.copyOf(jaxRsSingletons);
+                this.jaxRsSingletons = Set.copyOf(jaxRsSingletons);
             }
 
             @Override
