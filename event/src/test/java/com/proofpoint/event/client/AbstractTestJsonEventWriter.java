@@ -293,7 +293,7 @@ public abstract class AbstractTestJsonEventWriter
 
         writeEvents(events, token, out);
 
-        String json = out.toString(UTF_8.name());
+        String json = out.toString(UTF_8);
         assertEquals(new ObjectMapper().readValue(json, Object.class), expected, "JSON encoding " + json);
     }
 
