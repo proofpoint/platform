@@ -17,6 +17,7 @@ package com.proofpoint.jaxrs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import org.gaul.modernizer_maven_annotations.SuppressModernizer;
 
 import javax.validation.ConstraintViolation;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Set;
 /**
  * Thrown when bean validation has errors.
  */
+@SuppressModernizer
 public class BeanValidationException extends ParsingException
 {
     private final ImmutableSet<ConstraintViolation<Object>> violations;

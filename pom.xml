@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <platform.check.fail-modernizer>false</platform.check.fail-modernizer>
+        <platform.check.fail-modernizer>true</platform.check.fail-modernizer>
     </properties>
 
     <inceptionYear>2010</inceptionYear>

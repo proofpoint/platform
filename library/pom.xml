@@ -94,6 +94,7 @@
         <dep.jersey.version>2.27</dep.jersey.version>
         <dep.jmh.version>1.13</dep.jmh.version>
         <dep.jacoco.version>0.8.5</dep.jacoco.version>
+        <dep.modernizer.version>2.2.0</dep.modernizer.version>
 
         <platform.jacoco.merged-data-file>${project.build.directory}/merged.exec</platform.jacoco.merged-data-file>
     </properties>
@@ -534,7 +535,7 @@
                 <plugin>
                     <groupId>org.gaul</groupId>
                     <artifactId>modernizer-maven-plugin</artifactId>
-                    <version>2.2.0</version>
+                    <version>${dep.modernizer.version}</version>
                     <configuration>
                         <skip>${platform.check.skip-modernizer}</skip>
                         <failOnViolations>${platform.check.fail-modernizer}</failOnViolations>
@@ -1284,6 +1285,12 @@
                 <artifactId>org.jacoco.agent</artifactId>
                 <version>${dep.jacoco.version}</version>
                 <classifier>runtime</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>org.gaul</groupId>
+                <artifactId>modernizer-maven-annotations</artifactId>
+                <version>${dep.modernizer.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

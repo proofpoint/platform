@@ -5,6 +5,8 @@ Platform 2.55
   We suppress Modernizer errors related to ImmutableMap, as the suggested
   replacements don't preserve key order.
 
+  We now provide a version for the org.gaul:modernizer-maven-annotations dependency.
+
 Platform 2.54
 
 * Java 8
