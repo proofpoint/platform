@@ -15,7 +15,6 @@
  */
 package com.proofpoint.http.server;
 
-import com.google.common.io.ByteStreams;
 import com.proofpoint.tracetoken.TraceToken;
 
 import javax.servlet.http.HttpServlet;
@@ -50,6 +49,6 @@ class DummyServlet
             throws IOException
     {
         resp.setStatus(SC_OK);
-        ByteStreams.copy(req.getInputStream(), resp.getOutputStream());
+        req.getInputStream().transferTo(resp.getOutputStream());
     }
 }

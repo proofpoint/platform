@@ -241,7 +241,7 @@ public class TestHttpServerModule
         protected void service(HttpServletRequest request, HttpServletResponse response)
                 throws IOException
         {
-            ByteStreams.copy(request.getInputStream(), ByteStreams.nullOutputStream());
+            request.getInputStream().transferTo(ByteStreams.nullOutputStream());
 
             remoteAddress = request.getRemoteAddr();
             for (Entry<String, String> entry : responseHeaders.entries()) {

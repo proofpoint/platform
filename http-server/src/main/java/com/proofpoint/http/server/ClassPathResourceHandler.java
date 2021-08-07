@@ -16,14 +16,12 @@
 package com.proofpoint.http.server;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.ByteStreams;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.io.WriterOutputStream;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -126,7 +124,7 @@ public class ClassPathResourceHandler
                 out = new WriterOutputStream(response.getWriter());
             }
 
-            ByteStreams.copy(resourceStream, out);
+            resourceStream.transferTo(out);
         }
     }
 
