@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
+import static java.util.Objects.requireNonNullElse;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
@@ -58,9 +58,9 @@ public class TestConfigurationInspector
     {
         ConfigurationFactory configurationFactory = new ConfigurationFactory(
                 properties,
-                firstNonNull(applicationDefaults, ImmutableMap.of()),
-                firstNonNull(moduleDefaults, ImmutableMap.of()),
-                firstNonNull(moduleDefaultSource, ImmutableMap.of()),
+                requireNonNullElse(applicationDefaults, ImmutableMap.of()),
+                requireNonNullElse(moduleDefaults, ImmutableMap.of()),
+                requireNonNullElse(moduleDefaultSource, ImmutableMap.of()),
                 properties.keySet(),
                 List.of(),
                 Problems.NULL_MONITOR

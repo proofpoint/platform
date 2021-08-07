@@ -18,8 +18,8 @@ package com.proofpoint.node;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 public class ApplicationNameModule implements Module
 {
@@ -35,10 +35,10 @@ public class ApplicationNameModule implements Module
     {
         binder.bindConstant().annotatedWith(ApplicationName.class).to(applicationName);
         binder.bindConstant().annotatedWith(ApplicationVersion.class).to(
-                firstNonNull(System.getProperty("launcher.main.version"), "")
+                requireNonNullElse(System.getProperty("launcher.main.version"), "")
         );
         binder.bindConstant().annotatedWith(PlatformVersion.class).to(
-                firstNonNull(getClass().getPackage().getImplementationVersion(), "")
+                requireNonNullElse(getClass().getPackage().getImplementationVersion(), "")
         );
     }
 }

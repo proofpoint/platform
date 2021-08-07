@@ -28,7 +28,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Throwables.propagateIfPossible;
 import static com.google.common.base.Throwables.throwIfInstanceOf;
@@ -37,6 +36,7 @@ import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public final class MoreFutures
@@ -86,7 +86,7 @@ public final class MoreFutures
     public static Throwable unwrapCompletionException(Throwable throwable)
     {
         if (throwable instanceof CompletionException) {
-            return firstNonNull(throwable.getCause(), throwable);
+            return requireNonNullElse(throwable.getCause(), throwable);
         }
         return throwable;
     }

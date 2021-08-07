@@ -47,10 +47,6 @@ import com.proofpoint.node.NodeInfo;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.PrintWriter;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,9 +57,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 /**
  * Entry point for an application built using the platform codebase.
@@ -354,7 +350,7 @@ public class Bootstrap
                 }
             }
             else {
-                configPropertiesPath = firstNonNull(configPropertiesPath, "etc/config.properties");
+                configPropertiesPath = requireNonNullElse(configPropertiesPath, "etc/config.properties");
                 log.info("Loading configuration from %s", configPropertiesPath);
                 builder = builder.withFile(configPropertiesPath);
 

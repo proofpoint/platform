@@ -41,8 +41,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 public final class HttpServiceBalancerProvider
         implements ConfigurationAwareProvider<HttpServiceBalancer>
@@ -87,7 +87,7 @@ public final class HttpServiceBalancerProvider
                     return Sets.filter(BALANCER_FACTORY_KEYS, k -> k.equals(key));
                 }
             });
-            builder.addAll(firstNonNull(factoryKey, List.of()));
+            builder.addAll(requireNonNullElse(factoryKey, List.of()));
         }
         Set<Key<?>> factoryKeys = builder.build();
 

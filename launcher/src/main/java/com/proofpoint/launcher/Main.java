@@ -57,9 +57,9 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 @SuppressFBWarnings(value = "DM_EXIT", justification = "Need to return specific exit codes")
 public final class Main
@@ -278,7 +278,7 @@ public final class Main
                 systemProperties.setProperty(key, value);
             }
 
-            dataDir = firstNonNull(systemProperties.getProperty("node.data-dir"), dataDir);
+            dataDir = requireNonNullElse(systemProperties.getProperty("node.data-dir"), dataDir);
 
             if (pidFilePath == null) {
                 pidFilePath = dataDir + "/var/run/platform.pid";
@@ -361,7 +361,7 @@ public final class Main
             }
             if (jvmConfigProperties == null) {
                 // Fall back to jvm.properties
-                jvmPropertiesPath = firstNonNull(jvmPropertiesPath, installPath + "/etc/jvm.properties");
+                jvmPropertiesPath = requireNonNullElse(jvmPropertiesPath, installPath + "/etc/jvm.properties");
                 try {
                     jvmConfigProperties = new PropertiesBuilder().withPropertiesFile(jvmPropertiesPath).throwOnError().getProperties();
                 }
@@ -391,7 +391,7 @@ public final class Main
             }
             else {
                 // Fall back to jvm.config
-                jvmConfigPath = firstNonNull(jvmConfigPath, installPath + "/etc/jvm.config");
+                jvmConfigPath = requireNonNullElse(jvmConfigPath, installPath + "/etc/jvm.config");
                 try (BufferedReader jvmReader = new BufferedReader(new InputStreamReader(new FileInputStream(jvmConfigPath), UTF_8))) {
                     String line;
                     boolean allowSpaces = false;

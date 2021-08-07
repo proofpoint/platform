@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
 import static com.proofpoint.testing.Assertions.assertContainsAllOf;
+import static java.util.Objects.requireNonNullElse;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
@@ -990,9 +990,9 @@ public class ConfigurationFactoryTest
     {
         ConfigurationFactory configurationFactory = new ConfigurationFactory(
                 properties,
-                firstNonNull(applicationDefaults, ImmutableMap.of()),
-                firstNonNull(moduleDefaults, ImmutableMap.of()),
-                firstNonNull(moduleDefaultSource, ImmutableMap.of()),
+                requireNonNullElse(applicationDefaults, ImmutableMap.of()),
+                requireNonNullElse(moduleDefaults, ImmutableMap.of()),
+                requireNonNullElse(moduleDefaultSource, ImmutableMap.of()),
                 Collections.emptySet(),
                 List.of(),
                 monitor);

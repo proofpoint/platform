@@ -20,9 +20,9 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 
 class ObjectReportedBeanAttribute implements ReportedBeanAttribute
 {
@@ -47,6 +47,6 @@ class ObjectReportedBeanAttribute implements ReportedBeanAttribute
     public Object getValue(@Nullable Object target)
             throws MBeanException, ReflectionException
     {
-        return invoke(firstNonNull(target, this.target), getter);
+        return invoke(requireNonNullElse(target, this.target), getter);
     }
 }
