@@ -57,6 +57,7 @@ import static com.proofpoint.testing.Closeables.closeQuietly;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -250,7 +251,6 @@ public class TestHttpServerProvider
 
             assertEquals(response.getHeader("X-Protocol"), "HTTP/1.1");
         }
-        verify(requestLog).log(any());
 
         try (JettyHttpClient httpClient = new JettyHttpClient(new HttpClientConfig().setHttp2Enabled(true))) {
             StatusResponse response = httpClient.execute(prepareGet().setUri(httpServerInfo.getHttpUri()).build(), createStatusResponseHandler());
@@ -258,6 +258,8 @@ public class TestHttpServerProvider
             assertEquals(response.getStatusCode(), HttpServletResponse.SC_OK);
             assertEquals(response.getHeader("X-Protocol"), "HTTP/2.0");
         }
+        server.stop();
+        verify(requestLog, times(2)).log(any());
     }
 
     @Test
