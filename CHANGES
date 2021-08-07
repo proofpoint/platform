@@ -1,3 +1,10 @@
+Platform 2.55
+
+* Modernizer
+
+  We suppress Modernizer errors related to ImmutableMap, as the suggested
+  replacements don't preserve key order.
+
 Platform 2.54
 
 * Java 8
