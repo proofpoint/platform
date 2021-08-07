@@ -539,6 +539,11 @@
                         <skip>${platform.check.skip-modernizer}</skip>
                         <failOnViolations>${platform.check.fail-modernizer}</failOnViolations>
                         <javaVersion>${project.build.targetJdk}</javaVersion>
+                        <exclusionPatterns>
+                            <!-- Map.of(), etc. don't preserve key order -->
+                            <exclusionPattern>com/google/common/collect/ImmutableMap.of:.*</exclusionPattern>
+                            <exclusionPattern>com/google/common/collect/ImmutableMap.copyOf:.*</exclusionPattern>
+                        </exclusionPatterns>
                     </configuration>
                     <executions>
                         <execution>
