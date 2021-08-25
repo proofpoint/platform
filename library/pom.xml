@@ -544,6 +544,8 @@
                             <!-- Map.of(), etc. don't preserve key order -->
                             <exclusionPattern>com/google/common/collect/ImmutableMap.of:.*</exclusionPattern>
                             <exclusionPattern>com/google/common/collect/ImmutableMap.copyOf:.*</exclusionPattern>
+                            <exclusionPattern>com/google/common/collect/ImmutableSet.of:.*</exclusionPattern>
+                            <exclusionPattern>com/google/common/collect/ImmutableSet.copyOf:.*</exclusionPattern>
                         </exclusionPatterns>
                     </configuration>
                     <executions>

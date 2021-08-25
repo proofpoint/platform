@@ -1,3 +1,10 @@
+Platform 2.56
+
+* Modernizer
+
+  We suppress Modernizer errors related to ImmutableSet, as the suggested
+  replacements don't preserve order.
+
 Platform 2.55
 
 * Modernizer
