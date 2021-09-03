@@ -39,7 +39,7 @@
         <project.rpm.username>${project.artifactId}</project.rpm.username>
         <project.docker.project>dev-docker-local</project.docker.project>
         <project.docker.name>%a</project.docker.name>
-        <project.docker.from>repocache.nonprod.ppops.net/dev-docker-local/c15-java11:2.32</project.docker.from>
+        <project.docker.from>repocache.nonprod.ppops.net/dev-docker-local/c15-java11:2.38</project.docker.from>
         <project.docker.uid>1000</project.docker.uid>
         <project.docker.verbose>false</project.docker.verbose>
 

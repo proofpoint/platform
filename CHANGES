@@ -1,3 +1,9 @@
+Platform 2.57
+
+* Library Upgrades
+
+  - Base Docker image to c15-java11:2.38 (was 2.32)
+
 Platform 2.56
 
 * Modernizer
