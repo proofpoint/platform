@@ -3,10 +3,10 @@ package com.proofpoint.http.client.balancing;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.testing.ConfigAssertions;
 import com.proofpoint.units.Duration;
+import jakarta.validation.constraints.AssertFalse;
+import jakarta.validation.constraints.Min;
 import org.testng.annotations.Test;
 
-import javax.validation.constraints.AssertFalse;
-import javax.validation.constraints.Min;
 import java.util.Map;
 
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;

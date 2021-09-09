@@ -19,10 +19,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.Duration;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import org.testng.annotations.Test;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 import static com.proofpoint.configuration.testing.ConfigAssertions.assertFullMapping;

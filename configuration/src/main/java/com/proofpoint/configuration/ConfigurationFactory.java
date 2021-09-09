@@ -27,13 +27,13 @@ import com.google.inject.Key;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
 import com.proofpoint.configuration.ConfigurationMetadata.InjectionPointMetaData;
 import com.proofpoint.configuration.Problems.Monitor;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.HibernateValidator;
 
 import javax.annotation.Nullable;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

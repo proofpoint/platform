@@ -15,13 +15,13 @@
  */
 package com.proofpoint.units;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidationException;
+import jakarta.validation.Validator;
 import org.hibernate.validator.HibernateValidator;
 import org.testng.annotations.Test;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.ValidationException;
-import javax.validation.Validator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 

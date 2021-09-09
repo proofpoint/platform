@@ -17,11 +17,11 @@ package com.proofpoint.platform.sample;
 
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.json.JsonCodec;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.util.HashMap;
 import java.util.Map;
 

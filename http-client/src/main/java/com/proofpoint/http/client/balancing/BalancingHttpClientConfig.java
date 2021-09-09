@@ -20,10 +20,10 @@ import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.units.Duration;
 import com.proofpoint.units.MaxDuration;
 import com.proofpoint.units.MinDuration;
+import jakarta.validation.constraints.AssertFalse;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
-import javax.validation.constraints.AssertFalse;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;

@@ -21,8 +21,7 @@ import com.proofpoint.configuration.DefunctConfig;
 import com.proofpoint.configuration.LegacyConfig;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
-
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 @DefunctConfig("log.max-size-in-bytes")
 public class LoggingConfiguration

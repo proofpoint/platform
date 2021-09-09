@@ -17,6 +17,7 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.testing.TestingTicker;
+import jakarta.validation.constraints.NotNull;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -24,7 +25,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.weakref.jmx.ObjectNameBuilder;
 
-import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;

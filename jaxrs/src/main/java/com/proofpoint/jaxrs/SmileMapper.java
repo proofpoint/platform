@@ -24,9 +24,9 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.proofpoint.log.Logger;
+import jakarta.validation.ConstraintViolation;
 
 import javax.inject.Inject;
-import javax.validation.ConstraintViolation;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;

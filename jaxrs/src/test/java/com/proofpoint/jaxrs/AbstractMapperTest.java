@@ -21,9 +21,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 import com.proofpoint.jaxrs.testing.GuavaMultivaluedMap;
+import jakarta.validation.constraints.NotNull;
 import org.testng.annotations.Test;
 
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;

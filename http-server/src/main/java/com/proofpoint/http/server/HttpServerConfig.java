@@ -24,9 +24,8 @@ import com.proofpoint.units.Duration;
 import com.proofpoint.units.MaxDataSize;
 import com.proofpoint.units.MinDataSize;
 import com.proofpoint.units.MinDuration;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import static com.proofpoint.units.DataSize.Unit.GIGABYTE;
 import static com.proofpoint.units.DataSize.Unit.KILOBYTE;

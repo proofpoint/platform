@@ -18,9 +18,9 @@ package com.proofpoint.node;
 import com.google.common.net.InetAddresses;
 import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.DefunctConfig;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.net.InetAddress;
 
 @DefunctConfig({"http-server.ip", "jetty.ip", "node.binary-spec", "node.config-spec"})

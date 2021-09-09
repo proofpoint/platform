@@ -15,9 +15,9 @@
  */
 package com.proofpoint.testing;
 
+import jakarta.validation.constraints.NotNull;
 import org.testng.annotations.Test;
 
-import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 
 import static com.proofpoint.testing.Assertions.assertContains;
