@@ -5,11 +5,11 @@ import com.proofpoint.configuration.testing.ConfigAssertions;
 import com.proofpoint.units.Duration;
 import com.proofpoint.units.MaxDuration;
 import com.proofpoint.units.MinDuration;
+import jakarta.validation.constraints.AssertFalse;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.testng.annotations.Test;
 
-import javax.validation.constraints.AssertFalse;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.util.Map;
 

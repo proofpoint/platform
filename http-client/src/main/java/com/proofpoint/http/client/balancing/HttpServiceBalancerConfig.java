@@ -18,9 +18,8 @@ package com.proofpoint.http.client.balancing;
 import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.units.Duration;
-
-import javax.validation.constraints.AssertFalse;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.AssertFalse;
+import jakarta.validation.constraints.Min;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;

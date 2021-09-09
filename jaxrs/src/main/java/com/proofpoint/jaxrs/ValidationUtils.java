@@ -16,12 +16,12 @@
 package com.proofpoint.jaxrs;
 
 import com.google.common.reflect.TypeToken;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.hibernate.validator.HibernateValidator;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Valid;
-import javax.validation.Validation;
-import javax.validation.Validator;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;

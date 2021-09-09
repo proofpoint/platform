@@ -18,8 +18,8 @@ package com.proofpoint.discovery.client;
 import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.ConfigDescription;
 import com.proofpoint.units.Duration;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 

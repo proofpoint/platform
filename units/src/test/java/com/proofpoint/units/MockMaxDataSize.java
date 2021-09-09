@@ -13,7 +13,8 @@
  */
 package com.proofpoint.units;
 
-import javax.validation.Payload;
+import jakarta.validation.Payload;
+
 import java.lang.annotation.Annotation;
 
 import static java.util.Objects.requireNonNull;

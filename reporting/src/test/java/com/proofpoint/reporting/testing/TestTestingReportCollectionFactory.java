@@ -17,10 +17,9 @@ package com.proofpoint.reporting.testing;
 
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.reporting.Key;
+import jakarta.validation.constraints.NotNull;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import javax.validation.constraints.NotNull;
 
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 import static org.mockito.Mockito.verify;

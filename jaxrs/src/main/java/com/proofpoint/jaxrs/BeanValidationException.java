@@ -17,9 +17,9 @@ package com.proofpoint.jaxrs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import jakarta.validation.ConstraintViolation;
 import org.gaul.modernizer_maven_annotations.SuppressModernizer;
 
-import javax.validation.ConstraintViolation;
 import java.util.List;
 import java.util.Set;
 

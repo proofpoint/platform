@@ -3,10 +3,10 @@ package com.proofpoint.http.client.balancing;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.testing.ConfigAssertions;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig.UriMultiset;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.testng.annotations.Test;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.Map;
 

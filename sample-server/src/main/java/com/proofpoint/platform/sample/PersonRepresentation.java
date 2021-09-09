@@ -17,10 +17,10 @@ package com.proofpoint.platform.sample;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.auto.value.AutoValue;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
 import static com.proofpoint.platform.sample.Person.createPerson;
 

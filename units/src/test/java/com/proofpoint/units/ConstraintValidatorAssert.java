@@ -13,11 +13,10 @@
  */
 package com.proofpoint.units;
 
+import jakarta.validation.ClockProvider;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.assertj.core.api.AbstractAssert;
-
-import javax.validation.ClockProvider;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 import java.lang.annotation.Annotation;
 

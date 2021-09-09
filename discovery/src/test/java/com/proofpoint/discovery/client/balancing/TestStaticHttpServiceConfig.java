@@ -18,9 +18,9 @@ package com.proofpoint.discovery.client.balancing;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.testing.ConfigAssertions;
 import com.proofpoint.discovery.client.balancing.StaticHttpServiceConfig.UriMultiset;
+import jakarta.validation.constraints.Size;
 import org.testng.annotations.Test;
 
-import javax.validation.constraints.Size;
 import java.net.URI;
 import java.util.Map;
 
