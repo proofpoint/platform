@@ -34,14 +34,10 @@ import com.proofpoint.units.Duration;
 import javax.annotation.concurrent.GuardedBy;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,7 +46,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
@@ -192,7 +187,11 @@ public class Logging
             @Override
             public void publish(LogRecord record)
             {
-                logTester.log(fromJulLevel(record.getLevel()), record.getMessage(), Optional.ofNullable(record.getThrown()));
+                String message = record.getMessage();
+                if (message.endsWith("\n")) {
+                    message = message.substring(0, message.length() - 1);
+                }
+                logTester.log(fromJulLevel(record.getLevel()), message, Optional.ofNullable(record.getThrown()));
             }
 
             @Override

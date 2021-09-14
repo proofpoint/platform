@@ -53,9 +53,7 @@ public class TestServiceTypes
     @Test
     public void testToString()
     {
-        if (!System.getProperty("java.version").startsWith("1.")) {
-            assertEquals(ServiceTypes.serviceType("qu\"ote").toString(), quoteServiceType.toString());
-        }
+        assertEquals(ServiceTypes.serviceType("qu\"ote").toString(), quoteServiceType.toString());
         assertEquals(ServiceTypes.serviceType("apple").toString(), appleServiceType.toString());
     }
 
