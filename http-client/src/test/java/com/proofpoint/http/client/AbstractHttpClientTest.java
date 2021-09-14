@@ -186,19 +186,15 @@ public abstract class AbstractHttpClientTest
 
         List<ConnectionFactory> connectionFactories = new ArrayList<>();
         if (keystore != null) {
-            boolean isJava8 = System.getProperty("java.version").startsWith("1.8.");
-
             httpConfiguration.addCustomizer(new SecureRequestCustomizer());
 
             sslContextFactory = new SslContextFactory.Server();
             sslContextFactory.setKeyStorePath(keystore);
             sslContextFactory.setKeyStorePassword("changeit");
 
-            connectionFactories.add(new SslConnectionFactory(sslContextFactory, isJava8 ? "http/1.1" : "alpn"));
-            if (!isJava8) {
-                connectionFactories.add(new ALPNServerConnectionFactory("h2", "http/1.1"));
-                connectionFactories.add(new HTTP2ServerConnectionFactory(httpConfiguration));
-            }
+            connectionFactories.add(new SslConnectionFactory(sslContextFactory, "alpn"));
+            connectionFactories.add(new ALPNServerConnectionFactory("h2", "http/1.1"));
+            connectionFactories.add(new HTTP2ServerConnectionFactory(httpConfiguration));
             connectionFactories.add(new HttpConnectionFactory(httpConfiguration));
 
         }

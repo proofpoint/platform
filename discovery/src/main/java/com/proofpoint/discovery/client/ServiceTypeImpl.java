@@ -39,11 +39,8 @@ class ServiceTypeImpl
     @Override
     public String toString()
     {
-        if (System.getProperty("java.version").startsWith("1.")) {
-            // Java 8 doesn't quote the value
-            return String.format("@%s(value=%s)", ServiceType.class.getName(), value);
-        }
-        return String.format("@%s(value=\"%s\")", ServiceType.class.getName(), value.replaceAll("([\\\\\"])", "\\\\$1"));
+        var isJava11 = System.getProperty("java.version").startsWith("11.");
+        return String.format("@%s(%s\"%s\")", ServiceType.class.getName(), isJava11 ? "value=" : "", value.replaceAll("([\\\\\"])", "\\\\$1"));
     }
 
     @Override

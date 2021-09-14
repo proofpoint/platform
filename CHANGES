@@ -1,5 +1,9 @@
 Platform 2.60
 
+* Java 17
+
+  We added compatibility with Java 17.
+
 * Library Upgrades
 
   - Guice to 31.0-jre (was 30.1-jre)
