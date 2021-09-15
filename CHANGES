@@ -1,3 +1,9 @@
+Platform 2.59
+
+* Library Upgrades
+
+  - jakarta.el to 4.0.2 (was 4.0.0)
+
 Platform 2.58
 
 * Bean validation
