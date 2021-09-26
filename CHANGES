@@ -3,6 +3,7 @@ Platform 2.60
 * Library Upgrades
 
   - Guice to 31.0-jre (was 30.1-jre)
+  - slice to 0.40 (was 0.10)
 
 Platform 2.59
 
