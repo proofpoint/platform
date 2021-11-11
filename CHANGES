@@ -1,3 +1,9 @@
+Platform 2.61
+
+* Library Upgrades
+
+  - Base Docker image to c15-java11:2.45 (was 2.38)
+
 Platform 2.60
 
 * Java 17
