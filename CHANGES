@@ -1,5 +1,7 @@
 Platform 2.63
 
+* We removed the archetype builders.
+
 * Library Upgrades
 
   - logback to 1.2.8 (was 1.2.3)

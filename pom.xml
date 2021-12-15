@@ -101,8 +101,6 @@
         <module>rest-server-base</module>
         <module>sample-server</module>
         <module>skeleton-server</module>
-        <module>sample-server-archetype-builder</module>
-        <module>skeleton-server-archetype-builder</module>
         <module>trace-token</module>
         <module>reporting</module>
         <module>reporting-basemetrics</module>
