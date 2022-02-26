@@ -809,12 +809,6 @@
                 <version>2.64-SNAPSHOT</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.proofpoint.platform</groupId>
-                <artifactId>openapi</artifactId>
-                <version>2.42-SNAPSHOT</version>
-            </dependency>
-
             <!-- Java APIs -->
             <dependency>
                 <groupId>javax.inject</groupId>
