@@ -1,5 +1,7 @@
 Platform 2.64
 
+* We removed an unnecessary dependency on the removed openapi JAR file.
+
 * We removed the archetype builders.
 
 * Library Upgrades
