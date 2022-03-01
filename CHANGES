@@ -1,4 +1,4 @@
-Platform 2.64
+Platform 2.65
 
 * We removed an unnecessary dependency on the removed openapi JAR file.
 
