@@ -1,9 +1,10 @@
-Platform 2.67
+Platform 2.66
 
 * Library Upgrades
 
   - Jackson to 2.13.2 (was 2.12.2)
     jackson-databind to 2.13.2.1 (CVE-2020-36518)
+  - Guava to 31.1 (was 31.0)
 
 Platform 2.65
 
