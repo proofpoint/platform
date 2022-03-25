@@ -1,3 +1,10 @@
+Platform 2.67
+
+* Library Upgrades
+
+  - Jackson to 2.13.2 (was 2.12.2)
+    jackson-databind to 2.13.2.1 (CVE-2020-36518)
+
 Platform 2.65
 
 * We removed an unnecessary dependency on the removed openapi JAR file.
