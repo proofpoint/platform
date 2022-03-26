@@ -7,6 +7,7 @@ Platform 2.66
   - Guava to 31.1 (was 31.0)
   - slf4j to 1.7.36 (was 1.7.30)
   - logback to 1.2.11 (was 1.2.9)
+  - Base Docker image to c15-java11:2.50 (was 2.45)
 
 Platform 2.65
 
