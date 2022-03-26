@@ -6,6 +6,7 @@ Platform 2.66
     jackson-databind to 2.13.2.1 (CVE-2020-36518)
   - Guava to 31.1 (was 31.0)
   - slf4j to 1.7.36 (was 1.7.30)
+  - logback to 1.2.11 (was 1.2.9)
 
 Platform 2.65
 
