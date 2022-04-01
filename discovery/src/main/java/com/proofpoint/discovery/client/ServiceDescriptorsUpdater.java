@@ -109,14 +109,24 @@ public final class ServiceDescriptorsUpdater
             {
                 Duration delay = null;
 
-                // If we have no current descriptors, or the new descriptors have contents, perform the set.
-                if (serviceDescriptors.get() == null || !newDescriptors.getServiceDescriptors().isEmpty()) {
+                if (newDescriptors.getServiceDescriptors().isEmpty()) {
+                    // If no new service descriptors are available, log a warning.
+                    // Keep any previous service descriptors to provide some robustness for degraded operation.
+                    if (serviceDescriptors.get() == null) {
+                        log.warn("Discovery returned zero available service instances. No previous service " +
+                                "descriptors are available.");
+                    }
+                    else {
+                        log.warn("Discovery returned zero available service instances. Keeping previous set of instances.");
+                    }
+                }
+                else {
+                    // Update with the new descriptors.
                     serviceDescriptors.set(newDescriptors);
                     target.updateServiceDescriptors(newDescriptors.getServiceDescriptors());
                     delay = newDescriptors.getMaxAge();
                 }
-                // else current descriptors are not null (i.e. have previously been set), *and* new descriptors are empty;
-                // therefore do not replace.  a little bit of robustness for degraded operation.
+
                 errorBackOff.success();
 
                 if (delay == null) {
