@@ -32,9 +32,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -42,7 +40,9 @@ import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.testing.Assertions.assertEqualsIgnoreOrder;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -95,10 +95,7 @@ public class TestHttpServiceBalancerListenerAdapter
     {
         updater.start();
 
-        ArgumentCaptor<Multiset> captor = ArgumentCaptor.forClass(Multiset.class);
-        verify(httpServiceBalancer).updateHttpUris(captor.capture());
-
-        assertEquals(captor.getValue(), ImmutableMultiset.of());
+        verify(httpServiceBalancer, never()).updateHttpUris(any());
     }
 
     @Test
