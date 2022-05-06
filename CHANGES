@@ -1,3 +1,14 @@
+Platform 2.67
+
+* Discovery
+
+  We now log a warning when the initial Discovery query for a service returns
+  no instances.
+
+* Library Upgrades
+
+  - Base Docker image to c15-java11:2.53 (was 2.50)
+
 Platform 2.66
 
 * Library Upgrades
