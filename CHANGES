@@ -6,6 +6,7 @@ Platform 2.68
 * Library Upgrades
 
   - spotbugs-annotations to 4.7.0 (was 3.1.8)
+  - JMH to 1.35 (was 1.13)
 
 Platform 2.67
 
