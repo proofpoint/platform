@@ -9,6 +9,7 @@ Platform 2.68
   - JMH to 1.35 (was 1.13)
   - TestNG to 7.6.0 (was 6.14.3)
   - AssertJ-core to 3.22.0 (was 3.19.0)
+  - Objenesis to 3.2 (was 3.1)
 
 Platform 2.67
 
