@@ -11,6 +11,7 @@ Platform 2.68
   - AssertJ-core to 3.22.0 (was 3.19.0)
   - Objenesis to 3.2 (was 3.1)
   - byte-buddy to 1.12.9 (was 1.10.22)
+  - Mockito to 4.5.1 (was 3.8.0)
 
 Platform 2.67
 
