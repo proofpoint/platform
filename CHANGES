@@ -13,6 +13,7 @@ Platform 2.68
   - byte-buddy to 1.12.9 (was 1.10.22)
   - Mockito to 4.5.1 (was 3.8.0)
   - javassist to 3.29.0-GA (was 3.24.0-GA)
+  - Jackson to 2.13.3 (was 2.13.2)
 
 Platform 2.67
 
