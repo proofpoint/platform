@@ -419,7 +419,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.2.2</version>
+                    <version>4.7.0.0</version>
                     <configuration>
                         <skip>${platform.check.skip-spotbugs}</skip>
                         <jvmArgs>-Xmx${platform.build.jvmsize}</jvmArgs>
@@ -1183,7 +1183,7 @@
             <dependency>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-annotations</artifactId>
-                <version>3.1.8</version>
+                <version>4.7.0</version>
             </dependency>
 
             <!-- JSR-305 -->
