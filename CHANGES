@@ -1,3 +1,12 @@
+Platform 2.68
+
+* Maven plugin upgrades
+  - spotbugs-maven-plugin to 4.7.0.0 (was 4.2.2)
+
+* Library Upgrades
+
+  - spotbugs-annotations to 4.7.0 (was 3.1.8)
+
 Platform 2.67
 
 * Discovery
