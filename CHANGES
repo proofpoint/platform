@@ -8,6 +8,7 @@ Platform 2.68
   - spotbugs-annotations to 4.7.0 (was 3.1.8)
   - JMH to 1.35 (was 1.13)
   - TestNG to 7.6.0 (was 6.14.3)
+  - AssertJ-core to 3.22.0 (was 3.19.0)
 
 Platform 2.67
 
