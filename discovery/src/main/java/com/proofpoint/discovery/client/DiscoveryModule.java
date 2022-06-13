@@ -40,18 +40,13 @@ import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
 import com.proofpoint.units.Duration;
 
-import javax.annotation.PreDestroy;
-import javax.inject.Provider;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
-import static com.proofpoint.http.client.ServiceTypes.serviceType;
 import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
+import static com.proofpoint.http.client.ServiceTypes.serviceType;
 import static com.proofpoint.json.JsonCodecBinder.jsonCodecBinder;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
@@ -171,28 +166,6 @@ public class DiscoveryModule
                 @ForDiscoveryClient HttpServiceBalancerConfig config)
         {
             return getHttpServiceBalancerImpl(reportExporter, reportCollectionFactory, config);
-        }
-
-        private static class DiscoveryExecutorProvider
-                implements Provider<ScheduledExecutorService>
-        {
-            private ScheduledExecutorService executor;
-
-            @Override
-            public ScheduledExecutorService get()
-            {
-                checkState(executor == null, "provider already used");
-                executor = new ScheduledThreadPoolExecutor(5, daemonThreadsNamed("Discovery-%s"));
-                return executor;
-            }
-
-            @PreDestroy
-            public void destroy()
-            {
-                if (executor != null) {
-                    executor.shutdownNow();
-                }
-            }
         }
     }
 

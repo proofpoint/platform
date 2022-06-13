@@ -18,8 +18,8 @@ package com.proofpoint.discovery.client.testing;
 import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.Module;
-import com.google.inject.Provides;
 import com.google.inject.Scopes;
+import com.proofpoint.discovery.client.DiscoveryExecutorProvider;
 import com.proofpoint.discovery.client.DiscoveryLookupClient;
 import com.proofpoint.discovery.client.ForDiscoveryClient;
 import com.proofpoint.discovery.client.ServiceSelectorFactory;
@@ -30,10 +30,8 @@ import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.discovery.client.balancing.HttpServiceBalancerFactory;
 
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 
 public class TestingDiscoveryModule
         implements Module
@@ -57,12 +55,9 @@ public class TestingDiscoveryModule
 
         binder.bind(ServiceSelectorFactory.class).to(SimpleServiceSelectorFactory.class).in(Scopes.SINGLETON);
         binder.bind(HttpServiceBalancerFactory.class).in(Scopes.SINGLETON);
-    }
-
-    @Provides
-    @ForDiscoveryClient
-    public ScheduledExecutorService createDiscoveryExecutor()
-    {
-        return new ScheduledThreadPoolExecutor(10, daemonThreadsNamed("Discovery-%s"));
+        binder.bind(ScheduledExecutorService.class)
+                .annotatedWith(ForDiscoveryClient.class)
+                .toProvider(DiscoveryExecutorProvider.class)
+                .in(Scopes.SINGLETON);
     }
 }
