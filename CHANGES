@@ -1,3 +1,9 @@
+Platform 2.70
+
+* Library Upgrades
+
+  - Jetty to 9.4.48 (was 9.4.42)
+
 Platform 2.69
 
 * We fixed a bug in TestingDiscoveryModule that caused it to leak threads.
