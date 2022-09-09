@@ -3,6 +3,7 @@ Platform 2.70
 * Library Upgrades
 
   - Jetty to 9.4.48 (was 9.4.42)
+  - SnakeYAML to 1.31 (was 1.18) (CVE-2017-18640)
   - Base Docker image to c15-java11:2.59 (was 2.53)
 
 Platform 2.69
