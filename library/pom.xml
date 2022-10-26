@@ -1700,6 +1700,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <jib>true</jib>
                             <verbose>${project.docker.verbose}</verbose>
                             <images>
                                 <image>
@@ -1708,9 +1709,9 @@
                                         <from>${project.docker.from}</from>
                                         <optimise>true</optimise>
                                         <user>${project.docker.uid}</user>
-                                        <workdir>/service</workdir>
+                                        <workdir>/build/maven</workdir>
                                         <assembly>
-                                            <targetDir>/service</targetDir>
+                                            <targetDir>/build/maven</targetDir>
                                             <inline>
                                                 <files combine.children="append">
                                                     <file>
@@ -1756,7 +1757,7 @@
                                             <exec>
                                                 <arg>/usr/bin/java</arg>
                                                 <arg>-jar</arg>
-                                                <arg>/service/lib/launcher.jar</arg>
+                                                <arg>/build/maven/lib/launcher.jar</arg>
                                                 <arg>run</arg>
                                             </exec>
                                         </cmd>

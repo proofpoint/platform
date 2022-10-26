@@ -1,3 +1,8 @@
+Platform 2.71
+
+* Docker images are now built with JIB. The jar files are now located
+  under "/build/maven/lib/" instead of "/service/lib/".
+
 Platform 2.70
 
 * Reporting
