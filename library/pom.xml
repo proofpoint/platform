@@ -278,7 +278,7 @@
                     <version>2.5.3</version>
                     <configuration>
                         <mavenExecutorId>forked-path</mavenExecutorId>
-                        <goals>deploy -Pchild-project-release</goals>
+                        <goals>deploy -Pchild-project-release -Dproject.docker.project=${project.docker.project}</goals>
                         <preparationGoals>clean install</preparationGoals>
                         <useReleaseProfile>false</useReleaseProfile>
                         <pushChanges>false</pushChanges>
