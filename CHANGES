@@ -1,5 +1,10 @@
 Platform 2.70
 
+* Reporting
+
+  We added ReportingSplunkObservabilityModule() to the reporting-client module, adding
+  support for sending metrics to Splunk Observability.
+
 * Library Upgrades
 
   - Jetty to 9.4.48 (was 9.4.42)
