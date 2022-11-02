@@ -1,7 +1,7 @@
-Platform 2.71
+Platform 2.72
 
 * Docker images are now built with JIB. The jar files are now located
-  under "/build/maven/lib/" instead of "/service/lib/".
+  under "/maven/lib/" instead of "/service/lib/".
 
 * Maven plugin upgrades
   - docker-maven-plugin to 0.40.2 (was 0.35.0)
