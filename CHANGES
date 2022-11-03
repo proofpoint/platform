@@ -1,3 +1,9 @@
+Platform 2.73
+
+* Library Upgrades
+
+  - Base Docker image to c15-java11:2.65 (was 2.59)
+
 Platform 2.72
 
 * Docker images are now built with JIB. The jar files are now located
