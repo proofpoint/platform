@@ -69,6 +69,7 @@ import static com.proofpoint.testing.Assertions.assertGreaterThan;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertNotNull;
 
 public class TestTestingHttpServer
 {
@@ -254,6 +255,14 @@ public class TestTestingHttpServer
         finally {
             lifeCycleManager.stop();
         }
+    }
+
+    @Test
+    public void testGetServer()
+            throws Exception
+    {
+        TestingHttpServer httpServer = createTestingHttpServer(new DummyServlet(), Map.of());
+        assertNotNull(httpServer.getServer());
     }
 
     private static void assertResource(URI baseUri, HttpClient client, String path, String contents)

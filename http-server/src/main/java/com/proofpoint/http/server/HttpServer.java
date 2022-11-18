@@ -503,6 +503,11 @@ public class HttpServer
         return busyThreads;
     }
 
+    public Server getServer()
+    {
+        return server;
+    }
+
     private static Set<X509Certificate> loadAllX509Certificates(HttpServerConfig config)
     {
         ImmutableSet.Builder<X509Certificate> certificates = ImmutableSet.builder();
