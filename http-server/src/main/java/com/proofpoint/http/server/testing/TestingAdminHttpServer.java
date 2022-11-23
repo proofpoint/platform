@@ -88,6 +88,7 @@ public class TestingAdminHttpServer extends HttpServer
                 Set.copyOf(filters),
                 null,
                 null,
+                null,
                 queryStringFilter,
                 new RequestStats(),
                 new DetailedRequestStats(),

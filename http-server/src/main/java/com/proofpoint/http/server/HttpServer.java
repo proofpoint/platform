@@ -43,6 +43,7 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -122,6 +123,7 @@ public class HttpServer
             @Nullable Set<Filter> adminFilters,
             @Nullable MBeanServer mbeanServer,
             @Nullable LoginService loginService,
+            @Nullable SessionHandler sessionHandler,
             QueryStringFilter queryStringFilter,
             RequestStats stats,
             DetailedRequestStats detailedRequestStats,
@@ -183,6 +185,7 @@ public class HttpServer
          *           |       |--- security handler
          *           |       |--- user provided filters
          *           |       |--- the servlet (normally GuiceContainer)
+         *           |       |--- session handler
          *           |       |--- resource handlers
          *           |--- log handler
          *    |-- admin context handler
@@ -203,7 +206,7 @@ public class HttpServer
             handlers.addHandler(gzipHandler);
         }
 
-        handlers.addHandler(createServletContext(theServlet, parameters, false, filters, queryStringFilter, loginService, nodeInfo, "http", "https"));
+        handlers.addHandler(createServletContext(theServlet, parameters, false, filters, queryStringFilter, loginService, nodeInfo, sessionHandler,"http", "https"));
 
         RequestLogHandler statsRecorder = new RequestLogHandler();
         statsRecorder.setRequestLog(new StatsRecordingHandler(stats, detailedRequestStats));
@@ -215,7 +218,7 @@ public class HttpServer
 
         HandlerList rootHandlers = new HandlerList();
         if (theAdminServlet != null && config.isAdminEnabled()) {
-            rootHandlers.addHandler(createServletContext(theAdminServlet, adminParameters, true, adminFilters, queryStringFilter, loginService, nodeInfo, "admin"));
+            rootHandlers.addHandler(createServletContext(theAdminServlet, adminParameters, true, adminFilters, queryStringFilter, loginService, nodeInfo, null,"admin"));
         }
         rootHandlers.addHandler(statsHandler);
         server.setHandler(rootHandlers);
@@ -276,6 +279,7 @@ public class HttpServer
             QueryStringFilter queryStringFilter,
             LoginService loginService,
             NodeInfo nodeInfo,
+            SessionHandler sessionHandler,
             String... connectorNames)
     {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
@@ -303,6 +307,11 @@ public class HttpServer
         for (Filter filter : filters) {
             context.addFilter(new FilterHolder(filter), "/*", null);
         }
+        // -- add SessionHandler
+        if (sessionHandler != null) {
+            context.setSessionHandler(sessionHandler);
+        }
+
         // -- the servlet
         ServletHolder servletHolder = new ServletHolder(theServlet);
         servletHolder.setInitParameters(ImmutableMap.copyOf(parameters));
