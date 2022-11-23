@@ -1,3 +1,15 @@
+Platform 2.75
+
+* Library Upgrades
+
+  - Jackson-databind to 2.13.4.2 (was 2.13.4)
+
+Platform 2.74
+
+* Library Upgrades
+
+  - Jackson to 2.13.4 (was 2.13.3)
+
 Platform 2.73
 
 * Library Upgrades
