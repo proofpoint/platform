@@ -185,7 +185,7 @@ public class HttpServer
          *           |       |--- security handler
          *           |       |--- user provided filters
          *           |       |--- the servlet (normally GuiceContainer)
-         *           |       |--- session handler
+         *           |       |--- session handler (optional)
          *           |       |--- resource handlers
          *           |--- log handler
          *    |-- admin context handler

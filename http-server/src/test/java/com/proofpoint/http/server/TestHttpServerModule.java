@@ -16,7 +16,6 @@
 package com.proofpoint.http.server;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.Files;
 import com.google.common.net.InetAddresses;
@@ -34,6 +33,7 @@ import com.proofpoint.log.Logging;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
@@ -74,6 +74,8 @@ public class TestHttpServerModule
     private Injector injector;
     private File tempDir;
 
+    Map<String, String> properties;
+
     @BeforeSuite
     public void setupSuite()
     {
@@ -86,6 +88,9 @@ public class TestHttpServerModule
     {
         injector = null;
         tempDir = Files.createTempDir().getCanonicalFile(); // getCanonicalFile needed to get around Issue 365 (http://code.google.com/p/guava-libraries/issues/detail?id=365)
+        properties = Map.of(
+                "http-server.http.port", "0",
+                "http-server.log.path", new File(tempDir, "http-request.log").getAbsolutePath());
     }
 
     @AfterMethod
@@ -106,11 +111,6 @@ public class TestHttpServerModule
     public void testCanConstructServer()
             throws Exception
     {
-        Map<String, String> properties = new ImmutableMap.Builder<String, String>()
-                .put("http-server.http.port", "0")
-                .put("http-server.log.path", new File(tempDir, "http-request.log").getAbsolutePath())
-                .build();
-
         Injector injector = bootstrapTest()
                 .withModules(new HttpServerModule(),
                         new TestingNodeModule(),
@@ -131,11 +131,6 @@ public class TestHttpServerModule
     public void testHttpServerUri()
             throws Exception
     {
-        Map<String, String> properties = new ImmutableMap.Builder<String, String>()
-                .put("http-server.http.port", "0")
-                .put("http-server.log.path", new File(tempDir, "http-request.log").getAbsolutePath())
-                .build();
-
         Injector injector = bootstrapTest()
                 .withModules(new HttpServerModule(),
                         new TestingNodeModule(),
@@ -169,11 +164,6 @@ public class TestHttpServerModule
     public void testServer()
             throws Exception
     {
-        Map<String, String> properties = new ImmutableMap.Builder<String, String>()
-                .put("http-server.http.port", "0")
-                .put("http-server.log.path", new File(tempDir, "http-request.log").getAbsolutePath())
-                .build();
-
         Injector injector = bootstrapTest()
                 .withModules(new HttpServerModule(),
                         new TestingNodeModule(),
@@ -217,6 +207,27 @@ public class TestHttpServerModule
             assertResource(httpUri, client, "path/user.txt", "user");
             assertResource(httpUri, client, "path/user2.txt", "user2");
         }
+    }
+
+    @Test
+    public void testSessionHandler()
+            throws Exception
+    {
+        SessionHandler sessionHandler = new SessionHandler();
+        Injector injector = bootstrapTest()
+                .withModules(new HttpServerModule().withSessionHandler(sessionHandler),
+                        new TestingNodeModule(),
+                        new TestingMBeanModule(),
+                        new ReportingModule(),
+                        binder -> {
+                            binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
+                            binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
+                        })
+                .setRequiredConfigurationProperties(properties)
+                .initialize();
+
+        SessionHandler result = injector.getInstance(SessionHandler.class);
+        assertEquals(result, sessionHandler);
     }
 
     private void assertResource(URI baseUri, HttpClient client, String path, String contents)

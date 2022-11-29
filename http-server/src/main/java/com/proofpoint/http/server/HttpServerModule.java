@@ -20,6 +20,7 @@ import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
+import org.eclipse.jetty.server.session.SessionHandler;
 
 import javax.servlet.Filter;
 
@@ -56,10 +57,16 @@ public class HttpServerModule
 {
     public static final String REALM_NAME = "Proofpoint";
 
+    private SessionHandler sessionHandler;
+
     @Override
     public void configure(Binder binder)
     {
         binder.disableCircularProxies();
+
+        if(sessionHandler != null){
+            binder.bind(SessionHandler.class).toInstance(sessionHandler);
+        }
 
         binder.bind(HttpServer.class).toProvider(HttpServerProvider.class).in(Scopes.SINGLETON);
         binder.bind(HttpServerInfo.class).in(Scopes.SINGLETON);
@@ -78,5 +85,11 @@ public class HttpServerModule
         bindConfig(binder).bind(InternalNetworkConfig.class);
 
         binder.bind(AnnouncementHttpServerInfo.class).to(LocalAnnouncementHttpServerInfo.class).in(Scopes.SINGLETON);
+    }
+
+    public HttpServerModule withSessionHandler(SessionHandler sessionHandler)
+    {
+        this.sessionHandler = sessionHandler;
+        return this;
     }
 }
