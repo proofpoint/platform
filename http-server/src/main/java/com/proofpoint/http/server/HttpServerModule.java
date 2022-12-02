@@ -64,7 +64,7 @@ public class HttpServerModule
     {
         binder.disableCircularProxies();
 
-        if(sessionHandler != null){
+        if (sessionHandler != null) {
             binder.bind(SessionHandler.class).toInstance(sessionHandler);
         }
 
@@ -87,9 +87,9 @@ public class HttpServerModule
         binder.bind(AnnouncementHttpServerInfo.class).to(LocalAnnouncementHttpServerInfo.class).in(Scopes.SINGLETON);
     }
 
-    public HttpServerModule withSessionHandler(SessionHandler sessionHandler)
+    public HttpServerModule withSessionHandler()
     {
-        this.sessionHandler = sessionHandler;
+        this.sessionHandler = new SessionHandler();
         return this;
     }
 }

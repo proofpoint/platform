@@ -90,7 +90,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class HttpServer
 {
     private static final String[] ENABLED_PROTOCOLS = System.getProperty("java.version").matches("11(\\.0\\.[12])?") ?
-            new String[] {"TLSv1.2"} : new String[] {"TLSv1.2", "TLSv1.3"};
+            new String[]{"TLSv1.2"} : new String[]{"TLSv1.2", "TLSv1.3"};
     private static final String[] ENABLED_CIPHERS = {
             "TLS_AES_128_GCM_SHA256",
             "TLS_AES_256_GCM_SHA384",
@@ -206,7 +206,7 @@ public class HttpServer
             handlers.addHandler(gzipHandler);
         }
 
-        handlers.addHandler(createServletContext(theServlet, parameters, false, filters, queryStringFilter, loginService, nodeInfo, sessionHandler,"http", "https"));
+        handlers.addHandler(createServletContext(theServlet, parameters, false, filters, queryStringFilter, loginService, nodeInfo, sessionHandler, "http", "https"));
 
         RequestLogHandler statsRecorder = new RequestLogHandler();
         statsRecorder.setRequestLog(new StatsRecordingHandler(stats, detailedRequestStats));
@@ -218,7 +218,7 @@ public class HttpServer
 
         HandlerList rootHandlers = new HandlerList();
         if (theAdminServlet != null && config.isAdminEnabled()) {
-            rootHandlers.addHandler(createServletContext(theAdminServlet, adminParameters, true, adminFilters, queryStringFilter, loginService, nodeInfo, null,"admin"));
+            rootHandlers.addHandler(createServletContext(theAdminServlet, adminParameters, true, adminFilters, queryStringFilter, loginService, nodeInfo, null, "admin"));
         }
         rootHandlers.addHandler(statsHandler);
         server.setHandler(rootHandlers);

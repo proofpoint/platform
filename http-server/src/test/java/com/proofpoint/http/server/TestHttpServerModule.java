@@ -74,7 +74,7 @@ public class TestHttpServerModule
     private Injector injector;
     private File tempDir;
 
-    Map<String, String> properties;
+    private Map<String, String> properties;
 
     @BeforeSuite
     public void setupSuite()
@@ -213,9 +213,8 @@ public class TestHttpServerModule
     public void testSessionHandler()
             throws Exception
     {
-        SessionHandler sessionHandler = new SessionHandler();
         Injector injector = bootstrapTest()
-                .withModules(new HttpServerModule().withSessionHandler(sessionHandler),
+                .withModules(new HttpServerModule().withSessionHandler(),
                         new TestingNodeModule(),
                         new TestingMBeanModule(),
                         new ReportingModule(),
@@ -227,7 +226,7 @@ public class TestHttpServerModule
                 .initialize();
 
         SessionHandler result = injector.getInstance(SessionHandler.class);
-        assertEquals(result, sessionHandler);
+        assertNotNull(result);
     }
 
     private void assertResource(URI baseUri, HttpClient client, String path, String contents)
