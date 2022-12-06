@@ -131,7 +131,8 @@ public class HttpServerProvider
     }
 
     @Inject(optional = true)
-    public void setSessionHandler(SessionHandler sessionHandler){
+    public void setSessionHandler(SessionHandler sessionHandler)
+    {
         this.sessionHandler = sessionHandler;
     }
 

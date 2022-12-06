@@ -57,15 +57,15 @@ public class HttpServerModule
 {
     public static final String REALM_NAME = "Proofpoint";
 
-    private SessionHandler sessionHandler;
+    private boolean bindSessionHandler = false;
 
     @Override
     public void configure(Binder binder)
     {
         binder.disableCircularProxies();
 
-        if (sessionHandler != null) {
-            binder.bind(SessionHandler.class).toInstance(sessionHandler);
+        if (bindSessionHandler) {
+            binder.bind(SessionHandler.class).in(Scopes.SINGLETON);
         }
 
         binder.bind(HttpServer.class).toProvider(HttpServerProvider.class).in(Scopes.SINGLETON);
@@ -89,7 +89,7 @@ public class HttpServerModule
 
     public HttpServerModule withSessionHandler()
     {
-        this.sessionHandler = new SessionHandler();
+        this.bindSessionHandler = true;
         return this;
     }
 }
