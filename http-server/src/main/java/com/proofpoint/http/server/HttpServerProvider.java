@@ -21,6 +21,7 @@ import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.node.NodeInfo;
 import org.eclipse.jetty.security.LoginService;
+import org.eclipse.jetty.server.session.SessionHandler;
 
 import javax.annotation.Nullable;
 import javax.inject.Provider;
@@ -53,6 +54,7 @@ public class HttpServerProvider
     private Map<String, String> adminServletInitParameters = ImmutableMap.of();
     private MBeanServer mbeanServer;
     private LoginService loginService;
+    private SessionHandler sessionHandler;
     private final RequestStats stats;
     private final DetailedRequestStats detailedRequestStats;
     private final Set<Filter> filters;
@@ -128,6 +130,12 @@ public class HttpServerProvider
         this.loginService = loginService;
     }
 
+    @Inject(optional = true)
+    public void setSessionHandler(SessionHandler sessionHandler)
+    {
+        this.sessionHandler = sessionHandler;
+    }
+
     @Override
     public HttpServer get()
     {
@@ -149,6 +157,7 @@ public class HttpServerProvider
                     adminFilters,
                     mbeanServer,
                     loginService,
+                    sessionHandler,
                     queryStringFilter,
                     stats,
                     detailedRequestStats,

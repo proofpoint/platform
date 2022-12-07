@@ -88,6 +88,7 @@ public class TestingHttpServer extends HttpServer
                 Set.of(),
                 null,
                 null,
+                null,
                 queryStringFilter,
                 new RequestStats(),
                 new DetailedRequestStats(),
