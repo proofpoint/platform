@@ -7,6 +7,7 @@ Platform 2.76
 
 * Library Upgrades
 
+  - snakeyaml to 1.33 (was 1.31)
   - testng to 7.6.1 (was 7.6.0)
 
 Platform 2.75
