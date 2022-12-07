@@ -5,6 +5,10 @@ Platform 2.76
   We added HttpServerModule.withSessionHandler() to bind a Jetty SessionHandler into
   the constructed HttpServer.
 
+* Library Upgrades
+
+  - testng to 7.6.1 (was 7.6.0)
+
 Platform 2.75
 
 * Library Upgrades
