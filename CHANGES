@@ -1,3 +1,10 @@
+Platform 2.76
+
+* HttpServer
+
+  We added HttpServerModule.withSessionHandler() to bind a Jetty SessionHandler into
+  the constructed HttpServer.
+
 Platform 2.75
 
 * Library Upgrades
