@@ -1,8 +1,14 @@
 Platform 2.77
 
+* Base images
+
+  The base image for containers is now expected to have ["java", "-jar"] in its ENTRYPOINT.
+  The default base image has been changed accordingly. Projects that are overriding the
+  default value of project.docker.from will need to change their base image's ENTRYPOINT.
+
 * Library Upgrades
 
-  - Base Docker image to c15-java11:2.66 (was 2.65)
+  - Base Docker image to c15-java11:2.67 (was 2.65)
 
 Platform 2.76
 
