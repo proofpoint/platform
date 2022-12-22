@@ -1,3 +1,9 @@
+Platform 2.77
+
+* Library Upgrades
+
+  - Base Docker image to c15-java11:2.66 (was 2.65)
+
 Platform 2.76
 
 * HttpServer
