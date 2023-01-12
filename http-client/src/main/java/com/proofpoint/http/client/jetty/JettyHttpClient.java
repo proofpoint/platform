@@ -91,6 +91,10 @@ public class JettyHttpClient
     private static final long SWEEP_PERIOD_MILLIS = 5000;
 
     private static final AtomicLong NAME_COUNTER = new AtomicLong();
+    private static final JettyHttpClientOptions DEFAULT_CLIENT_OPTIONS =
+        new JettyHttpClientOptions.Builder()
+            .setDisableCertificateVerification(false)
+            .build();
 
     private final HttpClient httpClient;
     private final long maxContentLength;
@@ -128,8 +132,16 @@ public class JettyHttpClient
     }
 
     public JettyHttpClient(
+        String name,
+        HttpClientConfig config,
+        Iterable<? extends HttpRequestFilter> requestFilters) {
+        this(name, config, DEFAULT_CLIENT_OPTIONS, requestFilters);
+    }
+
+    public JettyHttpClient(
             String name,
             HttpClientConfig config,
+            JettyHttpClientOptions options,
             Iterable<? extends HttpRequestFilter> requestFilters)
     {
         this.name = requireNonNull(name, "name is null");
@@ -163,6 +175,9 @@ public class JettyHttpClient
         if (config.getTrustStorePath() != null) {
             sslContextFactory.setTrustStorePath(config.getTrustStorePath());
             sslContextFactory.setTrustStorePassword(config.getTrustStorePassword());
+        }
+        if (options.isDisableCertificateVerification()) {
+            sslContextFactory.setTrustAll(true);
         }
 
         HttpClientTransport transport;

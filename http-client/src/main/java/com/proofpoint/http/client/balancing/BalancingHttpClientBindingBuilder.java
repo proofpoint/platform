@@ -104,4 +104,9 @@ public class BalancingHttpClientBindingBuilder
     {
         return this;
     }
+
+    public BalancingHttpClientBindingBuilder withoutCertificateVerification() {
+        delegateBindingBuilder.withoutCertificateVerification();
+        return this;
+    }
 }

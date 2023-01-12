@@ -30,6 +30,7 @@ import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
@@ -290,6 +291,21 @@ public class TestHttpClientBinder
     }
 
     @Test
+    public void testBindWithoutCertificateVerification()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+            .withModules(
+                binder -> httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+                    .withoutCertificateVerification(),
+                new ReportingModule(),
+                new TestingMBeanModule())
+            .initialize();
+        HttpClient fooClient = injector.getInstance(Key.get(HttpClient.class, FooClient.class));
+        assertCertificateVerificationDisabled(fooClient);
+    }
+
+    @Test
     public void testClientShutdown()
             throws Exception
     {
@@ -320,6 +336,16 @@ public class TestHttpClientBinder
         assertNotNull(httpClient);
         assertInstanceOf(httpClient, JettyHttpClient.class);
         assertEquals(((JettyHttpClient) httpClient).getRequestFilters().size(), filterCount);
+    }
+
+    private static void assertCertificateVerificationDisabled(HttpClient httpClient) throws Exception {
+        assertNotNull(httpClient);
+        assertInstanceOf(httpClient, JettyHttpClient.class);
+
+        Field httpClientField = httpClient.getClass().getDeclaredField("httpClient");
+        httpClientField.setAccessible(true);
+        org.eclipse.jetty.client.HttpClient jettyClient = (org.eclipse.jetty.client.HttpClient) httpClientField.get(httpClient);
+        assertTrue(jettyClient.getSslContextFactory().isTrustAll());
     }
 
     @Retention(RUNTIME)

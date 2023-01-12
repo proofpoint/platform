@@ -93,6 +93,12 @@ import static org.weakref.jmx.guice.ExportBinder.newExporter;
  * {@code @BarClient} annotation.
  *
  * <pre>
+ *     httpClientBinder(binder).bindHttpClient("foo", FooClient.class)
+ *         .withoutCertificateVerification();</pre>
+ *
+ * Specifies that the {@link HttpClient} should disable TLS certificate verification.
+ *
+ * <pre>
  *     httpClientBinder(binder).bindBalancingHttpClient("foo");</pre>
  *
  * Binds an {@link HttpClient} annotated with the {@code @ServiceType("foo")}
@@ -482,6 +488,14 @@ public class HttpClientBinder
         @Deprecated
         public HttpClientBindingBuilder withPrivateIoThreadPool()
         {
+            return this;
+        }
+
+        /**
+         * See the EDSL examples at {@link HttpClientBinder}.
+         */
+        public HttpClientBindingBuilder withoutCertificateVerification() {
+            options.setWithoutCertificateVerification();
             return this;
         }
     }
