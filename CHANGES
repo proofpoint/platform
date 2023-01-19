@@ -1,3 +1,10 @@
+Platform 2.78
+
+* HTTPClient
+
+  We added HttpClientBinder.withoutCertificateVerification() to disable certificate
+  verification for a HttpClient.
+
 Platform 2.77
 
 * Base images
