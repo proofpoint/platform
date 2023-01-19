@@ -32,7 +32,7 @@ class HttpClientBindOptions
         this.withTracing.set(withTracing);
     }
 
-    public boolean getWithCertificateVerification() {
+    public boolean isWithCertificateVerification() {
         return withCertificateVerification.get();
     }
 
