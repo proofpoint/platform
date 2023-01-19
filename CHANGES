@@ -5,6 +5,10 @@ Platform 2.78
   We added HttpClientBinder.withoutCertificateVerification() to disable certificate
   verification for a HttpClient.
 
+* Library Upgrades
+
+  - testng to 7.7.1 (was 7.6.1) CVE-2022-4065
+
 Platform 2.77
 
 * Base images
