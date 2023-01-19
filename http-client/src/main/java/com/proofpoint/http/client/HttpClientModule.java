@@ -118,8 +118,8 @@ class HttpClientModule
             }
 
             JettyHttpClientOptions.Builder optionsBuilder = JettyHttpClientOptions.builder();
-            if (httpClientBindOptions.isWithoutCertificateVerification()) {
-                optionsBuilder.setDisableCertificateVerification(true);
+            if (!httpClientBindOptions.getWithCertificateVerification()) {
+                optionsBuilder.setEnableCertificateVerification(false);
             }
 
             client = new JettyHttpClient(name, config, optionsBuilder.build(), filters);

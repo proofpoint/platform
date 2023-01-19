@@ -21,7 +21,7 @@ import static com.proofpoint.http.client.Request.Builder.prepareGet;
 public class TestJettyHttpsClient
         extends AbstractHttpClientTest
 {
-    boolean disableCertificateValidation = false;
+    boolean enableCertificateValidation = true;
 
     TestJettyHttpsClient()
     {
@@ -50,7 +50,7 @@ public class TestJettyHttpsClient
         return new ClientTester()
         {
             JettyHttpClientOptions options = JettyHttpClientOptions.builder()
-                .setDisableCertificateVerification(disableCertificateValidation).build();
+                .setEnableCertificateVerification(enableCertificateValidation).build();
             JettyHttpClient client = new JettyHttpClient("test-private", config, options, List.of(new TestingRequestFilter()));
 
             @Override
@@ -100,14 +100,14 @@ public class TestJettyHttpsClient
         throws Exception
     {
         try {
-            disableCertificateValidation = true;
+            enableCertificateValidation = false;
             HttpClientConfig httpClientConfig = createClientConfig();
             URI uri = new URI("https", null, "127.0.0.1", baseURI.getPort(), "/", null, null);
             Request request = prepareGet().setUri(uri).build();
 
             executeRequest(httpClientConfig, request, new PassThroughResponseHandler());
         } finally {
-            disableCertificateValidation = false;
+            enableCertificateValidation = true;
         }
     }
 

@@ -1,14 +1,14 @@
 package com.proofpoint.http.client.jetty;
 
 public class JettyHttpClientOptions {
-    private final boolean disableCertificateVerification;
+    private final boolean enableCertificateVerification;
 
-    JettyHttpClientOptions(boolean disableCertificateVerification) {
-        this.disableCertificateVerification = disableCertificateVerification;
+    JettyHttpClientOptions(boolean enableCertificateVerification) {
+        this.enableCertificateVerification = enableCertificateVerification;
     }
 
-    public boolean isDisableCertificateVerification() {
-        return disableCertificateVerification;
+    public boolean isEnableCertificateVerification() {
+        return enableCertificateVerification;
     }
 
     public static Builder builder() {
@@ -16,17 +16,17 @@ public class JettyHttpClientOptions {
     }
 
     public static class Builder {
-        private boolean disableCertificateVerification = false;
+        private boolean enableCertificateVerification = true;
 
         public Builder() {
         }
 
         public JettyHttpClientOptions build() {
-            return new JettyHttpClientOptions(disableCertificateVerification);
+            return new JettyHttpClientOptions(enableCertificateVerification);
         }
 
-        public Builder setDisableCertificateVerification(boolean disableCertificateVerification) {
-            this.disableCertificateVerification = disableCertificateVerification;
+        public Builder setEnableCertificateVerification(boolean enableCertificateVerification) {
+            this.enableCertificateVerification = enableCertificateVerification;
             return this;
         }
     }

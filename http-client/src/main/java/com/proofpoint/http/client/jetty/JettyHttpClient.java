@@ -93,7 +93,7 @@ public class JettyHttpClient
     private static final AtomicLong NAME_COUNTER = new AtomicLong();
     private static final JettyHttpClientOptions DEFAULT_CLIENT_OPTIONS =
         new JettyHttpClientOptions.Builder()
-            .setDisableCertificateVerification(false)
+            .setEnableCertificateVerification(true)
             .build();
 
     private final HttpClient httpClient;
@@ -176,7 +176,7 @@ public class JettyHttpClient
             sslContextFactory.setTrustStorePath(config.getTrustStorePath());
             sslContextFactory.setTrustStorePassword(config.getTrustStorePassword());
         }
-        if (options.isDisableCertificateVerification()) {
+        if (!options.isEnableCertificateVerification()) {
             sslContextFactory.setTrustAll(true);
         }
 
