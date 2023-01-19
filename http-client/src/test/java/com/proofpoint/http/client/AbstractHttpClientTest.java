@@ -1568,7 +1568,7 @@ public abstract class AbstractHttpClientTest
         }
     }
 
-    private static class PassThroughResponseHandler
+    public static class PassThroughResponseHandler
             implements ResponseHandler<Response, RuntimeException>
     {
         @Override

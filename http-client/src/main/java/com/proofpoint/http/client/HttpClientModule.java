@@ -22,6 +22,7 @@ import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
+import com.proofpoint.http.client.jetty.JettyHttpClientOptions;
 import com.proofpoint.log.Logger;
 
 import javax.annotation.PreDestroy;
@@ -116,7 +117,12 @@ class HttpClientModule
                 filters.add(new TraceTokenRequestFilter());
             }
 
-            client = new JettyHttpClient(name, config, filters);
+            JettyHttpClientOptions.Builder optionsBuilder = JettyHttpClientOptions.builder();
+            if (!httpClientBindOptions.isWithCertificateVerification()) {
+                optionsBuilder.setEnableCertificateVerification(false);
+            }
+
+            client = new JettyHttpClient(name, config, optionsBuilder.build(), filters);
 
             injector = null;
             return client;

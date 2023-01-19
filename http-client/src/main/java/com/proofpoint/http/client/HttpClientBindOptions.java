@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class HttpClientBindOptions
 {
     private final AtomicBoolean withTracing = new AtomicBoolean(true);
+    private final AtomicBoolean withCertificateVerification = new AtomicBoolean(true);
 
     public boolean isWithTracing()
     {
@@ -29,5 +30,13 @@ class HttpClientBindOptions
     public void setWithTracing(boolean withTracing)
     {
         this.withTracing.set(withTracing);
+    }
+
+    public boolean isWithCertificateVerification() {
+        return withCertificateVerification.get();
+    }
+
+    public void setWithoutCertificateVerification() {
+        withCertificateVerification.set(false);
     }
 }
