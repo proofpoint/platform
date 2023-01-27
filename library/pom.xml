@@ -1834,6 +1834,99 @@
                 <sonar.pullrequest.branch>${env.CHANGE_BRANCH}</sonar.pullrequest.branch>
                 <sonar.pullrequest.base>${env.CHANGE_TARGET}</sonar.pullrequest.base>
             </properties>
+        </profile>
+
+        <profile>
+            <id>add-git-commit-to-metadata</id>
+            <activation>
+                <file>
+                    <exists>.build-docker</exists>
+                </file>
+                <property>
+                    <name>env.GIT_COMMIT</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <build>
+                                        <labels>
+                                            <git_commit>${env.GIT_COMMIT}</git_commit>
+                                        </labels>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>add-build-url-to-metadata</id>
+            <activation>
+                <file>
+                    <exists>.build-docker</exists>
+                </file>
+                <property>
+                    <name>env.BUILD_URL</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <build>
+                                        <labels>
+                                            <build_url>${env.BUILD_URL}</build_url>
+                                        </labels>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>add-creator-source-to-metadata</id>
+            <activation>
+                <file>
+                    <exists>.build-docker</exists>
+                </file>
+                <property>
+                    <name>env.GIT_URL</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <build>
+                                        <labels>
+                                            <creator_source>${env.GIT_URL}</creator_source>
+                                        </labels>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>        
     </profiles>
 </project>
