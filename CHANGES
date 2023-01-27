@@ -1,4 +1,4 @@
-Platform 2.79
+Platform 2.80
 
 * Docker images now include any values of the GIT_COMMIT, BUILD_URL, or GIT_URL
   environment variable in corresponding labels.
