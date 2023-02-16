@@ -1,3 +1,9 @@
+Platform 2.84
+
+* Library Upgrades
+
+  - Base Docker image to c15-java11:2.72 (was 2.67)
+
 Platform 2.83
 
 * Docker images now include any values of the GIT_COMMIT, BUILD_URL, or GIT_URL
