@@ -272,6 +272,7 @@ public final class MoreFutures
      */
     public static <V> ListenableFuture<V> whenAnyComplete(Iterable<? extends ListenableFuture<? extends V>> futures)
     {
+
         requireNonNull(futures, "futures is null");
         checkArgument(!isEmpty(futures), "futures is empty");
 

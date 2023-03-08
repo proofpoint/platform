@@ -16,6 +16,7 @@
 package com.proofpoint.discovery.client;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.MoreCollectors;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -33,7 +34,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.discovery.client.ServiceTypes.serviceType;
 import static com.proofpoint.discovery.client.announce.ServiceAnnouncement.serviceAnnouncement;
@@ -67,9 +67,10 @@ public class TestHttpServiceSelectorBinder
         discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("http", "fake://server-http").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
-        assertEquals(getOnlyElement(selector.selectHttpService()), URI.create("fake://server-http"));
+
+        assertEquals(selector.selectHttpService().stream().collect(MoreCollectors.onlyElement()), URI.create("fake://server-http"));
         HttpServiceSelector legacySelector = injector.getInstance(Key.get(HttpServiceSelector.class, serviceType("apple")));
-        assertEquals(getOnlyElement(legacySelector.selectHttpService()), URI.create("fake://server-http"));
+        assertEquals(legacySelector.selectHttpService().stream().collect(MoreCollectors.onlyElement()), URI.create("fake://server-http"));
     }
 
     @Test
@@ -90,7 +91,7 @@ public class TestHttpServiceSelectorBinder
         discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("http", "fake://server-http").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
-        assertEquals(getOnlyElement(selector.selectHttpService()), URI.create("fake://server-http"));
+        assertEquals(selector.selectHttpService().stream().collect(MoreCollectors.onlyElement()), URI.create("fake://server-http"));
     }
 
     @Test
@@ -100,9 +101,9 @@ public class TestHttpServiceSelectorBinder
         discoveryClient.announce(Set.of(serviceAnnouncement("apple").addProperty("https", "fake://server-https").build()));
 
         HttpServiceSelector selector = injector.getInstance(Key.get(HttpServiceSelector.class, com.proofpoint.http.client.ServiceTypes.serviceType("apple")));
-        assertEquals(getOnlyElement(selector.selectHttpService()), URI.create("fake://server-https"));
+        assertEquals(selector.selectHttpService().stream().collect(MoreCollectors.onlyElement()), URI.create("fake://server-https"));
         HttpServiceSelector legacySelector = injector.getInstance(Key.get(HttpServiceSelector.class, serviceType("apple")));
-        assertEquals(getOnlyElement(legacySelector.selectHttpService()), URI.create("fake://server-https"));
+        assertEquals(legacySelector.selectHttpService().stream().collect(MoreCollectors.onlyElement()), URI.create("fake://server-https"));
     }
 
     @Test

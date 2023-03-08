@@ -15,7 +15,7 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import com.google.common.collect.Iterables;
+import com.google.common.collect.MoreCollectors;
 import com.google.common.io.Resources;
 import com.proofpoint.json.JsonCodec;
 import org.testng.annotations.Test;
@@ -55,7 +55,7 @@ public class TestAnnouncement
 
         // set id in expected
         List<Map<String, Object>> services = toServices(expected.get("services"));
-        services.get(0).put("id", Iterables.getOnlyElement(announcement.getServices()).getId().toString());
+        services.get(0).put("id", announcement.getServices().stream().collect(MoreCollectors.onlyElement()).getId().toString());
 
         assertEquals(actual, expected);
     }

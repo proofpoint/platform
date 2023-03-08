@@ -18,6 +18,7 @@ package com.proofpoint.reporting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.MoreCollectors;
 import com.google.inject.Binder;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
@@ -49,7 +50,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
@@ -664,7 +664,7 @@ public class TestReportBinder
     private void assertReportRegistration(Injector injector, boolean applicationPrefix, String namePrefix, Map<String, String> tags, Optional<Set<String>> expectedAttributes)
     {
         ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
-        RegistrationInfo registrationInfo = getOnlyElement(reportedBeanRegistry.getReportedBeans());
+        RegistrationInfo registrationInfo = reportedBeanRegistry.getReportedBeans().stream().collect(MoreCollectors.onlyElement());
         assertEquals(registrationInfo.isApplicationPrefix(), applicationPrefix);
         assertEquals(registrationInfo.getNamePrefix(), namePrefix, "name prefix");
         assertEquals(registrationInfo.getTags(), tags, "tags");

@@ -16,7 +16,7 @@
 package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.MoreCollectors;
 import com.proofpoint.reporting.ReportException.Reason;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 import org.mockito.Mock;
@@ -26,10 +26,11 @@ import org.weakref.jmx.Nested;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -281,16 +282,16 @@ public class TestReportExporter
 
     private void assertExported(boolean applicationPrefix, Map<Object, Object> expectedTags)
     {
-        RegistrationInfo registrationInfo = getOnlyElement(registry.getReportedBeans());
+        RegistrationInfo registrationInfo = registry.getReportedBeans().stream().collect(MoreCollectors.onlyElement());
         assertEquals(registrationInfo.isApplicationPrefix(), applicationPrefix);
         assertEquals(registrationInfo.getNamePrefix(), "TestingObject");
         assertEquals(registrationInfo.getTags(), expectedTags);
         assertEquals(namesOf(registrationInfo.getReportedBean().getAttributes()), namesOf(ReportedBean.forTarget(TESTING_OBJECT, bucketIdProvider).getAttributes()));
     }
 
-    private static Iterable<String> namesOf(Iterable<ReportedBeanAttribute> attributes)
+    private static Collection<String> namesOf(Collection<ReportedBeanAttribute> attributes)
     {
-        return Iterables.transform(attributes, ReportedBeanAttribute::getName);
+        return attributes.stream().map(ReportedBeanAttribute::getName).collect(Collectors.toList());
     }
 
     private static class TestingBucketed

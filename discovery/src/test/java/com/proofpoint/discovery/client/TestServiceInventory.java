@@ -17,6 +17,7 @@ package com.proofpoint.discovery.client;
 
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multiset;
 import com.google.common.io.Resources;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerImpl;
@@ -87,7 +88,7 @@ public class TestServiceInventory
         verify(balancer).updateHttpUris(uriMultisetCaptor.capture());
         assertEquals(Iterables.size(uriMultisetCaptor.getValue()), 1);
 
-        URI uri = Iterables.getOnlyElement(uriMultisetCaptor.getValue());
+        URI uri = uriMultisetCaptor.getValue().stream().collect(MoreCollectors.onlyElement());
         assertEquals(uri, URI.create("https://example.com:4111"));
 
         assertEquals(Iterables.size(serviceInventory.getServiceDescriptors()), 0);

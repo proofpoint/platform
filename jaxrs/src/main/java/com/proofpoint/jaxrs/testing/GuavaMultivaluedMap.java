@@ -3,7 +3,6 @@ package com.proofpoint.jaxrs.testing;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -62,7 +61,7 @@ public class GuavaMultivaluedMap<K, V>
     @Override
     public V getFirst(K key)
     {
-        return Iterables.getFirst(multimap.get(key), null);
+        return multimap.get(key).stream().findFirst().orElse(null);
     }
 
     @Override

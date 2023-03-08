@@ -93,7 +93,7 @@
         <dep.jackson.version>2.15.0</dep.jackson.version>
         <dep.jersey.version>3.0.10</dep.jersey.version>
         <dep.jmh.version>1.35</dep.jmh.version>
-        <dep.jacoco.version>0.8.5</dep.jacoco.version>
+        <dep.jacoco.version>0.8.8</dep.jacoco.version>
         <dep.modernizer.version>2.5.0</dep.modernizer.version>
 
         <platform.jacoco.merged-data-file>${project.build.directory}/merged.exec</platform.jacoco.merged-data-file>
@@ -553,6 +553,7 @@
                             <exclusionPattern>com/google/common/collect/ImmutableMap.copyOf:.*</exclusionPattern>
                             <exclusionPattern>com/google/common/collect/ImmutableSet.of:.*</exclusionPattern>
                             <exclusionPattern>com/google/common/collect/ImmutableSet.copyOf:.*</exclusionPattern>
+                            <exclusionPattern>com/google/common/collect/Iterables.isEmpty:.*</exclusionPattern>
                         </exclusionPatterns>
                     </configuration>
                     <executions>
