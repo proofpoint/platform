@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import static com.google.common.collect.Iterables.getFirst;
 import static com.proofpoint.configuration.TypeParameterUtils.getTypeParameters;
 import static com.proofpoint.event.client.AnnotationUtils.findAnnotatedMethods;
 import static com.proofpoint.event.client.EventDataType.getEventDataType;
@@ -196,10 +195,10 @@ final class EventTypeMetadata<T>
             }
         }
 
-        this.uuidField = getFirst(specialFields.get(EventFieldMapping.UUID), null);
-        this.timestampField = getFirst(specialFields.get(EventFieldMapping.TIMESTAMP), null);
-        this.hostField = getFirst(specialFields.get(EventFieldMapping.HOST), null);
-        this.traceTokenField = getFirst(specialFields.get(EventFieldMapping.TRACE_TOKEN), null);
+        this.uuidField = specialFields.get(EventFieldMapping.UUID).stream().findFirst().orElse(null);
+        this.timestampField = specialFields.get(EventFieldMapping.TIMESTAMP).stream().findFirst().orElse(null);
+        this.hostField = specialFields.get(EventFieldMapping.HOST).stream().findFirst().orElse(null);
+        this.traceTokenField = specialFields.get(EventFieldMapping.TRACE_TOKEN).stream().findFirst().orElse(null);
 
         this.fields = Ordering.from(EventFieldMetadata.NAME_COMPARATOR).immutableSortedCopy(fields.values());
 

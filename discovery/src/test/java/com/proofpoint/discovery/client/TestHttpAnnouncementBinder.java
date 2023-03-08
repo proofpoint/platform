@@ -15,7 +15,7 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.collect.Iterables;
+import com.google.common.collect.MoreCollectors;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
@@ -195,7 +195,7 @@ public class TestHttpAnnouncementBinder
     {
         assertNotNull(actualAnnouncements);
         assertEquals(actualAnnouncements.size(), 1);
-        ServiceAnnouncement announcement = Iterables.getOnlyElement(actualAnnouncements);
+        ServiceAnnouncement announcement = actualAnnouncements.stream().collect(MoreCollectors.onlyElement());
         assertEquals(announcement.getType(), expected.getType());
         assertEquals(announcement.getProperties(), expected.getProperties());
     }

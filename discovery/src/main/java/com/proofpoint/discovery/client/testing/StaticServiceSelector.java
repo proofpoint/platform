@@ -17,10 +17,10 @@ package com.proofpoint.discovery.client.testing;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceSelector;
 
+import java.util.Collection;
 import java.util.List;
 
 import static com.proofpoint.discovery.client.ServiceSelectorConfig.DEFAULT_POOL;
@@ -37,11 +37,11 @@ public class StaticServiceSelector implements ServiceSelector
         this(ImmutableList.copyOf(serviceDescriptors));
     }
 
-    public StaticServiceSelector(Iterable<ServiceDescriptor> serviceDescriptors)
+    public StaticServiceSelector(Collection<ServiceDescriptor> serviceDescriptors)
     {
         requireNonNull(serviceDescriptors, "serviceDescriptors is null");
 
-        ServiceDescriptor serviceDescriptor = Iterables.getFirst(serviceDescriptors, null);
+        ServiceDescriptor serviceDescriptor = serviceDescriptors.stream().findFirst().orElse(null);
         if (serviceDescriptor != null) {
             this.type = serviceDescriptor.getType();
             this.pool = serviceDescriptor.getPool();
