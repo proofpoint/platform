@@ -553,7 +553,6 @@
                             <exclusionPattern>com/google/common/collect/ImmutableMap.copyOf:.*</exclusionPattern>
                             <exclusionPattern>com/google/common/collect/ImmutableSet.of:.*</exclusionPattern>
                             <exclusionPattern>com/google/common/collect/ImmutableSet.copyOf:.*</exclusionPattern>
-                            <exclusionPattern>com/google/common/collect/Iterables.isEmpty:.*</exclusionPattern>
                         </exclusionPatterns>
                     </configuration>
                     <executions>
