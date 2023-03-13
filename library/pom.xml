@@ -553,6 +553,8 @@
                             <exclusionPattern>com/google/common/collect/ImmutableMap.copyOf:.*</exclusionPattern>
                             <exclusionPattern>com/google/common/collect/ImmutableSet.of:.*</exclusionPattern>
                             <exclusionPattern>com/google/common/collect/ImmutableSet.copyOf:.*</exclusionPattern>
+                            <!-- Keeping Iterables.concat as the alternative Stream.concat(stream1, stream2).collect(Collector.asList()) creates a new List which is not needed -->
+                            <exclusionPattern>com/google/common/collect/Iterables.concat:.*</exclusionPattern>
                         </exclusionPatterns>
                     </configuration>
                     <executions>

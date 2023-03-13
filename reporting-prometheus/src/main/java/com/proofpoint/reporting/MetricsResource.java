@@ -17,6 +17,9 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.MoreCollectors;
+import com.google.common.collect.Streams;
 import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 import com.proofpoint.node.NodeInfo;
 import jakarta.inject.Inject;
@@ -78,7 +81,7 @@ public class MetricsResource
                         taggedValue.getValueAndTimestamp().getValue().writeMetric(
                                 writer,
                                 entry.getKey(),
-                                Stream.concat(taggedValue.getTags().entrySet().stream(), instanceTags.entrySet().stream()).collect(Collectors.toList()),
+                                Iterables.concat(taggedValue.getTags().entrySet(), instanceTags.entrySet()),
                                 taggedValue.getValueAndTimestamp().getTimestamp()
                         );
                     }
