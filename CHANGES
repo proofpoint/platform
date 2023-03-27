@@ -1,3 +1,9 @@
+Platform 2.85
+
+* Library Upgrades
+
+  - swagger-jaxrs2 to 2.2.9 (was 2.0.0) CVE-2022-1471
+
 Platform 2.84
 
 * Library Upgrades
