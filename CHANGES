@@ -1,3 +1,14 @@
+Platform 2.86
+
+* Major version upgrade from Jetty 9 to Jetty 10, which supports the Servlet 4.0
+  specification. This will be the last major version supporting the javax.* packages.
+
+* Library Upgrades
+
+  - Jetty to 10.0.15 (was 9.4.48)
+  - slf4j to 2.0.5 (was 1.7.36)
+  - javax.servlet-api to 4.0.1 (was 3.1.0)
+
 Platform 2.85
 
 * Library Upgrades

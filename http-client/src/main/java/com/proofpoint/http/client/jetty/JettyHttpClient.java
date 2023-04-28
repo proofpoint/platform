@@ -16,12 +16,12 @@ import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.http.client.StaticBodyGenerator;
 import com.proofpoint.log.Logger;
 import com.proofpoint.units.Duration;
-import org.eclipse.jetty.client.DuplexConnectionPool;
+import org.eclipse.jetty.client.AbstractConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.client.HttpRequest;
-import org.eclipse.jetty.client.PoolingHttpDestination;
+import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.Socks4Proxy;
 import org.eclipse.jetty.client.api.Destination;
 import org.eclipse.jetty.client.api.Response;
@@ -31,6 +31,7 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
+import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.io.MappedByteBufferPool;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.component.LifeCycle;
@@ -68,13 +69,12 @@ import static java.lang.Math.toIntExact;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static org.eclipse.jetty.client.ConnectionPoolAccessor.getActiveConnections;
+import static org.eclipse.jetty.client.ConnectionPoolAccessor.getIdleConnections;
 
 public class JettyHttpClient
         implements com.proofpoint.http.client.HttpClient
 {
-    static {
-        JettyLogging.setup();
-    }
 
     private static final Logger log = Logger.get(JettyHttpClient.class);
     private static final String[] ENABLED_PROTOCOLS = System.getProperty("java.version").matches("11(\\.0\\.[12])?") ?
@@ -161,7 +161,7 @@ public class JettyHttpClient
 
         creationLocation.fillInStackTrace();
 
-        SslContextFactory sslContextFactory = new SslContextFactory.Client();
+        SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
         sslContextFactory.setExcludeProtocols();
         sslContextFactory.setIncludeProtocols(ENABLED_PROTOCOLS);
@@ -190,10 +190,13 @@ public class JettyHttpClient
             transport = new HttpClientTransportOverHTTP2(client);
         }
         else {
-            transport = new HttpClientTransportOverHTTP(config.getSelectorCount());
+            ClientConnector clientConnector = new ClientConnector();
+            clientConnector.setSelectors(config.getSelectorCount());
+            clientConnector.setSslContextFactory(sslContextFactory);
+            transport = new HttpClientTransportOverHTTP(clientConnector);
         }
 
-        httpClient = new AuthorizationPreservingHttpClient(transport, sslContextFactory);
+        httpClient = new AuthorizationPreservingHttpClient(transport);
 
         // request and response buffer size
         httpClient.setRequestBufferSize(toIntExact(config.getRequestBufferSize().toBytes()));
@@ -221,15 +224,13 @@ public class JettyHttpClient
 
         HostAndPort socksProxy = config.getSocksProxy();
         if (socksProxy != null) {
-            httpClient.getProxyConfiguration().getProxies().add(new Socks4Proxy(socksProxy.getHost(), socksProxy.getPortOrDefault(1080)));
+            httpClient.getProxyConfiguration().addProxy(new Socks4Proxy(socksProxy.getHost(), socksProxy.getPortOrDefault(1080)));
         }
 
         httpClient.setByteBufferPool(new MappedByteBufferPool());
         QueuedThreadPool executor = createExecutor(name, config.getMinThreads(), config.getMaxThreads());
         stats = stats(executor);
         httpClient.setExecutor(executor);
-        // add executor as a managed bean to get its state in the client dumps
-        httpClient.addBean(executor, true);
         httpClient.setScheduler(createScheduler(name, config.getTimeoutConcurrency(), config.getTimeoutThreads()));
 
         httpClient.setSocketAddressResolver(new JettyAsyncSocketAddressResolver(
@@ -266,10 +267,10 @@ public class JettyHttpClient
         this.requestFilters = ImmutableList.copyOf(requestFilters);
 
         this.activeConnectionsPerDestination = new ConnectionPoolDistribution(httpClient,
-                 (distribution, connectionPool) -> distribution.add(connectionPool.getActiveConnections().size()));
+                (distribution, connectionPool) -> distribution.add(getActiveConnections(connectionPool).size()));
 
          this.idleConnectionsPerDestination = new ConnectionPoolDistribution(httpClient,
-                 (distribution, connectionPool) -> distribution.add(connectionPool.getIdleConnections().size()));
+                 (distribution, connectionPool) -> distribution.add(getIdleConnections(connectionPool).size()));
 
          this.queuedRequestsPerDestination = new DestinationDistribution(httpClient,
                  (distribution, destination) -> distribution.add(destination.getHttpExchanges().size()));
@@ -421,12 +422,7 @@ public class JettyHttpClient
             if (cause instanceof Exception) {
                 return responseHandler.handleException(request, (Exception) cause);
             }
-            else if ((cause instanceof NoClassDefFoundError) && cause.getMessage().endsWith("ALPNClientConnection")) {
-                return responseHandler.handleException(request, new RuntimeException("HTTPS cannot be used when HTTP/2 is enabled", cause));
-            }
-            else {
-                return responseHandler.handleException(request, new RuntimeException(cause));
-            }
+            return responseHandler.handleException(request, new RuntimeException(cause));
         }
 
         // process response
@@ -511,9 +507,7 @@ public class JettyHttpClient
 
         jettyRequest.method(finalRequest.getMethod());
 
-        for (Entry<String, String> entry : finalRequest.getHeaders().entries()) {
-            jettyRequest.header(entry.getKey(), entry.getValue());
-        }
+        jettyRequest.headers(headers -> finalRequest.getHeaders().forEach(headers::add));
 
         BodySource bodySource = finalRequest.getBodySource();
         if (bodySource != null) {
@@ -639,12 +633,13 @@ public class JettyHttpClient
     @SuppressWarnings("UnusedDeclaration")
     public String dumpDestination(URI uri)
     {
-        Destination destination = httpClient.getDestination(uri.getScheme(), uri.getHost(), uri.getPort());
-        if (destination == null) {
-            return null;
-        }
-
-        return dumpDestination(destination);
+        return httpClient.getDestinations().stream()
+                .filter(destination -> Objects.equals(destination.getScheme(), uri.getScheme()))
+                .filter(destination -> Objects.equals(destination.getHost(), uri.getHost()))
+                .filter(destination -> destination.getPort() == uri.getPort())
+                .findFirst()
+                .map(JettyHttpClient::dumpDestination)
+                .orElse(null);
     }
 
     private static String dumpDestination(Destination destination)
@@ -667,14 +662,14 @@ public class JettyHttpClient
 
     private static List<org.eclipse.jetty.client.api.Request> getRequestForDestination(Destination destination)
     {
-        PoolingHttpDestination poolingHttpDestination = (PoolingHttpDestination) destination;
-        Queue<HttpExchange> httpExchanges = poolingHttpDestination.getHttpExchanges();
+        HttpDestination httpDestination = (HttpDestination) destination;
+        Queue<HttpExchange> httpExchanges = httpDestination.getHttpExchanges();
 
         List<org.eclipse.jetty.client.api.Request> requests = httpExchanges.stream()
                 .map(HttpExchange::getRequest)
                 .collect(Collectors.toList());
 
-        ((DuplexConnectionPool) poolingHttpDestination.getConnectionPool()).getActiveConnections().stream()
+        getActiveConnections((AbstractConnectionPool) httpDestination.getConnectionPool()).stream()
                 .filter(HttpConnectionOverHTTP.class::isInstance)
                 .map(HttpConnectionOverHTTP.class::cast)
                 .map(connection -> connection.getHttpChannel().getHttpExchange())

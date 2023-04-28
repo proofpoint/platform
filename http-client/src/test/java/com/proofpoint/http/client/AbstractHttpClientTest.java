@@ -112,7 +112,7 @@ public abstract class AbstractHttpClientTest
     private String host = "127.0.0.1";
     private String keystore = null;
     protected RequestStats stats;
-    private SslContextFactory sslContextFactory;
+    private SslContextFactory.Server sslContextFactory;
 
     protected AbstractHttpClientTest()
     {

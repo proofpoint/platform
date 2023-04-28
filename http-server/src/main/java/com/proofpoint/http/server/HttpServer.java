@@ -232,11 +232,11 @@ public class HttpServer
     private ServerConnector createHttpsServerConnector(HttpServerConfig config, ServerSocketChannel serverSocketChannel, HttpConfiguration configuration, Executor threadPool, int acceptors, int selectors)
             throws IOException
     {
-        boolean isJava8 = System.getProperty("java.version").startsWith("1.8.");
+        checkState(!System.getProperty("java.version").startsWith("1.8."), "Java 8 is no longer supported");
 
         configuration.addCustomizer(new SecureRequestCustomizer());
 
-        SslContextFactory sslContextFactory = new SslContextFactory.Server();
+        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
         sslContextFactory.setKeyStorePath(config.getKeystorePath());
         sslContextFactory.setKeyStorePassword(config.getKeystorePassword());
@@ -249,19 +249,16 @@ public class HttpServer
         sslContextFactory.setSslSessionCacheSize(config.getSslSessionCacheSize());
 
         List<ConnectionFactory> connectionFactories = new ArrayList<>();
-        connectionFactories.add(new SslConnectionFactory(sslContextFactory, isJava8 ? "http/1.1" : "alpn"));
-        if (!isJava8) {
-            connectionFactories.add(new ALPNServerConnectionFactory("h2", "http/1.1"));
-            HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(configuration);
-            http2.setInitialSessionRecvWindow(toIntExact(config.getHttp2InitialSessionReceiveWindowSize().toBytes()));
-            http2.setInitialStreamRecvWindow(toIntExact(config.getHttp2InitialStreamReceiveWindowSize().toBytes()));
-            http2.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
-            http2.setInputBufferSize(toIntExact(config.getHttp2InputBufferSize().toBytes()));
-            http2.setStreamIdleTimeout(config.getHttp2StreamIdleTimeout().toMillis());
-            connectionFactories.add(http2);
-
-        }
+        connectionFactories.add(new SslConnectionFactory(sslContextFactory, "alpn"));
         connectionFactories.add(new HttpConnectionFactory(configuration));
+        connectionFactories.add(new ALPNServerConnectionFactory("h2", "http/1.1"));
+        HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(configuration);
+        http2.setInitialSessionRecvWindow(toIntExact(config.getHttp2InitialSessionReceiveWindowSize().toBytes()));
+        http2.setInitialStreamRecvWindow(toIntExact(config.getHttp2InitialStreamReceiveWindowSize().toBytes()));
+        http2.setMaxConcurrentStreams(config.getHttp2MaxConcurrentStreams());
+        http2.setInputBufferSize(toIntExact(config.getHttp2InputBufferSize().toBytes()));
+        http2.setStreamIdleTimeout(config.getHttp2StreamIdleTimeout().toMillis());
+        connectionFactories.add(http2);
 
         return createServerConnector(
                 serverSocketChannel,
