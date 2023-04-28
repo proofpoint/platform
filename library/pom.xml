@@ -84,12 +84,12 @@
         <platform.check.fail-modernizer>false</platform.check.fail-modernizer>
 
         <dep.auto-value.version>1.7.4</dep.auto-value.version>
-        <dep.jetty.version>9.4.48.v20220622</dep.jetty.version>
+        <dep.jetty.version>10.0.15</dep.jetty.version>
         <dep.guava.version>31.1-jre</dep.guava.version>
         <dep.guice.version>5.0.1</dep.guice.version>
-        <dep.slf4j.version>1.7.36</dep.slf4j.version>
+        <dep.slf4j.version>2.0.5</dep.slf4j.version>
         <dep.logback.version>1.2.11</dep.logback.version>
-        <dep.javax-servlet.version>3.1.0</dep.javax-servlet.version>
+        <dep.javax-servlet.version>4.0.1</dep.javax-servlet.version>
         <dep.jackson.version>2.13.4</dep.jackson.version>
         <dep.jersey.version>2.27</dep.jersey.version>
         <dep.jmh.version>1.35</dep.jmh.version>
@@ -168,6 +168,7 @@
                                     <exclude>com.google.code.findbugs:annotations</exclude>
                                     <!-- Use the official version at javax.servlet:javax.servlet-api -->
                                     <exclude>org.eclipse.jetty.orbit:javax.servlet</exclude>
+                                    <exclude>org.eclipse.jetty.toolchain:jetty-servlet-api</exclude>
                                     <!-- removed -->
                                     <exclude>com.proofpoint.platform:jmx-http-rpc-experimental</exclude>
                                     <!-- renamed Platform modules -->
@@ -1085,6 +1086,10 @@
                     <exclusion>
                         <groupId>org.eclipse.jetty.orbit</groupId>
                         <artifactId>javax.servlet</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.toolchain</groupId>
+                        <artifactId>jetty-servlet-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

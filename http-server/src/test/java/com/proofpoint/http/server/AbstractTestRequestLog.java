@@ -141,7 +141,7 @@ public abstract class AbstractTestRequestLog
         when(request.getProtocol()).thenReturn("unknown");
         when(request.getHeader("X-FORWARDED-PROTO")).thenReturn(protocol);
         when(request.getAttribute(TimingFilter.FIRST_BYTE_TIME)).thenReturn(timestamp + timeToFirstByte);
-        when(request.getHttpURI()).thenReturn(new HttpURI("http://www.example.com/aaa+bbb/ccc?param=hello%20there&other=true"));
+        when(request.getHttpURI()).thenReturn(HttpURI.from("http://www.example.com/aaa+bbb/ccc?param=hello%20there&other=true"));
         when(request.getUserPrincipal()).thenReturn(principal);
         when(request.getMethod()).thenReturn(method);
         when(request.getContentRead()).thenReturn(requestSize);
