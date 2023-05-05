@@ -1,3 +1,8 @@
+Platform 2.87
+
+* Library Upgrades
+  - joda-time to 2.12.5 (was 2.10.10)
+
 Platform 2.86
 
 * Major version upgrade from Jetty 9 to Jetty 10, which supports the Servlet 4.0
