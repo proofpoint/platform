@@ -90,7 +90,7 @@
         <dep.slf4j.version>2.0.5</dep.slf4j.version>
         <dep.logback.version>1.2.11</dep.logback.version>
         <dep.javax-servlet.version>4.0.1</dep.javax-servlet.version>
-        <dep.jackson.version>2.13.4</dep.jackson.version>
+        <dep.jackson.version>2.15.0</dep.jackson.version>
         <dep.jersey.version>2.27</dep.jersey.version>
         <dep.jmh.version>1.35</dep.jmh.version>
         <dep.jacoco.version>0.8.5</dep.jacoco.version>
@@ -1039,7 +1039,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${dep.jackson.version}.2</version>
+                <version>${dep.jackson.version}</version>
             </dependency>
 
             <dependency>
