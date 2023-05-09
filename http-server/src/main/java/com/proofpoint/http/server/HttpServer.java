@@ -234,7 +234,10 @@ public class HttpServer
     {
         checkState(!System.getProperty("java.version").startsWith("1.8."), "Java 8 is no longer supported");
 
-        configuration.addCustomizer(new SecureRequestCustomizer());
+        SecureRequestCustomizer customizer = new SecureRequestCustomizer();
+        customizer.setSniHostCheck(false);
+        customizer.setSniRequired(false);
+        configuration.addCustomizer(customizer);
 
         SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
@@ -247,6 +250,7 @@ public class HttpServer
         sslContextFactory.setCipherComparator(Ordering.explicit("", ENABLED_CIPHERS));
         sslContextFactory.setSslSessionTimeout((int) config.getSslSessionTimeout().getValue(SECONDS));
         sslContextFactory.setSslSessionCacheSize(config.getSslSessionCacheSize());
+        sslContextFactory.setSniRequired(false);
 
         List<ConnectionFactory> connectionFactories = new ArrayList<>();
         connectionFactories.add(new SslConnectionFactory(sslContextFactory, "alpn"));

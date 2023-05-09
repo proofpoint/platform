@@ -1,3 +1,7 @@
+Platform 2.88
+
+* Bug Fix: Do not require SNI or Host Checks, as this conflicts with Kubernetes Health Probes
+
 Platform 2.87
 
 * Library Upgrades
