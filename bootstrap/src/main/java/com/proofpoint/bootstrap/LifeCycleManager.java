@@ -18,10 +18,10 @@ package com.proofpoint.bootstrap;
 import com.google.common.collect.Lists;
 import com.proofpoint.log.Logger;
 import com.proofpoint.log.Logging;
+import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

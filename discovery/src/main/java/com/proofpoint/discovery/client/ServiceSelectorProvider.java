@@ -17,9 +17,8 @@ package com.proofpoint.discovery.client;
 
 import com.google.inject.Injector;
 import com.google.inject.Key;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import static com.proofpoint.http.client.ServiceTypes.serviceType;
 import static java.util.Objects.requireNonNull;

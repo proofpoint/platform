@@ -15,8 +15,9 @@
  */
 package com.proofpoint.json;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+
 import java.lang.reflect.Type;
 
 class JsonCodecProvider implements Provider<JsonCodec<?>>

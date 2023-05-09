@@ -25,9 +25,9 @@ import com.proofpoint.discovery.client.balancing.HttpServiceBalancerProvider;
 import com.proofpoint.http.client.balancing.BalancingHttpClientBindingBuilder;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerConfig;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 

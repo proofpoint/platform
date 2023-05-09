@@ -16,8 +16,8 @@
 package com.proofpoint.reporting;
 
 import com.google.inject.Injector;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.util.HashMap;

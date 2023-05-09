@@ -19,9 +19,9 @@ import com.google.common.net.HostAndPort;
 import com.proofpoint.log.Logger;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Inject;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;

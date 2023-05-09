@@ -24,8 +24,8 @@ import com.google.inject.spi.Element;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.PrivateElements;
 import com.google.inject.spi.ProviderInstanceBinding;
+import jakarta.inject.Provider;
 
-import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.List;
 

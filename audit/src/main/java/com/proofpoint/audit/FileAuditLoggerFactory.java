@@ -23,9 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proofpoint.audit.FileAuditLogger.AuditWrapper;
 import com.proofpoint.log.Logger;
 import com.proofpoint.log.Logging;
-
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
 
 import static java.util.Objects.requireNonNull;
 

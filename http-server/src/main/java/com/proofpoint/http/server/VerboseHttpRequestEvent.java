@@ -19,8 +19,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.proofpoint.units.Duration;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 
 @JsonPropertyOrder({ "time", "traceToken", "sourceIp", "method", "requestUri", "username", "userAgent",

@@ -15,7 +15,8 @@
  */
 package com.proofpoint.reporting;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Map.Entry;

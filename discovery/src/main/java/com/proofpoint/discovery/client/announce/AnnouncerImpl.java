@@ -25,8 +25,8 @@ import com.proofpoint.discovery.client.ExponentialBackOff;
 import com.proofpoint.log.Logger;
 import com.proofpoint.units.Duration;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.net.ConnectException;
 import java.util.Set;
 import java.util.UUID;

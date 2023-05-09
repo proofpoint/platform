@@ -20,9 +20,8 @@ import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
+import jakarta.servlet.Filter;
 import org.eclipse.jetty.server.session.SessionHandler;
-
-import javax.servlet.Filter;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;

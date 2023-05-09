@@ -20,8 +20,8 @@ import com.google.common.collect.ImmutableMap;
 import com.proofpoint.discovery.client.ServiceDescriptor;
 import com.proofpoint.discovery.client.ServiceState;
 import com.proofpoint.node.NodeInfo;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 

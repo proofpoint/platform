@@ -17,12 +17,12 @@ package com.proofpoint.http.server;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.InetAddresses;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Inject;
 
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetAddress;

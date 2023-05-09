@@ -5,10 +5,10 @@ import com.google.inject.Injector;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.testing.ReportingTester;
 import com.proofpoint.reporting.testing.TestingReportingModule;
+import jakarta.inject.Qualifier;
 import org.assertj.guava.api.Assertions;
 import org.testng.annotations.Test;
 
-import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

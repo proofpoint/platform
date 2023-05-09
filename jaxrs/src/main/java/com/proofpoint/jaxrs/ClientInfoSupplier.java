@@ -16,9 +16,9 @@
 package com.proofpoint.jaxrs;
 
 import com.proofpoint.http.server.ClientAddressExtractor;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import java.util.function.Supplier;
 
 class ClientInfoSupplier

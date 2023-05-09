@@ -15,7 +15,7 @@
  */
 package com.proofpoint.bootstrap;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 public interface BaseOneWithFooMethod
 {

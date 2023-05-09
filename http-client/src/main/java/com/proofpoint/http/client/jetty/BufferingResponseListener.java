@@ -1,5 +1,6 @@
 package com.proofpoint.http.client.jetty;
 
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.http.client.GatheringByteArrayInputStream;
 import com.proofpoint.http.client.ResponseTooLargeException;
 import com.proofpoint.units.DataSize;
@@ -8,7 +9,6 @@ import org.eclipse.jetty.client.api.Response.Listener;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.http.HttpHeader;
 
-import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

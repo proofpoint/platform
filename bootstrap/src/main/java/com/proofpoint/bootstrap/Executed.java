@@ -15,8 +15,9 @@
  */
 package com.proofpoint.bootstrap;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

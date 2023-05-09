@@ -21,12 +21,12 @@ import com.google.inject.PrivateBinder;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.reporting.ReportingModule;
+import jakarta.inject.Inject;
+import jakarta.inject.Qualifier;
 import org.testng.annotations.Test;
 import org.weakref.jmx.Managed;
 import org.weakref.jmx.testing.TestingMBeanModule;
 
-import javax.inject.Inject;
-import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

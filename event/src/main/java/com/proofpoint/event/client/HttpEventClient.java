@@ -28,9 +28,9 @@ import com.proofpoint.http.client.UnexpectedResponseException;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
+import jakarta.inject.Inject;
 import org.weakref.jmx.Flatten;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;

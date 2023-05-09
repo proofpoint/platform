@@ -19,9 +19,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
+import jakarta.inject.Inject;
 import org.testng.annotations.Test;
-
-import javax.inject.Inject;
 
 import static com.proofpoint.json.JsonCodecBinder.jsonCodecBinder;
 import static org.testng.Assert.assertNotNull;

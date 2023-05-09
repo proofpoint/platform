@@ -23,8 +23,8 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.util.Map;
 
 import static java.lang.String.format;

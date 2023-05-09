@@ -26,10 +26,10 @@ import com.google.inject.PrivateBinder;
 import com.google.inject.Scopes;
 import com.google.inject.spi.Message;
 import com.proofpoint.configuration.ConfigBinder.PrefixConfigBindingBuilder;
+import jakarta.inject.Inject;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

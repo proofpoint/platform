@@ -21,8 +21,8 @@ import com.google.common.collect.ImmutableSortedSet.Builder;
 import com.google.common.collect.Ordering;
 import com.google.inject.Key;
 import com.proofpoint.configuration.ConfigurationMetadata.AttributeMetadata;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Map.Entry;

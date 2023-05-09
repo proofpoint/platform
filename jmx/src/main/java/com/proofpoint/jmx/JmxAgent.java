@@ -13,7 +13,8 @@
  */
 package com.proofpoint.jmx;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
+
 import javax.management.remote.JMXServiceURL;
 
 interface JmxAgent

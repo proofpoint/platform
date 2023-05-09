@@ -15,9 +15,9 @@
  */
 package com.proofpoint.jmx;
 
+import jakarta.inject.Inject;
 import org.weakref.jmx.Managed;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

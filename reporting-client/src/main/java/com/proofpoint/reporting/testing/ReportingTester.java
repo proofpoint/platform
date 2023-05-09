@@ -18,8 +18,8 @@ package com.proofpoint.reporting.testing;
 import com.google.common.collect.Table;
 import com.proofpoint.reporting.ReportCollector;
 import com.proofpoint.reporting.ReportSink;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;

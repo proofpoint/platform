@@ -37,7 +37,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *     <li>The method MUST NOT be static except for the application client.</li>
  *     <li>The method MAY be final.</li>
  * </ul>
- * @see javax.annotation.PreDestroy
+ * @see jakarta.annotation.PreDestroy
  */
 @Documented
 @Retention(RUNTIME)

@@ -33,12 +33,12 @@ import com.proofpoint.log.Level;
 import com.proofpoint.log.Logging;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.node.NodeModule;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;

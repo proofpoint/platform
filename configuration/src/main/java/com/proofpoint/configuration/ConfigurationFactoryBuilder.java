@@ -15,31 +15,16 @@
  */
 package com.proofpoint.configuration;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.inject.spi.Message;
 import com.proofpoint.configuration.Problems.Monitor;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
-
-import static java.lang.String.format;
 
 public final class ConfigurationFactoryBuilder
 {

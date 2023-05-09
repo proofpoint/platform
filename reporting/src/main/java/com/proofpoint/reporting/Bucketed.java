@@ -19,8 +19,7 @@ import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.proofpoint.reporting.BucketIdProvider.BucketId;
-
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
 import static com.proofpoint.reporting.Bucketed.BucketInfo.bucketInfo;

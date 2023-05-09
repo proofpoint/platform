@@ -16,8 +16,8 @@
 package com.proofpoint.reporting;
 
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Map.Entry;

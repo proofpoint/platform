@@ -15,7 +15,8 @@
  */
 package com.proofpoint.http.client;
 
-import javax.annotation.concurrent.GuardedBy;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
+
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.InputStream;
 import java.util.Iterator;

@@ -16,10 +16,10 @@
 package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableMap;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Provider;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 

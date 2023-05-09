@@ -15,7 +15,7 @@
  */
 package com.proofpoint.tracetoken;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
 

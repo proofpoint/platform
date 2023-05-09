@@ -31,9 +31,8 @@ import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.TheAdminServlet;
 import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.http.server.testing.TestingAdminHttpServer.NullServlet;
-
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
+import jakarta.servlet.Filter;
+import jakarta.servlet.Servlet;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 

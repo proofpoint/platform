@@ -20,9 +20,9 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.ConfigDescription;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Size;
 
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;

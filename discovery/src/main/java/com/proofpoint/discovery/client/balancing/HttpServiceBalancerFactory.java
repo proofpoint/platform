@@ -27,8 +27,8 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;

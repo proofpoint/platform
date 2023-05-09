@@ -13,9 +13,9 @@ import com.proofpoint.configuration.ConfigurationFactoryTest.LegacyMapValueConfi
 import com.proofpoint.configuration.ConfigurationInspector.ConfigAttribute;
 import com.proofpoint.configuration.ConfigurationInspector.ConfigRecord;
 import com.proofpoint.configuration.ConfigurationMetadataTest.SetterSensitiveClass;
+import jakarta.inject.Qualifier;
 import org.testng.annotations.Test;
 
-import javax.inject.Qualifier;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Iterator;

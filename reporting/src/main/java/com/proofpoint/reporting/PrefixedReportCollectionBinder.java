@@ -15,7 +15,7 @@
  */
 package com.proofpoint.reporting;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 public class PrefixedReportCollectionBinder<T>
     extends TaggedReportCollectionBinder<T>

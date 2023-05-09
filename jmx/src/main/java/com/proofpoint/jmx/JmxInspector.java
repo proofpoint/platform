@@ -19,9 +19,9 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.inject.Injector;
+import jakarta.inject.Inject;
 import org.weakref.jmx.Managed;
 
-import javax.inject.Inject;
 import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import java.lang.management.ManagementFactory;

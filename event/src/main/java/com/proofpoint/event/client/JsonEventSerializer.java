@@ -20,17 +20,14 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
-import com.proofpoint.tracetoken.TraceTokenScope;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Inject;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
 import static com.proofpoint.event.client.EventTypeMetadata.getValidEventTypeMetaDataSet;
-import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
-import static com.proofpoint.tracetoken.TraceTokenManager.registerRequestToken;
 import static java.util.Objects.requireNonNull;
 
 public class JsonEventSerializer

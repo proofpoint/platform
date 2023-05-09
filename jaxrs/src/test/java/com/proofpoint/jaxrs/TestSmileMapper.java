@@ -18,9 +18,9 @@ package com.proofpoint.jaxrs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.proofpoint.json.ObjectMapperProvider;
+import jakarta.ws.rs.core.MultivaluedMap;
 import org.testng.annotations.BeforeMethod;
 
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 
 import static org.testng.Assert.assertEquals;

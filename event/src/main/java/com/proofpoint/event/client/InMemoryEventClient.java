@@ -15,7 +15,8 @@
  */
 package com.proofpoint.event.client;
 
-import javax.annotation.concurrent.GuardedBy;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
+
 import java.util.ArrayList;
 import java.util.List;
 

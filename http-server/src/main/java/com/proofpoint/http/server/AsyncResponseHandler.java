@@ -16,18 +16,18 @@ package com.proofpoint.http.server;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.proofpoint.units.Duration;
+import jakarta.ws.rs.container.AsyncResponse;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.core.Response;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static jakarta.ws.rs.core.Response.status;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static javax.ws.rs.core.Response.status;
 
 public class AsyncResponseHandler
 {

@@ -16,8 +16,8 @@
 package com.proofpoint.reporting;
 
 import com.proofpoint.reporting.ReportException.Reason;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MalformedObjectNameException;

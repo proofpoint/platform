@@ -27,8 +27,8 @@ import com.proofpoint.discovery.client.announce.DiscoveryAnnouncementClient;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.units.Duration;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;

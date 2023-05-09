@@ -16,10 +16,10 @@
 package com.proofpoint.jmx;
 
 import com.proofpoint.http.server.HttpServerConfig;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.SecurityContext;
 import org.testng.annotations.Test;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
 import java.util.Base64;
 

@@ -29,8 +29,7 @@ import com.proofpoint.http.server.InternalNetworkConfig;
 import com.proofpoint.http.server.LocalAnnouncementHttpServerInfo;
 import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.TheServlet;
-
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 

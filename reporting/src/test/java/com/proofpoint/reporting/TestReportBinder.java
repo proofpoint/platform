@@ -30,14 +30,14 @@ import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
+import jakarta.inject.Qualifier;
+import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotNull;
 import org.testng.annotations.Test;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 import org.weakref.jmx.Nested;
 
-import javax.inject.Qualifier;
-import javax.inject.Singleton;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.lang.annotation.Annotation;

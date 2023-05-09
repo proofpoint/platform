@@ -33,8 +33,8 @@ import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.net.URI;

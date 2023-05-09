@@ -27,10 +27,10 @@ import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.stats.SparseCounterStat;
 import com.proofpoint.stats.SparseTimeStat;
+import jakarta.inject.Inject;
+import jakarta.servlet.Filter;
+import jakarta.servlet.Servlet;
 
-import javax.inject.Inject;
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;

@@ -21,11 +21,11 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
+import jakarta.inject.Qualifier;
 import org.testng.annotations.Test;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Nested;
 
-import javax.inject.Qualifier;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Set;

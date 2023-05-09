@@ -24,10 +24,10 @@ import com.google.inject.TypeLiteral;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.client.jetty.JettyHttpClientOptions;
 import com.proofpoint.log.Logger;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
