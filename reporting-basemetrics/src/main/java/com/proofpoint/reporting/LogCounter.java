@@ -17,9 +17,9 @@ package com.proofpoint.reporting;
 
 import com.google.inject.Inject;
 import com.proofpoint.stats.CounterStat;
+import jakarta.annotation.PreDestroy;
 import org.weakref.jmx.Nested;
 
-import javax.annotation.PreDestroy;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;

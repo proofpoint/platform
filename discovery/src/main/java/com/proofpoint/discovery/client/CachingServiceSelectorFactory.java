@@ -16,8 +16,8 @@
 package com.proofpoint.discovery.client;
 
 import com.proofpoint.node.NodeInfo;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.Objects.requireNonNull;

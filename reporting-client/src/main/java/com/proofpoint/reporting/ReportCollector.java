@@ -20,9 +20,8 @@ import com.google.common.collect.ImmutableTable;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
-import javax.management.AttributeNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.util.Map;

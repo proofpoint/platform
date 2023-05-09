@@ -18,8 +18,8 @@ package com.proofpoint.http.client;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.proofpoint.http.client.StatusResponseHandler.StatusResponse;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 import static com.proofpoint.http.client.ResponseHandlerUtils.propagate;

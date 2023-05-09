@@ -15,7 +15,8 @@
  */
 package com.proofpoint.reporting;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
+
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 

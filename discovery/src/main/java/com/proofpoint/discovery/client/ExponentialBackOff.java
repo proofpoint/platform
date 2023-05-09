@@ -1,9 +1,8 @@
 package com.proofpoint.discovery.client;
 
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.log.Logger;
 import com.proofpoint.units.Duration;
-
-import javax.annotation.concurrent.GuardedBy;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;

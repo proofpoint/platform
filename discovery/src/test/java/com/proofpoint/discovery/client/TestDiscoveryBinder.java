@@ -30,10 +30,10 @@ import com.proofpoint.http.client.balancing.BalancingHttpClientBindingBuilder;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
+import jakarta.inject.Provider;
+import jakarta.inject.Qualifier;
 import org.testng.annotations.Test;
 
-import javax.inject.Provider;
-import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

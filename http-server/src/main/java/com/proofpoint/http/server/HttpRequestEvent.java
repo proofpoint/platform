@@ -21,10 +21,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.units.Duration;
+import jakarta.annotation.Nullable;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 
-import javax.annotation.Nullable;
 import javax.net.ssl.SSLSession;
 import java.security.Principal;
 import java.time.Instant;

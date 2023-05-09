@@ -15,7 +15,8 @@
  */
 package com.proofpoint.http.client;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
+
 import java.util.concurrent.ScheduledExecutorService;
 
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;

@@ -21,8 +21,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.auto.value.AutoValue;
 import com.proofpoint.tracetoken.TraceToken;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 
 import static com.proofpoint.audit.FileAuditLogger.AuditWrapper.auditWrapper;

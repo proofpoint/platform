@@ -18,9 +18,8 @@ package com.proofpoint.jaxrs;
 import com.google.common.net.HttpHeaders;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.json.ObjectMapperProvider;
+import jakarta.ws.rs.core.MultivaluedMap;
 import org.testng.annotations.BeforeMethod;
-
-import javax.ws.rs.core.MultivaluedMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;

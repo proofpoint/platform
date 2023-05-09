@@ -21,8 +21,8 @@ import com.google.common.collect.MultimapBuilder;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp;
 import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.util.Map;
@@ -34,7 +34,6 @@ import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp.valueAndTimestamp;
 import static com.proofpoint.reporting.SimplePrometheusValue.simplePrometheusValue;
 import static com.proofpoint.reporting.TaggedValue.taggedValue;
-import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.requireNonNull;
 
 class PrometheusCollector

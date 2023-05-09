@@ -15,8 +15,8 @@
  */
 package com.proofpoint.audit;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import static java.util.Objects.requireNonNull;
 

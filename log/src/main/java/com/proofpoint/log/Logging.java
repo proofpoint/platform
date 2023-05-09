@@ -27,11 +27,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.configuration.PropertiesBuilder;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.Duration;
 
-import javax.annotation.concurrent.GuardedBy;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;

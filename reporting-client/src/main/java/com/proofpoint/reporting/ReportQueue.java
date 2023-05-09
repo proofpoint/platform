@@ -16,8 +16,8 @@
 package com.proofpoint.reporting;
 
 import com.google.common.collect.Table;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 

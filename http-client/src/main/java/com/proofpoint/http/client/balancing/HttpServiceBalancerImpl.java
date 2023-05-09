@@ -22,13 +22,13 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerStats.Status;
 import com.proofpoint.stats.MaxGauge;
 import com.proofpoint.units.Duration;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.weakref.jmx.Nested;
 
-import javax.annotation.concurrent.GuardedBy;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;

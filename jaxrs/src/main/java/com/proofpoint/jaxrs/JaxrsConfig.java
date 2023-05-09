@@ -4,8 +4,7 @@ import com.proofpoint.configuration.Config;
 import com.proofpoint.configuration.DefunctConfig;
 import com.proofpoint.units.Duration;
 import com.proofpoint.units.MinDuration;
-
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 @DefunctConfig("jaxrs.query-params-as-form-params")
 public class JaxrsConfig

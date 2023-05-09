@@ -28,9 +28,9 @@ import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.units.Duration;
+import jakarta.inject.Inject;
 import org.weakref.jmx.Flatten;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.CancellationException;

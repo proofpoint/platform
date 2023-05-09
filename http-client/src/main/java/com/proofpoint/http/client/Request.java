@@ -19,8 +19,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;

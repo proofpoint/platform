@@ -22,9 +22,9 @@ import com.google.common.io.BaseEncoding;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.security.SecureRandom;
 

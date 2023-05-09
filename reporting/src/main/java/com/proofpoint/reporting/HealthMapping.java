@@ -16,8 +16,7 @@
 package com.proofpoint.reporting;
 
 import com.google.inject.Key;
-
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 import static java.util.Objects.requireNonNull;
 

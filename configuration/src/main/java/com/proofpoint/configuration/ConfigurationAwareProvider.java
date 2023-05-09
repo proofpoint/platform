@@ -2,8 +2,7 @@ package com.proofpoint.configuration;
 
 import com.google.inject.ConfigurationException;
 import com.google.inject.Module;
-
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 /**
  * A provider with access to the Platform {@link ConfigurationFactory}.

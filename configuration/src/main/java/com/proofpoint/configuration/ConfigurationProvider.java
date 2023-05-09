@@ -16,9 +16,9 @@
 package com.proofpoint.configuration;
 
 import com.google.inject.Key;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Inject;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;

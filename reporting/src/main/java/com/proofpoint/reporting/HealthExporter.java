@@ -15,8 +15,9 @@
  */
 package com.proofpoint.reporting;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Inject;
+
 import javax.management.InstanceAlreadyExistsException;
 
 import static java.util.Objects.requireNonNull;

@@ -30,8 +30,8 @@ import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.json.JsonCodec;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.units.Duration;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;

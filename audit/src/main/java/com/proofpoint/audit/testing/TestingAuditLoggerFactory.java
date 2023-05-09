@@ -18,8 +18,7 @@ package com.proofpoint.audit.testing;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proofpoint.audit.AuditLogger;
 import com.proofpoint.audit.AuditLoggerFactory;
-
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static java.util.Objects.requireNonNull;
 

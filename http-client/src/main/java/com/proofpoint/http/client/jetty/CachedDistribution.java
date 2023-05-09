@@ -1,9 +1,9 @@
 package com.proofpoint.http.client.jetty;
 
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.stats.Distribution;
 import org.weakref.jmx.Managed;
 
-import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.Map;
 import java.util.function.Supplier;

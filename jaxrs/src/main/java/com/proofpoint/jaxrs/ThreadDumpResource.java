@@ -18,18 +18,18 @@ package com.proofpoint.jaxrs;
 import com.proofpoint.bootstrap.QuietMode;
 import com.proofpoint.bootstrap.StopTraffic;
 import com.proofpoint.log.Logger;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
 @Path("/admin/jstack")
 @AccessDoesNotRequireAuthentication

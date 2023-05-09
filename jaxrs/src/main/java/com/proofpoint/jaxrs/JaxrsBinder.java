@@ -23,7 +23,7 @@ import static java.util.Objects.requireNonNull;
  *
  * Binds the singleton {@code Singleton} to the service port.
  * {@code Singleton} is typically a JAX-RS resource, though may be a
- * {@link javax.ws.rs.ext.Provider} or {@link javax.ws.rs.core.Feature}.
+ * {@link jakarta.ws.rs.ext.Provider} or {@link jakarta.ws.rs.core.Feature}.
  *
  * <pre>
  *     jaxrsBinder(binder).bind(Singleton.class)
@@ -54,7 +54,7 @@ import static java.util.Objects.requireNonNull;
  * <pre>
  *     jaxrsBinder(binder).bindInjectionProvider(InjectedContextObject.class).to(InjectedContextObjectSupplier.class);</pre>
  *
- * Binds a provider of JAX-RS {@link javax.ws.rs.core.Context} annotated
+ * Binds a provider of JAX-RS {@link jakarta.ws.rs.core.Context} annotated
  * parameters. On the service port, a {@code @Context InjectedContextObject}
  * parameter will be obtained from the singleton
  * {@code InjectedContextObjectSupplier}, which must implement

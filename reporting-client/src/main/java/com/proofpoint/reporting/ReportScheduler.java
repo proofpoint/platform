@@ -16,9 +16,9 @@
 package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableTable;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 

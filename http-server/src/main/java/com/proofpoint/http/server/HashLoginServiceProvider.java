@@ -15,10 +15,9 @@
  */
 package com.proofpoint.http.server;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.eclipse.jetty.security.HashLoginService;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 

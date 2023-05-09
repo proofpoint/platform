@@ -17,11 +17,11 @@ package com.proofpoint.stats;
 
 import com.google.common.base.Function;
 import com.google.common.base.Ticker;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.reporting.Bucketed;
 import com.proofpoint.reporting.Reported;
 import com.proofpoint.units.Duration;
 
-import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 

@@ -16,15 +16,15 @@
 package com.proofpoint.http.server;
 
 import com.proofpoint.tracetoken.TraceToken;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 class DummyServlet
         extends HttpServlet

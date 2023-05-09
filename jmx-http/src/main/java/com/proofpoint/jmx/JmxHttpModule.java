@@ -29,9 +29,9 @@ import com.google.inject.Module;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement;
 import com.proofpoint.discovery.client.announce.ServiceAnnouncement.ServiceAnnouncementBuilder;
 import com.proofpoint.http.server.HttpServerInfo;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.OpenType;

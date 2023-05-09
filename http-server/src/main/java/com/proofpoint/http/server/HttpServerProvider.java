@@ -20,14 +20,14 @@ import com.google.inject.Inject;
 import com.proofpoint.bootstrap.LifeCycleManager;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.node.NodeInfo;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Provider;
+import jakarta.servlet.Filter;
+import jakarta.servlet.Servlet;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.session.SessionHandler;
 
-import javax.annotation.Nullable;
-import javax.inject.Provider;
 import javax.management.MBeanServer;
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;

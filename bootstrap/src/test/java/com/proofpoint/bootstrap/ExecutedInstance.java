@@ -15,7 +15,8 @@
  */
 package com.proofpoint.bootstrap;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
+
 import java.util.concurrent.CountDownLatch;
 
 public class ExecutedInstance

@@ -17,8 +17,8 @@ package com.proofpoint.tracetoken;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;

@@ -20,8 +20,8 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.io.ByteStreams;
 import com.google.common.net.MediaType;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;

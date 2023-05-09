@@ -16,9 +16,9 @@
 package com.proofpoint.http.server;
 
 import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Inject;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
 import java.net.URI;
 
 public class LocalAnnouncementHttpServerInfo

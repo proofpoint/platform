@@ -16,8 +16,6 @@
 package com.proofpoint.http.client;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
-import com.google.common.collect.Multiset;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.proofpoint.http.client.balancing.HttpServiceBalancer;
@@ -27,11 +25,9 @@ import com.proofpoint.http.client.balancing.HttpServiceBalancerStats;
 import com.proofpoint.http.client.balancing.HttpServiceBalancerUriConfig;
 import com.proofpoint.reporting.ReportCollectionFactory;
 import com.proofpoint.reporting.ReportExporter;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import java.net.URI;
-import java.util.Collection;
 import java.util.Map;
 
 import static java.lang.String.format;

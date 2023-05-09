@@ -11,8 +11,8 @@ import com.proofpoint.http.client.HeaderName;
 import com.proofpoint.http.client.HttpStatus;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.json.ObjectMapperProvider;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -21,10 +21,10 @@ import java.util.Map;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkState;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 public class TestingResponse
         implements Response

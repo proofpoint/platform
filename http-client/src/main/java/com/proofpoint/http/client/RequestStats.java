@@ -18,9 +18,8 @@ package com.proofpoint.http.client;
 import com.proofpoint.stats.DistributionStat;
 import com.proofpoint.stats.TimeStat;
 import com.proofpoint.units.Duration;
+import jakarta.inject.Inject;
 import org.weakref.jmx.Nested;
-
-import javax.inject.Inject;
 
 public class RequestStats
 {

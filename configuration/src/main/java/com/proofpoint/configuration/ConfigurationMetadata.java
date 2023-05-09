@@ -22,8 +22,8 @@ import com.google.common.collect.Table;
 import com.google.inject.ConfigurationException;
 import com.google.inject.spi.Message;
 import com.proofpoint.configuration.Problems.Monitor;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

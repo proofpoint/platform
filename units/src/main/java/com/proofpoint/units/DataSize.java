@@ -19,8 +19,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
+import com.google.errorprone.annotations.Immutable;
 
-import javax.annotation.concurrent.Immutable;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

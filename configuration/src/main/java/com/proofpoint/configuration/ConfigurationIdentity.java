@@ -17,8 +17,7 @@ package com.proofpoint.configuration;
 
 import com.google.auto.value.AutoValue;
 import com.google.inject.Key;
-
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 @AutoValue
 abstract class ConfigurationIdentity<T>

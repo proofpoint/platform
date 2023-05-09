@@ -16,10 +16,9 @@
 package com.proofpoint.stats;
 
 import com.google.common.base.Function;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.reporting.Bucketed;
 import com.proofpoint.reporting.Reported;
-
-import javax.annotation.concurrent.GuardedBy;
 
 public final class BucketedDistribution
     extends Bucketed<BucketedDistribution.Distribution>

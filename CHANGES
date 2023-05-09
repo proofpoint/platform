@@ -1,3 +1,34 @@
+Platform 2.89
+
+* Major version upgrade from JEE 8 to JEE 9. This will require migrating usage of javax.* packages
+  and namespaces to the new jakarta.* equivilents. JEE 8 artifacts (servlets, injection, etc), are
+  not compatible with JEE 9 and will need to be upgraded.
+
+  General Migration Guide: https://ralph.blog.imixs.com/2020/12/13/migrating-to-jakarta-ee-9/
+  javax -> jakarta namespace mappings: https://github.com/jakartaee/jakartaee-platform/blob/main/namespace/mappings.adoc
+
+* Library Upgrades
+  - Jetty to 11.0.15 (was 10.0.15)
+  - Jersey to 3.0.10 (was 2.27)
+  - Guice to 7.0.0 (was 5.0.1)
+  - jakarta-validation-api to 3.0.2 (was 3.0.0)
+  - javax.inject -> jakarta.inject 2.0.1
+  - javax.servlet-api -> jakarta.servlet-api 5.0.0
+  - javax.ws.rs-api -> jakarta.ws.rs-api 3.0.0
+  - javax.activation -> jakarta.activation 2.0.1
+  - javax.annotation-api -> jakarta.annotation-api 2.1.0
+  - javax.xml.bind -> jakarta.xml.bind-api 3.0.0
+
+* Migration Notes
+  - JEE 8 dependencies added to banned dependencies (build will fail if artifacts are dependencies)
+  - Import Replacements
+    - javax.inject.* -> jakarta.inject.*
+    - javax.annotation.* -> jakarta.annotation.*, Except:
+        - javax.annotation.concurrent.ThreadSafe (not yet added to ErrorProne)
+        - javax.annotation.concurrent.GuardedBy -> com.google.errorprone.annotations.concurrent.GuardedBy
+    - javax.servlet.* -> jakarta.servlet.*
+    - javax.ws.rs.* -> jakarta.ws.rs.*
+
 Platform 2.88
 
 * Bug Fix: Do not require SNI or Host Checks, as this conflicts with Kubernetes Health Probes

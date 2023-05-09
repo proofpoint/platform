@@ -32,13 +32,13 @@ import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.testing.Closeables;
 import com.proofpoint.units.Duration;
+import jakarta.annotation.Nullable;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.weakref.jmx.testing.TestingMBeanModule;
 
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Map;

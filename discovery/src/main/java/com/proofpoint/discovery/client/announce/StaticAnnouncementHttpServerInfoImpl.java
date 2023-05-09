@@ -15,7 +15,8 @@
  */
 package com.proofpoint.discovery.client.announce;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
+
 import java.net.URI;
 
 import static com.google.common.base.MoreObjects.toStringHelper;

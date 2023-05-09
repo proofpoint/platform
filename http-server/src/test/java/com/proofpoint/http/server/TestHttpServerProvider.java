@@ -29,13 +29,13 @@ import com.proofpoint.log.Level;
 import com.proofpoint.log.Logging;
 import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletResponse;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Base64;

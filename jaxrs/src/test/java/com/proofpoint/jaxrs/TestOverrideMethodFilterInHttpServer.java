@@ -28,13 +28,13 @@ import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
 import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.testing.Closeables;
+import jakarta.ws.rs.core.Response.Status;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.management.MBeanServer;
-import javax.ws.rs.core.Response.Status;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapTest;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;

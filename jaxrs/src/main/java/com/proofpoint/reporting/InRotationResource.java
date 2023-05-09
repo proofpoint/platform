@@ -17,17 +17,17 @@ package com.proofpoint.reporting;
 
 import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 import com.proofpoint.reporting.HealthBeanAttribute.Type;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Response;
 
-import javax.inject.Inject;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
 
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static java.util.Objects.requireNonNull;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 @Path("/inrotation.txt")
 @AccessDoesNotRequireAuthentication

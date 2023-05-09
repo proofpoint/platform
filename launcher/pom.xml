@@ -171,6 +171,12 @@
             <groupId>io.airlift</groupId>
             <artifactId>airline</artifactId>
             <version>0.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.inject</groupId>
+                    <artifactId>javax.inject</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

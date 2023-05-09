@@ -17,8 +17,8 @@ package com.proofpoint.http.client;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 import static com.google.common.base.MoreObjects.toStringHelper;

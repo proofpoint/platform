@@ -17,8 +17,8 @@ package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Key;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;

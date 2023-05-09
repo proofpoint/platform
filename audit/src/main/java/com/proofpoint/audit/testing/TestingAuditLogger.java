@@ -21,8 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.value.AutoValue;
 import com.proofpoint.audit.AuditLogger;
 import com.proofpoint.tracetoken.TraceToken;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 
 import static com.proofpoint.audit.testing.TestingAuditLogger.AuditWrapper.auditWrapper;

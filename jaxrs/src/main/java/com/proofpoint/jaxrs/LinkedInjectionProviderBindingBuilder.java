@@ -18,8 +18,7 @@ package com.proofpoint.jaxrs;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
-
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 import java.util.function.Supplier;
 

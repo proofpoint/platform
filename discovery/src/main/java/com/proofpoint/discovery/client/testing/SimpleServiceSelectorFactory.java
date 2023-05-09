@@ -20,8 +20,7 @@ import com.proofpoint.discovery.client.ServiceSelector;
 import com.proofpoint.discovery.client.ServiceSelectorConfig;
 import com.proofpoint.discovery.client.ServiceSelectorFactory;
 import com.proofpoint.node.NodeInfo;
-
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static java.util.Objects.requireNonNull;
 

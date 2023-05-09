@@ -23,9 +23,9 @@ import com.google.common.collect.ImmutableMap;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.tracetoken.TraceToken;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Inject;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;

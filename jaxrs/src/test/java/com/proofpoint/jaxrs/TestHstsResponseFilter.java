@@ -27,16 +27,16 @@ import com.proofpoint.node.NodeConfig;
 import com.proofpoint.node.NodeInfo;
 import com.proofpoint.reporting.ReportingModule;
 import com.proofpoint.testing.Closeables;
+import jakarta.servlet.Filter;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.servlet.Filter;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import java.util.Map;
 
 import static com.google.common.io.Resources.getResource;

@@ -16,8 +16,8 @@
 package com.proofpoint.reporting;
 
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 

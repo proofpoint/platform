@@ -15,8 +15,9 @@
  */
 package com.proofpoint.discovery.client;
 
-import javax.annotation.PreDestroy;
-import javax.inject.Provider;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Provider;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
