@@ -186,11 +186,16 @@ public abstract class AbstractHttpClientTest
 
         List<ConnectionFactory> connectionFactories = new ArrayList<>();
         if (keystore != null) {
-            httpConfiguration.addCustomizer(new SecureRequestCustomizer());
+            SecureRequestCustomizer customizer = new SecureRequestCustomizer();
+            customizer.setSniHostCheck(false);
+            customizer.setSniRequired(false);
+
+            httpConfiguration.addCustomizer(customizer);
 
             sslContextFactory = new SslContextFactory.Server();
             sslContextFactory.setKeyStorePath(keystore);
             sslContextFactory.setKeyStorePassword("changeit");
+            sslContextFactory.setSniRequired(false);
 
             connectionFactories.add(new SslConnectionFactory(sslContextFactory, "alpn"));
             connectionFactories.add(new ALPNServerConnectionFactory("h2", "http/1.1"));
