@@ -1,3 +1,9 @@
+Platform 2.90
+
+* Library Upgrades
+
+  - Base Docker image to c15-java11:2.81 (was 2.74)
+
 Platform 2.89
 
 * Major version upgrade from JEE 8 to JEE 9. This will require migrating usage of javax.* packages
