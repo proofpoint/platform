@@ -207,6 +207,15 @@
             </exclusions>
         </dependency>
 
+        <!-- Pulled in by Swagger. We need to express the dependency here, otherwise an older
+             version pulled in by airline will take precedence and cause an
+             enforcer.RequireUpperBoundDeps failure.
+        -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.javassist</groupId>
