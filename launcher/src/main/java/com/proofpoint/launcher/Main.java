@@ -15,16 +15,16 @@
  */
 package com.proofpoint.launcher;
 
+import com.github.rvesse.airline.Cli;
+import com.github.rvesse.airline.annotations.Arguments;
+import com.github.rvesse.airline.annotations.Command;
+import com.github.rvesse.airline.annotations.Option;
+import com.github.rvesse.airline.annotations.OptionType;
+import com.github.rvesse.airline.help.Help;
+import com.github.rvesse.airline.parser.errors.ParseException;
 import com.google.common.base.Joiner;
 import com.proofpoint.configuration.PropertiesBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.airlift.command.Arguments;
-import io.airlift.command.Cli;
-import io.airlift.command.Command;
-import io.airlift.command.Help;
-import io.airlift.command.Option;
-import io.airlift.command.OptionType;
-import io.airlift.command.ParseException;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -78,7 +78,7 @@ public final class Main
 
     public static void main(String[] args)
     {
-        Cli<Runnable> cli = Cli.buildCli("launcher", Runnable.class)
+        Cli<Runnable> cli = Cli.<Runnable>builder("launcher")
                 .withDescription("The service launcher")
                 .withCommands(Help.class, StartCommand.class, StartClientCommand.class,
                         RunCommand.class, RunClientCommand.class,
