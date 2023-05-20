@@ -1,3 +1,10 @@
+Platform 2.91
+
+* Library Upgrades
+
+  - Replace io.airlift:airline (0.4) with com.github.rvesse:airline (2.9.0)
+    for compatibility with jakarta.inject
+
 Platform 2.90
 
 * Library Upgrades
