@@ -1,3 +1,10 @@
+Platform 2.93
+
+* Library Upgrades
+
+  - Base Docker image to c15-java11:3.2 (was 2.81)
+  - Base Docker image as manifest index with `arm64` and `amd64` variants
+
 Platform 2.92
 
 * Library upgrades
