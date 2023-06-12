@@ -1,17 +1,12 @@
-Platform 2.93
+Platform 2.94
 
 * Library Upgrades
 
   - Base Docker image to c15-java11:3.2 (was 2.81)
-  - Base Docker image as manifest index with `arm64` and `amd64` variants
-
-Platform 2.92
-
-* Library upgrades
-
+    Now supports both `arm64` and `amd64` architectures.
   - Guava to 32.0.0 (was 31.1) (CVE-2022-8901, CVE-2023-2976)
 
-Platform 2.91
+Platform 2.93
 
 * Library upgrades
 
