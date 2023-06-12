@@ -6,6 +6,9 @@ Platform 2.94
     Now supports both `arm64` and `amd64` architectures.
   - Guava to 32.0.0 (was 31.1) (CVE-2022-8901, CVE-2023-2976)
 
+* Maven plugin upgrades
+  - docker-maven-plugin to 0.43.0 (was 0.40.2)
+
 Platform 2.93
 
 * Library upgrades
