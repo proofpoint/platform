@@ -1,3 +1,13 @@
+Platform 2.95
+
+* Discovery
+
+  We now include the service type and pool in the log message when a discovery
+  query returns no instances.
+
+* Maven plugin upgrades
+  - modernizer to 2.5.0 (was 2.2.0)
+
 Platform 2.94
 
 * Library Upgrades
