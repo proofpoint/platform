@@ -22,7 +22,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.configuration.ConfigurationModule;
-import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.ApplicationNameModule;
 import com.proofpoint.node.testing.TestingNodeModule;
@@ -76,8 +75,9 @@ public class TestReportScheduler
         Injector injector = Guice.createInjector(
                 new ApplicationNameModule("test-application"),
                 new TestingNodeModule(),
-                new TestingDiscoveryModule(),
-                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of())),
+                new ConfigurationModule(new ConfigurationFactory(ImmutableMap.of(
+                        "service-client.reporting.uri", "https://reporting.invalid"
+                ))),
                 new JsonModule(),
                 new ReportingModule(),
                 new ReportingClientModule());

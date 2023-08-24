@@ -13,7 +13,7 @@
     <dependencies>
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
-            <artifactId>discovery</artifactId>
+            <artifactId>bootstrap</artifactId>
         </dependency>
 
         <dependency>

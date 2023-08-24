@@ -316,6 +316,34 @@ public class HttpClientBinder
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
     }
 
+    /**
+     * Binds an {@link HttpClient} to an implementation that takes relative
+     * {@link URI}s. The requests are balanced against the set of prefixes
+     * specified in configuration.
+     *
+     * See the EDSL examples at {@link HttpClientBinder}.
+     *
+     * @param name The configuration prefix. Should be lowercase hyphen-separated.
+     * @param annotation The binding annotation.
+     * @param serviceName The name of the service being balanced.
+     * Used in metrics and in the configuration prefix for the service balancer.
+     * Ordinarily this is the value of the binding annotation.
+     */
+    public BalancingHttpClientBindingBuilder bindBalancingHttpClient(String name, Class<? extends Annotation> annotation, String serviceName)
+    {
+        requireNonNull(name, "name is null");
+        requireNonNull(annotation, "annotation is null");
+
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(annotation).prefixedWith("service-client." + serviceName);
+        bindConfig(binder).bind(HttpServiceBalancerUriConfig.class).annotatedWith(annotation).prefixedWith("service-client." + serviceName);
+        PrivateBinder privateBinder = binder.newPrivateBinder();
+        privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
+                .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(serviceName,
+                        Key.get(HttpServiceBalancerConfig.class, annotation),
+                        Key.get(HttpServiceBalancerUriConfig.class, annotation)));
+        return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
+    }
+
     private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Class<? extends Annotation> annotation)
     {
         HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
@@ -410,6 +438,23 @@ public class HttpClientBinder
                 .withProperty("type", "HttpClient")
                 .withProperty("name", serviceName)
                 .build()
+        );
+        binder.bind(ScheduledExecutorService.class).annotatedWith(ForBalancingHttpClient.class).toProvider(RetryExecutorProvider.class);
+
+        return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
+    }
+
+    private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Class<? extends Annotation> annotation, String serviceName)
+    {
+        HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
+        bindConfig(privateBinder).bind(BalancingHttpClientConfig.class).prefixedWith(name);
+        privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
+        privateBinder.expose(HttpClient.class).annotatedWith(annotation);
+        reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withNamePrefix("HttpClient." + serviceName);
+        newExporter(binder).export(HttpClient.class).annotatedWith(annotation).as(new ObjectNameBuilder(HttpClient.class.getPackage().getName())
+                        .withProperty("type", "HttpClient")
+                        .withProperty("name", serviceName)
+                        .build()
         );
         binder.bind(ScheduledExecutorService.class).annotatedWith(ForBalancingHttpClient.class).toProvider(RetryExecutorProvider.class);
 
