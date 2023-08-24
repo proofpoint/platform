@@ -17,7 +17,6 @@ package com.proofpoint.reporting;
 
 import com.google.inject.Injector;
 import com.proofpoint.bootstrap.LifeCycleManager;
-import com.proofpoint.discovery.client.testing.TestingDiscoveryModule;
 import com.proofpoint.json.JsonModule;
 import com.proofpoint.node.testing.TestingNodeModule;
 import org.testng.annotations.Test;
@@ -35,9 +34,9 @@ public class TestReportingClientModule
                         new ReportingModule(),
                         new JsonModule(),
                         new TestingNodeModule(),
-                        new TestingDiscoveryModule(),
                         new ReportingClientModule()
                 )
+                .setRequiredConfigurationProperty("service-client.reporting.uri", "https://reporting.invalid")
                 .initialize();
 
         injector.getInstance(LifeCycleManager.class).stop();

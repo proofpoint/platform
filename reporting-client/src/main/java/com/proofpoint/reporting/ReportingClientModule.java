@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import static com.google.inject.Scopes.SINGLETON;
 import static com.proofpoint.concurrent.Threads.daemonThreadsNamed;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
-import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
+import static com.proofpoint.http.client.HttpClientBinder.httpClientBinder;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 public class ReportingClientModule
@@ -43,7 +43,7 @@ public class ReportingClientModule
         binder.bind(ReportSink.class).to(ReportQueue.class).in(SINGLETON);
         binder.bind(ReportClient.class).in(SINGLETON);
 
-        discoveryBinder(binder).bindDiscoveredHttpClient("reporting", ForReportClient.class);
+        httpClientBinder(binder).bindBalancingHttpClient("reporting", ForReportClient.class, "reporting");
         bindConfig(binder).bind(ReportClientConfig.class);
 
         binder.install(new ReportingBaseMetricsModule());

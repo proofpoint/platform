@@ -1,3 +1,11 @@
+Platform 2.96
+
+* Reporting
+
+  ReportingClientModule no longer uses the Discovery service to find the reporting service.
+  The URI of the reporting service must now be specified through the "service-client.reporting.uri"
+  configuration property.
+
 Platform 2.95
 
 * Discovery
