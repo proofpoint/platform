@@ -341,7 +341,7 @@ public class HttpClientBinder
                 .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(serviceName,
                         Key.get(HttpServiceBalancerConfig.class, annotation),
                         Key.get(HttpServiceBalancerUriConfig.class, annotation)));
-        return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
+        return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation);
     }
 
     private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Class<? extends Annotation> annotation)
@@ -443,24 +443,6 @@ public class HttpClientBinder
 
         return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
     }
-
-    private BalancingHttpClientBindingBuilder createBalancingHttpClientBindingBuilder(PrivateBinder privateBinder, String name, Class<? extends Annotation> annotation, String serviceName)
-    {
-        HttpClientBindingBuilder delegateBindingBuilder = httpClientPrivateBinder(privateBinder, binder).bindHttpClient(name, ForBalancingHttpClient.class);
-        bindConfig(privateBinder).bind(BalancingHttpClientConfig.class).prefixedWith(name);
-        privateBinder.bind(HttpClient.class).annotatedWith(annotation).to(BalancingHttpClient.class).in(Scopes.SINGLETON);
-        privateBinder.expose(HttpClient.class).annotatedWith(annotation);
-        reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withNamePrefix("HttpClient." + serviceName);
-        newExporter(binder).export(HttpClient.class).annotatedWith(annotation).as(new ObjectNameBuilder(HttpClient.class.getPackage().getName())
-                        .withProperty("type", "HttpClient")
-                        .withProperty("name", serviceName)
-                        .build()
-        );
-        binder.bind(ScheduledExecutorService.class).annotatedWith(ForBalancingHttpClient.class).toProvider(RetryExecutorProvider.class);
-
-        return new BalancingHttpClientBindingBuilder(binder, annotation, delegateBindingBuilder);
-    }
-
     public static class HttpClientBindingBuilder
     {
         private final HttpClientModule module;
