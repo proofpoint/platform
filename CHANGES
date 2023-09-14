@@ -1,3 +1,9 @@
+Platform 2.99
+
+* Library Upgrades
+
+  - Jetty to 11.0.16 (was 11.0.15) (GHSA-58qw-p7qm-5rvh)
+
 Platform 2.98
 
 * Library Upgrades
