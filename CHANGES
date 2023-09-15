@@ -1,3 +1,10 @@
+Platform 3.00
+
+* HttpClient
+
+  We now share a HttpClientBalancer across all BalancingHttpClients that share the same
+  statically configured service.
+
 Platform 2.99
 
 * Library Upgrades

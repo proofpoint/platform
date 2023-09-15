@@ -19,6 +19,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
 import com.proofpoint.bootstrap.LifeCycleManager;
+import com.proofpoint.http.client.balancing.HttpServiceBalancer;
 import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.reporting.ReportingModule;
 import jakarta.inject.Inject;
@@ -202,6 +203,7 @@ public class TestHttpClientBinder
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, serviceType("foo"))));
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("foo"))));
     }
 
     @Test
@@ -234,6 +236,25 @@ public class TestHttpClientBinder
     }
 
     @Test
+    public void testBindBalancingHttpClientConfiguredQualifier()
+            throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", FooClient.class, "testservice"),
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", BarClient.class, "testservice"),
+                        new ReportingModule(),
+                        new TestingMBeanModule())
+                .setRequiredConfigurationProperty("service-client.testservice.uri", "http://nonexistent.nonexistent")
+                .initialize();
+
+        assertNotNull(injector.getInstance(Key.get(HttpClient.class, FooClient.class)));
+        assertNotNull(injector.getInstance(Key.get(HttpClient.class, BarClient.class)));
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("testservice"))));
+
+    }
+
+    @Test
     public void testBindBalancingHttpClientUris()
             throws Exception
     {
@@ -254,12 +275,15 @@ public class TestHttpClientBinder
         Injector injector = bootstrapTest()
                 .withModules(
                         binder -> httpClientBinder(binder).bindBalancingHttpClient("foo", named("bar"), "baz"),
+                        binder -> httpClientBinder(binder).bindBalancingHttpClient("second", named("quux"), "baz"),
                         new ReportingModule(),
                         new TestingMBeanModule())
                 .setRequiredConfigurationProperty("service-client.baz.uri", "http://nonexistent.nonexistent")
                 .initialize();
 
         assertNotNull(injector.getInstance(Key.get(HttpClient.class, named("bar"))));
+        assertNotNull(injector.getInstance(Key.get(HttpClient.class, named("quux"))));
+        assertNotNull(injector.getInstance(Key.get(HttpServiceBalancer.class, serviceType("baz"))));
     }
 
     @Test

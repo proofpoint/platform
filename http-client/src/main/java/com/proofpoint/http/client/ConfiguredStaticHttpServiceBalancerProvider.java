@@ -29,6 +29,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 
 import java.util.Map;
+import java.util.Objects;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -81,5 +82,24 @@ class ConfiguredStaticHttpServiceBalancerProvider implements Provider<HttpServic
         reportExporter.export(balancer, false, "ServiceClient", tags);
         balancer.updateHttpUris(injector.getInstance(uriConfigKey).getUris());
         return balancer;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ConfiguredStaticHttpServiceBalancerProvider that = (ConfiguredStaticHttpServiceBalancerProvider) o;
+        return Objects.equals(type, that.type) && Objects.equals(balancerConfigKey, that.balancerConfigKey) && Objects.equals(uriConfigKey, that.uriConfigKey);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(type, balancerConfigKey, uriConfigKey);
     }
 }
