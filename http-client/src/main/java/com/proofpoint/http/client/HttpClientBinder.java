@@ -305,14 +305,19 @@ public class HttpClientBinder
     {
         requireNonNull(name, "name is null");
         requireNonNull(annotation, "annotation is null");
+        requireNonNull(serviceName, "serviceName is null");
 
-        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(annotation).prefixedWith("service-client." + serviceName);
-        bindConfig(binder).bind(HttpServiceBalancerUriConfig.class).annotatedWith(annotation).prefixedWith("service-client." + serviceName);
+        ServiceType serviceType = ServiceTypes.serviceType(serviceName);
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(serviceType).prefixedWith("service-client." + serviceName);
+        bindConfig(binder).bind(HttpServiceBalancerUriConfig.class).annotatedWith(serviceType).prefixedWith("service-client." + serviceName);
+        binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType)
+                .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(serviceName,
+                        Key.get(HttpServiceBalancerConfig.class, serviceType),
+                        Key.get(HttpServiceBalancerUriConfig.class, serviceType)));
+
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
-                .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(serviceName,
-                        Key.get(HttpServiceBalancerConfig.class, annotation),
-                        Key.get(HttpServiceBalancerUriConfig.class, annotation)));
+                .to(Key.get(HttpServiceBalancer.class, serviceType));
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation, serviceName);
     }
 
@@ -334,13 +339,17 @@ public class HttpClientBinder
         requireNonNull(name, "name is null");
         requireNonNull(annotation, "annotation is null");
 
-        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(annotation).prefixedWith("service-client." + serviceName);
-        bindConfig(binder).bind(HttpServiceBalancerUriConfig.class).annotatedWith(annotation).prefixedWith("service-client." + serviceName);
+        ServiceType serviceType = ServiceTypes.serviceType(serviceName);
+        bindConfig(binder).bind(HttpServiceBalancerConfig.class).annotatedWith(serviceType).prefixedWith("service-client." + serviceName);
+        bindConfig(binder).bind(HttpServiceBalancerUriConfig.class).annotatedWith(serviceType).prefixedWith("service-client." + serviceName);
+        binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType)
+                .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(serviceName,
+                        Key.get(HttpServiceBalancerConfig.class, serviceType),
+                        Key.get(HttpServiceBalancerUriConfig.class, serviceType)));
+
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
-                .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(serviceName,
-                        Key.get(HttpServiceBalancerConfig.class, annotation),
-                        Key.get(HttpServiceBalancerUriConfig.class, annotation)));
+                .to(Key.get(HttpServiceBalancer.class, serviceType));
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation);
     }
 
@@ -436,7 +445,7 @@ public class HttpClientBinder
         reportBinder(binder).export(HttpClient.class).annotatedWith(annotation).withNamePrefix("HttpClient." + serviceName);
         newExporter(binder).export(HttpClient.class).annotatedWith(annotation).as(new ObjectNameBuilder(HttpClient.class.getPackage().getName())
                 .withProperty("type", "HttpClient")
-                .withProperty("name", serviceName)
+                .withProperty("name", name)
                 .build()
         );
         binder.bind(ScheduledExecutorService.class).annotatedWith(ForBalancingHttpClient.class).toProvider(RetryExecutorProvider.class);
