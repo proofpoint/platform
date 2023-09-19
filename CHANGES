@@ -1,3 +1,9 @@
+Platform 3.01
+
+* Library Upgrades
+
+  - Guava to 32.1.2-jre (was 32.0.0-jre)
+
 Platform 3.00
 
 * HttpClient
