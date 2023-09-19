@@ -2,6 +2,7 @@ Platform 3.01
 
 * Library Upgrades
 
+  - AutoValue to 1.10.4 (was 1.7.4)
   - Guava to 32.1.2-jre (was 32.0.0-jre)
 
 Platform 3.00
