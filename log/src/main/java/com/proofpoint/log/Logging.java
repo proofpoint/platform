@@ -474,13 +474,7 @@ public class Logging
         private void flush()
         {
             try {
-                lock.lock();
-                try {
-                    getOutputStream().flush();
-                }
-                finally {
-                    lock.unlock();
-                }
+                getOutputStream().flush();
             }
             catch (IOException e) {
                 started = false;

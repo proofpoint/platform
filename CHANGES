@@ -4,6 +4,7 @@ Platform 3.01
 
   - AutoValue to 1.10.4 (was 1.7.4)
   - Guava to 32.1.2-jre (was 32.0.0-jre)
+  - logback to 1.4.11 (was 1.2.11)
   - slf4j to 2.0.9 (was 2.0.5)
 
 Platform 3.00
