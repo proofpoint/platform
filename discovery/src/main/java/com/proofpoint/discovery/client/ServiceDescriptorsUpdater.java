@@ -113,12 +113,12 @@ public final class ServiceDescriptorsUpdater
                     // If no new service descriptors are available, log a warning.
                     // Keep any previous service descriptors to provide some robustness for degraded operation.
                     if (serviceDescriptors.get() == null) {
-                        log.warn("Discovery returned zero available service instances for service {}, pool {}. No " +
+                        log.warn("Discovery returned zero available service instances for service %s, pool %s. No " +
                                 "previous service descriptors are available.",
                                 newDescriptors.getType(), newDescriptors.getPool());
                     }
                     else {
-                        log.warn("Discovery returned zero available service instances for service {}, pool {}. Keeping " +
+                        log.warn("Discovery returned zero available service instances for service %s, pool %s. Keeping " +
                                 "previous set of instances.", newDescriptors.getType(), newDescriptors.getPool());
                     }
                 }
