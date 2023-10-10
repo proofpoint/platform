@@ -1,3 +1,9 @@
+Platform 3.03
+
+* Library Upgrades
+
+  - Jetty to 11.0.17 (was 11.0.16) (CVE-2023-44487 CVE-2023-36478)
+
 Platform 3.02
 
 * Library Upgrades
