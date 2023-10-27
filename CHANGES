@@ -1,3 +1,10 @@
+Platform 3.05
+
+* HttpClient
+
+  We fixed a bug where statically configured HttpClientBalancers that were supposed to be shared
+  across multiple BalancingHttpClients weren't bound in singleton scope.
+
 Platform 3.04
 
 * Library Upgrades
