@@ -237,7 +237,8 @@ public class HttpClientBinder
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
                 .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(annotation.getSimpleName(),
                         Key.get(HttpServiceBalancerConfig.class, annotation),
-                        Key.get(HttpServiceBalancerUriConfig.class, annotation)));
+                        Key.get(HttpServiceBalancerUriConfig.class, annotation)))
+                .in(Scopes.SINGLETON);
         return createBalancingHttpClientBindingBuilder(privateBinder, name, annotation);
     }
 
@@ -313,7 +314,8 @@ public class HttpClientBinder
         binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType)
                 .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(serviceName,
                         Key.get(HttpServiceBalancerConfig.class, serviceType),
-                        Key.get(HttpServiceBalancerUriConfig.class, serviceType)));
+                        Key.get(HttpServiceBalancerUriConfig.class, serviceType)))
+                .in(Scopes.SINGLETON);
 
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
@@ -345,7 +347,8 @@ public class HttpClientBinder
         binder.bind(HttpServiceBalancer.class).annotatedWith(serviceType)
                 .toProvider(new ConfiguredStaticHttpServiceBalancerProvider(serviceName,
                         Key.get(HttpServiceBalancerConfig.class, serviceType),
-                        Key.get(HttpServiceBalancerUriConfig.class, serviceType)));
+                        Key.get(HttpServiceBalancerUriConfig.class, serviceType)))
+                .in(Scopes.SINGLETON);
 
         PrivateBinder privateBinder = binder.newPrivateBinder();
         privateBinder.bind(HttpServiceBalancer.class).annotatedWith(ForBalancingHttpClient.class)
