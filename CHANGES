@@ -1,3 +1,9 @@
+Platform 3.07
+
+* Library Upgrades
+
+  - Base Docker image to c15-java17:3.42 (was 3.23)
+
 Platform 3.06
 
 * HttpClient
