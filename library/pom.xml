@@ -88,7 +88,7 @@
         <dep.guava.version>32.1.2-jre</dep.guava.version>
         <dep.guice.version>7.0.0</dep.guice.version>
         <dep.slf4j.version>2.0.9</dep.slf4j.version>
-        <dep.logback.version>1.4.11</dep.logback.version>
+        <dep.logback.version>1.4.12</dep.logback.version>
         <dep.javax-servlet.version>5.0.0</dep.javax-servlet.version>
         <dep.jackson.version>2.15.2</dep.jackson.version>
         <dep.jersey.version>3.0.10</dep.jersey.version>
