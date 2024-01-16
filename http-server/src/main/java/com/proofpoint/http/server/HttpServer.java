@@ -27,6 +27,7 @@ import jakarta.annotation.PreDestroy;
 import jakarta.servlet.Filter;
 import jakarta.servlet.Servlet;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
+import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.jmx.MBeanContainer;
@@ -110,7 +111,12 @@ public class HttpServer
     private final NodeInfo nodeInfo;
     private final HttpServerConfig config;
     private final Optional<ZonedDateTime> certificateExpiration;
+    private final HttpServerModuleOptions moduleOptions;
 
+    /**
+     * @deprecated Will no longer be public
+     */
+    @Deprecated
     public HttpServer(HttpServerInfo httpServerInfo,
             NodeInfo nodeInfo,
             HttpServerConfig config,
@@ -130,6 +136,32 @@ public class HttpServer
             @Nullable RequestLog requestLog,
             ClientAddressExtractor clientAddressExtractor)
     {
+        this(httpServerInfo, nodeInfo, config, theServlet, parameters,
+                filters, resources, theAdminServlet, adminParameters, adminFilters, mbeanServer,
+                loginService, sessionHandler, queryStringFilter, stats, detailedRequestStats,
+                requestLog, clientAddressExtractor, new HttpServerModuleOptions());
+    }
+
+    public HttpServer(HttpServerInfo httpServerInfo,
+            NodeInfo nodeInfo,
+            HttpServerConfig config,
+            Servlet theServlet,
+            Map<String, String> parameters,
+            Set<Filter> filters,
+            Set<HttpResourceBinding> resources,
+            @Nullable Servlet theAdminServlet,
+            @Nullable Map<String, String> adminParameters,
+            @Nullable Set<Filter> adminFilters,
+            @Nullable MBeanServer mbeanServer,
+            @Nullable LoginService loginService,
+            @Nullable SessionHandler sessionHandler,
+            QueryStringFilter queryStringFilter,
+            RequestStats stats,
+            DetailedRequestStats detailedRequestStats,
+            @Nullable RequestLog requestLog,
+            ClientAddressExtractor clientAddressExtractor,
+            HttpServerModuleOptions moduleOptions)
+    {
         this.httpServerInfo = requireNonNull(httpServerInfo, "httpServerInfo is null");
         this.nodeInfo = requireNonNull(nodeInfo, "nodeInfo is null");
         this.config = requireNonNull(config, "config is null");
@@ -142,6 +174,7 @@ public class HttpServer
         requireNonNull(detailedRequestStats, "detailedRequestStats is null");
         this.requestLog = requestLog;
         this.clientAddressExtractor = requireNonNull(clientAddressExtractor, "clientAddressExtractor is null");
+        this.moduleOptions = requireNonNull(moduleOptions, "httpServerModuleOptions is null");
 
         QueuedThreadPool threadPool = new QueuedThreadPool(config.getMaxThreads())
         {
@@ -363,6 +396,9 @@ public class HttpServer
         baseHttpConfiguration.setSendXPoweredBy(false);
         if (config.getMaxRequestHeaderSize() != null) {
             baseHttpConfiguration.setRequestHeaderSize(toIntExact(config.getMaxRequestHeaderSize().toBytes()));
+        }
+        if (moduleOptions.isAllowAmbiguousUris()) {
+            baseHttpConfiguration.setUriCompliance(UriCompliance.RFC3986);
         }
 
         // disable async error notifications to work around https://github.com/jersey/jersey/issues/3691

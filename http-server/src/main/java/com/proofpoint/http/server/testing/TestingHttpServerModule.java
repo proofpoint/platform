@@ -25,6 +25,7 @@ import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
+import com.proofpoint.http.server.HttpServerModuleOptions;
 import com.proofpoint.http.server.InternalNetworkConfig;
 import com.proofpoint.http.server.LocalAnnouncementHttpServerInfo;
 import com.proofpoint.http.server.QueryStringFilter;
@@ -37,6 +38,7 @@ public class TestingHttpServerModule
         implements Module
 {
     private final int httpPort;
+    private final HttpServerModuleOptions moduleOptions = new HttpServerModuleOptions();
 
     public TestingHttpServerModule()
     {
@@ -60,6 +62,7 @@ public class TestingHttpServerModule
                 .setHttpPort(httpPort)
                 .setShowStackTrace(true);
 
+        binder.bind(HttpServerModuleOptions.class).toInstance(moduleOptions);
         binder.bind(HttpServerConfig.class).toInstance(config);
         binder.bind(InternalNetworkConfig.class).toInstance(new InternalNetworkConfig());
         binder.bind(HttpServerInfo.class).in(Scopes.SINGLETON);
@@ -71,4 +74,12 @@ public class TestingHttpServerModule
         newSetBinder(binder, HttpResourceBinding.class, TheServlet.class);
         binder.bind(AnnouncementHttpServerInfo.class).to(LocalAnnouncementHttpServerInfo.class);
     }
+
+    public TestingHttpServerModule allowAmbiguousUris()
+    {
+        moduleOptions.setAllowAmbiguousUris();
+        return this;
+    }
+
+
 }

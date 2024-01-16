@@ -17,6 +17,7 @@ import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
+import com.proofpoint.http.server.HttpServerModuleOptions;
 import com.proofpoint.http.server.InternalNetworkConfig;
 import com.proofpoint.http.server.LocalAnnouncementHttpServerInfo;
 import com.proofpoint.http.server.QueryStringFilter;
@@ -191,6 +192,7 @@ public class TestHstsResponseFilter
                     .setKeystorePath(getResource("localhost.keystore").toString())
                     .setKeystorePassword("changeit");
 
+            binder.bind(HttpServerModuleOptions.class).in(Scopes.SINGLETON);
             binder.bind(HttpServerConfig.class).toInstance(config);
             binder.bind(InternalNetworkConfig.class).toInstance(new InternalNetworkConfig());
             binder.bind(HttpServerInfo.class).in(Scopes.SINGLETON);

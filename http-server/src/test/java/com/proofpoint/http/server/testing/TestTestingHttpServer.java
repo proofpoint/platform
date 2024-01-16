@@ -31,6 +31,7 @@ import com.proofpoint.http.client.jetty.JettyHttpClient;
 import com.proofpoint.http.server.ClientAddressExtractor;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
+import com.proofpoint.http.server.HttpServerModuleOptions;
 import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.TheServlet;
 import com.proofpoint.log.Logging;
@@ -256,6 +257,41 @@ public class TestTestingHttpServer
         }
     }
 
+    @Test
+    public void testGuiceInjectionWithOptions()
+        throws Exception
+    {
+        DummyServlet servlet = new DummyServlet();
+
+        Injector injector = bootstrapTest()
+                .withModules(
+                        new TestingNodeModule(),
+                        new TestingHttpServerModule().allowAmbiguousUris(),
+                        binder -> {
+                            binder.bind(Servlet.class).annotatedWith(TheServlet.class).toInstance(servlet);
+                            binder.bind(new TypeLiteral<Map<String, String>>()
+                            {
+                            }).annotatedWith(TheServlet.class).toInstance(ImmutableMap.of());
+                            httpServerBinder(binder).bindResource("path", "webapp/user").withWelcomeFile("user-welcome.txt");
+                            httpServerBinder(binder).bindResource("path//foo", "webapp/user").withWelcomeFile("user-welcome.txt");
+                        })
+                .initialize();
+
+        LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
+        TestingHttpServer server = injector.getInstance(TestingHttpServer.class);
+        HttpServerModuleOptions moduleOptions = injector.getInstance(HttpServerModuleOptions.class);
+        assertTrue(moduleOptions.isAllowAmbiguousUris());
+
+        try (HttpClient client = new JettyHttpClient(new HttpClientConfig().setConnectTimeout(new Duration(1, SECONDS)))) {
+            URI uri = server.getBaseUrl();
+            assertResource(uri, client, "path/", "welcome user!");
+            assertResource(uri, client, "path//foo", "welcome user!");
+        }
+        finally {
+            lifeCycleManager.stop();
+        }
+    }
+
     private static void assertResource(URI baseUri, HttpClient client, String path, String contents)
     {
         HttpUriBuilder uriBuilder = uriBuilderFrom(baseUri);
@@ -282,7 +318,7 @@ public class TestTestingHttpServer
         HttpServerConfig config = new HttpServerConfig().setHttpPort(0);
         HttpServerInfo httpServerInfo = new HttpServerInfo(config, nodeInfo);
         return new TestingHttpServer(httpServerInfo, nodeInfo, config, servlet, params, Set.of(filter),
-                Set.of(), new QueryStringFilter(), new ClientAddressExtractor());
+                Set.of(), new QueryStringFilter(), new ClientAddressExtractor(), new HttpServerModuleOptions());
     }
 
     static class DummyServlet

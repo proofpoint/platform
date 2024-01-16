@@ -20,6 +20,7 @@ import com.proofpoint.http.server.ClientAddressExtractor;
 import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
+import com.proofpoint.http.server.HttpServerModuleOptions;
 import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.RequestStats;
 import com.proofpoint.http.server.TheAdminServlet;
@@ -93,7 +94,8 @@ public class TestingAdminHttpServer extends HttpServer
                 new RequestStats(),
                 new DetailedRequestStats(),
                 null,
-                clientAddressExtractor
+                clientAddressExtractor,
+                new HttpServerModuleOptions()
         );
         this.httpServerInfo = httpServerInfo;
     }
