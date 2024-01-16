@@ -57,6 +57,7 @@ public class HttpServerModule
     public static final String REALM_NAME = "Proofpoint";
 
     private boolean bindSessionHandler = false;
+    private final HttpServerModuleOptions moduleOptions = new HttpServerModuleOptions();
 
     @Override
     public void configure(Binder binder)
@@ -67,6 +68,7 @@ public class HttpServerModule
             binder.bind(SessionHandler.class).in(Scopes.SINGLETON);
         }
 
+        binder.bind(HttpServerModuleOptions.class).toInstance(moduleOptions);
         binder.bind(HttpServer.class).toProvider(HttpServerProvider.class).in(Scopes.SINGLETON);
         binder.bind(HttpServerInfo.class).in(Scopes.SINGLETON);
         binder.bind(QueryStringFilter.class).in(Scopes.SINGLETON);
@@ -89,6 +91,12 @@ public class HttpServerModule
     public HttpServerModule withSessionHandler()
     {
         this.bindSessionHandler = true;
+        return this;
+    }
+
+    public HttpServerModule allowAmbiguousUris()
+    {
+        moduleOptions.setAllowAmbiguousUris();
         return this;
     }
 }

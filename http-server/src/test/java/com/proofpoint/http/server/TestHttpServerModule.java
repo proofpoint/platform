@@ -229,6 +229,34 @@ public class TestHttpServerModule
         assertNotNull(result);
     }
 
+    @Test
+    public void testAllowAmbiguousUrls()
+        throws Exception
+    {
+        Injector injector = bootstrapTest()
+                .withModules(new HttpServerModule().allowAmbiguousUris(),
+                        new TestingNodeModule(),
+                        new TestingMBeanModule(),
+                        new ReportingModule(),
+                        binder -> {
+                            binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
+                            binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
+                            httpServerBinder(binder).bindResource("path", "webapp/user").withWelcomeFile("user-welcome.txt");
+                            httpServerBinder(binder).bindResource("path//foo", "webapp/user").withWelcomeFile("user-welcome.txt");
+                        })
+                .setRequiredConfigurationProperties(properties)
+                .initialize();
+        HttpServerInfo httpServerInfo = injector.getInstance(HttpServerInfo.class);
+        HttpServerModuleOptions moduleOptions = injector.getInstance(HttpServerModuleOptions.class);
+        assertTrue(moduleOptions.isAllowAmbiguousUris());
+
+        try (HttpClient client = new JettyHttpClient()) {
+            URI httpUri = httpServerInfo.getHttpUri();
+            assertResource(httpUri, client, "path/", "welcome user!");
+            assertResource(httpUri, client, "path//foo", "welcome user!");
+        }
+    }
+
     private void assertResource(URI baseUri, HttpClient client, String path, String contents)
     {
         HttpUriBuilder uriBuilder = uriBuilderFrom(baseUri);

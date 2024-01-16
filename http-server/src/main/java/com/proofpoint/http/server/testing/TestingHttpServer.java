@@ -21,6 +21,7 @@ import com.proofpoint.http.server.HttpServer;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import com.proofpoint.http.server.HttpServerConfig;
 import com.proofpoint.http.server.HttpServerInfo;
+import com.proofpoint.http.server.HttpServerModuleOptions;
 import com.proofpoint.http.server.QueryStringFilter;
 import com.proofpoint.http.server.RequestStats;
 import com.proofpoint.http.server.TheServlet;
@@ -60,7 +61,8 @@ public class TestingHttpServer extends HttpServer
                 Set.of(),
                 Set.of(),
                 new QueryStringFilter(),
-                new ClientAddressExtractor()
+                new ClientAddressExtractor(),
+                new HttpServerModuleOptions()
         );
     }
 
@@ -73,7 +75,8 @@ public class TestingHttpServer extends HttpServer
             @TheServlet Set<Filter> filters,
             @TheServlet Set<HttpResourceBinding> resources,
             QueryStringFilter queryStringFilter,
-            ClientAddressExtractor clientAddressExtractor)
+            ClientAddressExtractor clientAddressExtractor,
+            HttpServerModuleOptions moduleOptions)
             throws IOException
     {
         super(httpServerInfo,
@@ -93,7 +96,8 @@ public class TestingHttpServer extends HttpServer
                 new RequestStats(),
                 new DetailedRequestStats(),
                 null,
-                clientAddressExtractor
+                clientAddressExtractor,
+                moduleOptions
         );
         this.httpServerInfo = httpServerInfo;
     }

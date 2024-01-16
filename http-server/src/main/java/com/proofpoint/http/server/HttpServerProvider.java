@@ -62,6 +62,7 @@ public class HttpServerProvider
     private final QueryStringFilter queryStringFilter;
     private final ClientAddressExtractor clientAddressExtractor;
     private final LifeCycleManager lifeCycleManager;
+    private final HttpServerModuleOptions moduleOptions;
 
     @Inject
     public HttpServerProvider(HttpServerInfo httpServerInfo,
@@ -76,7 +77,8 @@ public class HttpServerProvider
             DetailedRequestStats detailedRequestStats,
             QueryStringFilter queryStringFilter,
             ClientAddressExtractor clientAddressExtractor,
-            LifeCycleManager lifeCycleManager)
+            LifeCycleManager lifeCycleManager,
+            HttpServerModuleOptions moduleOptions)
     {
         requireNonNull(httpServerInfo, "httpServerInfo is null");
         requireNonNull(nodeInfo, "nodeInfo is null");
@@ -104,6 +106,7 @@ public class HttpServerProvider
         this.queryStringFilter = queryStringFilter;
         this.clientAddressExtractor = clientAddressExtractor;
         this.lifeCycleManager = requireNonNull(lifeCycleManager, "lifeCycleManager is null");
+        this.moduleOptions = requireNonNull(moduleOptions, "httpServerModuleOptions is null");
     }
 
     @Inject(optional = true)
@@ -162,7 +165,8 @@ public class HttpServerProvider
                     stats,
                     detailedRequestStats,
                     requestLog,
-                    clientAddressExtractor
+                    clientAddressExtractor,
+                    moduleOptions
             );
             lifeCycleManager.addInstance(httpServer);
             return httpServer;

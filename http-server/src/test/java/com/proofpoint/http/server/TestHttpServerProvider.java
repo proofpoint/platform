@@ -37,6 +37,7 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -77,6 +78,7 @@ public class TestHttpServerProvider
     private HttpServerInfo httpServerInfo;
     private LifeCycleManager lifeCycleManager;
     private RequestLog requestLog;
+    private HttpServerModuleOptions moduleOptions;
 
     @BeforeSuite
     public void setupSuite()
@@ -110,6 +112,7 @@ public class TestHttpServerProvider
         }));
         httpServerInfo = new HttpServerInfo(config, nodeInfo);
         lifeCycleManager = new LifeCycleManager(List.of(), null, new LifeCycleConfig());
+        moduleOptions = new HttpServerModuleOptions();
     }
 
     @AfterMethod(alwaysRun = true)
@@ -278,6 +281,37 @@ public class TestHttpServerProvider
 
         HttpClient client = new JettyHttpClient();
         StatusResponse response = client.execute(prepareGet().setUri(httpServerInfo.getHttpsUri()).build(), createStatusResponseHandler());
+
+        assertEquals(response.getStatusCode(), HttpServletResponse.SC_OK);
+    }
+
+    @Test
+    public void testUriViolationDisabled()
+            throws Exception
+    {
+        httpServerInfo = new HttpServerInfo(config, nodeInfo);
+
+        createServer();
+        lifeCycleManager.start();
+
+        HttpClient client = new JettyHttpClient();
+        StatusResponse response = client.execute(prepareGet().setUri(URI.create(httpServerInfo.getHttpUri().toString() + "//")).build(), createStatusResponseHandler());
+
+        assertEquals(response.getStatusCode(), HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    @Test
+    public void testUriViolationEnabled()
+            throws Exception
+    {
+        moduleOptions.setAllowAmbiguousUris();
+        httpServerInfo = new HttpServerInfo(config, nodeInfo);
+
+        createServer();
+        lifeCycleManager.start();
+
+        HttpClient client = new JettyHttpClient();
+        StatusResponse response = client.execute(prepareGet().setUri(URI.create(httpServerInfo.getHttpUri().toString() + "//")).build(), createStatusResponseHandler());
 
         assertEquals(response.getStatusCode(), HttpServletResponse.SC_OK);
     }
@@ -594,7 +628,8 @@ public class TestHttpServerProvider
                 new TestingHttpServer.DetailedRequestStats(),
                 new QueryStringFilter(),
                 new ClientAddressExtractor(),
-                lifeCycleManager)
+                lifeCycleManager,
+                moduleOptions)
         {
             @Override
             protected RequestLog createRequestLog(HttpServerConfig config)
