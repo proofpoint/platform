@@ -1,3 +1,9 @@
+Platform 3.10
+
+* Library Upgrades
+
+  - Base Docker image to c15-java17:3.44 (was 3.42)
+
 Platform 3.09
 
 * HttpServer
