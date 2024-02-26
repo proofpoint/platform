@@ -2,6 +2,7 @@ Platform 3.14
 
 * Library Upgrades
 
+  - jackson to 2.16.1 (was 2.15.2)
   - logback to 1.5.0 (was 1.4.12)
 
 Platform 3.13
