@@ -7,7 +7,7 @@
     <parent>
         <artifactId>platform</artifactId>
         <groupId>com.proofpoint.platform</groupId>
-        <version>3.14</version>
+        <version>3.15-SNAPSHOT</version>
     </parent>
 
     <dependencies>
