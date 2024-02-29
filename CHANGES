@@ -1,3 +1,9 @@
+Platform 3.15
+
+* Library Upgrades
+
+  - error_prone_annotations to 2.25.0 (was 2.18.0)
+
 Platform 3.14
 
 * Library Upgrades
