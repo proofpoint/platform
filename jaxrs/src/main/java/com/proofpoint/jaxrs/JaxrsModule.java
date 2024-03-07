@@ -106,6 +106,7 @@ public class JaxrsModule
         jaxrsBinder(binder).bind(LivenessResource.class);
         jaxrsBinder(binder).bind(HstsResponseFilter.class);
 
+        jaxrsBinder(binder).bindAdmin(HstsResponseFilter.class);
         jaxrsBinder(binder).bindAdmin(OpenApiResource.class);
         jaxrsBinder(binder).bindAdmin(OpenApiAdminResource.class);
 
