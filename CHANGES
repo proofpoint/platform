@@ -1,3 +1,10 @@
+Platform 3.18
+
+* Jaxrs
+
+  - When HSTS headers are enabled (by configuring "jaxrs.hsts.max-age"), we now attach the
+    Strict-Transport-Security header to responses from admin endpoints as well.
+
 Platform 3.17
 
 * Library Upgrades
