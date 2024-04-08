@@ -1,3 +1,9 @@
+Platform 3.21
+
+* Library Upgrades
+
+  - Base Docker image to c15-java17:3.46 (was 3.45)
+
 Platform 3.20
 
 * Jaxrs
