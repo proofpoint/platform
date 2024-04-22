@@ -1565,13 +1565,8 @@
                                         <source>
                                             <location>${project.build.directory}/launcher/bin</location>
                                             <excludes>
-                                                <exclude>**/init.redhat</exclude>
                                                 <exclude>**/platform.service</exclude>
                                             </excludes>
-                                        </source>
-                                        <source>
-                                            <location>${project.build.directory}/launcher/bin/init.redhat</location>
-                                            <filter>true</filter>
                                         </source>
                                     </sources>
                                     <username>root</username>
@@ -1579,19 +1574,6 @@
                                     <filemode>755</filemode>
                                 </mapping>
                                 <!-- Service control -->
-                                <mapping>
-                                    <directory>/etc/init.d</directory>
-                                    <directoryIncluded>false</directoryIncluded>
-                                    <sources>
-                                        <softlinkSource>
-                                            <location>/opt/proofpoint/${project.artifactId}/bin/init.redhat</location>
-                                            <destination>${project.artifactId}</destination>
-                                        </softlinkSource>
-                                    </sources>
-                                    <username>root</username>
-                                    <groupname>root</groupname>
-                                    <filemode>755</filemode>
-                                </mapping>
                                 <mapping>
                                     <directory>/usr/lib/systemd/system</directory>
                                     <directoryIncluded>false</directoryIncluded>
@@ -1751,7 +1733,6 @@
                                                         </includes>
                                                         <unpackOptions>
                                                             <excludes>
-                                                                <exclude>bin/init.redhat</exclude>
                                                                 <exclude>bin/launcher.rb</exclude>
                                                                 <exclude>bin/platform.service</exclude>
                                                             </excludes>

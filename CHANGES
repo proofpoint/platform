@@ -1,3 +1,9 @@
+Platform 3.22
+
+* RPM packaging
+
+  We removed the legacy init script from RPM packages. Systemd is now required.
+
 Platform 3.21
 
 * Library Upgrades
