@@ -1,3 +1,9 @@
+Platform 3.23
+
+* Library Upgrades
+
+  - Base Docker image to c15-java17:3.47 (was 3.46)
+
 Platform 3.22
 
 * RPM packaging
