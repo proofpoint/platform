@@ -1,3 +1,9 @@
+Platform 3.24
+
+* Library Upgrades
+
+  - Base Docker image to c15-java17:3.52 (was 3.47)
+
 Platform 3.23
 
 * Library Upgrades
