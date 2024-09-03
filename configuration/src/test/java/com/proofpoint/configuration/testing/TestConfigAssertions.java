@@ -140,6 +140,44 @@ public class TestConfigAssertions
     }
 
     @Test
+    public void testRecordedDefaultsFailPrivateGetter()
+    {
+        boolean pass = true;
+        try {
+            assertRecordedDefaults(recordDefaults(PrivateGetterPersonConfig.class)
+                    .setName("Dain"));
+        }
+        catch (AssertionError e) {
+            // expected
+            pass = false;
+            assertContains(e.getMessage(), "Cannot assertRecordedDefaults() on non-public config getter: getName");
+        }
+
+        if (pass) {
+            fail("Expected AssertionError");
+        }
+    }
+
+    @Test
+    public void testRecordedDefaultsFailPrivateSetter()
+    {
+        boolean pass = true;
+        try {
+            assertRecordedDefaults(recordDefaults(PrivateSetterPersonConfig.class)
+                    .setName("Dain"));
+        }
+        catch (AssertionError e) {
+            // expected
+            pass = false;
+            assertContains(e.getMessage(), "Cannot assertRecordedDefaults() on non-public config setter: setName");
+        }
+
+        if (pass) {
+            fail("Expected AssertionError");
+        }
+    }
+
+    @Test
     public void testExplicitPropertyMappings()
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
@@ -566,64 +604,64 @@ public class TestConfigAssertions
         assertLegacyEquivalence(MapConfig.class, currentProperties, oldProperties, olderProperties);
     }
 
-    static class PersonConfig
+    public static class PersonConfig
     {
         private String name = "Dain";
         private String email = "dain@proofpoint.com";
         private String phone;
         private URI homePage = URI.create("http://iq80.com");
 
-        String getName()
+        public String getName()
         {
             return name;
         }
 
         @Config("name")
-        PersonConfig setName(String name)
+        public PersonConfig setName(String name)
         {
             this.name = name;
             return this;
         }
 
-        String getEmail()
+        public String getEmail()
         {
             return email;
         }
 
         @Config("email")
         @LegacyConfig({"exchange-id", "notes-id"})
-        PersonConfig setEmail(String email)
+        public PersonConfig setEmail(String email)
         {
             this.email = email;
             return this;
         }
 
-        String getPhone()
+        public String getPhone()
         {
             return phone;
         }
 
         @Config("phone")
-        PersonConfig setPhone(String phone)
+        public PersonConfig setPhone(String phone)
         {
             this.phone = phone;
             return this;
         }
 
-        URI getHomePage()
+        public URI getHomePage()
         {
             return homePage;
         }
 
         @Config("home-page")
-        PersonConfig setHomePage(URI homePage)
+        public PersonConfig setHomePage(URI homePage)
         {
             this.homePage = homePage;
             return this;
         }
 
         @LegacyConfig(value = "home-page-url", replacedBy = "home-page")
-        PersonConfig setHomePageUrl(URL homePage)
+        public PersonConfig setHomePageUrl(URL homePage)
         {
             try {
                 this.homePage = homePage.toURI();
@@ -632,6 +670,40 @@ public class TestConfigAssertions
             catch (URISyntaxException e) {
                 throw new IllegalArgumentException(e);
             }
+        }
+    }
+
+    public static class PrivateGetterPersonConfig
+    {
+        private String name = "Dain";
+
+        String getName()
+        {
+            return name;
+        }
+
+        @Config("name")
+        public PrivateGetterPersonConfig setName(String name)
+        {
+            this.name = name;
+            return this;
+        }
+    }
+
+    public static class PrivateSetterPersonConfig
+    {
+        private String name = "Dain";
+
+        public String getName()
+        {
+            return name;
+        }
+
+        @Config("name")
+        PrivateSetterPersonConfig setName(String name)
+        {
+            this.name = name;
+            return this;
         }
     }
 

@@ -1,8 +1,19 @@
 Platform 3.27
 
-* Java 11
+* Java versions
 
-  We increased the minimum Java version to 17.
+  * We increased the minimum Java version to 17.
+
+  * We now support Java 21.
+
+* Configuration
+
+  - In order to support newer versions of Java,
+    ConfigAssertions now uses ByteBuddy instead of cglib.
+    INCOMPATIBLE CHANGE: ConfigAssertions.assertRecordedDefaults()
+    can no longer test config classes that are package private or have
+    package private configuration attributes. The configuration classes
+    and their configuration getters and setters must be made public.
 
 * Maven plugin upgrades
   - JaCoCo to 0.8.12 (was 0.8.8)

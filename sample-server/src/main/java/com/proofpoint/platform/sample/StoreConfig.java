@@ -36,14 +36,14 @@ public class StoreConfig
     }
 
     @Config("store.ttl")
-    StoreConfig setTtl(Duration ttl)
+    public StoreConfig setTtl(Duration ttl)
     {
         this.ttl = requireNonNull(ttl, "ttl must not be null");
         return this;
     }
 
     @MinDuration(value = "1m", message = "must be at least 1m")
-    Duration getTtl()
+    public Duration getTtl()
     {
         return ttl;
     }
