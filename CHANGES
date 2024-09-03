@@ -4,6 +4,11 @@ Platform 3.27
 
   We increased the minimum Java version to 17.
 
+* Maven plugin upgrades
+  - JaCoCo to 0.8.12 (was 0.8.8)
+
+Platform 3.24
+
 * Library Upgrades
 
   - Base Docker image to c15-java17:3.65 (was 3.57) (CVE-2025-21502)
