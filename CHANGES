@@ -1,3 +1,9 @@
+Platform 3.27
+
+* Library Upgrades
+
+  - Jetty to 11.0.24 (was 11.0.20)
+
 Platform 3.24
 
 * Library Upgrades
