@@ -1,3 +1,9 @@
+Platform 3.29
+
+* Library Upgrades
+
+  - Base Docker image to c15-java17:3.57 (was 3.55) (CVE-2024-21208 CVE-2024-21210 CVE-2024-21217 CVE-2024-21235)
+
 Platform 3.28
 
 * Library Upgrades
