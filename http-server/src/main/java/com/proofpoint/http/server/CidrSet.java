@@ -17,7 +17,6 @@ package com.proofpoint.http.server;
 
 import com.google.common.collect.ImmutableSet;
 
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,9 +26,9 @@ import java.util.stream.Collectors;
 
 public class CidrSet
 {
-    private final Set<Inet4Network> cidrs;
+    private final Set<InetNetwork> cidrs;
 
-    private CidrSet(Collection<Inet4Network> cidrs) {
+    private CidrSet(Collection<InetNetwork> cidrs) {
         this.cidrs = Set.copyOf(cidrs);
     }
 
@@ -40,8 +39,8 @@ public class CidrSet
      * @return A {@link CidrSet} identifying all addresses in the blocks in {@code cidrList}.
      */
     public static CidrSet fromString(String cidrList) {
-        Set<Inet4Network> uris = Arrays.stream(cidrList.split("\\s*,\\s*"))
-                        .map(Inet4Network::fromCidr)
+        Set<InetNetwork> uris = Arrays.stream(cidrList.split("\\s*,\\s*"))
+                        .map(InetNetwork::fromCidr)
                         .collect(ImmutableSet.toImmutableSet());
         return new CidrSet(uris);
     }
@@ -62,13 +61,9 @@ public class CidrSet
      */
     public boolean containsAddress(InetAddress address)
     {
-        if (!(address instanceof Inet4Address)) {
-            return false;
-        }
-
-        Inet4Address inet4Address = (Inet4Address) address;
-        for (Inet4Network cidr : cidrs) {
-            if (cidr.containsAddress(inet4Address)) {
+        InetAddress inetAddress = address;
+        for (InetNetwork cidr : cidrs) {
+            if (cidr.containsAddress(inetAddress)) {
                 return true;
             }
         }
@@ -77,7 +72,7 @@ public class CidrSet
     }
 
     public CidrSet union(CidrSet other) {
-        return new CidrSet(ImmutableSet.<Inet4Network>builder()
+        return new CidrSet(ImmutableSet.<InetNetwork>builder()
                 .addAll(cidrs)
                 .addAll(other.cidrs)
                 .build());
@@ -99,7 +94,6 @@ public class CidrSet
     @Override
     public int hashCode()
     {
-
         return Objects.hash(cidrs);
     }
 
@@ -107,7 +101,7 @@ public class CidrSet
     public String toString()
     {
         return cidrs.stream()
-                .map(Inet4Network::toString)
+                .map(InetNetwork::toString)
                 .collect(Collectors.joining(","));
     }
 }

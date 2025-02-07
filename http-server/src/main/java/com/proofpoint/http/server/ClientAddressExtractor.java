@@ -23,6 +23,7 @@ import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Enumeration;
+import java.util.stream.StreamSupport;
 
 public class ClientAddressExtractor
 {
@@ -52,7 +53,15 @@ public class ClientAddressExtractor
         ImmutableList.Builder<String> builder = ImmutableList.builder();
         for (Enumeration<String> e = request.getHeaders("X-FORWARDED-FOR"); e != null && e.hasMoreElements(); ) {
             String forwardedFor = e.nextElement();
-            builder.addAll(Splitter.on(',').trimResults().omitEmptyStrings().split(forwardedFor));
+            StreamSupport.stream(Splitter.on(',').trimResults().omitEmptyStrings().split(forwardedFor).spliterator(), false)
+                    .map(s -> {
+                        if (s.startsWith("[") && s.endsWith("]")) {
+                            return s.substring(1, s.length() - 1).trim();
+                        } else {
+                            return s;
+                        }
+                    })
+                    .forEach(builder::add);
         }
         if (request.getRemoteAddr() != null) {
             builder.add(request.getRemoteAddr());
