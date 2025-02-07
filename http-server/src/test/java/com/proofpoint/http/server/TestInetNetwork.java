@@ -19,14 +19,16 @@ import com.google.common.net.InetAddresses;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.math.BigInteger;
 import java.net.Inet4Address;
+import java.net.InetAddress;
 
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-public class TestInet4Network
+public class TestInetNetwork
 {
     @Test
     public void testFromCidrValid()
@@ -37,11 +39,14 @@ public class TestInet4Network
         assertCidrValid("8.8.8.0/24");
         assertCidrValid("8.8.8.8/32");
         assertCidrValid("255.255.255.255/32");
+        assertCidrValid("::/0");
+        assertCidrValid("2001:db88::/32");
+        assertCidrValid("2001:db88:1:2:3:4:5:6/128");
     }
 
     private static void assertCidrValid(String cidr)
     {
-        assertEquals(Inet4Network.fromCidr(cidr).toString(), cidr);
+        assertEquals(InetNetwork.fromCidr(cidr).toString(), cidr);
     }
 
     @DataProvider(name = "invalidCidr")
@@ -74,7 +79,7 @@ public class TestInet4Network
     @Test(expectedExceptions = IllegalArgumentException.class, dataProvider = "invalidCidr")
     public void testFromCidrInvalid(String cidr)
     {
-        Inet4Network.fromCidr(cidr);
+        InetNetwork.fromCidr(cidr);
     }
 
     @Test
@@ -89,6 +94,9 @@ public class TestInet4Network
         assertStartingAndEndingAddress("8.8.8.8/32", "8.8.8.8");
         assertStartingAndEndingAddress("8.8.8.8/32", "8.8.8.8");
         assertStartingAndEndingAddress("202.12.128.0/18", "202.12.191.255");
+        assertStartingAndEndingAddress("2001:db8::/32", "2001:db8:ffff:ffff:ffff:ffff:ffff:ffff");
+        assertStartingAndEndingAddress("2001:db8::/64", "2001:db8::ffff:ffff:ffff:ffff");
+        assertStartingAndEndingAddress("2001:db8::/96", "2001:db8::ffff:ffff");
     }
 
     private static void assertStartingAndEndingAddress(String cidr, String endingAddress)
@@ -110,19 +118,19 @@ public class TestInet4Network
     }
 
     @Test
-    public void testAddressToLong()
+    public void testAddressToBigInteger()
     {
-        assertAddressToLong("0.0.0.0", 0L);
-        assertAddressToLong("255.255.255.255", 4294967295L);
-        assertAddressToLong("8.8.8.8", 134744072L);
-        assertAddressToLong("202.12.128.0", 3389816832L);
-        assertAddressToLong("202.12.128.254", 3389817086L);
+        assertAddressToBigInteger("0.0.0.0", 0L);
+        assertAddressToBigInteger("255.255.255.255", 4294967295L);
+        assertAddressToBigInteger("8.8.8.8", 134744072L);
+        assertAddressToBigInteger("202.12.128.0", 3389816832L);
+        assertAddressToBigInteger("202.12.128.254", 3389817086L);
     }
 
-    private static void assertAddressToLong(String address, long ip)
+    private static void assertAddressToBigInteger(String address, long ip)
     {
         Inet4Address addr = (Inet4Address) InetAddresses.forString(address);
-        assertEquals(Inet4Network.addressToLong(addr), ip);
+        assertEquals(InetNetwork.addressToBigInteger(addr), BigInteger.valueOf(ip));
     }
 
     @Test
@@ -138,28 +146,37 @@ public class TestInet4Network
         assertTrue(containsAddress("202.12.128.0/18", "202.12.128.255"));
         assertTrue(containsAddress("202.12.128.0/18", "202.12.157.123"));
         assertTrue(containsAddress("202.12.128.0/18", "202.12.191.255"));
+        assertTrue(containsAddress("2001:db8::/32", "2001:db8::"));
+        assertTrue(containsAddress("2001:db8::/32", "2001:db8:ffff:ffff:ffff:ffff:ffff:ffff"));
 
         assertFalse(containsAddress("8.8.8.0/24", "8.8.9.0"));
         assertFalse(containsAddress("8.8.8.8/32", "8.8.8.9"));
         assertFalse(containsAddress("202.12.128.0/18", "202.12.127.255"));
         assertFalse(containsAddress("202.12.128.0/18", "202.12.192.0"));
+        assertFalse(containsAddress("2001:db8::/32", "2001:db7:ffff:ffff:ffff:ffff:ffff:ffff"));
+        assertFalse(containsAddress("2001:db8::/32", "2001:db9::"));
+        assertFalse(containsAddress("2001:db8::/32", "32.1.13.184"));
+        assertFalse(containsAddress("32.1.13.184/32", "2001:db8::"));
     }
 
     private static boolean containsAddress(String cidr, String address)
     {
-        Inet4Address addr = (Inet4Address) InetAddresses.forString(address);
-        return Inet4Network.fromCidr(cidr).containsAddress(addr);
+        InetAddress addr = InetAddresses.forString(address);
+        return InetNetwork.fromCidr(cidr).containsAddress(addr);
     }
 
     @Test
     public void testEquals()
     {
         equivalenceTester()
-                .addEquivalentGroup(Inet4Network.fromCidr("8.0.0.0/8"))
-                .addEquivalentGroup(Inet4Network.fromCidr("9.0.0.0/8"))
-                .addEquivalentGroup(Inet4Network.fromCidr("8.0.0.0/9"))
-                .addEquivalentGroup(Inet4Network.fromCidr("8.8.8.0/24"))
-                .addEquivalentGroup(Inet4Network.fromCidr("8.8.8.8/32"))
+                .addEquivalentGroup(InetNetwork.fromCidr("8.0.0.0/8"))
+                .addEquivalentGroup(InetNetwork.fromCidr("9.0.0.0/8"))
+                .addEquivalentGroup(InetNetwork.fromCidr("8.0.0.0/9"))
+                .addEquivalentGroup(InetNetwork.fromCidr("8.8.8.0/24"))
+                .addEquivalentGroup(InetNetwork.fromCidr("8.8.8.8/32"))
+                .addEquivalentGroup(InetNetwork.fromCidr("2001:db8::/32"))
+                .addEquivalentGroup(InetNetwork.fromCidr("2001:db8::/33"))
+                .addEquivalentGroup(InetNetwork.fromCidr("2001:db8::/96"))
                 .check();
     }
 
@@ -172,10 +189,12 @@ public class TestInet4Network
         assertToString("8.8.8.0/24");
         assertToString("8.8.8.8/32");
         assertToString("255.254.0.0/16");
+        assertToString("2001:db8::/32");
+        assertToString("2001:db88:1:2:3:4:5:6/128");
     }
 
     private static void assertToString(String cidr)
     {
-        assertEquals(Inet4Network.fromCidr(cidr).toString(), cidr);
+        assertEquals(InetNetwork.fromCidr(cidr).toString(), cidr);
     }
 }

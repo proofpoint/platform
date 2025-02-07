@@ -36,11 +36,11 @@ public class TestInternalNetworkConfig
     public void testExplicitPropertyMappings()
     {
         Map<String, String> properties = ImmutableMap.<String, String>builder()
-                .put("http-server.internal-networks", "8.8.0.0/16 , 9.0.0.0/8")
+                .put("http-server.internal-networks", "8.8.0.0/16 , 2001:db8::/64")
                 .build();
 
         InternalNetworkConfig expected = new InternalNetworkConfig()
-                .setInternalNetworks(CidrSet.fromString("9.0.0.0/8").union(CidrSet.fromString("8.8.0.0/16")));
+                .setInternalNetworks(CidrSet.fromString("2001:db8::/64").union(CidrSet.fromString("8.8.0.0/16")));
 
         ConfigAssertions.assertFullMapping(properties, expected);
     }
