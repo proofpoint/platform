@@ -1,26 +1,16 @@
-Platform 3.29
+Platform 3.26
+
+* HTTP Server
+
+  We now accept IPv6 addresses in the `http-server.internal-networks` configuration setting,
+  We now parse IPv6 addresses in X-Forwarded-For: headers.
 
 * Library Upgrades
 
-  - Base Docker image to c15-java17:3.57 (was 3.55) (CVE-2024-21208 CVE-2024-21210 CVE-2024-21217 CVE-2024-21235)
-
-Platform 3.28
-
-* Library Upgrades
-
-  - Base Docker image to c15-java17:3.55 (was 3.52) (CVE-2024-45490 CVE-2024-45491 CVE-2024-45492)
-
-Platform 3.27
-
-* Library Upgrades
-
+  - Base Docker image to c15-java17:3.57 (was 3.47)
+    (CVE-2024-45490 CVE-2024-45491 CVE-2024-45492 CVE-2024-21208 CVE-2024-21210 CVE-2024-21217 CVE-2024-21235)
   - Jetty to 11.0.24 (was 11.0.20)
-
-Platform 3.24
-
-* Library Upgrades
-
-  - Base Docker image to c15-java17:3.52 (was 3.47)
+  - logback to 1.5.13 (was 1.5.0)
 
 Platform 3.23
 
