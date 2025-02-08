@@ -59,7 +59,7 @@ public class TestClientAddressExtractor
     @Test
     public void testUseForwardedForIPv6()
     {
-        when(request.getRemoteAddr()).thenReturn("2001:db8::1");
+        when(request.getRemoteAddr()).thenReturn("[2001:db8::1]");
         when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 4.4.4.4")));
 
         assertEquals(new ClientAddressExtractor(INTERNAL_NETWORK_CONFIG).clientAddressFor(request), "4.4.4.4");
@@ -77,7 +77,7 @@ public class TestClientAddressExtractor
     @Test
     public void testUseForwardedForTwoHopsIPv6ToIPv4()
     {
-        when(request.getRemoteAddr()).thenReturn("2001:db8::1");
+        when(request.getRemoteAddr()).thenReturn("[2001:db8::1]");
         when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "3.3.3.3, 2001:db8::2")));
 
         assertEquals(new ClientAddressExtractor(INTERNAL_NETWORK_CONFIG).clientAddressFor(request), "3.3.3.3");
@@ -86,7 +86,7 @@ public class TestClientAddressExtractor
     @Test
     public void testUseForwardedForTwoHopsBracketedIPv6ToIPv4()
     {
-        when(request.getRemoteAddr()).thenReturn("2001:db8::1");
+        when(request.getRemoteAddr()).thenReturn("[2001:db8::1]");
         when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "3.3.3.3, [2001:db8::2]")));
 
         assertEquals(new ClientAddressExtractor(INTERNAL_NETWORK_CONFIG).clientAddressFor(request), "3.3.3.3");
@@ -95,7 +95,7 @@ public class TestClientAddressExtractor
     @Test
     public void testUseForwardedForTwoHopsIPv6toIPv6()
     {
-        when(request.getRemoteAddr()).thenReturn("2001:db8::1");
+        when(request.getRemoteAddr()).thenReturn("[2001:db8::1]");
         when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "2001:db8:3::3, 2001:db8::2")));
 
         assertEquals(new ClientAddressExtractor(INTERNAL_NETWORK_CONFIG).clientAddressFor(request), "2001:db8:3::3");
@@ -104,7 +104,7 @@ public class TestClientAddressExtractor
     @Test
     public void testUseForwardedForTwoHopsBracketedIPv6toIPv6()
     {
-        when(request.getRemoteAddr()).thenReturn("2001:db8::1");
+        when(request.getRemoteAddr()).thenReturn("[2001:db8::1]");
         when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of("1.1.1.1, 2.2.2.2", "[2001:db8:3::3], [2001:db8::2]")));
 
         assertEquals(new ClientAddressExtractor(INTERNAL_NETWORK_CONFIG).clientAddressFor(request), "2001:db8:3::3");
