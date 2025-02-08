@@ -54,17 +54,11 @@ public class ClientAddressExtractor
         for (Enumeration<String> e = request.getHeaders("X-FORWARDED-FOR"); e != null && e.hasMoreElements(); ) {
             String forwardedFor = e.nextElement();
             StreamSupport.stream(Splitter.on(',').trimResults().omitEmptyStrings().split(forwardedFor).spliterator(), false)
-                    .map(s -> {
-                        if (s.startsWith("[") && s.endsWith("]")) {
-                            return s.substring(1, s.length() - 1).trim();
-                        } else {
-                            return s;
-                        }
-                    })
+                    .map(ClientAddressExtractor::stripIpv6Brackets)
                     .forEach(builder::add);
         }
         if (request.getRemoteAddr() != null) {
-            builder.add(request.getRemoteAddr());
+            builder.add(stripIpv6Brackets(request.getRemoteAddr()));
         }
         String clientAddress = null;
         ImmutableList<String> clientAddresses = builder.build();
@@ -84,5 +78,14 @@ public class ClientAddressExtractor
             clientAddress = request.getRemoteAddr();
         }
         return clientAddress;
+    }
+
+    private static String stripIpv6Brackets(String s)
+    {
+        if (s.startsWith("[") && s.endsWith("]")) {
+            return s.substring(1, s.length() - 1).trim();
+        } else {
+            return s;
+        }
     }
 }
