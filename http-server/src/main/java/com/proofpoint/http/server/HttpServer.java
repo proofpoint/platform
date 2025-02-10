@@ -27,12 +27,17 @@ import jakarta.annotation.PreDestroy;
 import jakarta.servlet.Filter;
 import jakarta.servlet.Servlet;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
+import org.eclipse.jetty.ee10.servlet.FilterHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.SessionHandler;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.jmx.MBeanContainer;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
@@ -43,16 +48,10 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.RequestLogHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.weakref.jmx.Flatten;
@@ -80,6 +79,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.lang.Math.toIntExact;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Collections.list;
@@ -87,6 +87,8 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.eclipse.jetty.http.MimeTypes.Type.TEXT_PLAIN;
+import static org.eclipse.jetty.security.Constraint.ALLOWED;
 
 public class HttpServer
 {
@@ -101,7 +103,7 @@ public class HttpServer
     };
 
     private final Server server;
-    private final boolean registerErrorHandler;
+    private final boolean showStackTrace;
     private final RequestStats stats;
     private final MaxGauge busyThreads = new MaxGauge();
     private final RequestLog requestLog;
@@ -195,7 +197,7 @@ public class HttpServer
         threadPool.setName("http-worker");
         server = new Server(threadPool);
         server.setStopTimeout(config.getStopTimeout().toMillis());
-        registerErrorHandler = config.isShowStackTrace();
+        showStackTrace = config.isShowStackTrace();
 
         if (mbeanServer != null) {
             // export jmx mbeans if a server was provided
@@ -203,58 +205,76 @@ public class HttpServer
             server.addBean(mbeanContainer);
         }
 
+        // register a channel listener if logging is enabled
+        RequestLogHandler channelListener = null;
+
+        StatsRecordingHandler statsRecordingHandler = new StatsRecordingHandler(stats, detailedRequestStats);
+
+        if (requestLog != null) {
+            channelListener = new RequestLogHandler(requestLog, clientAddressExtractor);
+            server.setRequestLog(new RequestLogCollection(channelListener, statsRecordingHandler));
+        }
+        else {
+            server.setRequestLog(statsRecordingHandler);
+        }
         /*
          * structure is:
          *
          * server
+         * |- request logging handler (optional)
          *    |--- statistics handler
          *           |--- context handler
          *           |       |--- (no) admin filter
          *           |       |--- timing filter
          *           |       |--- query string filter
          *           |       |--- trace token filter
-         *           |       |--- gzip response filter
          *           |       |--- gzip request filter
          *           |       |--- security handler
+         *           |       |--- resource filters
          *           |       |--- user provided filters
+         *           |       |--- gzip response filter
          *           |       |--- the servlet (normally GuiceContainer)
          *           |       |--- session handler (optional)
-         *           |       |--- resource handlers
          *           |--- log handler
          *    |-- admin context handler
          *           |--- timing filter
          *           |--- query string filter
          *           |--- trace token filter
-         *           |--- gzip response filter
          *           |--- gzip request filter
          *           |--- security handler
+         *           |--- resource filters
          *           |--- user provided admin filters
+         *           |--- gzip response filter
          *           \--- the servlet
          */
-        HandlerCollection handlers = new HandlerCollection();
 
-        for (HttpResourceBinding resource : resources) {
-            GzipHandler gzipHandler = new GzipHandler();
-            gzipHandler.setHandler(new ClassPathResourceHandler(resource.getBaseUri(), resource.getClassPathResourceBase(), resource.getWelcomeFiles()));
-            handlers.addHandler(gzipHandler);
-        }
+        ContextHandlerCollection handlers = new ContextHandlerCollection();
 
-        handlers.addHandler(createServletContext(theServlet, parameters, false, filters, queryStringFilter, loginService, nodeInfo, sessionHandler, "http", "https"));
+        handlers.addHandler(createServletContext(theServlet, resources, parameters, false, filters, queryStringFilter, loginService, nodeInfo, sessionHandler, Set.of("http", "https"), showStackTrace));
 
-        RequestLogHandler statsRecorder = new RequestLogHandler();
-        statsRecorder.setRequestLog(new StatsRecordingHandler(stats, detailedRequestStats));
-        handlers.addHandler(statsRecorder);
-
-        // add handlers to Jetty
+       // add handlers to Jetty
         StatisticsHandler statsHandler = new StatisticsHandler();
         statsHandler.setHandler(handlers);
 
-        HandlerList rootHandlers = new HandlerList();
+        ContextHandlerCollection rootHandlers = new ContextHandlerCollection();
         if (theAdminServlet != null && config.isAdminEnabled()) {
-            rootHandlers.addHandler(createServletContext(theAdminServlet, adminParameters, true, adminFilters, queryStringFilter, loginService, nodeInfo, null, "admin"));
+            rootHandlers.addHandler(createServletContext(theAdminServlet, resources, adminParameters, true, adminFilters, queryStringFilter, loginService, nodeInfo, null, Set.of("admin"), showStackTrace));
         }
         rootHandlers.addHandler(statsHandler);
-        server.setHandler(rootHandlers);
+
+        if (channelListener != null) {
+            channelListener.setHandler(rootHandlers);
+            server.setHandler(channelListener);
+        }
+        else {
+            server.setHandler(rootHandlers);
+        }
+        ErrorHandler errorHandler = new ErrorHandler();
+        errorHandler.setShowMessageInTitle(showStackTrace);
+        errorHandler.setShowCauses(showStackTrace);
+        errorHandler.setShowStacks(showStackTrace);
+        errorHandler.setDefaultResponseMimeType(TEXT_PLAIN.asString());
+        server.setErrorHandler(errorHandler);
 
         certificateExpiration = loadAllX509Certificates(config).stream()
                 .map(X509Certificate::getNotAfter)
@@ -307,6 +327,7 @@ public class HttpServer
     }
 
     private ServletContextHandler createServletContext(Servlet theServlet,
+            Set<HttpResourceBinding> resources,
             Map<String, String> parameters,
             boolean isAdmin,
             Set<Filter> filters,
@@ -314,9 +335,21 @@ public class HttpServer
             LoginService loginService,
             NodeInfo nodeInfo,
             SessionHandler sessionHandler,
-            String... connectorNames)
+            Set<String> connectorNames,
+            boolean showStackTrace)
     {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+        if (moduleOptions.isAllowAmbiguousUris()) {
+            ServletHandler servletHandler = new ServletHandler();
+            servletHandler.setDecodeAmbiguousURIs(true);
+            context.setServletHandler(servletHandler);
+        }
+        ErrorHandler errorHandler = new ErrorHandler();
+        errorHandler.setShowCauses(showStackTrace);
+        errorHandler.setShowStacks(showStackTrace);
+        errorHandler.setShowMessageInTitle(showStackTrace);
+        errorHandler.setDefaultResponseMimeType(TEXT_PLAIN.asString());
+        context.setErrorHandler(errorHandler);
 
         if (!isAdmin) {
             // Filter out any /admin JAX-RS resources that were implicitly bound.
@@ -326,9 +359,6 @@ public class HttpServer
         context.addFilter(new FilterHolder(new TimingFilter()), "/*", null);
         context.addFilter(new FilterHolder(queryStringFilter), "/*", null);
         context.addFilter(new FilterHolder(new TraceTokenFilter(nodeInfo.getInternalIp(), clientAddressExtractor)), "/*", null);
-
-        // -- gzip handler
-        context.setGzipHandler(new GzipHandler());
 
         // -- gzip request filter
         context.addFilter(GZipRequestFilter.class, "/*", null);
@@ -341,6 +371,21 @@ public class HttpServer
         for (Filter filter : filters) {
             context.addFilter(new FilterHolder(filter), "/*", null);
         }
+        // -- static resources
+        for (HttpResourceBinding resource : resources) {
+            ClassPathResourceFilter servlet = new ClassPathResourceFilter(
+                    resource.getBaseUri(),
+                    resource.getClassPathResourceBase(),
+                    resource.getWelcomeFiles());
+            String pathSpec = servlet.getBaseUri() + "/*";
+            if (pathSpec.equals("//*")) {
+                pathSpec = "/*";
+            }
+            context.addFilter(new FilterHolder(servlet), pathSpec, null);
+        }
+        // -- gzip handler
+        context.insertHandler(new GzipHandler());
+
         // -- add SessionHandler
         if (sessionHandler != null) {
             context.setSessionHandler(sessionHandler);
@@ -353,10 +398,10 @@ public class HttpServer
 
         // Starting with Jetty 9 there is no way to specify connectors directly, but
         // there is this wonky @ConnectorName virtual hosts automatically added
-        String[] virtualHosts = new String[connectorNames.length];
-        for (int i = 0; i < connectorNames.length; i++) {
-            virtualHosts[i] = "@" + connectorNames[i];
-        }
+        List<String> virtualHosts = connectorNames.stream()
+                .map(connectorName -> "@" + connectorName)
+                .collect(toImmutableList());
+
         context.setVirtualHosts(virtualHosts);
 
         return context;
@@ -364,11 +409,8 @@ public class HttpServer
 
     private static SecurityHandler createSecurityHandler(LoginService loginService)
     {
-        Constraint constraint = new Constraint();
-        constraint.setAuthenticate(false);
-
         ConstraintMapping constraintMapping = new ConstraintMapping();
-        constraintMapping.setConstraint(constraint);
+        constraintMapping.setConstraint(ALLOWED);
         constraintMapping.setPathSpec("/*");
 
         ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
@@ -398,17 +440,16 @@ public class HttpServer
             baseHttpConfiguration.setRequestHeaderSize(toIntExact(config.getMaxRequestHeaderSize().toBytes()));
         }
         if (moduleOptions.isAllowAmbiguousUris()) {
-            baseHttpConfiguration.setUriCompliance(UriCompliance.RFC3986);
+            baseHttpConfiguration.setUriCompliance(UriCompliance.from(Set.of(
+                    UriCompliance.Violation.AMBIGUOUS_EMPTY_SEGMENT,
+                    UriCompliance.Violation.AMBIGUOUS_PATH_ENCODING,
+                    UriCompliance.Violation.AMBIGUOUS_PATH_PARAMETER,
+                    UriCompliance.Violation.AMBIGUOUS_PATH_SEGMENT,
+                    UriCompliance.Violation.AMBIGUOUS_PATH_SEPARATOR)));
         }
 
         // disable async error notifications to work around https://github.com/jersey/jersey/issues/3691
         baseHttpConfiguration.setNotifyRemoteAsyncErrors(false);
-
-        // register a channel listener if logging is enabled
-        HttpServerChannelListener channelListener = null;
-        if (requestLog != null) {
-            channelListener = new HttpServerChannelListener(requestLog, clientAddressExtractor);
-        }
 
         // set up HTTP connector
         ServerConnector httpConnector;
@@ -443,10 +484,6 @@ public class HttpServer
             httpConnector.setHost(nodeInfo.getBindIp().getHostAddress());
             httpConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
 
-            if (channelListener != null) {
-                httpConnector.addBean(channelListener);
-            }
-
             server.addConnector(httpConnector);
         }
 
@@ -469,10 +506,6 @@ public class HttpServer
             httpsConnector.setIdleTimeout(config.getNetworkMaxIdleTime().toMillis());
             httpsConnector.setHost(nodeInfo.getBindIp().getHostAddress());
             httpsConnector.setAcceptQueueSize(config.getHttpAcceptQueueSize());
-
-            if (channelListener != null) {
-                httpsConnector.addBean(channelListener);
-            }
 
             server.addConnector(httpsConnector);
         }
@@ -520,10 +553,6 @@ public class HttpServer
         }
 
         server.start();
-        // clear the error handler registered by start()
-        if (!registerErrorHandler) {
-            server.setErrorHandler(null);
-        }
         checkState(server.isStarted(), "server is not started");
     }
 

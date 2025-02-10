@@ -21,7 +21,9 @@ import com.proofpoint.units.DataSize.Unit;
 import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
+import org.mockito.Answers;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -29,7 +31,6 @@ import org.testng.annotations.Test;
 import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.io.IOException;
-import java.security.Principal;
 import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
@@ -39,22 +40,26 @@ import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.jetty.http.HttpVersion.HTTP_2;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.testng.Assert.assertEquals;
 
 public abstract class AbstractTestRequestLog
 {
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     Request request;
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     Response response;
     @Mock
     SSLSession sslSession;
     @Mock
-    Principal principal;
-    @Mock
     ClientAddressExtractor clientAddressExtractor;
+    private AutoCloseable openMocks;
+    private MockedStatic<Request> mockedRequest;
+    private MockedStatic<Response> mockedResponse;
     private File file;
     private long timeToFirstByte;
     private long timeToLastByte;
@@ -102,7 +107,9 @@ public abstract class AbstractTestRequestLog
     public final void setupAbstract()
             throws IOException
     {
-        initMocks(this);
+        openMocks = openMocks(this);
+        mockedRequest = mockStatic(Request.class, RETURNS_DEEP_STUBS);
+        mockedResponse = mockStatic(Response.class, RETURNS_DEEP_STUBS);
 
         timeToFirstByte = 456;
         timeToLastByte = 3453;
@@ -131,25 +138,24 @@ public abstract class AbstractTestRequestLog
 
         when(sslSession.getProtocol()).thenReturn("TLS1.0");
         when(sslSession.getCipherSuite()).thenReturn("TLS_RSA_WITH_AES_256_CBC_SHA");
-        when(principal.getName()).thenReturn(user);
-        when(clientAddressExtractor.clientAddressFor(request)).thenReturn("9.9.9.9");
-        when(request.getTimeStamp()).thenReturn(timestamp);
-        when(request.getHeader("User-Agent")).thenReturn(agent);
-        when(request.getHeader("Referer")).thenReturn(referrer);
-        when(request.getRemoteAddr()).thenReturn("8.8.8.8");
-        when(request.getHeaders("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of()));
-        when(request.getProtocol()).thenReturn("unknown");
-        when(request.getHeader("X-FORWARDED-PROTO")).thenReturn(protocol);
+        when(clientAddressExtractor.clientAddressFor(any())).thenReturn("9.9.9.9");
+        when(Request.getTimeStamp(request)).thenReturn(timestamp);
+        when(request.getHeaders().get("User-Agent")).thenReturn(agent);
+        when(request.getHeaders().get("Referer")).thenReturn(referrer);
+        when(Request.getRemoteAddr(request)).thenReturn("8.8.8.8");
+        when(request.getHeaders().getValues("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of()));
+        when(request.getConnectionMetaData().getProtocol()).thenReturn("unknown");
+        when(request.getHeaders().get("X-FORWARDED-PROTO")).thenReturn(protocol);
         when(request.getAttribute(TimingFilter.FIRST_BYTE_TIME)).thenReturn(timestamp + timeToFirstByte);
         when(request.getHttpURI()).thenReturn(HttpURI.from("http://www.example.com/aaa+bbb/ccc?param=hello%20there&other=true"));
-        when(request.getUserPrincipal()).thenReturn(principal);
+        when(Request.getAuthenticationState(request).getUserPrincipal().getName()).thenReturn(user);
         when(request.getMethod()).thenReturn(method);
-        when(request.getContentRead()).thenReturn(requestSize);
-        when(request.getHeader("Content-Type")).thenReturn(requestContentType);
-        when(request.getHttpVersion()).thenReturn(HTTP_2);
+        when(Request.getContentBytesRead(request)).thenReturn(requestSize);
+        when(request.getHeaders().get("Content-Type")).thenReturn(requestContentType);
+        when(request.getConnectionMetaData().getHttpVersion()).thenReturn(HTTP_2);
         when(response.getStatus()).thenReturn(responseCode);
-        when(response.getContentCount()).thenReturn(responseSize);
-        when(response.getHeader("Content-Type")).thenReturn(responseContentType);
+        when(Response.getContentBytesWritten(response)).thenReturn(responseSize);
+        when(response.getHeaders().get("Content-Type")).thenReturn(responseContentType);
 
         createAndRegisterNewRequestToken();
         currentTime = timestamp + timeToLastByte;
@@ -157,8 +163,11 @@ public abstract class AbstractTestRequestLog
 
     @AfterMethod
     public final void teardownAbstract()
-            throws IOException
+            throws Exception
     {
+        mockedResponse.close();
+        mockedRequest.close();
+        openMocks.close();
         if (!file.delete()) {
             throw new IOException("Error deleting " + file.getAbsolutePath());
         }
@@ -230,7 +239,7 @@ public abstract class AbstractTestRequestLog
                 333,
                 2,
                 3,
-                currentTime - request.getTimeStamp());
+                currentTime - Request.getTimeStamp(request));
         assertEquals(actual, expected);
     }
 }

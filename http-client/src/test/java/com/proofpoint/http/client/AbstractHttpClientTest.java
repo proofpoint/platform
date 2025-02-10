@@ -21,10 +21,10 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.testng.Assert;
 import org.testng.SkipException;
@@ -217,7 +217,7 @@ public abstract class AbstractHttpClientTest
         ServletHolder servletHolder = new ServletHolder(servlet);
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         context.addServlet(servletHolder, "/*");
-        HandlerCollection handlers = new HandlerCollection();
+        ContextHandlerCollection handlers = new ContextHandlerCollection();
         handlers.addHandler(context);
         server.setHandler(handlers);
 
@@ -561,8 +561,10 @@ public abstract class AbstractHttpClientTest
                     }
 
                     @Override
-                    public int read(byte[] b)
+                    public int read(byte[] b, int off, int len)
                     {
+                        assertEquals(off, 0);
+                        assertEquals(len, b.length);
                         switch (invocation.getAndIncrement()) {
                             case 0:
                                 assertEquals(b.length, 8123);
@@ -614,8 +616,10 @@ public abstract class AbstractHttpClientTest
                     }
 
                     @Override
-                    public int read(byte[] b)
+                    public int read(byte[] b, int off, int len)
                     {
+                        assertEquals(off, 0);
+                        assertEquals(len, b.length);
                         switch (invocation.getAndIncrement()) {
                             case 0:
                                 assertEquals(b.length, 8123);
@@ -635,7 +639,8 @@ public abstract class AbstractHttpClientTest
                                 return -1;
                         }
                     }
-                }, 8123) {
+                }, 8123)
+                {
                     @Override
                     public long getLength()
                     {
@@ -788,7 +793,7 @@ public abstract class AbstractHttpClientTest
     {
         byte[] bytes = new byte[length];
         for (int i = 0; i < length; i++) {
-            bytes[i] = (byte)firstValue++;
+            bytes[i] = (byte) firstValue++;
         }
         return bytes;
     }
@@ -876,7 +881,7 @@ public abstract class AbstractHttpClientTest
         assertEquals(servlet.getRequestHeaders("foo"), List.of("bar"));
         assertEquals(servlet.getRequestHeaders("dupe"), List.of("first", "second"));
         assertEquals(servlet.getRequestHeaders("x-custom-filter"), List.of("custom value"));
-        assertEquals(servlet.getRequestBytes(), new byte[] {});
+        assertEquals(servlet.getRequestBytes(), new byte[]{});
         assertEquals(writeToken.get(), token);
         assertTrue(closeLatch.await(1, SECONDS));
         assertEquals(closeToken.get(), token);
@@ -1147,7 +1152,7 @@ public abstract class AbstractHttpClientTest
 
         response = executeRequest(request, createStatusResponseHandler());
         assertEquals(response.getStatusCode(), 302);
-        assertEquals(response.getHeader(LOCATION), baseURI.toASCIIString() + "/redirect");
+        assertEquals(response.getHeader(LOCATION), "/redirect");
         assertEquals(servlet.getRequestUri(), request.getUri());
     }
 
@@ -1507,7 +1512,8 @@ public abstract class AbstractHttpClientTest
             }
         }
 
-        public void assertCompleted() {
+        public void assertCompleted()
+        {
             try {
                 assertTrue(completed.await(10, SECONDS), "LargeResponseServer completed");
             }
@@ -1651,7 +1657,8 @@ public abstract class AbstractHttpClientTest
     }
 
     private static class CustomError
-            extends Error {
+            extends Error
+    {
     }
 
     protected static class CapturedException

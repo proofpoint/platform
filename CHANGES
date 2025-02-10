@@ -1,25 +1,41 @@
 Platform 3.27
 
-* Java versions
+* Java version support
 
-  * We increased the minimum Java version to 17.
+  - We increased the minimum Java version to 17.
 
-  * We now support Java 21.
+  - We now support Java 21.
+
+* HTTP and JAX-RS
+
+  We have upgraded to Jetty 12, Jakarta EE 10, and JAX-RS 3.1.0
+  from Jetty 11, Jakarta EE 9, and JAX-RS 3.0.0
+
+  INCOMPATIBLE CHANGE: HttpServerModule.withSessionHandler() now binds an
+  org.eclipse.jetty.ee10.servlet.SessionHandler.
 
 * Configuration
 
-  - In order to support newer versions of Java,
-    ConfigAssertions now uses ByteBuddy instead of cglib.
-    INCOMPATIBLE CHANGE: ConfigAssertions.assertRecordedDefaults()
-    can no longer test config classes that are package private or have
-    package private configuration attributes. The configuration classes
-    and their configuration getters and setters must be made public.
+  In order to support newer versions of Java,
+  ConfigAssertions now uses ByteBuddy instead of cglib.
 
-* Library Upgrades
+  INCOMPATIBLE CHANGE: ConfigAssertions.assertRecordedDefaults()
+  can no longer test config classes that are package private or have
+  package private configuration attributes. The configuration classes
+  and their configuration getters and setters must be made public.
 
+* Library upgrades
+
+  - Jersey to 3.1.10 (was 3.0.10)
+  - jakarta.annotation-api to 2.1.1 (was 2.1.0)
+  - jakarta.ws.rs-api to 3.1.0 (was 3.0.0)
+  - javassist to 3.30.2-GA (was 3.29.0-GA)
+  - jetty to 12.0.16 (was 11.0.4) (CVE-2024-6763)
   - ByteBuddy to 1.15.11 (was 1.12.9)
   - Mockito to 5.15.2 (was 4.5.1)
   - Objenesis to 3.3 (was 3.2)
+  - servlet-api to 6.0.0 (was 5.0.0)
+  - slf4j to 2.0.16 (was 2.0.9)
 
 * Maven plugin upgrades
 

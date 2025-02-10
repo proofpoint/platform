@@ -1,36 +1,48 @@
 package com.proofpoint.http.client.jetty;
 
-import com.google.common.collect.AbstractIterator;
 import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.DynamicBodySource.Writer;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.tracetoken.TraceTokenScope;
-import org.eclipse.jetty.client.api.ContentProvider;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.io.ByteBufferPool;
+import org.eclipse.jetty.io.Content;
+import org.eclipse.jetty.io.RetainableByteBuffer;
+import org.eclipse.jetty.io.content.InputStreamContentSource;
 import org.eclipse.jetty.util.BlockingArrayQueue;
+import org.eclipse.jetty.util.ExceptionUtil;
+import org.eclipse.jetty.util.thread.AutoLock;
+import org.eclipse.jetty.util.thread.SerializedInvoker;
 
-import java.io.Closeable;
 import java.io.OutputStream;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 class DynamicBodySourceContentProvider
-        implements ContentProvider
+        implements Request.Content
 {
-    private static final ByteBuffer INITIAL = ByteBuffer.allocate(0);
-    private static final ByteBuffer DONE = ByteBuffer.allocate(0);
+    private static final int BUFFER_SIZE = 4096;
+    private static final RetainableByteBuffer INITIAL = RetainableByteBuffer.wrap(ByteBuffer.allocate(0));
+    private static final RetainableByteBuffer DONE = RetainableByteBuffer.wrap(ByteBuffer.allocate(0));
 
+    private final ByteBufferPool.Sized bufferPool = new ByteBufferPool.Sized(null, false, BUFFER_SIZE);
     private final DynamicBodySource dynamicBodySource;
+    private final Queue<RetainableByteBuffer> chunks = new BlockingArrayQueue<>(4, 64);
     private final AtomicLong bytesWritten;
     private final TraceToken traceToken;
+    private final SerializedInvoker invoker = new SerializedInvoker(InputStreamContentSource.class);
+
+    private final AutoLock lock = new AutoLock();
+    private Writer writer;
+    private Runnable demandCallback;
+    private Content.Chunk errorChunk;
+    private boolean closed;
 
     DynamicBodySourceContentProvider(DynamicBodySource dynamicBodySource, AtomicLong bytesWritten)
     {
@@ -46,31 +58,128 @@ class DynamicBodySourceContentProvider
     }
 
     @Override
-    public Iterator<ByteBuffer> iterator()
+    public Content.Chunk read()
     {
-        final Queue<ByteBuffer> chunks = new BlockingArrayQueue<>(4, 64);
-
-        Writer writer;
-        try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
-            writer = dynamicBodySource.start(new DynamicBodySourceOutputStream(chunks));
+        try (AutoLock ignored = lock.lock()) {
+            if (errorChunk != null) {
+                return errorChunk;
+            }
+            if (closed) {
+                return Content.Chunk.EOF;
+            }
+            if (writer == null) {
+                try (TraceTokenScope ignored2 = registerTraceToken(traceToken)) {
+                    writer = dynamicBodySource.start(new DynamicBodySourceOutputStream(bufferPool, chunks));
+                }
+                catch (Throwable x) {
+                    return failure(x);
+                }
+            }
         }
-        catch (Exception e) {
-            throwIfUnchecked(e);
-            throw new RuntimeException(e);
+
+        RetainableByteBuffer chunk = chunks.poll();
+        if (chunk == null) {
+            try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
+                while (chunk == null) {
+                    try {
+                        writer.write();
+                    }
+                    catch (Throwable x) {
+                        return failure(x);
+                    }
+                    chunk = chunks.poll();
+                }
+            }
         }
 
-        return new DynamicBodySourceIterator(chunks, writer, bytesWritten, traceToken);
+        if (chunk == DONE) {
+            close();
+            if (errorChunk != null) {
+                return errorChunk;
+            }
+            return Content.Chunk.EOF;
+        }
+        ByteBuffer buffer = chunk.getByteBuffer();
+        bytesWritten.addAndGet(buffer.position());
+        buffer.flip();
+        return Content.Chunk.asChunk(buffer, false, chunk);
+    }
+
+    private void close()
+    {
+        try (AutoLock ignored = lock.lock()) {
+            closed = true;
+        }
+        if (writer instanceof AutoCloseable) {
+            try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
+                ((AutoCloseable) writer).close();
+            }
+            catch (Throwable x) {
+                try (AutoLock ignored = lock.lock()) {
+                    if (errorChunk == null) {
+                        errorChunk = Content.Chunk.from(x);
+                    }
+                }
+            }
+        }
+        for (RetainableByteBuffer chunk = chunks.poll(); chunk != null; chunk = chunks.poll()) {
+            chunk.release();
+        }
+    }
+
+    @Override
+    public void demand(Runnable demandCallback)
+    {
+        try (AutoLock ignored = lock.lock()) {
+            if (this.demandCallback != null) {
+                throw new IllegalStateException("demand pending");
+            }
+            this.demandCallback = demandCallback;
+        }
+        invoker.run(this::invokeDemandCallback);
+    }
+
+    private void invokeDemandCallback()
+    {
+        Runnable demandCallback;
+        try (AutoLock ignored = lock.lock()) {
+            demandCallback = this.demandCallback;
+            this.demandCallback = null;
+        }
+        if (demandCallback != null) {
+            ExceptionUtil.run(demandCallback, this::fail);
+        }
+    }
+
+    @Override
+    public void fail(Throwable failure)
+    {
+        failure(failure);
+    }
+
+    private Content.Chunk failure(Throwable failure)
+    {
+        Content.Chunk error;
+        try (AutoLock ignored = lock.lock()) {
+            error = errorChunk;
+            if (error == null) {
+                error = errorChunk = Content.Chunk.from(failure);
+            }
+            close();
+        }
+        return error;
     }
 
     private static class DynamicBodySourceOutputStream
             extends OutputStream
     {
-        private static int BUFFER_SIZE = 4096;
-        private ByteBuffer lastChunk = INITIAL;
-        private final Queue<ByteBuffer> chunks;
+        private RetainableByteBuffer lastChunk = INITIAL;
+        private final ByteBufferPool.Sized bufferPool;
+        private final Queue<RetainableByteBuffer> chunks;
 
-        private DynamicBodySourceOutputStream(Queue<ByteBuffer> chunks)
+        private DynamicBodySourceOutputStream(ByteBufferPool.Sized bufferPool, Queue<RetainableByteBuffer> chunks)
         {
+            this.bufferPool = bufferPool;
             this.chunks = chunks;
         }
 
@@ -78,11 +187,11 @@ class DynamicBodySourceContentProvider
         public void write(int b)
         {
             if (!chunks.isEmpty() && lastChunk.hasRemaining()) {
-                lastChunk.put((byte)b);
+                lastChunk.getByteBuffer().put((byte) b);
             }
             else {
-                lastChunk = ByteBuffer.allocate(BUFFER_SIZE);
-                lastChunk.put((byte)b);
+                lastChunk = bufferPool.acquire();
+                lastChunk.getByteBuffer().clear().put((byte) b);
                 chunks.add(lastChunk);
             }
         }
@@ -92,7 +201,7 @@ class DynamicBodySourceContentProvider
         {
             if (!chunks.isEmpty() && lastChunk.hasRemaining()) {
                 int toCopy = min(len, lastChunk.remaining());
-                lastChunk.put(b, off, toCopy);
+                lastChunk.getByteBuffer().put(b, off, toCopy);
                 if (toCopy == len) {
                     return;
                 }
@@ -100,10 +209,9 @@ class DynamicBodySourceContentProvider
                 len -= toCopy;
             }
 
-            lastChunk = ByteBuffer.allocate(max(BUFFER_SIZE, len));
-            lastChunk.put(b, off, len);
+            lastChunk = bufferPool.acquire(max(BUFFER_SIZE, len), false);
+            lastChunk.getByteBuffer().clear().put(b, off, len);
             chunks.add(lastChunk);
-
         }
 
         @Override
@@ -111,66 +219,6 @@ class DynamicBodySourceContentProvider
         {
             lastChunk = DONE;
             chunks.add(DONE);
-        }
-    }
-
-    private static class DynamicBodySourceIterator extends AbstractIterator<ByteBuffer>
-            implements Closeable
-    {
-        private final Queue<ByteBuffer> chunks;
-        private final Writer writer;
-        private final AtomicLong bytesWritten;
-        private final TraceToken traceToken;
-
-        @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-        DynamicBodySourceIterator(Queue<ByteBuffer> chunks, Writer writer, AtomicLong bytesWritten, TraceToken traceToken)
-        {
-            this.chunks = chunks;
-            this.writer = writer;
-            this.bytesWritten = bytesWritten;
-            this.traceToken = traceToken;
-        }
-
-        @Override
-        @SuppressWarnings("ReferenceEquality") // Reference equality to DONE is intentional
-        protected ByteBuffer computeNext()
-        {
-            ByteBuffer chunk = chunks.poll();
-            if (chunk == null) {
-                try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
-                    while (chunk == null) {
-                        try {
-                            writer.write();
-                        }
-                        catch (Exception e) {
-                            throwIfUnchecked(e);
-                            throw new RuntimeException(e);
-                        }
-                        chunk = chunks.poll();
-                    }
-                }
-            }
-
-            if (chunk == DONE) {
-                return endOfData();
-            }
-            bytesWritten.addAndGet(chunk.position());
-            ((Buffer)chunk).flip();
-            return chunk;
-        }
-
-        @Override
-        public void close()
-        {
-            if (writer instanceof AutoCloseable) {
-                try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
-                    ((AutoCloseable)writer).close();
-                }
-                catch (Exception e) {
-                    throwIfUnchecked(e);
-                    throw new RuntimeException(e);
-                }
-            }
         }
     }
 }

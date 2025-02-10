@@ -7,7 +7,7 @@ import com.proofpoint.http.client.RequestStats;
 import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.tracetoken.TraceTokenScope;
-import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.Response;
 
 import java.io.InputStream;
 import java.util.concurrent.CancellationException;
@@ -37,13 +37,13 @@ class JettyResponseFuture<T, E extends Exception>
     private final long requestStart = System.nanoTime();
     private final AtomicReference<JettyAsyncHttpState> state = new AtomicReference<>(JettyAsyncHttpState.WAITING_FOR_CONNECTION);
     private final Request request;
-    private final org.eclipse.jetty.client.api.Request jettyRequest;
+    private final org.eclipse.jetty.client.Request jettyRequest;
     private final ResponseHandler<T, E> responseHandler;
     private final AtomicLong bytesWritten;
     private final RequestStats stats;
     private final TraceToken traceToken;
 
-    JettyResponseFuture(JettyHttpClient jettyHttpClient, Request request, org.eclipse.jetty.client.api.Request jettyRequest, ResponseHandler<T, E> responseHandler, AtomicLong bytesWritten, RequestStats stats)
+    JettyResponseFuture(JettyHttpClient jettyHttpClient, Request request, org.eclipse.jetty.client.Request jettyRequest, ResponseHandler<T, E> responseHandler, AtomicLong bytesWritten, RequestStats stats)
     {
         this.jettyHttpClient = requireNonNull(jettyHttpClient, "jettyHttpClientf is null");
         this.request = requireNonNull(request, "request is null");

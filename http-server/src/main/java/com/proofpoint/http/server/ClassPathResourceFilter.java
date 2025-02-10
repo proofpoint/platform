@@ -16,20 +16,21 @@
 package com.proofpoint.http.server;
 
 import com.google.common.collect.ImmutableList;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.MimeTypes;
-import org.eclipse.jetty.io.WriterOutputStream;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -37,27 +38,20 @@ import static java.util.Objects.requireNonNull;
  * Intended to serve a couple of static files e.g. for javascript or HTML.
  */
 // Forked from https://github.com/NessComputing/components-ness-httpserver/
-public class ClassPathResourceHandler
-        extends AbstractHandler
+public class ClassPathResourceFilter
+        extends HttpFilter
 {
     private static final MimeTypes MIME_TYPES;
 
     static {
         MIME_TYPES = new MimeTypes();
-        // Now here is an oversight... =:-O
-        MIME_TYPES.addMimeMapping("json", "application/json");
     }
 
     private final String baseUri;
     private final String classPathResourceBase;
     private final List<String> welcomeFiles;
 
-    public ClassPathResourceHandler(String baseUri, String classPathResourceBase, String... welcomeFiles)
-    {
-        this(baseUri, classPathResourceBase, ImmutableList.copyOf(welcomeFiles));
-    }
-
-    public ClassPathResourceHandler(String baseUri, String classPathResourceBase, List<String> welcomeFiles)
+    public ClassPathResourceFilter(String baseUri, String classPathResourceBase, List<String> welcomeFiles)
     {
         requireNonNull(baseUri, "baseUri is null");
         requireNonNull(classPathResourceBase, "classPathResourceBase is null");
@@ -79,21 +73,26 @@ public class ClassPathResourceHandler
         this.welcomeFiles = files.build();
     }
 
-    @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-            throws IOException
+    public String getBaseUri()
     {
-        if (baseRequest.isHandled()) {
+        return baseUri;
+    }
+
+    @Override
+    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException
+    {
+        String resourcePath = getResourcePath(request);
+        if (resourcePath == null) {
+            chain.doFilter(request, response);
             return;
         }
 
-        URL resource = getResourcePath(request);
+        URL resource = getResource(resourcePath);
         if (resource == null) {
+            chain.doFilter(request, response);
             return;
         }
-
-        // When a request hits this handler, it will serve something. Either data or an error.
-        baseRequest.setHandled(true);
 
         String method = request.getMethod();
         boolean skipContent = false;
@@ -107,7 +106,10 @@ public class ClassPathResourceHandler
             }
         }
 
-        try (InputStream resourceStream = resource.openStream()) {
+        InputStream resourceStream = null;
+        try {
+            resourceStream = resource.openStream();
+
             String contentType = MIME_TYPES.getMimeByExtension(resource.toString());
             response.setContentType(contentType);
 
@@ -115,20 +117,14 @@ public class ClassPathResourceHandler
                 return;
             }
 
-            // Send the content out. Lifted straight out of ResourceHandler.java
-            OutputStream out;
-            try {
-                out = response.getOutputStream();
-            }
-            catch (IllegalStateException e) {
-                out = new WriterOutputStream(response.getWriter());
-            }
-
-            resourceStream.transferTo(out);
+            resourceStream.transferTo(response.getOutputStream());
+        }
+        finally {
+            closeQuietly(resourceStream);
         }
     }
 
-    private URL getResourcePath(HttpServletRequest request)
+    private String getResourcePath(HttpServletRequest request)
     {
         String pathInfo = request.getPathInfo();
 
@@ -153,19 +149,36 @@ public class ClassPathResourceHandler
             pathInfo = "/";
         }
 
-        if (!"/".equals(pathInfo)) {
-            String resourcePath = classPathResourceBase + pathInfo;
-            return getClass().getClassLoader().getResource(resourcePath);
+        return pathInfo;
+    }
+
+    private URL getResource(String resourcePath)
+    {
+        checkArgument(resourcePath.startsWith("/"), "resourcePath does not start with a slash: %s", resourcePath);
+
+        if (!"/".equals(resourcePath)) {
+            return getClass().getClassLoader().getResource(classPathResourceBase + resourcePath);
         }
 
         // check welcome files
         for (String welcomeFile : welcomeFiles) {
-            String resourcePath = classPathResourceBase + welcomeFile;
-            URL resource = getClass().getClassLoader().getResource(resourcePath);
+            URL resource = getClass().getClassLoader().getResource(classPathResourceBase + welcomeFile);
             if (resource != null) {
                 return resource;
             }
         }
         return null;
+    }
+
+    private static void closeQuietly(@Nullable InputStream in)
+    {
+        if (in != null) {
+            try {
+                in.close();
+            }
+            catch (IOException e) {
+                // ignored
+            }
+        }
     }
 }

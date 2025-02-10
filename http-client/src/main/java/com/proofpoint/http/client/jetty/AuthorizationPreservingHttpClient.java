@@ -2,8 +2,7 @@ package com.proofpoint.http.client.jetty;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
-import org.eclipse.jetty.client.HttpRequest;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.http.HttpField;
 
 import java.net.URI;
@@ -21,16 +20,14 @@ class AuthorizationPreservingHttpClient
     }
 
     @Override
-    protected Request copyRequest(HttpRequest oldRequest, URI newUri)
+    protected Request copyRequest(Request oldRequest, URI newUri)
     {
         Request newRequest = super.copyRequest(oldRequest, newUri);
 
         if (isPreserveAuthorization(oldRequest)) {
             setPreserveAuthorization(newRequest, true);
-            for (HttpField field : oldRequest.getHeaders()) {
-                if (field.getHeader() == AUTHORIZATION) {
-                    newRequest.header(field.getName(), field.getValue());
-                }
+            for (HttpField field : oldRequest.getHeaders().getFields(AUTHORIZATION)) {
+                newRequest.headers(headers -> headers.add(field));
             }
         }
 
