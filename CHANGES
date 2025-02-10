@@ -1,3 +1,9 @@
+Platform 3.27
+
+* Java 11
+
+  We increased the minimum Java version to 17.
+
 Platform 3.26
 
 * HTTP Server
