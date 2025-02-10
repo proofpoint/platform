@@ -7,6 +7,7 @@ Platform 3.27
 * Maven plugin upgrades
 
   - maven-shade-plugin to 3.6.0 (was 3.2.2)
+  - spotbugs-maven-plugin to 4.8.6.6 (was 4.7.0.0)
 
 Platform 3.26
 
