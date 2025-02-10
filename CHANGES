@@ -4,6 +4,10 @@ Platform 3.27
 
   We increased the minimum Java version to 17.
 
+* Maven plugin upgrades
+
+  - maven-shade-plugin to 3.6.0 (was 3.2.2)
+
 Platform 3.26
 
 * HTTP Server
