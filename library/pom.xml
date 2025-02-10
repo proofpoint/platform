@@ -84,14 +84,14 @@
         <platform.check.fail-modernizer>false</platform.check.fail-modernizer>
 
         <dep.auto-value.version>1.10.4</dep.auto-value.version>
-        <dep.jetty.version>11.0.24</dep.jetty.version>
+        <dep.jetty.version>12.0.16</dep.jetty.version>
         <dep.guava.version>32.1.2-jre</dep.guava.version>
         <dep.guice.version>7.0.0</dep.guice.version>
-        <dep.slf4j.version>2.0.9</dep.slf4j.version>
+        <dep.slf4j.version>2.0.16</dep.slf4j.version>
         <dep.logback.version>1.5.13</dep.logback.version>
-        <dep.javax-servlet.version>5.0.0</dep.javax-servlet.version>
+        <dep.javax-servlet.version>6.0.0</dep.javax-servlet.version>
         <dep.jackson.version>2.16.1</dep.jackson.version>
-        <dep.jersey.version>3.0.10</dep.jersey.version>
+        <dep.jersey.version>3.1.10</dep.jersey.version>
         <dep.jmh.version>1.35</dep.jmh.version>
         <dep.jacoco.version>0.8.12</dep.jacoco.version>
         <dep.modernizer.version>2.5.0</dep.modernizer.version>
@@ -892,7 +892,7 @@
             <dependency>
                 <groupId>jakarta.ws.rs</groupId>
                 <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.0</version>
             </dependency>
 
             <dependency>
@@ -962,7 +962,7 @@
             <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
-                <version>2.1.0</version>
+                <version>2.1.1</version>
             </dependency>
 
             <dependency>
@@ -1102,8 +1102,8 @@
             </dependency>
 
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlet</artifactId>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-servlet</artifactId>
                 <version>${dep.jetty.version}</version>
             </dependency>
 
@@ -1114,8 +1114,8 @@
             </dependency>
 
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlets</artifactId>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-servlets</artifactId>
                 <version>${dep.jetty.version}</version>
             </dependency>
 
@@ -1175,19 +1175,19 @@
 
             <dependency>
                 <groupId>org.eclipse.jetty.http2</groupId>
-                <artifactId>http2-server</artifactId>
+                <artifactId>jetty-http2-server</artifactId>
                 <version>${dep.jetty.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.eclipse.jetty.http2</groupId>
-                <artifactId>http2-client</artifactId>
+                <artifactId>jetty-http2-client</artifactId>
                 <version>${dep.jetty.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.eclipse.jetty.http2</groupId>
-                <artifactId>http2-http-client-transport</artifactId>
+                <artifactId>jetty-http2-client-transport</artifactId>
                 <version>${dep.jetty.version}</version>
             </dependency>
 

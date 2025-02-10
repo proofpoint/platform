@@ -25,7 +25,7 @@ import jakarta.inject.Provider;
 import jakarta.servlet.Filter;
 import jakarta.servlet.Servlet;
 import org.eclipse.jetty.security.LoginService;
-import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.ee10.servlet.SessionHandler;
 
 import javax.management.MBeanServer;
 import java.io.File;

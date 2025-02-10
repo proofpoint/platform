@@ -75,7 +75,7 @@ public class ClientAddressExtractor
             }
         }
         if (clientAddress == null) {
-            clientAddress = request.getRemoteAddr();
+            clientAddress = stripIpv6Brackets(request.getRemoteAddr());
         }
         return clientAddress;
     }

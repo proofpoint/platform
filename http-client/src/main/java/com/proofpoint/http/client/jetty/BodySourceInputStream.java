@@ -63,8 +63,7 @@ class BodySourceInputStream extends InputStream
     @Override
     public void close()
     {
-        // We guarantee we don't call this
-        throw new UnsupportedOperationException();
+        // We guarantee we don't call this on the delegate
     }
 
     @Override

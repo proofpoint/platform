@@ -14,111 +14,85 @@
 package com.proofpoint.http.server;
 
 import jakarta.annotation.Nullable;
-import org.eclipse.jetty.server.HttpChannel.Listener;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.server.handler.EventsHandler;
+import org.eclipse.jetty.util.NanoTime;
 
 import javax.net.ssl.SSLSession;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElse;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-final class HttpServerChannelListener
-        implements Listener
+final class RequestLogHandler
+        extends EventsHandler
+        implements org.eclipse.jetty.server.RequestLog
 {
-    private static final String REQUEST_BEGIN_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".begin";
-    private static final String REQUEST_BEGIN_TO_DISPATCH_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".begin_to_dispatch";
-    private static final String REQUEST_BEGIN_TO_END_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".begin_to_end";
-    private static final String RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE = HttpServerChannelListener.class.getName() + ".response_content_timestamps";
+    public static final String REQUEST_BEGIN_TO_HANDLE_ATTRIBUTE = RequestLogHandler.class.getName() + ".begin_to_handle";
+    private static final String RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE = RequestLogHandler.class.getName() + ".response_content_timestamps";
+    private static final Object MARKER = new Object();
     private static final String REQUEST_SSL_SESSION_ATTRIBUTE = "org.eclipse.jetty.servlet.request.ssl_session";
 
     private final RequestLog logger;
     private final ClientAddressExtractor clientAddressExtractor;
 
-    HttpServerChannelListener(RequestLog logger, ClientAddressExtractor clientAddressExtractor)
+    RequestLogHandler(RequestLog logger, ClientAddressExtractor clientAddressExtractor)
     {
         this.logger = requireNonNull(logger, "logger is null");
         this.clientAddressExtractor = requireNonNull(clientAddressExtractor, "clientAddressExtractor is null");
     }
 
     @Override
-    public void onRequestBegin(Request request)
+    protected void onResponseWriteComplete(Request request, Throwable failure)
     {
-        request.setAttribute(REQUEST_BEGIN_ATTRIBUTE, System.nanoTime());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onBeforeDispatch(Request request)
-    {
-        long requestBeginTime = getRequestBeginTime(request);
-        request.setAttribute(REQUEST_BEGIN_TO_DISPATCH_ATTRIBUTE, System.nanoTime() - requestBeginTime);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onRequestEnd(Request request)
-    {
-        long requestBeginTime = getRequestBeginTime(request);
-        request.setAttribute(REQUEST_BEGIN_TO_END_ATTRIBUTE, System.nanoTime() - requestBeginTime);
-    }
-
-    private long getRequestBeginTime(Request request)
-    {
-        Object requestBeginAttribute = request.getAttribute(REQUEST_BEGIN_ATTRIBUTE);
-        if (requestBeginAttribute != null) {
-            return (long) (Long) requestBeginAttribute;
-        }
-        long currentTime = System.nanoTime();
-        request.setAttribute(REQUEST_BEGIN_ATTRIBUTE, currentTime);
-        return currentTime;
+        // Instead of using mutable field, let's set individual attributes instead
+        request.setAttribute(RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE + "." + NanoTime.now(), MARKER);
     }
 
     @Override
-    public void onResponseBegin(Request request)
+    protected void onBeforeHandling(Request request)
     {
-        if (request.getAttribute(REQUEST_BEGIN_TO_END_ATTRIBUTE) == null) {
-            onRequestEnd(request);
-        }
-        request.setAttribute(RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE, new ArrayList<Long>());
+        request.setAttribute(REQUEST_BEGIN_TO_HANDLE_ATTRIBUTE, NanoTime.since(request.getBeginNanoTime()));
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void onResponseContent(Request request, ByteBuffer content)
+    public void log(Request request, Response response)
     {
-        List<Long> contentTimestamps = (List<Long>) request.getAttribute(RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE);
-        contentTimestamps.add(System.nanoTime());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onComplete(Request request)
-    {
-        List<Long> contentTimestamps = (List<Long>) request.getAttribute(RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE);
+        List<Long> contentTimestamps = getContentTimestamps(request);
         long firstToLastContentTimeInMillis = -1;
-        if (contentTimestamps.size() > 0) {
+        if (!contentTimestamps.isEmpty()) {
             firstToLastContentTimeInMillis = NANOSECONDS.toMillis(contentTimestamps.get(contentTimestamps.size() - 1) - contentTimestamps.get(0));
         }
-        long beginToDispatchMillis = NANOSECONDS.toMillis((Long) request.getAttribute(REQUEST_BEGIN_TO_DISPATCH_ATTRIBUTE));
-        long beginToEndMillis = NANOSECONDS.toMillis((Long) request.getAttribute(REQUEST_BEGIN_TO_END_ATTRIBUTE));
+
+        long beginToHandleMillis = NANOSECONDS.toMillis((long) requireNonNullElse(request.getAttribute(REQUEST_BEGIN_TO_HANDLE_ATTRIBUTE), 0L));
+        long beginToEndMillis = NANOSECONDS.toMillis(NanoTime.since(request.getHeadersNanoTime()));
         SSLSession sslSession = (SSLSession) request.getAttribute(REQUEST_SSL_SESSION_ATTRIBUTE);
         HttpRequestEvent event = createHttpRequestEvent(
                 request,
-                request.getResponse(),
+                response,
                 sslSession,
                 System.currentTimeMillis(),
-                beginToDispatchMillis,
+                beginToHandleMillis,
                 beginToEndMillis,
                 firstToLastContentTimeInMillis,
                 processContentTimestamps(contentTimestamps),
                 clientAddressExtractor
         );
         logger.log(event);
+    }
+
+    private List<Long> getContentTimestamps(Request request)
+    {
+        return request.getAttributeNameSet().stream()
+                .filter(name -> name.startsWith(RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE))
+                .map(name -> name.substring(RESPONSE_CONTENT_TIMESTAMPS_ATTRIBUTE.length() + 1))
+                .map(Long::valueOf)
+                .collect(toImmutableList());
     }
 
     /**

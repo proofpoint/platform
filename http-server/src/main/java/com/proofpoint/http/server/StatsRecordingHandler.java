@@ -43,10 +43,10 @@ public class StatsRecordingHandler
     @Override
     public void log(Request request, Response response)
     {
-        Duration requestTime = new Duration(max(0, System.currentTimeMillis() - request.getTimeStamp()), TimeUnit.MILLISECONDS);
+        Duration requestTime = new Duration(max(0, System.currentTimeMillis() - Request.getTimeStamp(request)), TimeUnit.MILLISECONDS);
         SSLSession sslSession = (SSLSession) request.getAttribute(REQUEST_SSL_SESSION_ATTRIBUTE);
 
-        stats.record(request.getContentRead(), response.getContentCount(), requestTime);
+        stats.record(Request.getContentBytesRead(request), Response.getContentBytesWritten(response), requestTime);
         detailedRequestStats.requestTimeByCode(response.getStatus(), response.getStatus() / 100).add(requestTime);
 
         if (sslSession != null) {

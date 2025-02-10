@@ -17,23 +17,23 @@ import com.proofpoint.http.client.StaticBodyGenerator;
 import com.proofpoint.log.Logger;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.client.AbstractConnectionPool;
+import org.eclipse.jetty.client.BytesRequestContent;
+import org.eclipse.jetty.client.Destination;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
-import org.eclipse.jetty.client.HttpExchange;
-import org.eclipse.jetty.client.HttpRequest;
-import org.eclipse.jetty.client.HttpDestination;
+import org.eclipse.jetty.client.InputStreamResponseListener;
+import org.eclipse.jetty.client.Response;
 import org.eclipse.jetty.client.Socks4Proxy;
-import org.eclipse.jetty.client.api.Destination;
-import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.client.http.HttpConnectionOverHTTP;
-import org.eclipse.jetty.client.util.BytesContentProvider;
-import org.eclipse.jetty.client.util.InputStreamResponseListener;
+import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.client.transport.HttpDestination;
+import org.eclipse.jetty.client.transport.HttpExchange;
+import org.eclipse.jetty.client.transport.HttpRequest;
+import org.eclipse.jetty.client.transport.internal.HttpConnectionOverHTTP;
+import org.eclipse.jetty.http.HttpCookieStore;
 import org.eclipse.jetty.http2.client.HTTP2Client;
-import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
+import org.eclipse.jetty.http2.client.transport.HttpClientTransportOverHTTP2;
+import org.eclipse.jetty.io.ArrayByteBufferPool;
 import org.eclipse.jetty.io.ClientConnector;
-import org.eclipse.jetty.io.MappedByteBufferPool;
-import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -49,7 +49,6 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
@@ -206,7 +205,7 @@ public class JettyHttpClient
         httpClient.setMaxConnectionsPerDestination(config.getMaxConnectionsPerServer());
 
         // disable cookies
-        httpClient.setCookieStore(new HttpCookieStore.Empty());
+        httpClient.setHttpCookieStore(new HttpCookieStore.Empty());
 
         // remove default user agent
         httpClient.setUserAgentField(null);
@@ -227,7 +226,7 @@ public class JettyHttpClient
             httpClient.getProxyConfiguration().addProxy(new Socks4Proxy(socksProxy.getHost(), socksProxy.getPortOrDefault(1080)));
         }
 
-        httpClient.setByteBufferPool(new MappedByteBufferPool());
+        httpClient.setByteBufferPool(new ArrayByteBufferPool());
         QueuedThreadPool executor = createExecutor(name, config.getMinThreads(), config.getMaxThreads());
         stats = stats(executor);
         httpClient.setExecutor(executor);
@@ -513,14 +512,14 @@ public class JettyHttpClient
         if (bodySource != null) {
             if (bodySource instanceof StaticBodyGenerator) {
                 StaticBodyGenerator staticBodyGenerator = (StaticBodyGenerator) bodySource;
-                jettyRequest.content(new BytesContentProvider(staticBodyGenerator.getBody()));
+                jettyRequest.body(new BytesRequestContent(staticBodyGenerator.getBody()));
                 bytesWritten.addAndGet(staticBodyGenerator.getBody().length);
             }
             else if (bodySource instanceof InputStreamBodySource) {
-                jettyRequest.content(new InputStreamBodySourceContentProvider((InputStreamBodySource) bodySource, bytesWritten));
+                jettyRequest.body(new InputStreamBodySourceContentProvider((InputStreamBodySource) bodySource, bytesWritten));
             }
             else if (bodySource instanceof DynamicBodySource) {
-                jettyRequest.content(new DynamicBodySourceContentProvider((DynamicBodySource) bodySource, bytesWritten));
+                jettyRequest.body(new DynamicBodySourceContentProvider((DynamicBodySource) bodySource, bytesWritten));
             }
             else {
                 throw new IllegalArgumentException("Request has unsupported BodySource type");
@@ -634,9 +633,9 @@ public class JettyHttpClient
     public String dumpDestination(URI uri)
     {
         return httpClient.getDestinations().stream()
-                .filter(destination -> Objects.equals(destination.getScheme(), uri.getScheme()))
-                .filter(destination -> Objects.equals(destination.getHost(), uri.getHost()))
-                .filter(destination -> destination.getPort() == uri.getPort())
+                .filter(destination -> Objects.equals(destination.getOrigin().getScheme(), uri.getScheme()))
+                .filter(destination -> Objects.equals(destination.getOrigin().getAddress().getHost(), uri.getHost()))
+                .filter(destination -> destination.getOrigin().getAddress().getPort() == uri.getPort())
                 .findFirst()
                 .map(JettyHttpClient::dumpDestination)
                 .orElse(null);
@@ -660,12 +659,12 @@ public class JettyHttpClient
                 .collect(Collectors.toList());
     }
 
-    private static List<org.eclipse.jetty.client.api.Request> getRequestForDestination(Destination destination)
+    private static List<org.eclipse.jetty.client.Request> getRequestForDestination(Destination destination)
     {
         HttpDestination httpDestination = (HttpDestination) destination;
         Queue<HttpExchange> httpExchanges = httpDestination.getHttpExchanges();
 
-        List<org.eclipse.jetty.client.api.Request> requests = httpExchanges.stream()
+        List<org.eclipse.jetty.client.Request> requests = httpExchanges.stream()
                 .map(HttpExchange::getRequest)
                 .collect(Collectors.toList());
 

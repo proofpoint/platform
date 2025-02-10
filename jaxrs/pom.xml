@@ -197,13 +197,6 @@
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-jaxrs2-jakarta</artifactId>
             <version>2.2.9</version>
-            <exclusions>
-                <!-- Can remove when on version 3.29.2-GA of javassist -->
-                <exclusion>
-                    <groupId>org.javassist</groupId>
-                    <artifactId>javassist</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Pulled in by Swagger. We need to express the dependency here, otherwise an older
@@ -219,7 +212,7 @@
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.29.0-GA</version>
+            <version>3.30.2-GA</version>
         </dependency>
 
         <!-- for testing -->

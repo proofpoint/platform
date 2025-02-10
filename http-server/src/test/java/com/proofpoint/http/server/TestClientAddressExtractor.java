@@ -15,7 +15,7 @@
  */
 package com.proofpoint.http.server;
 
-import org.eclipse.jetty.server.Request;
+import jakarta.servlet.http.HttpServletRequest;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -30,12 +30,12 @@ import static org.testng.Assert.assertEquals;
 public class TestClientAddressExtractor
 {
     public static final InternalNetworkConfig INTERNAL_NETWORK_CONFIG = new InternalNetworkConfig().setInternalNetworks(CidrSet.fromString("2001:db8::/64"));
-    Request request;
+    HttpServletRequest request;
 
     @BeforeMethod
     public void setup()
     {
-        request = mock(Request.class);
+        request = mock(HttpServletRequest.class);
     }
 
     @Test

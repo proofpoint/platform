@@ -4,9 +4,8 @@ import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.http.client.GatheringByteArrayInputStream;
 import com.proofpoint.http.client.ResponseTooLargeException;
 import com.proofpoint.units.DataSize;
-import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.client.api.Response.Listener;
-import org.eclipse.jetty.client.api.Result;
+import org.eclipse.jetty.client.Response;
+import org.eclipse.jetty.client.Result;
 import org.eclipse.jetty.http.HttpHeader;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -24,7 +23,7 @@ import static java.util.Objects.requireNonNull;
 
 @ThreadSafe
 class BufferingResponseListener
-        extends Listener.Adapter
+        implements Response.Listener
 {
     private static final long BUFFER_MAX_BYTES = new DataSize(1, MEGABYTE).toBytes();
     private static final long BUFFER_MIN_BYTES = new DataSize(1, KILOBYTE).toBytes();
