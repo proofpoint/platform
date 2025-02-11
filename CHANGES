@@ -4,6 +4,10 @@ Platform 3.27
 
   We increased the minimum Java version to 17.
 
+* Library Upgrades
+
+  - Base Docker image to c15-java17:3.65 (was 3.57) (CVE-2025-21502)
+
 * Maven plugin upgrades
 
   - maven-shade-plugin to 3.6.0 (was 3.2.2)
