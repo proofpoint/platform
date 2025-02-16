@@ -15,7 +15,14 @@ Platform 3.27
     package private configuration attributes. The configuration classes
     and their configuration getters and setters must be made public.
 
+* Library Upgrades
+
+  - ByteBuddy to 1.15.11 (was 1.12.9)
+  - Mockito to 5.15.2 (was 4.5.1)
+  - Objenesis to 3.3 (was 3.2)
+
 * Maven plugin upgrades
+
   - JaCoCo to 0.8.12 (was 0.8.8)
 
 Platform 3.24
