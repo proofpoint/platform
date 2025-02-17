@@ -78,11 +78,11 @@ public class MetricsResource
                             writer.write(" gauge\n");
                         }
 
-                        taggedValue.getValueAndTimestamp().getValue().writeMetric(
+                        taggedValue.getValueAndTimestamp().value().writeMetric(
                                 writer,
                                 entry.getKey(),
                                 Iterables.concat(taggedValue.getTags().entrySet(), instanceTags.entrySet()),
-                                taggedValue.getValueAndTimestamp().getTimestamp()
+                                taggedValue.getValueAndTimestamp().timestamp()
                         );
                     }
                 }

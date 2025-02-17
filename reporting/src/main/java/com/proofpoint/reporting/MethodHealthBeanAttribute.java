@@ -15,32 +15,29 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
-
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 import java.lang.reflect.Method;
 
 import static com.proofpoint.reporting.ReflectionUtils.invoke;
+import static java.util.Objects.requireNonNull;
 
-@AutoValue
-abstract class MethodHealthBeanAttribute
+record MethodHealthBeanAttribute(String getDescription, HealthBeanAttribute.Type getType, Object target, Method getter)
         implements HealthBeanAttribute
 {
-    static MethodHealthBeanAttribute methodHealthBeanAttribute(String description, Type type, Object target, Method getter)
+    MethodHealthBeanAttribute
     {
-        return new AutoValue_MethodHealthBeanAttribute(description, type, target, getter);
+        requireNonNull(getDescription, "description is null");
+        requireNonNull(getType, "type is null");
+        requireNonNull(target, "target is null");
+        requireNonNull(getter, "getter is null");
     }
-
-    abstract Object getTarget();
-
-    abstract Method getGetter();
 
     @Override
     public String getValue()
             throws MBeanException, ReflectionException
     {
-        Object value = invoke(getTarget(), getGetter());
+        Object value = invoke(target(), getter());
         if (value == null) {
             return null;
         }

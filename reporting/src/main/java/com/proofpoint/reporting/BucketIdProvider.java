@@ -15,23 +15,19 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
-
 public interface BucketIdProvider
 {
     BucketId get();
 
-    @AutoValue
-    abstract class BucketId
+    record BucketId(
+            int getId,
+            /* Timestamp at the start of the bucket */
+            long getTimestamp
+    )
     {
         public static BucketId bucketId(int id, long timestamp)
         {
-            return new AutoValue_BucketIdProvider_BucketId(id, timestamp);
+            return new BucketId(id, timestamp);
         }
-
-        public abstract int getId();
-
-        /* Timestamp at the start of the bucket */
-        public abstract long getTimestamp();
     }
 }

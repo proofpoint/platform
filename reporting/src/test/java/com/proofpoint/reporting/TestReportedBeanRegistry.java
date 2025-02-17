@@ -16,6 +16,7 @@
 package com.proofpoint.reporting;
 
 import com.google.common.collect.ImmutableMap;
+import com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -25,7 +26,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.util.List;
 
-import static com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo.registrationInfo;
 import static org.testng.Assert.assertEquals;
 
 public class TestReportedBeanRegistry
@@ -65,7 +65,7 @@ public class TestReportedBeanRegistry
             throws Exception
     {
         registry.register(new Object(), TESTING_REPORTED_BEAN, false, "TestingObject", TESTING_TAGS);
-        assertEquals(registry.getReportedBeans(), List.of(registrationInfo(TESTING_REPORTED_BEAN, false, "TestingObject", TESTING_TAGS)));
+        assertEquals(registry.getReportedBeans(), List.of(new RegistrationInfo(TESTING_REPORTED_BEAN, false, "TestingObject", TESTING_TAGS)));
     }
 
     @Test
@@ -73,7 +73,7 @@ public class TestReportedBeanRegistry
             throws Exception
     {
         registry.register(new Object(), TESTING_REPORTED_BEAN, true, "TestingObject", TESTING_TAGS);
-        assertEquals(registry.getReportedBeans(), List.of(registrationInfo(TESTING_REPORTED_BEAN, true, "TestingObject", TESTING_TAGS)));
+        assertEquals(registry.getReportedBeans(), List.of(new RegistrationInfo(TESTING_REPORTED_BEAN, true, "TestingObject", TESTING_TAGS)));
     }
 
     @Test
@@ -91,7 +91,7 @@ public class TestReportedBeanRegistry
             throws Exception
     {
         registry.register(TESTING_REPORTED_BEAN, TESTING_OBJECT_NAME);
-        assertEquals(registry.getReportedBeans(), List.of(registrationInfo(TESTING_REPORTED_BEAN, false, "TestingObject", ImmutableMap.of())));
+        assertEquals(registry.getReportedBeans(), List.of(new RegistrationInfo(TESTING_REPORTED_BEAN, false, "TestingObject", ImmutableMap.of())));
     }
 
     @Test

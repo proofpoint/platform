@@ -20,7 +20,6 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
-import static com.proofpoint.reporting.ReportedMethodInfo.reportedMethodInfo;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -82,7 +81,7 @@ class ReportedMethodInfoBuilder
                 // todo log me
             }
             if (value == null) {
-                return reportedMethodInfo(List.of(), List.of());
+                return new ReportedMethodInfo(List.of(), List.of());
             }
 
             ReportedBean reportedBean = ReportedBean.forTarget(value, bucketIdProvider);
@@ -92,7 +91,7 @@ class ReportedMethodInfoBuilder
             List<PrometheusBeanAttribute> prometheusAttributes = reportedBean.getPrometheusAttributes().stream()
                     .map(attribute -> new FlattenPrometheusBeanAttribute(concreteGetter, attribute))
                     .collect(toList());
-            return reportedMethodInfo(attributes, prometheusAttributes);
+            return new ReportedMethodInfo(attributes, prometheusAttributes);
         }
         else if (AnnotationUtils.isNested(annotatedGetter)) {
             checkArgument(concreteGetter != null, "Nested JmxAttribute must have a concrete getter");
@@ -105,7 +104,7 @@ class ReportedMethodInfoBuilder
                 // todo log me
             }
             if (value == null) {
-                return reportedMethodInfo(List.of(), List.of());
+                return new ReportedMethodInfo(List.of(), List.of());
             }
 
             ReportedBean reportedBean = ReportedBean.forTarget(value, bucketIdProvider);
@@ -115,7 +114,7 @@ class ReportedMethodInfoBuilder
             List<PrometheusBeanAttribute> prometheusAttributes = reportedBean.getPrometheusAttributes().stream()
                     .map(attribute -> new NestedPrometheusBeanAttribute(name, concreteGetter, attribute))
                     .collect(toList());
-            return reportedMethodInfo(attributes, prometheusAttributes);
+            return new ReportedMethodInfo(attributes, prometheusAttributes);
         }
         else {
             checkArgument (concreteGetter != null, "JmxAttribute must have a concrete getter");
@@ -123,7 +122,7 @@ class ReportedMethodInfoBuilder
             Class<?> attributeType = concreteGetter.getReturnType();
 
             if (Boolean.class.isAssignableFrom(attributeType) || attributeType == boolean.class) {
-                return reportedMethodInfo(
+                return new ReportedMethodInfo(
                         AnnotationUtils.isReported(annotatedGetter) ?
                                 List.of(new BooleanReportedBeanAttribute(name, target, concreteGetter)) :
                                 List.of(),
@@ -131,7 +130,7 @@ class ReportedMethodInfoBuilder
                 );
             }
 
-            return reportedMethodInfo(
+            return new ReportedMethodInfo(
                     AnnotationUtils.isReported(annotatedGetter) ?
                             List.of(new ObjectReportedBeanAttribute(name, target, concreteGetter)) :
                             List.of(),
