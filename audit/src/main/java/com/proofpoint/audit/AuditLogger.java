@@ -21,7 +21,7 @@ public interface AuditLogger<T>
      * Make an entry in the audit log.
      *
      * @param record The Jackson-annotated object to log. Must not have
-     * top-level properties named "time", "type", or "traceToken".
+     *               top-level properties named "time", "type", or "traceToken".
      */
     void audit(T record);
 }

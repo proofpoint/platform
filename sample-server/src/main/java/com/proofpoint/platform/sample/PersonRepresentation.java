@@ -16,33 +16,28 @@
 package com.proofpoint.platform.sample;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-import static com.proofpoint.platform.sample.Person.createPerson;
+public record PersonRepresentation(
+        @Nullable
+        @NotNull(message = "is missing")
+        @Pattern(regexp = "[^@]+@[^@]+", message = "is malformed")
+        String email,
 
-@AutoValue
-public abstract class PersonRepresentation
+        @Nullable
+        @NotNull(message = "is missing")
+        String name
+)
 {
-    @Nullable
-    @NotNull(message = "is missing")
-    @Pattern(regexp = "[^@]+@[^@]+", message = "is malformed")
-    abstract String getEmail();
-
-    @Nullable
-    @NotNull(message = "is missing")
-    abstract String getName();
-
     @JsonCreator
-    public static PersonRepresentation createPersonRepresentation(String email, String name)
+    public PersonRepresentation
     {
-        return new AutoValue_PersonRepresentation(email, name);
     }
 
     public Person toPerson()
     {
-        return createPerson(getEmail(), getName());
+        return new Person(email, name);
     }
 }

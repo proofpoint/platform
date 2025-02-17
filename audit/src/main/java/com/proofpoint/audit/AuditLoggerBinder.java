@@ -28,9 +28,8 @@ import static java.util.Objects.requireNonNull;
  *
  * <pre>
  *     auditLoggerBinder(binder).bind(RecordClass.class);</pre>
- *
+ * <p>
  * Binds an implementation of {@code AuditLogger<RecordClass>}.
- *
  */
 public class AuditLoggerBinder
 {
@@ -46,7 +45,8 @@ public class AuditLoggerBinder
      *
      * @param binder The Guice {@link Binder} to use.
      */
-    public static AuditLoggerBinder auditLoggerBinder(Binder binder) {
+    public static AuditLoggerBinder auditLoggerBinder(Binder binder)
+    {
         return new AuditLoggerBinder(binder);
     }
 

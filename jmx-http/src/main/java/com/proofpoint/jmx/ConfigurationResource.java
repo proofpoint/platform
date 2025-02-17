@@ -16,7 +16,6 @@
 package com.proofpoint.jmx;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
 import com.proofpoint.configuration.ConfigurationFactory;
 import com.proofpoint.configuration.ConfigurationInspector;
@@ -55,33 +54,35 @@ public class ConfigurationResource
         for (ConfigRecord<?> record : configurationInspector.inspect(configurationFactory)) {
             for (ConfigAttribute attribute : record.getAttributes()) {
                 builder.put(attribute.getPropertyName(),
-                        new AutoValue_ConfigurationResource_ConfigurationEntry(attribute));
+                        new ConfigurationEntry(attribute));
             }
         }
         return builder.build();
     }
 
-    @AutoValue
-    public abstract static class ConfigurationEntry
+    public record ConfigurationEntry(ConfigAttribute configAttribute)
     {
-        abstract ConfigAttribute getConfigAttribute();
+        public ConfigurationEntry
+        {
+            requireNonNull(configAttribute, "configAttribute is null");
+        }
 
         @JsonProperty
         String getDefaultValue()
         {
-            return getConfigAttribute().getDefaultValue();
+            return configAttribute.getDefaultValue();
         }
 
         @JsonProperty
         String getCurrentValue()
         {
-            return getConfigAttribute().getCurrentValue();
+            return configAttribute.getCurrentValue();
         }
 
         @JsonProperty
         String getDescription()
         {
-            String description = getConfigAttribute().getDescription();
+            String description = configAttribute.getDescription();
             if (description.isEmpty()) {
                 return null;
             }

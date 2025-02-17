@@ -15,7 +15,6 @@
  */
 package com.proofpoint.platform.sample;
 
-import com.google.auto.value.AutoValue;
 import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -121,16 +120,17 @@ public class PersonStore
     {
         Builder<StoreEntry> builder = ImmutableList.builder();
         for (Entry<String, Person> entry : persons.entrySet()) {
-            builder.add(new AutoValue_PersonStore_StoreEntry(entry.getKey(), entry.getValue()));
+            builder.add(new StoreEntry(entry.getKey(), entry.getValue()));
         }
         return builder.build();
     }
 
-    @AutoValue
-    public abstract static class StoreEntry
+    public record StoreEntry(String id, Person person)
     {
-        public abstract String getId();
-
-        public abstract Person getPerson();
+        public StoreEntry
+        {
+            requireNonNull(id, "id must not be null");
+            requireNonNull(person, "person must not be null");
+        }
     }
 }

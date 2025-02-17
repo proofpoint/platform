@@ -16,7 +16,7 @@
 package com.proofpoint.audit;
 
 final class NullAuditLogger<T>
-    implements AuditLogger<T>
+        implements AuditLogger<T>
 {
     @Override
     public void audit(T record)

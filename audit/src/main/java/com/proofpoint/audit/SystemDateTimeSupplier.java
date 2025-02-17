@@ -18,7 +18,7 @@ package com.proofpoint.audit;
 import java.time.Instant;
 
 class SystemDateTimeSupplier
-    implements DateTimeSupplier
+        implements DateTimeSupplier
 {
     @Override
     public Instant get()

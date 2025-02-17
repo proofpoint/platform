@@ -16,21 +16,17 @@
 package com.proofpoint.platform.sample;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.auto.value.AutoValue;
-import com.google.errorprone.annotations.Immutable;
 
-@Immutable
-@AutoValue
-public abstract class Person
+import static java.util.Objects.requireNonNull;
+
+public record Person(
+        @JsonProperty String email,
+        @JsonProperty String name
+)
 {
-    static Person createPerson(String email, String name)
+    public Person
     {
-        return new AutoValue_Person(email, name);
+        requireNonNull(email, "email is null");
+        requireNonNull(name, "name is null");
     }
-
-    @JsonProperty
-    public abstract String getEmail();
-
-    @JsonProperty
-    public abstract String getName();
 }

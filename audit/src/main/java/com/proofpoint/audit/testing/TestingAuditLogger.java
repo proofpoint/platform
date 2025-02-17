@@ -18,7 +18,6 @@ package com.proofpoint.audit.testing;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.auto.value.AutoValue;
 import com.proofpoint.audit.AuditLogger;
 import com.proofpoint.tracetoken.TraceToken;
 import jakarta.annotation.Nullable;
@@ -58,23 +57,29 @@ public class TestingAuditLogger<T>
         auditLog.add(value);
     }
 
-    @AutoValue
-    abstract static class AuditWrapper
+    record AuditWrapper(
+            // "time" is intentionally omitted
+
+            @JsonProperty
+            String type,
+
+            @Nullable
+            @JsonProperty
+            TraceToken traceToken,
+
+            @JsonUnwrapped
+            Object object
+    )
     {
-        // "time" is intentionally omitted
+        AuditWrapper
+        {
+            requireNonNull(type, "type is null");
+            requireNonNull(object, "object is null");
+        }
 
-        @JsonProperty
-        public abstract String getType();
-
-        @Nullable
-        @JsonProperty
-        public abstract TraceToken getTraceToken();
-
-        @JsonUnwrapped
-        public abstract Object getObject();
-
-        public static TestingAuditLogger.AuditWrapper auditWrapper(String type, Object object) {
-            return new AutoValue_TestingAuditLogger_AuditWrapper(type, getCurrentTraceToken(), object);
+        static TestingAuditLogger.AuditWrapper auditWrapper(String type, Object object)
+        {
+            return new AuditWrapper(type, getCurrentTraceToken(), object);
         }
     }
 }

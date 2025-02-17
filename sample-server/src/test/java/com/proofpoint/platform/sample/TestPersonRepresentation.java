@@ -27,7 +27,6 @@ import java.util.Map;
 
 import static com.proofpoint.json.JsonCodec.jsonCodec;
 import static com.proofpoint.json.testing.JsonTester.decodeJson;
-import static com.proofpoint.platform.sample.Person.createPerson;
 import static com.proofpoint.testing.ValidationAssertions.assertFailsValidation;
 import static com.proofpoint.testing.ValidationAssertions.assertValidates;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,10 +34,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TestPersonRepresentation
 {
     private final JsonCodec<PersonRepresentation> codec = jsonCodec(PersonRepresentation.class);
-    private Map<String,String> jsonStructure;
+    private Map<String, String> jsonStructure;
 
     @BeforeMethod
-    public void setup() {
+    public void setup()
+    {
         jsonStructure = new HashMap<>(ImmutableMap.of(
                 "name", "Mr Foo",
                 "email", "foo@example.com"));
@@ -48,7 +48,7 @@ public class TestPersonRepresentation
     public void testJsonDecode()
     {
         PersonRepresentation personRepresentation = assertValidates(decodeJson(codec, jsonStructure));
-        assertThat(personRepresentation.toPerson()).isEqualTo(createPerson("foo@example.com", "Mr Foo"));
+        assertThat(personRepresentation.toPerson()).isEqualTo(new Person("foo@example.com", "Mr Foo"));
     }
 
     @Test

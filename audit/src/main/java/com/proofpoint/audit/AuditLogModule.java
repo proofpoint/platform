@@ -20,7 +20,7 @@ import com.google.inject.Scopes;
 import com.proofpoint.configuration.AbstractConfigurationAwareModule;
 
 public class AuditLogModule
-    extends AbstractConfigurationAwareModule
+        extends AbstractConfigurationAwareModule
 {
     @Override
     protected void setup(Binder binder)

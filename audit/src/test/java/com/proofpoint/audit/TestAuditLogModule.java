@@ -41,7 +41,9 @@ public class TestAuditLogModule
                 )
                 .setRequiredConfigurationProperty("audit.log.enable", "false")
                 .initialize();
-        AuditLogger<TestingRecord> auditLogger = injector.getInstance(Key.get(new TypeLiteral<AuditLogger<TestingRecord>>() {}));
+        AuditLogger<TestingRecord> auditLogger = injector.getInstance(Key.get(new TypeLiteral<AuditLogger<TestingRecord>>()
+        {
+        }));
         auditLogger.audit(new TestingRecord());
     }
 
@@ -61,7 +63,9 @@ public class TestAuditLogModule
                     )
                     .setRequiredConfigurationProperty("audit.log.path", file.getAbsolutePath())
                     .initialize();
-            AuditLogger<TestingRecord> auditLogger = injector.getInstance(Key.get(new TypeLiteral<AuditLogger<TestingRecord>>() {}));
+            AuditLogger<TestingRecord> auditLogger = injector.getInstance(Key.get(new TypeLiteral<AuditLogger<TestingRecord>>()
+            {
+            }));
             auditLogger.audit(new TestingRecord());
         }
         finally {

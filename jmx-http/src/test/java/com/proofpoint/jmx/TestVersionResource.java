@@ -138,10 +138,10 @@ public class TestVersionResource
         lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         server = injector.getInstance(TestingAdminHttpServer.class);
         return client.execute(
-                    prepareGet().setUri(uriFor("/admin/version")).build(),
-                    createJsonResponseHandler(jsonCodec(new TypeToken<Map<String, String>>()
-                    {
-                    })));
+                prepareGet().setUri(uriFor("/admin/version")).build(),
+                createJsonResponseHandler(jsonCodec(new TypeToken<Map<String, String>>()
+                {
+                })));
     }
 
     private URI uriFor(String path)
@@ -153,7 +153,7 @@ public class TestVersionResource
     private static InetAddress getV4Localhost()
     {
         try {
-            return InetAddress.getByAddress("localhost", new byte[] {127, 0, 0, 1});
+            return InetAddress.getByAddress("localhost", new byte[]{127, 0, 0, 1});
         }
         catch (UnknownHostException e) {
             throw new AssertionError("Could not create localhost address");
