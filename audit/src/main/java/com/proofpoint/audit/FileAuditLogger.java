@@ -19,7 +19,6 @@ import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.google.auto.value.AutoValue;
 import com.proofpoint.tracetoken.TraceToken;
 import jakarta.annotation.Nullable;
 
@@ -54,24 +53,31 @@ final class FileAuditLogger<T> implements AuditLogger<T>
     }
 
     @JsonPropertyOrder({"time", "type", "traceToken", "object"})
-    @AutoValue
-    abstract static class AuditWrapper
+    record AuditWrapper(
+            @JsonProperty
+            Instant time,
+
+            @JsonProperty
+            String type,
+
+            @Nullable
+            @JsonProperty
+            TraceToken traceToken,
+
+            @JsonUnwrapped
+            Object object
+    )
     {
-        @JsonProperty
-        public abstract Instant getTime();
+        AuditWrapper
+        {
+            requireNonNull(time, "time is null");
+            requireNonNull(type, "type is null");
+            requireNonNull(object, "object is null");
+        }
 
-        @JsonProperty
-        public abstract String getType();
-
-        @Nullable
-        @JsonProperty
-        public abstract TraceToken getTraceToken();
-
-        @JsonUnwrapped
-        public abstract Object getObject();
-
-        public static AuditWrapper auditWrapper(Instant time, String type, Object object) {
-            return new AutoValue_FileAuditLogger_AuditWrapper(time, type, getCurrentTraceToken(), object);
+        static AuditWrapper auditWrapper(Instant time, String type, Object object)
+        {
+            return new AuditWrapper(time, type, getCurrentTraceToken(), object);
         }
     }
 }

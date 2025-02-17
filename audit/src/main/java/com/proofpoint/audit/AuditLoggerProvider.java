@@ -21,7 +21,7 @@ import jakarta.inject.Provider;
 import static java.util.Objects.requireNonNull;
 
 class AuditLoggerProvider<T>
-    implements Provider<AuditLogger<T>>
+        implements Provider<AuditLogger<T>>
 {
     private final Class<T> recordClass;
     private AuditLoggerFactory auditLoggerFactory;

@@ -16,7 +16,6 @@
 package com.proofpoint.audit.testing;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -31,15 +30,16 @@ import org.testng.annotations.Test;
 import java.util.List;
 
 import static com.proofpoint.audit.AuditLoggerBinder.auditLoggerBinder;
+import static java.util.Objects.requireNonNull;
 import static org.testng.Assert.assertEquals;
 
 public class TestTestingAuditLogModule
 {
     private AuditLogger<TestingRecord> logger;
     private TestingAuditLog auditLog;
-    private final TestingRecord record1 = new AutoValue_TestTestingAuditLogModule_TestingRecord("record1");
-    private final TestingRecord record2 = new AutoValue_TestTestingAuditLogModule_TestingRecord("record2");
-    private final TestingRecord record3 = new AutoValue_TestTestingAuditLogModule_TestingRecord("record3");
+    private final TestingRecord record1 = new TestingRecord("record1");
+    private final TestingRecord record2 = new TestingRecord("record2");
+    private final TestingRecord record3 = new TestingRecord("record3");
 
     @BeforeMethod
     public void setup()
@@ -50,7 +50,9 @@ public class TestTestingAuditLogModule
                 new JsonModule(),
                 binder -> auditLoggerBinder(binder).bind(TestingRecord.class)
         );
-        logger = injector.getInstance(Key.get(new TypeLiteral<AuditLogger<TestingRecord>>() {}));
+        logger = injector.getInstance(Key.get(new TypeLiteral<AuditLogger<TestingRecord>>()
+        {
+        }));
         auditLog = injector.getInstance(TestingAuditLog.class);
     }
 
@@ -76,19 +78,21 @@ public class TestTestingAuditLogModule
 
         assertEquals(auditLog.getRecords(), List.of(
                 ImmutableMap.of("type", "com.proofpoint.audit.testing.TestTestingAuditLogModule.TestingRecord",
-                                "value", "record1"),
+                        "value", "record1"),
                 ImmutableMap.of("type", "com.proofpoint.audit.testing.TestTestingAuditLogModule.TestingRecord",
-                                "traceToken", ImmutableMap.of("id", "token1"),
-                                "value", "record2"),
+                        "traceToken", ImmutableMap.of("id", "token1"),
+                        "value", "record2"),
                 ImmutableMap.of("type", "com.proofpoint.audit.testing.TestTestingAuditLogModule.TestingRecord",
-                                "value", "record3")
+                        "value", "record3")
         ));
     }
 
-    @AutoValue
-    abstract static class TestingRecord
+    record TestingRecord(@JsonProperty String value)
     {
-        @JsonProperty
-        public abstract String getValue();
+        TestingRecord
+        {
+            requireNonNull(value, "value is null");
+        }
+
     }
 }
