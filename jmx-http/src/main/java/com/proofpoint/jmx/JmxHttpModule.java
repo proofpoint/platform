@@ -231,7 +231,8 @@ public class JmxHttpModule implements Module
                 if (adminUri.getScheme().equals("http")) {
                     builder.addProperty("http", adminUri.toString());
                     builder.addProperty("http-external", httpServerInfo.getAdminExternalUri().toString());
-                } else if (adminUri.getScheme().equals("https")) {
+                }
+                else if (adminUri.getScheme().equals("https")) {
                     builder.addProperty("https", adminUri.toString());
                 }
             }

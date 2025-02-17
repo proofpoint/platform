@@ -16,7 +16,6 @@
 package com.proofpoint.jmx;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.auto.value.AutoValue;
 import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 import com.proofpoint.node.NodeInfo;
 import jakarta.inject.Inject;
@@ -24,6 +23,8 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+
+import static java.util.Objects.requireNonNull;
 
 @Path("/admin/version")
 @AccessDoesNotRequireAuthentication
@@ -34,7 +35,7 @@ public class VersionResource
     @Inject
     public VersionResource(NodeInfo nodeInfo)
     {
-        this.versionInfo = new AutoValue_VersionResource_VersionInfo(nodeInfo);
+        this.versionInfo = new VersionInfo(nodeInfo);
     }
 
     @GET
@@ -44,21 +45,23 @@ public class VersionResource
         return versionInfo;
     }
 
-    @AutoValue
-    public abstract static class VersionInfo
+    public record VersionInfo(NodeInfo nodeInfo)
     {
-        abstract NodeInfo getNodeInfo();
+        public VersionInfo
+        {
+            requireNonNull(nodeInfo, "nodeInfo is null");
+        }
 
         @JsonProperty
         String getApplication()
         {
-            return getNodeInfo().getApplication();
+            return nodeInfo.getApplication();
         }
 
         @JsonProperty
         String getApplicationVersion()
         {
-            String applicationVersion = getNodeInfo().getApplicationVersion();
+            String applicationVersion = nodeInfo.getApplicationVersion();
             if (applicationVersion.isEmpty()) {
                 return null;
             }
@@ -68,7 +71,7 @@ public class VersionResource
         @JsonProperty
         String getPlatformVersion()
         {
-            String platformVersion = getNodeInfo().getPlatformVersion();
+            String platformVersion = nodeInfo.getPlatformVersion();
             if (platformVersion.isEmpty()) {
                 return null;
             }

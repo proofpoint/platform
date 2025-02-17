@@ -60,7 +60,7 @@ public class MBeanRepresentation
         //
         // Attributes
         //
-        LinkedHashMap<String, MBeanAttributeInfo> attributeInfos =new LinkedHashMap<>();
+        LinkedHashMap<String, MBeanAttributeInfo> attributeInfos = new LinkedHashMap<>();
         for (MBeanAttributeInfo attributeInfo : mbeanInfo.getAttributes()) {
             attributeInfos.put(attributeInfo.getName(), attributeInfo);
         }
