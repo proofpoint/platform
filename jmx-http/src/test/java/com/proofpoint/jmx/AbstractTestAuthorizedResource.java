@@ -105,7 +105,7 @@ public abstract class AbstractTestAuthorizedResource
         verifier = mock(AdminServerCredentialVerifier.class);
         jmxHttpModule = binder -> {
             binder.install(override(new JmxHttpModule())
-                            .with(b -> b.bind(AdminServerCredentialVerifier.class).toInstance(verifier)));
+                    .with(b -> b.bind(AdminServerCredentialVerifier.class).toInstance(verifier)));
             jaxrsBinder(binder).bindAdmin(SecurityContextRequestFilter.class);
         };
         lifeCycleManager = null;
@@ -191,7 +191,7 @@ public abstract class AbstractTestAuthorizedResource
     @Provider
     @Priority(Priorities.AUTHENTICATION)
     public static class SecurityContextRequestFilter
-        implements ContainerRequestFilter
+            implements ContainerRequestFilter
     {
         @Override
         public void filter(ContainerRequestContext requestContext)
