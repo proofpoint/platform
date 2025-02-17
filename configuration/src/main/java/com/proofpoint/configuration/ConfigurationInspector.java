@@ -84,7 +84,7 @@ public class ConfigurationInspector
 
         static <T> ConfigRecord<T> createConfigRecord(ConfigurationFactory configurationFactory, ConfigurationIdentity<T> configurationIdentity)
         {
-            return new ConfigRecord<>(configurationFactory, configurationIdentity.getConfigClass(), configurationIdentity.getPrefix(), configurationIdentity.getKey());
+            return new ConfigRecord<>(configurationFactory, configurationIdentity.configClass(), configurationIdentity.prefix(), configurationIdentity.key());
         }
 
         private ConfigRecord(ConfigurationFactory configurationFactory, Class<T> configClass, @Nullable String prefix, @Nullable Key<T> key)

@@ -23,7 +23,7 @@ import static java.util.Objects.requireNonNull;
 
 @Beta
 public class ConditionalModule<T>
-    extends AbstractConfigurationAwareModule
+        extends AbstractConfigurationAwareModule
 {
     public static <T> Module installModuleIf(Class<T> config, Predicate<T> predicate, Module module)
     {

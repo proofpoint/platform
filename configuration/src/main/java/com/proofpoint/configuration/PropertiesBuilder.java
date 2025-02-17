@@ -92,14 +92,16 @@ public class PropertiesBuilder
             if (old != null) {
                 errors.add(format("Duplicate configuration property '%s' in file %s", key, path));
             }
-        } else if (tree.isArray()) {
+        }
+        else if (tree.isArray()) {
             int index = 0;
             for (JsonNode child : tree) {
                 ++index;
                 mergeTree(format("%s.%d", prefix, index), child, path);
             }
-        } else if (tree.isObject()) {
-            for (Iterator<Entry<String, JsonNode>> it = tree.fields(); it.hasNext();) {
+        }
+        else if (tree.isObject()) {
+            for (Iterator<Entry<String, JsonNode>> it = tree.fields(); it.hasNext(); ) {
                 Entry<String, JsonNode> entry = it.next();
                 mergeTree(prefix + "." + entry.getKey(), entry.getValue(), path);
             }
@@ -120,10 +122,12 @@ public class PropertiesBuilder
             return this;
         }
 
-        Properties properties = new Properties() {
+        Properties properties = new Properties()
+        {
             @SuppressWarnings("UseOfPropertiesAsHashtable")
             @Override
-            public synchronized Object put(Object key, Object value) {
+            public synchronized Object put(Object key, Object value)
+            {
                 Object old = super.put(key, value);
                 if (old != null) {
                     errors.add(format("Duplicate configuration property '%s' in file %s", key, path));
@@ -161,7 +165,8 @@ public class PropertiesBuilder
         return this;
     }
 
-    public PropertiesBuilder throwOnError() {
+    public PropertiesBuilder throwOnError()
+    {
         if (!errors.isEmpty()) {
             throw new RuntimeException(String.join("\n", errors));
         }

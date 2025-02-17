@@ -30,21 +30,21 @@ import static java.util.Objects.requireNonNull;
  *
  * <pre>
  *     configBinder(binder).bind(FooConfig.class);</pre>
- *
+ * <p>
  * Binds the configuration class {@code FooConfig} to instances that are
  * created by the configuration subsystem (specifically its
  * {@link ConfigurationFactory}).
- *
+ * <p>
  * As configuration classes are mutable, the binding is with default scope
  * so each injection point gets a separate instance.
- *
+ * <p>
  * Does not work with private binders.
  *
  * <pre>
  *     configBinder(binder)
  *         .bind(FooConfig.class)
  *         .annotatedWith(Red.class);</pre>
- *
+ * <p>
  * Binds the configuration class {@code Key.get(FooConfig.class, Red.class)}
  * to instances that are created by the configuration subsystem.
  *
@@ -52,7 +52,7 @@ import static java.util.Objects.requireNonNull;
  *     configBinder(binder)
  *         .bind(FooConfig.class)
  *         .annotatedWith(Names.named("red"));</pre>
- *
+ * <p>
  * Binds the configuration class {@code Key.get(FooConfig.class, Names.named("red"))}
  * to instances that are created by the configuration subsystem.
  *
@@ -60,16 +60,15 @@ import static java.util.Objects.requireNonNull;
  *     configBinder(binder)
  *         .bind(FooConfig.class)
  *         .prefixedWith("prefix");</pre>
- *
+ * <p>
  * The {@code .prefixedWith()} method causes the configuration properties that
  * the bound configuration instances consume from to be prefixed by the
  * specified parameter, followed by a ".". For example, if an attribute of the
  * configuration class consumes the "size" configuration property, that
  * attribute of the bound instance will instead consume the "prefix.size"
  * configuration property.
- *
+ * <p>
  * May be combined with {@code .annotatedWith()}.
- *
  */
 public final class ConfigBinder
 {

@@ -66,7 +66,7 @@ public class ConfigurationMetadataTest
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(SetterConfigClass.class, monitor);
         Map<String, Set<String>> expectedAttributes = new HashMap<>();
         expectedAttributes.put("Value", Set.of("value"));
-        
+
         verifyMetaData(metadata, SetterConfigClass.class, "description", false, expectedAttributes);
         monitor.assertNumberOfErrors(0);
         monitor.assertNumberOfWarnings(0);
@@ -122,8 +122,7 @@ public class ConfigurationMetadataTest
             ConfigurationMetadata<?> metadata = ConfigurationMetadata.getValidConfigurationMetadata(SetterNoGetterConfigClass.class, monitor);
             fail("Expected ConfigurationException");
         }
-        catch (ConfigurationException e)
-        {
+        catch (ConfigurationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("No getter");
@@ -487,7 +486,7 @@ public class ConfigurationMetadataTest
 
     @Test
     public void testCurrentAndLegacyConfigOnSetterClass()
-        throws Exception
+            throws Exception
     {
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(CurrentAndLegacyConfigOnSetterClass.class, monitor);
@@ -551,7 +550,7 @@ public class ConfigurationMetadataTest
 
     @Test
     public void testMultipleLegacyConfigClass()
-        throws Exception
+            throws Exception
     {
         TestMonitor monitor = new TestMonitor();
         ConfigurationMetadata<?> metadata = ConfigurationMetadata.getConfigurationMetadata(MultipleLegacyConfigClass.class, monitor);
@@ -957,11 +956,13 @@ public class ConfigurationMetadataTest
 
         if (metadata.getConstructor() != null) {
             assertEquals(metadata.getConstructor(), configClass.getDeclaredConstructor());
-        } else {
+        }
+        else {
             try {
                 configClass.getDeclaredConstructor();
                 fail(String.format("Expected configClass [%s] not to have a constructor", configClass.getName()));
-            } catch (NoSuchMethodException expected) {
+            }
+            catch (NoSuchMethodException expected) {
 
             }
         }
@@ -1605,21 +1606,21 @@ public class ConfigurationMetadataTest
     }
 
     public static class EmptyStringInArrayLegacyConfigClass
-     {
-         private String value;
+    {
+        private String value;
 
-         public String getValue()
-         {
-             return value;
-         }
+        public String getValue()
+        {
+            return value;
+        }
 
-         @Config("value")
-         @LegacyConfig({"foo", ""})
-         public void setValue(String value)
-         {
-             this.value = value;
-         }
-     }
+        @Config("value")
+        @LegacyConfig({"foo", ""})
+        public void setValue(String value)
+        {
+            this.value = value;
+        }
+    }
 
     public static class LegacyConfigDuplicatesConfigClass
     {
@@ -1939,7 +1940,8 @@ public class ConfigurationMetadataTest
         }
 
         @Config("value")
-        public void setValue(String value) {
+        public void setValue(String value)
+        {
             this.value = new HashMap<>();
         }
 
@@ -1963,7 +1965,8 @@ public class ConfigurationMetadataTest
 
         @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
         @Config("value")
-        public void setValue(Map<? extends String, ?> value) {
+        public void setValue(Map<? extends String, ?> value)
+        {
             this.value = value;
         }
     }
@@ -1979,7 +1982,8 @@ public class ConfigurationMetadataTest
 
         @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
         @Config("value")
-        public void setValue(Map value) {
+        public void setValue(Map value)
+        {
             this.value = value;
         }
     }
@@ -1995,12 +1999,13 @@ public class ConfigurationMetadataTest
 
         @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
         @Config("value")
-        public void setValue(ImplementsMap value) {
+        public void setValue(ImplementsMap value)
+        {
             this.value = value;
         }
 
         private static class ImplementsMap
-            extends ForwardingMap<String, Class<?>>
+                extends ForwardingMap<String, Class<?>>
         {
             @Override
             protected Map<String, Class<?>> delegate()
@@ -2017,7 +2022,7 @@ public class ConfigurationMetadataTest
 
     public static class MapConfigValueTypeErrorClass
     {
-        private Map<String,GetterNoSetterClass> value;
+        private Map<String, GetterNoSetterClass> value;
 
         public Map<String, GetterNoSetterClass> getValue()
         {
@@ -2026,14 +2031,15 @@ public class ConfigurationMetadataTest
 
         @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
         @Config("value")
-        public void setValue(Map<String,GetterNoSetterClass> value) {
+        public void setValue(Map<String, GetterNoSetterClass> value)
+        {
             this.value = value;
         }
     }
 
     public static class MapConfigValueTypeWarningClass
     {
-        private Map<String,LegacyConfigOnNonDeprecatedSetterClass> value;
+        private Map<String, LegacyConfigOnNonDeprecatedSetterClass> value;
 
         public Map<String, LegacyConfigOnNonDeprecatedSetterClass> getValue()
         {
@@ -2042,7 +2048,8 @@ public class ConfigurationMetadataTest
 
         @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
         @Config("value")
-        public void setValue(Map<String,LegacyConfigOnNonDeprecatedSetterClass> value) {
+        public void setValue(Map<String, LegacyConfigOnNonDeprecatedSetterClass> value)
+        {
             this.value = value;
         }
     }
@@ -2057,7 +2064,8 @@ public class ConfigurationMetadataTest
         }
 
         @Config("value")
-        public void setValue(String value) {
+        public void setValue(String value)
+        {
             this.value = new HashMap<>();
         }
 

@@ -82,7 +82,8 @@ class ConfigurationProvider<T> implements ConfigurationAwareProvider<T>
         this.prefix.set(prefix);
     }
 
-    public ConfigurationMetadata<T> getConfigurationMetadata() {
+    public ConfigurationMetadata<T> getConfigurationMetadata()
+    {
         return ConfigurationMetadata.getConfigurationMetadata(configClass);
     }
 
