@@ -16,7 +16,6 @@
 package com.proofpoint.audit;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.auto.value.AutoValue;
 import com.google.common.io.Files;
 import com.proofpoint.json.ObjectMapperProvider;
 import com.proofpoint.tracetoken.TraceTokenManager;
@@ -31,6 +30,7 @@ import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
+import static java.util.Objects.requireNonNull;
 import static org.testng.Assert.assertEquals;
 
 public class TestFileAuditLogger
@@ -70,7 +70,7 @@ public class TestFileAuditLogger
             throws IOException
     {
         TraceTokenManager.clearRequestToken();
-        handler.audit(new AutoValue_TestFileAuditLogger_TestingRecord("foovalue"));
+        handler.audit(new TestingRecord("foovalue"));
         factory.close();
         String actual = Files.asCharSource(file, UTF_8).read();
         assertEquals(actual, "{\"time\":\"" + ISO_INSTANT.format(dateTimeSupplier.get()) + "\"," +
@@ -83,7 +83,7 @@ public class TestFileAuditLogger
     {
         try {
             TraceTokenManager.createAndRegisterNewRequestToken("property", "value");
-            handler.audit(new AutoValue_TestFileAuditLogger_TestingRecord("foovalue"));
+            handler.audit(new TestingRecord("foovalue"));
             factory.close();
             String actual = Files.asCharSource(file, UTF_8).read();
             assertEquals(actual, "{\"time\":\"" + ISO_INSTANT.format(dateTimeSupplier.get()) + "\"," +
@@ -96,10 +96,11 @@ public class TestFileAuditLogger
         }
     }
 
-    @AutoValue
-    abstract static class TestingRecord
+    record TestingRecord(@JsonProperty String foo)
     {
-        @JsonProperty
-        public abstract String getFoo();
+        TestingRecord
+        {
+            requireNonNull(foo, "foo is null");
+        }
     }
 }
