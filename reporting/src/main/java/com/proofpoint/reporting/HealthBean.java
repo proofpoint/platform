@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 
 import java.lang.reflect.Field;
@@ -27,10 +26,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
 import static java.util.Objects.requireNonNull;
 
-@AutoValue
-abstract class HealthBean
+record HealthBean(Collection<HealthBeanAttribute> attributes)
 {
-    public abstract Collection<HealthBeanAttribute> getAttributes();
+    HealthBean {
+        requireNonNull(attributes, "attributes is null");
+    }
 
     public static HealthBean forTarget(Object target)
     {
@@ -64,6 +64,6 @@ abstract class HealthBean
                     .build());
         }
 
-        return new AutoValue_HealthBean(attributes.build());
+        return new HealthBean(attributes.build());
     }
 }

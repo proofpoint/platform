@@ -283,10 +283,10 @@ public class TestReportExporter
     private void assertExported(boolean applicationPrefix, Map<Object, Object> expectedTags)
     {
         RegistrationInfo registrationInfo = registry.getReportedBeans().stream().collect(MoreCollectors.onlyElement());
-        assertEquals(registrationInfo.isApplicationPrefix(), applicationPrefix);
-        assertEquals(registrationInfo.getNamePrefix(), "TestingObject");
-        assertEquals(registrationInfo.getTags(), expectedTags);
-        assertEquals(namesOf(registrationInfo.getReportedBean().getAttributes()), namesOf(ReportedBean.forTarget(TESTING_OBJECT, bucketIdProvider).getAttributes()));
+        assertEquals(registrationInfo.applicationPrefix(), applicationPrefix);
+        assertEquals(registrationInfo.namePrefix(), "TestingObject");
+        assertEquals(registrationInfo.tags(), expectedTags);
+        assertEquals(namesOf(registrationInfo.reportedBean().getAttributes()), namesOf(ReportedBean.forTarget(TESTING_OBJECT, bucketIdProvider).getAttributes()));
     }
 
     private static Collection<String> namesOf(Collection<ReportedBeanAttribute> attributes)

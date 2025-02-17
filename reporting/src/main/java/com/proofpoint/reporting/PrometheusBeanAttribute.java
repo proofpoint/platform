@@ -15,11 +15,12 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
+
+import static java.util.Objects.requireNonNull;
 
 interface PrometheusBeanAttribute
 {
@@ -28,21 +29,20 @@ interface PrometheusBeanAttribute
     ValueAndTimestamp getValue(@Nullable Object target)
             throws MBeanException, ReflectionException;
 
-    @AutoValue
-    abstract class ValueAndTimestamp
+    record ValueAndTimestamp(PrometheusValue value, @Nullable Long timestamp)
     {
+        public ValueAndTimestamp
+        {
+            requireNonNull(value, "value is null");
+        }
+
         @Nullable
         static ValueAndTimestamp valueAndTimestamp(@Nullable PrometheusValue value, @Nullable Long timestamp)
         {
             if (value != null) {
-                return new AutoValue_PrometheusBeanAttribute_ValueAndTimestamp(value, timestamp);
+                return new ValueAndTimestamp(value, timestamp);
             }
             return null;
         }
-
-        abstract PrometheusValue getValue();
-
-        @Nullable
-        abstract Long getTimestamp();
     }
 }

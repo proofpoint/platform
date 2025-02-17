@@ -36,7 +36,7 @@ public class HealthExporter
             throws InstanceAlreadyExistsException
     {
         HealthBean healthBean = HealthBean.forTarget(object);
-        for (HealthBeanAttribute attribute : healthBean.getAttributes()) {
+        for (HealthBeanAttribute attribute : healthBean.attributes()) {
             StringBuilder sb = new StringBuilder(attribute.getDescription());
             if (instanceName != null) {
                 sb.append(" (").append(instanceName).append(")");

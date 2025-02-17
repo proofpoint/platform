@@ -38,7 +38,7 @@ public class TestHealthBean extends AbstractHealthBeanTest<Object>
     protected String getAttribute(Object object, String description)
             throws MBeanException, ReflectionException
     {
-        for (HealthBeanAttribute attribute : healthBeans.get(object).getAttributes()) {
+        for (HealthBeanAttribute attribute : healthBeans.get(object).attributes()) {
             if (attribute.getDescription().equals(description)) {
                 return attribute.getValue();
             }

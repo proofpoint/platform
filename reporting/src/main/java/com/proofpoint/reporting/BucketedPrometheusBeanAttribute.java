@@ -54,6 +54,6 @@ class BucketedPrometheusBeanAttribute implements PrometheusBeanAttribute
         if (valueAndTimestamp == null) {
             return null;
         }
-        return valueAndTimestamp(valueAndTimestamp.getValue(), bucketInfo.getBucketId().getTimestamp());
+        return valueAndTimestamp(valueAndTimestamp.value(), bucketInfo.getBucketId().getTimestamp());
     }
 }

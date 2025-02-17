@@ -78,12 +78,12 @@ class PrometheusCollector
 
         for (RegistrationInfo registrationInfo : reportedBeanRegistry.getReportedBeans()) {
             StringBuilder nameBuilder = new StringBuilder();
-            if (registrationInfo.isApplicationPrefix()) {
+            if (registrationInfo.applicationPrefix()) {
                 nameBuilder.append(applicationPrefix);
             }
-            nameBuilder.append(sanitizeMetricName(registrationInfo.getNamePrefix()));
+            nameBuilder.append(sanitizeMetricName(registrationInfo.namePrefix()));
 
-            for (PrometheusBeanAttribute attribute : registrationInfo.getReportedBean().getPrometheusAttributes()) {
+            for (PrometheusBeanAttribute attribute : registrationInfo.reportedBean().getPrometheusAttributes()) {
                 String metricName = sanitizeMetricName(attribute.getName());
                 String name;
                 if ("".equals(metricName)) {
@@ -104,7 +104,7 @@ class PrometheusCollector
                 }
 
                 if (valueAndTimestamp != null) {
-                    valuesByMetric.put(name, taggedValue(registrationInfo.getTags(), valueAndTimestamp));
+                    valuesByMetric.put(name, taggedValue(registrationInfo.tags(), valueAndTimestamp));
                 }
             }
         }

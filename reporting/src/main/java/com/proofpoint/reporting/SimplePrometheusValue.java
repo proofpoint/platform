@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 
 import java.io.BufferedWriter;
@@ -23,20 +22,24 @@ import java.io.IOException;
 import java.util.Map.Entry;
 
 import static com.proofpoint.reporting.ReportUtils.isReportable;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-@AutoValue
-abstract class SimplePrometheusValue implements PrometheusValue
+record SimplePrometheusValue(Object value)
+        implements PrometheusValue
 {
+    SimplePrometheusValue
+    {
+        requireNonNull(value, "value is null");
+    }
+
     @Nullable
     static PrometheusValue simplePrometheusValue(@Nullable Object value) {
         if (value != null && isReportable(value) && value instanceof Number) {
-            return new AutoValue_SimplePrometheusValue(value);
+            return new SimplePrometheusValue(value);
         }
         return null;
     }
-
-    abstract Object getValue();
 
     @Override
     public void writeMetric(BufferedWriter writer, String name, Iterable<Entry<String, String>> tags, @Nullable Long timestamp)
@@ -45,7 +48,7 @@ abstract class SimplePrometheusValue implements PrometheusValue
         writer.write(name);
         ReportUtils.writeTags(writer, tags);
         writer.append(' ');
-        writer.write(getValue().toString());
+        writer.write(value().toString());
         if (timestamp != null) {
             writer.append(' ');
             writer.write(Long.toString(NANOSECONDS.toMillis(timestamp)));
