@@ -23,7 +23,7 @@ import static com.proofpoint.tracetoken.TraceTokenManager.registerTraceToken;
  * An object which, when closed, causes the thread's trace token state to be restored.
  */
 public class TraceTokenScope
-    implements AutoCloseable
+        implements AutoCloseable
 {
     private final TraceToken oldToken;
 

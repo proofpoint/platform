@@ -27,12 +27,6 @@
             <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.auto.value</groupId>
-            <artifactId>auto-value-annotations</artifactId>
-            <optional>true</optional>
-        </dependency>
-
         <!-- for testing -->
         <dependency>
             <groupId>org.testng</groupId>

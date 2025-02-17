@@ -26,7 +26,7 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 public class TraceToken
-    extends ForwardingMap<String, String>
+        extends ForwardingMap<String, String>
 {
     private final Map<String, String> delegate;
 
