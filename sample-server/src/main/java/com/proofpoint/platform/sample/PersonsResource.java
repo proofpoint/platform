@@ -44,7 +44,7 @@ public class PersonsResource
     {
         ImmutableMap.Builder<String, Person> builder = ImmutableMap.builder();
         for (StoreEntry entry : store.getAll()) {
-            builder.put(entry.getId(), entry.getPerson());
+            builder.put(entry.id(), entry.person());
         }
         return builder.build();
     }

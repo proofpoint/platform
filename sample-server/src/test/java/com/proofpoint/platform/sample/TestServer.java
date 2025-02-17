@@ -49,7 +49,6 @@ import static com.proofpoint.http.client.Request.Builder.preparePut;
 import static com.proofpoint.http.client.StatusResponseHandler.createStatusResponseHandler;
 import static com.proofpoint.http.client.StringResponseHandler.createStringResponseHandler;
 import static com.proofpoint.json.JsonCodec.mapJsonCodec;
-import static com.proofpoint.platform.sample.Person.createPerson;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
@@ -122,8 +121,8 @@ public class TestServer
     @Test
     public void testGetAll()
     {
-        store.put("bar", createPerson("bar@example.com", "Mr Bar"));
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
+        store.put("bar", new Person("bar@example.com", "Mr Bar"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
 
         Object expected = ImmutableMap.of(
                 "foo", ImmutableMap.of("name", "Mr Foo", "email", "foo@example.com"),
@@ -151,7 +150,7 @@ public class TestServer
     @Test
     public void testGetSingle()
     {
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
 
         URI requestUri = uriFor("/v1/person/foo");
 
@@ -179,12 +178,13 @@ public class TestServer
         assertThat(response.getHeader(CONTENT_TYPE)).isNull();
         assertThat(response.getBody()).isEmpty();
 
-        assertThat(store.get("foo")).isEqualTo(createPerson("foo@example.com", "Mr Foo"));
+        assertThat(store.get("foo")).isEqualTo(new Person("foo@example.com", "Mr Foo"));
     }
+
     @Test
     public void testPutReplace()
     {
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
 
         StringResponse response = client.execute(
                 preparePut()
@@ -198,13 +198,13 @@ public class TestServer
         assertThat(response.getHeader(CONTENT_TYPE)).isNull();
         assertThat(response.getBody()).isEmpty();
 
-        assertThat(store.get("foo")).isEqualTo(createPerson("foo@example.com", "Mr Foo"));
+        assertThat(store.get("foo")).isEqualTo(new Person("foo@example.com", "Mr Foo"));
     }
 
     @Test
     public void testDelete()
     {
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
 
         StringResponse response = client.execute(
                 prepareDelete()

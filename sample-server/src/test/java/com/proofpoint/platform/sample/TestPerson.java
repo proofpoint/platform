@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.Test;
 
 import static com.proofpoint.json.testing.JsonTester.assertJsonEncode;
-import static com.proofpoint.platform.sample.Person.createPerson;
 import static com.proofpoint.testing.EquivalenceTester.equivalenceTester;
 
 public class TestPerson
@@ -28,17 +27,17 @@ public class TestPerson
     public void testEquivalence()
     {
         equivalenceTester()
-                .addEquivalentGroup(createPerson("foo@example.com", "Mr Foo"), createPerson("foo@example.com", "Mr Foo"))
-                .addEquivalentGroup(createPerson("bar@example.com", "Mr Bar"), createPerson("bar@example.com", "Mr Bar"))
-                .addEquivalentGroup(createPerson("foo@example.com", "Mr Bar"), createPerson("foo@example.com", "Mr Bar"))
-                .addEquivalentGroup(createPerson("bar@example.com", "Mr Foo"), createPerson("bar@example.com", "Mr Foo"))
+                .addEquivalentGroup(new Person("foo@example.com", "Mr Foo"), new Person("foo@example.com", "Mr Foo"))
+                .addEquivalentGroup(new Person("bar@example.com", "Mr Bar"), new Person("bar@example.com", "Mr Bar"))
+                .addEquivalentGroup(new Person("foo@example.com", "Mr Bar"), new Person("foo@example.com", "Mr Bar"))
+                .addEquivalentGroup(new Person("bar@example.com", "Mr Foo"), new Person("bar@example.com", "Mr Foo"))
                 .check();
     }
 
     @Test
     public void testJsonEncode()
     {
-        assertJsonEncode(createPerson("alice@example.com", "Alice"),
+        assertJsonEncode(new Person("alice@example.com", "Alice"),
                 ImmutableMap.of(
                         "name", "Alice",
                         "email", "alice@example.com"

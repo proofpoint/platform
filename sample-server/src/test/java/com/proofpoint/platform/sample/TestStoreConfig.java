@@ -67,7 +67,8 @@ public class TestStoreConfig
     }
 
     @Test
-    public void testMinTtl() {
+    public void testMinTtl()
+    {
         assertValidates(new StoreConfig().setTtl(new Duration(1, TimeUnit.MINUTES)));
         assertFailsValidation(new StoreConfig().setTtl(new Duration(59, TimeUnit.SECONDS)),
                 "ttl", "must be at least 1m", MinDuration.class);
