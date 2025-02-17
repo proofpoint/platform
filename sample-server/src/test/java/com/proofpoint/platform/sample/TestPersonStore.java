@@ -23,7 +23,6 @@ import org.testng.annotations.Test;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import static com.proofpoint.platform.sample.Person.createPerson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestPersonStore
@@ -44,7 +43,7 @@ public class TestPersonStore
         config.setTtl(new Duration(1, TimeUnit.MILLISECONDS));
 
         PersonStore store = new PersonStore(config, ticker);
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
         ticker.elapseTime(2, TimeUnit.MILLISECONDS);
         assertThat(store.get("foo")).isNull();
     }
@@ -53,9 +52,9 @@ public class TestPersonStore
     public void testPut()
     {
         PersonStore store = new PersonStore(new StoreConfig(), ticker);
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
 
-        assertThat(store.get("foo")).isEqualTo(createPerson("foo@example.com", "Mr Foo"));
+        assertThat(store.get("foo")).isEqualTo(new Person("foo@example.com", "Mr Foo"));
         assertThat(store.getAll()).hasSize(1);
     }
 
@@ -63,10 +62,10 @@ public class TestPersonStore
     public void testIdempotentPut()
     {
         PersonStore store = new PersonStore(new StoreConfig(), ticker);
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
-        store.put("foo", createPerson("foo@example.com", "Mr Bar"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
+        store.put("foo", new Person("foo@example.com", "Mr Bar"));
 
-        assertThat(store.get("foo")).isEqualTo(createPerson("foo@example.com", "Mr Bar"));
+        assertThat(store.get("foo")).isEqualTo(new Person("foo@example.com", "Mr Bar"));
         assertThat(store.getAll()).hasSize(1);
     }
 
@@ -74,7 +73,7 @@ public class TestPersonStore
     public void testDelete()
     {
         PersonStore store = new PersonStore(new StoreConfig(), ticker);
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
         store.delete("foo");
 
         assertThat(store.get("foo")).isNull();
@@ -85,7 +84,7 @@ public class TestPersonStore
     public void testIdempotentDelete()
     {
         PersonStore store = new PersonStore(new StoreConfig(), ticker);
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
 
         store.delete("foo");
         assertThat(store.getAll()).isEmpty();
@@ -101,8 +100,8 @@ public class TestPersonStore
     {
         PersonStore store = new PersonStore(new StoreConfig(), ticker);
 
-        store.put("foo", createPerson("foo@example.com", "Mr Foo"));
-        store.put("bar", createPerson("bar@example.com", "Mr Bar"));
+        store.put("foo", new Person("foo@example.com", "Mr Foo"));
+        store.put("bar", new Person("bar@example.com", "Mr Bar"));
 
         Collection<StoreEntry> entries = store.getAll();
         assertThat(entries).hasSize(2);
@@ -110,11 +109,11 @@ public class TestPersonStore
         assertThat(entries)
                 .filteredOn("id", "foo")
                 .extracting("person")
-                .containsExactly(createPerson("foo@example.com", "Mr Foo"));
+                .containsExactly(new Person("foo@example.com", "Mr Foo"));
 
         assertThat(entries)
                 .filteredOn("id", "bar")
                 .extracting("person")
-                .containsExactly(createPerson("bar@example.com", "Mr Bar"));
+                .containsExactly(new Person("bar@example.com", "Mr Bar"));
     }
 }
