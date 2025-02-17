@@ -15,30 +15,42 @@
  */
 package com.proofpoint.configuration;
 
-import com.google.auto.value.AutoValue;
 import com.google.inject.Key;
 import jakarta.annotation.Nullable;
 
-@AutoValue
-abstract class ConfigurationIdentity<T>
-{
-    private Key<T> key;
+import java.util.Objects;
 
-    static <T> ConfigurationIdentity<T> configurationIdentity(Class<T> clazz, @Nullable String prefix, @Nullable Key<T> key)
+import static java.util.Objects.requireNonNull;
+
+record ConfigurationIdentity<T>(
+        Class<T> configClass,
+
+        @Nullable
+        String prefix,
+
+        // Must not participate in equals()
+        @Nullable
+        Key<T> key
+)
+{
+    ConfigurationIdentity
     {
-        ConfigurationIdentity<T> identity = new AutoValue_ConfigurationIdentity<>(clazz, prefix);
-        identity.key = key;
-        return identity;
+        requireNonNull(configClass, "configClass is null");
     }
 
-    abstract Class<T> getConfigClass();
-
-    @Nullable
-    abstract String getPrefix();
-
-    // Must not participate in equals()
-    Key<T> getKey()
+    @Override
+    public boolean equals(Object o)
     {
-        return key;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ConfigurationIdentity<?> that = (ConfigurationIdentity<?>) o;
+        return Objects.equals(prefix, that.prefix) && Objects.equals(configClass, that.configClass);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(configClass, prefix);
     }
 }

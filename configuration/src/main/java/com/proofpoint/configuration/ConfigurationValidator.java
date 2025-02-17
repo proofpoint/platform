@@ -75,7 +75,8 @@ public class ConfigurationValidator
                             configurationProvider.setConfigurationFactory(configurationFactory);
                             try {
                                 configurationProvider.buildConfigObjects(modules);
-                            } catch (ConfigurationException e) {
+                            }
+                            catch (ConfigurationException e) {
                                 // if we got errors, add them to the errors list
                                 for (Message message : e.getErrorMessages()) {
                                     messages.add(new Message(singletonList(binding.getSource()), message.getMessage(), message.getCause()));

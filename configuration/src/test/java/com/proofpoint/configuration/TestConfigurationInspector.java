@@ -145,6 +145,7 @@ public class TestConfigurationInspector
                 .value("StringValue", "string-value", "some default value", "some value", "")
                 .end();
     }
+
     @Test
     public void testSimpleConfigWithModuleAndApplicationDefaults()
     {

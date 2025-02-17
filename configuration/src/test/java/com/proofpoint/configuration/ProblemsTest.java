@@ -32,7 +32,7 @@ public class ProblemsTest
         Problems problems = new Problems();
         problems.addError("message %d", 1);
 
-        Message [] errors = problems.getErrors().toArray(new Message[0]);
+        Message[] errors = problems.getErrors().toArray(new Message[0]);
         assertEquals(errors.length, 1);
         assertContainsAllOf(errors[0].toString(), "Error", "message 1");
 
@@ -42,8 +42,7 @@ public class ProblemsTest
             problems.throwIfHasErrors();
             fail("Expected exception from problems object");
         }
-        catch(ConfigurationException e)
-        {
+        catch (ConfigurationException e) {
             assertContainsAllOf(e.getMessage(), "message 1");
         }
     }
@@ -55,7 +54,7 @@ public class ProblemsTest
         problems.addError("message %d", 1);
         problems.addError("message %d", 2);
 
-        Message [] errors = problems.getErrors().toArray(new Message[0]);
+        Message[] errors = problems.getErrors().toArray(new Message[0]);
         assertEquals(errors.length, 2);
         assertContainsAllOf(errors[0].toString(), "Error", "message 1");
         assertContainsAllOf(errors[1].toString(), "Error", "message 2");
@@ -67,8 +66,7 @@ public class ProblemsTest
             problems.throwIfHasErrors();
             fail("Expected exception from problems object");
         }
-        catch(ConfigurationException e)
-        {
+        catch (ConfigurationException e) {
             assertContainsAllOf(e.getMessage(), "message 1", "message 2");
         }
     }
@@ -102,15 +100,14 @@ public class ProblemsTest
 
         assertEquals(problems.getErrors().size(), 0, "Found unexpected errors in problem object");
 
-        Message [] warnings = problems.getWarnings().toArray(new Message[0]);
+        Message[] warnings = problems.getWarnings().toArray(new Message[0]);
         assertEquals(warnings.length, 1);
         assertContainsAllOf(warnings[0].toString(), "Warning", "message 1");
 
         try {
             problems.throwIfHasErrors();
         }
-        catch(ConfigurationException cause)
-        {
+        catch (ConfigurationException cause) {
             fail("Didn't expect problems object to throw", cause);
         }
     }
@@ -124,7 +121,7 @@ public class ProblemsTest
 
         assertEquals(problems.getErrors().size(), 0, "Found unexpected errors in problem object");
 
-        Message [] warnings = problems.getWarnings().toArray(new Message[0]);
+        Message[] warnings = problems.getWarnings().toArray(new Message[0]);
         assertEquals(warnings.length, 2);
         assertContainsAllOf(warnings[0].toString(), "Warning", "message 1");
         assertContainsAllOf(warnings[1].toString(), "Warning", "message 2");
@@ -132,8 +129,7 @@ public class ProblemsTest
         try {
             problems.throwIfHasErrors();
         }
-        catch(ConfigurationException cause)
-        {
+        catch (ConfigurationException cause) {
             fail("Didn't expect problems object to throw", cause);
         }
     }
@@ -169,12 +165,12 @@ public class ProblemsTest
         problems.addWarning("message w%d", 2);
         problems.addWarning("message w%d", 3);
 
-        Message [] errors = problems.getErrors().toArray(new Message[0]);
+        Message[] errors = problems.getErrors().toArray(new Message[0]);
         assertEquals(errors.length, 2);
         assertContainsAllOf(errors[0].toString(), "Error", "message e1");
         assertContainsAllOf(errors[1].toString(), "Error", "message e2");
 
-        Message [] warnings = problems.getWarnings().toArray(new Message[0]);
+        Message[] warnings = problems.getWarnings().toArray(new Message[0]);
         assertEquals(warnings.length, 3);
         assertContainsAllOf(warnings[0].toString(), "Warning", "message w1");
         assertContainsAllOf(warnings[1].toString(), "Warning", "message w2");
@@ -184,8 +180,7 @@ public class ProblemsTest
             problems.throwIfHasErrors();
             fail("Expected exception from problems object");
         }
-        catch(ConfigurationException e)
-        {
+        catch (ConfigurationException e) {
             assertContainsAllOf(e.getMessage(), "message e1", "message e2", "message w1", "message w2", "message w3");
         }
     }
