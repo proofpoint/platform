@@ -390,8 +390,8 @@ public class TestReportingPrometheusModule
     @DataProvider(name = "getStatsObjects")
     public Object[][] getStatsObjects()
     {
-        return new Object[][] {
-                new Object[] {new StatsObject()
+        return new Object[][]{
+                new Object[]{new StatsObject()
                 {
                     private final DistributionStat delegate = new DistributionStat();
 
@@ -407,7 +407,7 @@ public class TestReportingPrometheusModule
                         delegate.add(value);
                     }
                 }, ""},
-                new Object[] {new StatsObject()
+                new Object[]{new StatsObject()
                 {
                     private final SparseDistributionStat delegate = new SparseDistributionStat();
 
@@ -423,7 +423,7 @@ public class TestReportingPrometheusModule
                         delegate.add(value);
                     }
                 }, ""},
-                new Object[] {new StatsObject()
+                new Object[]{new StatsObject()
                 {
                     private final TimeStat delegate = new TimeStat();
 
@@ -439,7 +439,7 @@ public class TestReportingPrometheusModule
                         delegate.add(new Duration(value, TimeUnit.SECONDS));
                     }
                 }, ".0"},
-                new Object[] {new StatsObject()
+                new Object[]{new StatsObject()
                 {
                     private final SparseTimeStat delegate = new SparseTimeStat();
 
@@ -794,7 +794,7 @@ public class TestReportingPrometheusModule
     private static InetAddress getV4Localhost()
     {
         try {
-            return InetAddress.getByAddress("localhost", new byte[] {127, 0, 0, 1});
+            return InetAddress.getByAddress("localhost", new byte[]{127, 0, 0, 1});
         }
         catch (UnknownHostException e) {
             throw new AssertionError("Could not create localhost address");
