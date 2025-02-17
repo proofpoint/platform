@@ -33,7 +33,6 @@ import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp.valueAndTimestamp;
 import static com.proofpoint.reporting.SimplePrometheusValue.simplePrometheusValue;
-import static com.proofpoint.reporting.TaggedValue.taggedValue;
 import static java.util.Objects.requireNonNull;
 
 class PrometheusCollector
@@ -104,13 +103,13 @@ class PrometheusCollector
                 }
 
                 if (valueAndTimestamp != null) {
-                    valuesByMetric.put(name, taggedValue(registrationInfo.tags(), valueAndTimestamp));
+                    valuesByMetric.put(name, new TaggedValue(registrationInfo.tags(), valueAndTimestamp));
                 }
             }
         }
-        valuesByMetric.put("ReportCollector_NumMetrics", taggedValue(versionTags, valueAndTimestamp(simplePrometheusValue(valuesByMetric.size()), null)));
+        valuesByMetric.put("ReportCollector_NumMetrics", new TaggedValue(versionTags, valueAndTimestamp(simplePrometheusValue(valuesByMetric.size()), null)));
         if (bucketIdProvider.get().getTimestamp() < startupTimestamp + TimeUnit.MINUTES.toMillis(10)) {
-            valuesByMetric.put("ReportCollector_ServerStart", taggedValue(versionTags, valueAndTimestamp(simplePrometheusValue(1), startupTimestamp)));
+            valuesByMetric.put("ReportCollector_ServerStart", new TaggedValue(versionTags, valueAndTimestamp(simplePrometheusValue(1), startupTimestamp)));
         }
         return valuesByMetric;
     }

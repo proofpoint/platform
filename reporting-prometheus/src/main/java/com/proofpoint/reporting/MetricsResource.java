@@ -18,8 +18,6 @@ package com.proofpoint.reporting;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.MoreCollectors;
-import com.google.common.collect.Streams;
 import com.proofpoint.jaxrs.AccessDoesNotRequireAuthentication;
 import com.proofpoint.node.NodeInfo;
 import jakarta.inject.Inject;
@@ -33,8 +31,6 @@ import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
@@ -64,7 +60,8 @@ public class MetricsResource
     @GET
     @AccessDoesNotRequireAuthentication
     @Produces("text/plain; version=0.0.4; charset=utf-8")
-    public StreamingOutput getMetrics() {
+    public StreamingOutput getMetrics()
+    {
         return output -> {
             try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output, UTF_8))) {
                 for (Entry<String, Collection<TaggedValue>> entry : prometheusCollector.collectData().asMap().entrySet()) {
@@ -78,11 +75,11 @@ public class MetricsResource
                             writer.write(" gauge\n");
                         }
 
-                        taggedValue.getValueAndTimestamp().value().writeMetric(
+                        taggedValue.valueAndTimestamp().value().writeMetric(
                                 writer,
                                 entry.getKey(),
-                                Iterables.concat(taggedValue.getTags().entrySet(), instanceTags.entrySet()),
-                                taggedValue.getValueAndTimestamp().timestamp()
+                                Iterables.concat(taggedValue.tags().entrySet(), instanceTags.entrySet()),
+                                taggedValue.valueAndTimestamp().timestamp()
                         );
                     }
                 }
