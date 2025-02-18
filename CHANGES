@@ -2,8 +2,10 @@ Platform 3.28
 
 * HTTP Server
 
-  We have added HTTPServerModule.enableVirtualThreads(), which enables
-  Jetty's support for Java 21 virtual threads.
+  - We have added HTTPServerModule.enableVirtualThreads(), which enables
+    Jetty's support for Java 21 virtual threads.
+
+  - Remote errors, when detected, are now notified to async applications.
 
 Platform 3.27
 
