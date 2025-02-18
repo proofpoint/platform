@@ -300,6 +300,7 @@ public class HttpServer
         sslContextFactory.setSslSessionTimeout((int) config.getSslSessionTimeout().getValue(SECONDS));
         sslContextFactory.setSslSessionCacheSize(config.getSslSessionCacheSize());
         sslContextFactory.setSniRequired(false);
+        sslContextFactory.setRenegotiationAllowed(false);
 
         List<ConnectionFactory> connectionFactories = new ArrayList<>();
         connectionFactories.add(new SslConnectionFactory(sslContextFactory, "alpn"));

@@ -2,6 +2,8 @@ Platform 3.28
 
 * HTTP Server
 
+  - We now disallow TLS renegotiation.
+
   - We have added HTTPServerModule.enableVirtualThreads(), which enables
     Jetty's support for Java 21 virtual threads.
 
