@@ -1,3 +1,10 @@
+Platform 3.28
+
+* HTTP Server
+
+  We have added HTTPServerModule.enableVirtualThreads(), which enables
+  Jetty's support for Java 21 virtual threads.
+
 Platform 3.27
 
 * Java version support

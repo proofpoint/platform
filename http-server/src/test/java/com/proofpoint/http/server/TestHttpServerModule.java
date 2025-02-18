@@ -20,6 +20,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.io.Files;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.MediaType;
+import com.google.inject.CreationException;
 import com.google.inject.Injector;
 import com.google.inject.Scopes;
 import com.proofpoint.bootstrap.LifeCycleManager;
@@ -64,6 +65,7 @@ import static com.proofpoint.http.client.StringResponseHandler.createStringRespo
 import static com.proofpoint.http.server.HttpServerBinder.httpServerBinder;
 import static java.io.OutputStream.nullOutputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
@@ -255,6 +257,43 @@ public class TestHttpServerModule
             assertResource(httpUri, client, "path/", "welcome user!");
             assertResource(httpUri, client, "path//foo", "welcome user!");
         }
+    }
+
+    @Test
+    public void testEnableVirtualThreads()
+            throws Exception
+    {
+        try {
+            Injector injector = bootstrapTest()
+                    .withModules(new HttpServerModule().enableVirtualThreads(),
+                            new TestingNodeModule(),
+                            new TestingMBeanModule(),
+                            new ReportingModule(),
+                            binder -> {
+                                binder.bind(Servlet.class).annotatedWith(TheServlet.class).to(DummyServlet.class);
+                                binder.bind(Servlet.class).annotatedWith(TheAdminServlet.class).to(DummyServlet.class);
+                                httpServerBinder(binder).bindResource("path", "webapp/user").withWelcomeFile("user-welcome.txt");
+                                httpServerBinder(binder).bindResource("path//foo", "webapp/user").withWelcomeFile("user-welcome.txt");
+                            })
+                    .setRequiredConfigurationProperties(properties)
+                    .initialize();
+            HttpServerInfo httpServerInfo = injector.getInstance(HttpServerInfo.class);
+            HttpServerModuleOptions moduleOptions = injector.getInstance(HttpServerModuleOptions.class);
+            assertTrue(moduleOptions.isEnableVirtualThreads());
+
+            try (HttpClient client = new JettyHttpClient()) {
+                URI httpUri = httpServerInfo.getHttpUri();
+                assertResource(httpUri, client, "path/", "welcome user!");
+            }
+        }
+        catch (CreationException e) {
+            if (Runtime.version().feature() >= 18) {
+                throw e;
+            }
+            assertThat(e).hasMessageContaining("Virtual threads are not supported");
+            return;
+        }
+        assertThat(Runtime.version().feature()).isGreaterThanOrEqualTo(18);
     }
 
     private void assertResource(URI baseUri, HttpClient client, String path, String contents)

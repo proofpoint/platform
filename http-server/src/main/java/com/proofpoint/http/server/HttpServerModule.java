@@ -22,6 +22,7 @@ import com.proofpoint.discovery.client.announce.AnnouncementHttpServerInfo;
 import com.proofpoint.http.server.HttpServerBinder.HttpResourceBinding;
 import jakarta.servlet.Filter;
 import org.eclipse.jetty.ee10.servlet.SessionHandler;
+import org.eclipse.jetty.util.VirtualThreads;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
@@ -67,6 +68,11 @@ public class HttpServerModule
         if (bindSessionHandler) {
             binder.bind(SessionHandler.class).in(Scopes.SINGLETON);
         }
+        if (moduleOptions.isEnableVirtualThreads()) {
+            if (!VirtualThreads.areSupported()) {
+                binder.addError("Virtual threads are not supported");
+            }
+        }
 
         binder.bind(HttpServerModuleOptions.class).toInstance(moduleOptions);
         binder.bind(HttpServer.class).toProvider(HttpServerProvider.class).in(Scopes.SINGLETON);
@@ -97,6 +103,16 @@ public class HttpServerModule
     public HttpServerModule allowAmbiguousUris()
     {
         moduleOptions.setAllowAmbiguousUris();
+        return this;
+    }
+
+    /**
+     * Enables Jetty's virtual threads support.
+     * Note: Java 17 does not support virtual threads.
+     */
+    public HttpServerModule enableVirtualThreads()
+    {
+        moduleOptions.setEnableVirtualThreads();
         return this;
     }
 }

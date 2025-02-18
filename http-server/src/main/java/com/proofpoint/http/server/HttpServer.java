@@ -80,6 +80,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Verify.verify;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.lang.Math.toIntExact;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -90,6 +91,7 @@ import static java.util.Objects.requireNonNullElse;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.eclipse.jetty.http.MimeTypes.Type.TEXT_PLAIN;
 import static org.eclipse.jetty.security.Constraint.ALLOWED;
+import static org.eclipse.jetty.util.VirtualThreads.getNamedVirtualThreadsExecutor;
 
 public class HttpServer
 {
@@ -194,6 +196,11 @@ public class HttpServer
         threadPool.setMinThreads(config.getMinThreads());
         threadPool.setIdleTimeout(toIntExact(config.getThreadMaxIdleTime().toMillis()));
         threadPool.setName("http-worker");
+        if (moduleOptions.isEnableVirtualThreads()) {
+            Executor executor = getNamedVirtualThreadsExecutor("http-worker#v");
+            verify(executor != null, "Could not create virtual threads executor");
+            threadPool.setVirtualThreadsExecutor(executor);
+        }
         server = new Server(threadPool);
         server.setStopTimeout(config.getStopTimeout().toMillis());
 
@@ -504,6 +511,12 @@ public class HttpServer
             adminThreadPool.setName("http-admin-worker");
             adminThreadPool.setMinThreads(config.getAdminMinThreads());
             adminThreadPool.setIdleTimeout(toIntExact(config.getThreadMaxIdleTime().toMillis()));
+            if (moduleOptions.isEnableVirtualThreads()) {
+                Executor executor = getNamedVirtualThreadsExecutor("http-admin-worker#v");
+                if (executor != null) {
+                    adminThreadPool.setVirtualThreadsExecutor(executor);
+                }
+            }
 
             if (config.isHttpsEnabled()) {
                 adminConnector = createHttpsServerConnector(
