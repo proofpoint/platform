@@ -103,7 +103,6 @@ public class HttpServer
     };
 
     private final Server server;
-    private final boolean showStackTrace;
     private final RequestStats stats;
     private final MaxGauge busyThreads = new MaxGauge();
     private final RequestLog requestLog;
@@ -197,7 +196,8 @@ public class HttpServer
         threadPool.setName("http-worker");
         server = new Server(threadPool);
         server.setStopTimeout(config.getStopTimeout().toMillis());
-        showStackTrace = config.isShowStackTrace();
+
+        boolean showStackTrace = config.isShowStackTrace();
 
         if (mbeanServer != null) {
             // export jmx mbeans if a server was provided
