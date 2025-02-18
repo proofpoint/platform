@@ -206,17 +206,7 @@ public class HttpServer
         }
 
         // register a channel listener if logging is enabled
-        RequestLogHandler channelListener = null;
 
-        StatsRecordingHandler statsRecordingHandler = new StatsRecordingHandler(stats, detailedRequestStats);
-
-        if (requestLog != null) {
-            channelListener = new RequestLogHandler(requestLog, clientAddressExtractor);
-            server.setRequestLog(new RequestLogCollection(channelListener, statsRecordingHandler));
-        }
-        else {
-            server.setRequestLog(statsRecordingHandler);
-        }
         /*
          * structure is:
          *
@@ -256,12 +246,16 @@ public class HttpServer
             rootHandlers.addHandler(createServletContext(theAdminServlet, resources, adminParameters, true, adminFilters, queryStringFilter, loginService, nodeInfo, null, Set.of("admin"), showStackTrace));
         }
         rootHandlers.addHandler(statsHandler);
+        StatsRecordingHandler statsRecordingHandler = new StatsRecordingHandler(stats, detailedRequestStats);
 
-        if (channelListener != null) {
-            channelListener.setHandler(rootHandlers);
-            server.setHandler(channelListener);
+        if (requestLog != null) {
+            RequestLogHandler logHandler = new RequestLogHandler(requestLog, clientAddressExtractor);
+            server.setRequestLog(new RequestLogCollection(logHandler, statsRecordingHandler));
+            logHandler.setHandler(rootHandlers);
+            server.setHandler(logHandler);
         }
         else {
+            server.setRequestLog(statsRecordingHandler);
             server.setHandler(rootHandlers);
         }
         ErrorHandler errorHandler = new ErrorHandler();
