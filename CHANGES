@@ -7,6 +7,10 @@ Platform 3.28
   - We have added HTTPServerModule.enableVirtualThreads(), which enables
     Jetty's support for Java 21 virtual threads.
 
+  - We now synthesize the :authority pseudoheader on HTTP/2.
+
+  - We now synthesize the Host header on HTTP/1.0 and HTTP/2.
+
   - Remote errors, when detected, are now notified to async applications.
 
 Platform 3.27
