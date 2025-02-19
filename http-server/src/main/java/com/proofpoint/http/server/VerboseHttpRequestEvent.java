@@ -97,11 +97,6 @@ class VerboseHttpRequestEvent
         return delegate.getResponseCode();
     }
 
-    public long getTimeToLastByte()
-    {
-        return delegate.getTimeToLastByte();
-    }
-
     @JsonProperty("timeToLastByte")
     public Duration getTimeToLastByteDuration() {
         return delegate.getTimeToLastByteDuration();

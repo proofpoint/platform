@@ -52,9 +52,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
-import static java.lang.Math.max;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+// todo convert to record
 @JsonPropertyOrder({ "t", "tt", "ip", "m", "u", "user",
         "c", "qs", "rs",
         "td", "tq", "tr", "rc", "tl"})
@@ -64,11 +64,7 @@ class HttpRequestEvent
             Request request,
             Response response,
             @Nullable SSLSession sslSession,
-            long currentTimeInMillis,
-            long beginToHandleMillis,
-            long beginToEndMillis,
-            long firstToLastContentTimeInMillis,
-            @Nullable DoubleSummaryStats responseContentInterarrivalStats,
+            RequestTiming timing,
             ClientAddressExtractor clientAddressExtractor)
     {
         String user = null;
@@ -79,8 +75,6 @@ class HttpRequestEvent
                 user = principal.getName();
             }
         }
-
-        long timeToLastByte = max(currentTimeInMillis - Request.getTimeStamp(request), 0);
 
         String requestUri = null;
         if (request.getHttpURI() != null) {
@@ -93,7 +87,7 @@ class HttpRequestEvent
         }
 
         return new HttpRequestEvent(
-                Instant.ofEpochMilli(Request.getTimeStamp(request)),
+                timing.requestStarted(),
                 getCurrentTraceToken(),
                 clientAddressExtractor.clientAddressFor(requestAdapter(request)),
                 method,
@@ -103,11 +97,11 @@ class HttpRequestEvent
                 Request.getContentBytesRead(request),
                 Response.getContentBytesWritten(response),
                 response.getStatus(),
-                timeToLastByte,
-                beginToHandleMillis,
-                beginToEndMillis,
-                firstToLastContentTimeInMillis,
-                responseContentInterarrivalStats,
+                timing.timeToCompletion().toMillis(),
+                timing.dispatchToHandling().toMillis(),
+                timing.dispatchToRequestEnd().toMillis(),
+                timing.firstToLastResponseContent().toMillis(),
+                timing.responseContentInterarrivalStats(),
                 request.getConnectionMetaData().getHttpVersion().asString(),
                 sslSession == null ? null : sslSession.getProtocol(),
                 sslSession == null ? null : sslSession.getCipherSuite()
@@ -124,10 +118,10 @@ class HttpRequestEvent
     private final long requestSize;
     private final long responseSize;
     private final int responseCode;
-    private final long timeToLastByte;
-    private final long beginToHandleMillis;
-    private final long beginToEndMillis;
-    private final long firstToLastContentTimeInMillis;
+    private final long timeToCompletion;
+    private final long dispatchToHandlingMillis;
+    private final long dispatchToRequestEndMillis;
+    private final long firstToLastResponseContentMillis;
     private final DoubleSummaryStats responseContentInterarrivalStats;
     private final String protocolVersion;
     private final String tlsProtocolVersion;
@@ -144,10 +138,10 @@ class HttpRequestEvent
             long requestSize,
             long responseSize,
             int responseCode,
-            long timeToLastByte,
-            long beginToHandleMillis,
-            long beginToEndMillis,
-            long firstToLastContentTimeInMillis,
+            long timeToCompletion,
+            long dispatchToHandlingMillis,
+            long dispatchToRequestEndMillis,
+            long firstToLastResponseContentMillis,
             DoubleSummaryStats responseContentInterarrivalStats,
             String protocolVersion,
             String tlsProtocolVersion,
@@ -163,10 +157,10 @@ class HttpRequestEvent
         this.requestSize = requestSize;
         this.responseSize = responseSize;
         this.responseCode = responseCode;
-        this.timeToLastByte = timeToLastByte;
-        this.beginToHandleMillis = beginToHandleMillis;
-        this.beginToEndMillis = beginToEndMillis;
-        this.firstToLastContentTimeInMillis = firstToLastContentTimeInMillis;
+        this.timeToCompletion = timeToCompletion;
+        this.dispatchToHandlingMillis = dispatchToHandlingMillis;
+        this.dispatchToRequestEndMillis = dispatchToRequestEndMillis;
+        this.firstToLastResponseContentMillis = firstToLastResponseContentMillis;
         this.responseContentInterarrivalStats = responseContentInterarrivalStats;
         this.protocolVersion = protocolVersion;
         this.tlsProtocolVersion = tlsProtocolVersion;
@@ -243,34 +237,36 @@ class HttpRequestEvent
 
     public long getTimeToLastByte()
     {
-        return timeToLastByte;
+        return timeToCompletion;
     }
 
     @JsonProperty("tl")
     public Duration getTimeToLastByteDuration() {
-        return new Duration(timeToLastByte, MILLISECONDS);
+        return new Duration(timeToCompletion, MILLISECONDS);
     }
 
+    // What Jetty 11 called "begin", Jetty 12 calls "dispatch"
+    // What Jetty 11 called "dispatch", Jetty 12 calls "handle"
     @JsonProperty("td")
     public Duration getTimeToDispatch()
     {
-        return new Duration(beginToHandleMillis, MILLISECONDS);
+        return new Duration(dispatchToHandlingMillis, MILLISECONDS);
     }
 
     @JsonProperty("tq")
     public Duration getTimeToRequestEnd()
     {
-        return new Duration(beginToEndMillis, MILLISECONDS);
+        return new Duration(dispatchToRequestEndMillis, MILLISECONDS);
     }
 
     @Nullable
     @JsonProperty("tr")
     public Duration getTimeResponseContent()
     {
-        if (firstToLastContentTimeInMillis < 0) {
+        if (firstToLastResponseContentMillis < 0) {
             return null;
         }
-        return new Duration(firstToLastContentTimeInMillis, MILLISECONDS);
+        return new Duration(firstToLastResponseContentMillis, MILLISECONDS);
     }
 
     @Nullable
