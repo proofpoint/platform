@@ -50,6 +50,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.ErrorHandler;
+import org.eclipse.jetty.server.handler.EventsHandler;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -246,18 +247,13 @@ public class HttpServer
             rootHandlers.addHandler(createServletContext(theAdminServlet, resources, adminParameters, true, adminFilters, queryStringFilter, loginService, nodeInfo, null, Set.of("admin"), showStackTrace));
         }
         rootHandlers.addHandler(statsHandler);
-        StatsRecordingHandler statsRecordingHandler = new StatsRecordingHandler(stats, detailedRequestStats);
 
-        if (requestLog != null) {
-            RequestLogHandler logHandler = new RequestLogHandler(requestLog, clientAddressExtractor);
-            server.setRequestLog(new RequestLogCollection(logHandler, statsRecordingHandler));
-            logHandler.setHandler(rootHandlers);
-            server.setHandler(logHandler);
-        }
-        else {
-            server.setRequestLog(statsRecordingHandler);
-            server.setHandler(rootHandlers);
-        }
+        DispatchingRequestLogHandler dispatchingHandler = new DispatchingRequestLogHandler(requestLog, stats, detailedRequestStats, clientAddressExtractor);
+        EventsHandler eventsHandler = new RequestTimingEventHandler(rootHandlers);
+
+        server.setRequestLog(dispatchingHandler);
+        server.setHandler(eventsHandler);
+
         ErrorHandler errorHandler = new ErrorHandler();
         errorHandler.setShowMessageInTitle(showStackTrace);
         errorHandler.setShowCauses(showStackTrace);
@@ -345,7 +341,6 @@ public class HttpServer
             // May be removed once we require explicit JAX-RS binding.
             context.addFilter(new FilterHolder(new AdminFilter(false)), "/*", null);
         }
-        context.addFilter(new FilterHolder(new TimingFilter()), "/*", null);
         context.addFilter(new FilterHolder(queryStringFilter), "/*", null);
         context.addFilter(new FilterHolder(new TraceTokenFilter(nodeInfo.getInternalIp(), clientAddressExtractor)), "/*", null);
 

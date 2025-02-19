@@ -18,6 +18,7 @@ package com.proofpoint.http.server;
 import com.google.common.io.Files;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.DataSize.Unit;
+import com.proofpoint.units.Duration;
 import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -31,14 +32,18 @@ import org.testng.annotations.Test;
 import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.proofpoint.http.server.HttpRequestEvent.createHttpRequestEvent;
 import static com.proofpoint.tracetoken.TraceTokenManager.clearRequestToken;
 import static com.proofpoint.tracetoken.TraceTokenManager.createAndRegisterNewRequestToken;
+import static com.proofpoint.units.Duration.succinctDuration;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.eclipse.jetty.http.HttpVersion.HTTP_2;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -111,8 +116,8 @@ public abstract class AbstractTestRequestLog
         mockedRequest = mockStatic(Request.class, RETURNS_DEEP_STUBS);
         mockedResponse = mockStatic(Response.class, RETURNS_DEEP_STUBS);
 
-        timeToFirstByte = 456;
         timeToLastByte = 3453;
+        timeToFirstByte = timeToLastByte - 333;
         now = 1538192474453L;
         timestamp = now - timeToLastByte;
         user = "martin";
@@ -146,7 +151,6 @@ public abstract class AbstractTestRequestLog
         when(request.getHeaders().getValues("X-FORWARDED-FOR")).thenReturn(Collections.enumeration(List.of()));
         when(request.getConnectionMetaData().getProtocol()).thenReturn("unknown");
         when(request.getHeaders().get("X-FORWARDED-PROTO")).thenReturn(protocol);
-        when(request.getAttribute(TimingFilter.FIRST_BYTE_TIME)).thenReturn(timestamp + timeToFirstByte);
         when(request.getHttpURI()).thenReturn(HttpURI.from("http://www.example.com/aaa+bbb/ccc?param=hello%20there&other=true"));
         when(Request.getAuthenticationState(request).getUserPrincipal().getName()).thenReturn(user);
         when(request.getMethod()).thenReturn(method);
@@ -210,11 +214,12 @@ public abstract class AbstractTestRequestLog
                 request,
                 response,
                 sslSession,
-                currentTime,
-                111,
-                222,
-                333,
-                new DoubleSummaryStats(summaryStatistics),
+                new RequestTiming(Instant.ofEpochMilli(timestamp),
+                        Duration.valueOf("111ms"),
+                        Duration.valueOf("222ms"),
+                        Duration.valueOf("333ms"),
+                        Duration.succinctDuration(timeToLastByte, MILLISECONDS),
+                        new DoubleSummaryStats(summaryStatistics)),
                 clientAddressExtractor
         );
         logger.log(event);

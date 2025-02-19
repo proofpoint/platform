@@ -15,39 +15,44 @@
  */
 package com.proofpoint.http.server;
 
-import com.proofpoint.units.Duration;
+import jakarta.annotation.Nullable;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.Response;
 
 import javax.net.ssl.SSLSession;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.max;
 import static java.util.Objects.requireNonNull;
 
-public class StatsRecordingHandler
-        implements RequestLog
+public class DispatchingRequestLogHandler
+        implements org.eclipse.jetty.server.RequestLog
 {
     private static final String REQUEST_SSL_SESSION_ATTRIBUTE = "org.eclipse.jetty.servlet.request.ssl_session";
 
+    private final RequestLog logger;
     private final RequestStats stats;
     private final DetailedRequestStats detailedRequestStats;
+    private final ClientAddressExtractor clientAddressExtractor;
 
-    public StatsRecordingHandler(RequestStats stats, DetailedRequestStats detailedRequestStats)
+    public DispatchingRequestLogHandler(@Nullable RequestLog logger, RequestStats stats, DetailedRequestStats detailedRequestStats, ClientAddressExtractor clientAddressExtractor)
     {
+        this.logger = logger;
         this.stats = requireNonNull(stats, "stats is null");
         this.detailedRequestStats = requireNonNull(detailedRequestStats, "detailedRequestStats is null");
+        this.clientAddressExtractor = requireNonNull(clientAddressExtractor, "clientAddressExtractor is null");
     }
 
     @Override
     public void log(Request request, Response response)
     {
-        Duration requestTime = new Duration(max(0, System.currentTimeMillis() - Request.getTimeStamp(request)), TimeUnit.MILLISECONDS);
         SSLSession sslSession = (SSLSession) request.getAttribute(REQUEST_SSL_SESSION_ATTRIBUTE);
+        RequestTiming timings = RequestTimingEventHandler.timings(request);
+        if (logger != null) {
+            logger.log(HttpRequestEvent.createHttpRequestEvent(request, response, sslSession, timings, clientAddressExtractor));
+        }
 
-        stats.record(Request.getContentBytesRead(request), Response.getContentBytesWritten(response), requestTime);
-        detailedRequestStats.requestTimeByCode(response.getStatus(), response.getStatus() / 100).add(requestTime);
+        stats.record(Request.getContentBytesRead(request), Response.getContentBytesWritten(response), timings.timeToCompletion());
+        detailedRequestStats.requestTimeByCode(response.getStatus(), response.getStatus() / 100).add(timings.timeToCompletion());
 
         if (sslSession != null) {
             detailedRequestStats.tlsRequest(sslSession.getProtocol(), sslSession.getCipherSuite()).add(1);
