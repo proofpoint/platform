@@ -95,14 +95,17 @@ public class ConfigurationModule
             this.prefix = prefix;
         }
 
-        public <T> void to(Class<T> configClass) {
+        public <T> void to(Class<T> configClass)
+        {
             AnnotatedConfigBindingBuilder<T> annotatedConfigBindingBuilder = ConfigBinder.bindConfig(binder).bind(configClass);
             PrefixConfigBindingBuilder prefixConfigBindingBuilder;
             if (annotationType != null) {
                 prefixConfigBindingBuilder = annotatedConfigBindingBuilder.annotatedWith(annotationType);
-            } else if(annotation != null) {
+            }
+            else if (annotation != null) {
                 prefixConfigBindingBuilder = annotatedConfigBindingBuilder.annotatedWith(annotation);
-            } else {
+            }
+            else {
                 prefixConfigBindingBuilder = annotatedConfigBindingBuilder;
             }
 

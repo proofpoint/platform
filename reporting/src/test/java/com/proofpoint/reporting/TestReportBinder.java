@@ -665,12 +665,12 @@ public class TestReportBinder
     {
         ReportedBeanRegistry reportedBeanRegistry = injector.getInstance(ReportedBeanRegistry.class);
         RegistrationInfo registrationInfo = reportedBeanRegistry.getReportedBeans().stream().collect(MoreCollectors.onlyElement());
-        assertEquals(registrationInfo.isApplicationPrefix(), applicationPrefix);
-        assertEquals(registrationInfo.getNamePrefix(), namePrefix, "name prefix");
-        assertEquals(registrationInfo.getTags(), tags, "tags");
+        assertEquals(registrationInfo.applicationPrefix(), applicationPrefix);
+        assertEquals(registrationInfo.namePrefix(), namePrefix, "name prefix");
+        assertEquals(registrationInfo.tags(), tags, "tags");
 
         if (expectedAttributes.isPresent()) {
-            Collection<ReportedBeanAttribute> attributes = registrationInfo.getReportedBean().getAttributes();
+            Collection<ReportedBeanAttribute> attributes = registrationInfo.reportedBean().getAttributes();
             assertAttributes(attributes, expectedAttributes.get());
         }
     }

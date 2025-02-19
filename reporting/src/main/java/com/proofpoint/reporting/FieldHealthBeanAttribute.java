@@ -1,23 +1,21 @@
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
-
 import javax.management.ReflectionException;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
 
-@AutoValue
-abstract class FieldHealthBeanAttribute
+import static java.util.Objects.requireNonNull;
+
+record FieldHealthBeanAttribute(String getDescription, Type getType, Object target, Field field)
         implements HealthBeanAttribute
 {
-    static FieldHealthBeanAttribute fieldHealthBeanAttribute(String description, Type type, Object target, Field field)
+    FieldHealthBeanAttribute
     {
-        return new AutoValue_FieldHealthBeanAttribute(description, type, target, field);
+        requireNonNull(getDescription, "description is null");
+        requireNonNull(getType, "type is null");
+        requireNonNull(target, "target is null");
+        requireNonNull(field, "field is null");
     }
-
-    abstract Object getTarget();
-
-    abstract Field getField();
 
     @Override
     public String getValue()
@@ -25,10 +23,10 @@ abstract class FieldHealthBeanAttribute
     {
         Object atomicReference;
         try {
-            atomicReference = getField().get(getTarget());
+            atomicReference = field.get(target);
         }
         catch (IllegalAccessException e) {
-            throw new ReflectionException(e, "Exception occurred while invoking " + getField().getName());
+            throw new ReflectionException(e, "Exception occurred while invoking " + field.getName());
         }
 
         Object value = ((AtomicReference<?>) atomicReference).get();

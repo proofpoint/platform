@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
@@ -32,7 +31,6 @@ import java.util.regex.Pattern;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static com.proofpoint.reporting.ReportedBeanRegistry.RegistrationInfo.registrationInfo;
 import static java.util.Objects.requireNonNull;
 
 class ReportedBeanRegistry
@@ -52,7 +50,7 @@ class ReportedBeanRegistry
             throws InstanceAlreadyExistsException
     {
         requireNonNull(object, "object is null");
-        if (reportedBeans.putIfAbsent(new Reference(object), registrationInfo(reportedBean, applicationPrefix, namePrefix, tags)) != null) {
+        if (reportedBeans.putIfAbsent(new Reference(object), new RegistrationInfo(reportedBean, applicationPrefix, namePrefix, tags)) != null) {
             throw new InstanceAlreadyExistsException(object + " is already registered");
         }
     }
@@ -126,20 +124,19 @@ class ReportedBeanRegistry
         return dequoted;
     }
 
-    @AutoValue
-    abstract static class RegistrationInfo
+    record RegistrationInfo(
+        ReportedBean reportedBean,
+        boolean applicationPrefix,
+        String namePrefix,
+        Map<String, String> tags
+    )
     {
-        static RegistrationInfo registrationInfo(ReportedBean reportedBean, boolean applicationPrefix, String namePrefix, Map<String, String> tags)
+        RegistrationInfo
         {
-            return new AutoValue_ReportedBeanRegistry_RegistrationInfo(reportedBean, applicationPrefix, namePrefix, ImmutableMap.copyOf(tags));
+            requireNonNull(reportedBean, "reportedBean is null");
+            requireNonNull(applicationPrefix, "applicationPrefix is null");
+            requireNonNull(namePrefix, "namePrefix is null");
+            requireNonNull(tags, "tags is null");
         }
-
-        abstract ReportedBean getReportedBean();
-
-        abstract boolean isApplicationPrefix();
-
-        abstract String getNamePrefix();
-
-        abstract Map<String, String> getTags();
     }
 }

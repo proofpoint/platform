@@ -69,7 +69,7 @@ public class ReportCollector
             ImmutableTable.Builder<String, Map<String, String>, Object> builder = ImmutableTable.builder();
             int numAttributes = 0;
             for (RegistrationInfo registrationInfo : reportedBeanRegistry.getReportedBeans()) {
-                for (ReportedBeanAttribute attribute : registrationInfo.getReportedBean().getAttributes()) {
+                for (ReportedBeanAttribute attribute : registrationInfo.reportedBean().getAttributes()) {
                     Object value = null;
 
                     try {
@@ -85,15 +85,15 @@ public class ReportCollector
 
                         ++numAttributes;
                         StringBuilder stringBuilder = new StringBuilder();
-                        if (registrationInfo.isApplicationPrefix()) {
+                        if (registrationInfo.applicationPrefix()) {
                             stringBuilder.append(applicationPrefix);
                         }
                         String name = stringBuilder
-                                .append(registrationInfo.getNamePrefix())
+                                .append(registrationInfo.namePrefix())
                                 .append('.')
                                 .append(attribute.getName())
                                 .toString();
-                        builder.put(name, registrationInfo.getTags(), value);
+                        builder.put(name, registrationInfo.tags(), value);
                     }
                 }
             }

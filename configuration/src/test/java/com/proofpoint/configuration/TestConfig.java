@@ -43,7 +43,7 @@ import static org.testng.Assert.fail;
 
 public class TestConfig
 {
-    private ImmutableMap<String,String> properties;
+    private ImmutableMap<String, String> properties;
 
     @Test
     public void testConfig()
@@ -62,10 +62,10 @@ public class TestConfig
     @Test
     public void testConfigMapSimple()
     {
-        Map<String,String> properties = ImmutableMap.<String, String>builder()
-                    .put("map.key1", "value1")
-                    .put("map.key2", "value2")
-                    .build();
+        Map<String, String> properties = ImmutableMap.<String, String>builder()
+                .put("map.key1", "value1")
+                .put("map.key2", "value2")
+                .build();
         Injector injector = createInjector(properties, createModule(ConfigMapSimple.class, null));
         final ConfigMapSimple mapSimple = injector.getInstance(ConfigMapSimple.class);
         assertEquals(mapSimple.getMap(), ImmutableMap.of("key1", "value1", "key2", "value2"));
@@ -180,24 +180,24 @@ public class TestConfig
     protected void setUp()
     {
         properties = ImmutableMap.<String, String>builder()
-            .put("stringOption", "a string")
-            .put("booleanOption", "true")
-            .put("boxedBooleanOption", "true")
-            .put("byteOption", Byte.toString(Byte.MAX_VALUE))
-            .put("boxedByteOption", Byte.toString(Byte.MAX_VALUE))
-            .put("shortOption", Short.toString(Short.MAX_VALUE))
-            .put("boxedShortOption", Short.toString(Short.MAX_VALUE))
-            .put("integerOption", Integer.toString(Integer.MAX_VALUE))
-            .put("boxedIntegerOption", Integer.toString(Integer.MAX_VALUE))
-            .put("longOption", Long.toString(Long.MAX_VALUE))
-            .put("boxedLongOption", Long.toString(Long.MAX_VALUE))
-            .put("floatOption", Float.toString(Float.MAX_VALUE))
-            .put("boxedFloatOption", Float.toString(Float.MAX_VALUE))
-            .put("doubleOption", Double.toString(Double.MAX_VALUE))
-            .put("boxedDoubleOption", Double.toString(Double.MAX_VALUE))
-            .put("myEnumOption", MyEnum.FOO.toString())
-            .put("valueClassOption", "a value class")
-            .build();
+                .put("stringOption", "a string")
+                .put("booleanOption", "true")
+                .put("boxedBooleanOption", "true")
+                .put("byteOption", Byte.toString(Byte.MAX_VALUE))
+                .put("boxedByteOption", Byte.toString(Byte.MAX_VALUE))
+                .put("shortOption", Short.toString(Short.MAX_VALUE))
+                .put("boxedShortOption", Short.toString(Short.MAX_VALUE))
+                .put("integerOption", Integer.toString(Integer.MAX_VALUE))
+                .put("boxedIntegerOption", Integer.toString(Integer.MAX_VALUE))
+                .put("longOption", Long.toString(Long.MAX_VALUE))
+                .put("boxedLongOption", Long.toString(Long.MAX_VALUE))
+                .put("floatOption", Float.toString(Float.MAX_VALUE))
+                .put("boxedFloatOption", Float.toString(Float.MAX_VALUE))
+                .put("doubleOption", Double.toString(Double.MAX_VALUE))
+                .put("boxedDoubleOption", Double.toString(Double.MAX_VALUE))
+                .put("myEnumOption", MyEnum.FOO.toString())
+                .put("valueClassOption", "a value class")
+                .build();
     }
 
     private Map<String, String> prefix(String prefix, Map<String, String> properties)

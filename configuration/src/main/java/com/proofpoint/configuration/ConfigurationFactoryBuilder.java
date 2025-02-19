@@ -31,8 +31,8 @@ public final class ConfigurationFactoryBuilder
     private PropertiesBuilder propertiesBuilder = new PropertiesBuilder();
     private final Set<String> expectToUse = new HashSet<>();
     private Monitor monitor = Problems.NULL_MONITOR;
-    private Map<String,String> applicationDefaults = ImmutableMap.of();
-    private Map<String,String> moduleDefaults = ImmutableMap.of();
+    private Map<String, String> applicationDefaults = ImmutableMap.of();
+    private Map<String, String> moduleDefaults = ImmutableMap.of();
     private Map<String, ConfigurationDefaultingModule> moduleDefaultSource = ImmutableMap.of();
 
     /**

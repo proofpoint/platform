@@ -15,7 +15,6 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableSortedMap;
 import com.proofpoint.reporting.PrometheusBeanAttribute.ValueAndTimestamp;
 
@@ -24,23 +23,30 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 
-@AutoValue
-abstract class TaggedValue
+import static java.util.Objects.requireNonNull;
+
+record TaggedValue(
+        SortedMap<String, String> tags,
+        ValueAndTimestamp valueAndTimestamp
+)
         implements Comparable<TaggedValue>
 {
-    static TaggedValue taggedValue(Map<String, String> tags, ValueAndTimestamp valueAndTimestamp) {
-        return new AutoValue_TaggedValue(ImmutableSortedMap.copyOf(tags), valueAndTimestamp);
+    TaggedValue
+    {
+        tags = ImmutableSortedMap.copyOf(tags);
+        requireNonNull(valueAndTimestamp, "valueAndTimestamp is null");
     }
 
-    abstract SortedMap<String, String> getTags();
-
-    abstract ValueAndTimestamp getValueAndTimestamp();
+    TaggedValue(Map<String, String> tags, ValueAndTimestamp valueAndTimestamp)
+    {
+        this(ImmutableSortedMap.copyOf(tags), valueAndTimestamp);
+    }
 
     @Override
     public int compareTo(TaggedValue o)
     {
-        Iterator<Entry<String, String>> otherIterator = o.getTags().entrySet().iterator();
-        for (Entry<String, String> entry : getTags().entrySet()) {
+        Iterator<Entry<String, String>> otherIterator = o.tags().entrySet().iterator();
+        for (Entry<String, String> entry : tags().entrySet()) {
             if (!otherIterator.hasNext()) {
                 return 1;
             }
@@ -72,6 +78,6 @@ abstract class TaggedValue
     @Override
     public int hashCode()
     {
-        return getTags().entrySet().hashCode();
+        return tags().entrySet().hashCode();
     }
 }

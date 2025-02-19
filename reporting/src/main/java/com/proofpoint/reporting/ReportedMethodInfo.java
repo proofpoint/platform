@@ -15,20 +15,19 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
-
 import java.util.Collection;
 import java.util.List;
 
-@AutoValue
-abstract class ReportedMethodInfo
+import static java.util.Objects.requireNonNull;
+
+record ReportedMethodInfo(
+        Collection<ReportedBeanAttribute> attributes,
+        Collection<PrometheusBeanAttribute> prometheusAttributes
+)
 {
-    static ReportedMethodInfo reportedMethodInfo(Collection<ReportedBeanAttribute> attributes, Collection<PrometheusBeanAttribute> prometheusAttributes)
+    ReportedMethodInfo
     {
-        return new AutoValue_ReportedMethodInfo(List.copyOf(attributes), List.copyOf(prometheusAttributes));
+        attributes = List.copyOf(requireNonNull(attributes, "attributes is null"));
+        prometheusAttributes = List.copyOf(requireNonNull(prometheusAttributes, "prometheusAttributes is null"));
     }
-
-    abstract Collection<ReportedBeanAttribute> getAttributes();
-
-    abstract Collection<PrometheusBeanAttribute> getPrometheusAttributes();
 }

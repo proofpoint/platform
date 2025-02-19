@@ -47,7 +47,6 @@ import java.util.Set;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static com.google.common.collect.Sets.newConcurrentHashSet;
-import static com.proofpoint.configuration.ConfigurationIdentity.configurationIdentity;
 import static com.proofpoint.configuration.ConfigurationMetadata.getConfigurationMetadata;
 import static com.proofpoint.configuration.ConfigurationMetadata.isConfigClass;
 import static com.proofpoint.configuration.Problems.exceptionFor;
@@ -142,9 +141,9 @@ public final class ConfigurationFactory
      * This is used by the configuration provider
      */
     <T> T build(Class<T> configClass, @Nullable String prefix, Key<T> key)
-        {
+    {
         Problems problems;
-        if (registeredConfigs.add(configurationIdentity(configClass, prefix, key))) {
+        if (registeredConfigs.add(new ConfigurationIdentity(configClass, prefix, key))) {
             problems = new Problems(monitor);
         }
         else {
@@ -455,7 +454,7 @@ public final class ConfigurationFactory
         return finalValue;
     }
 
-    private <K,V> Map<K, V> getInjectedMap(AttributeMetadata attribute, InjectionPointMetaData injectionPoint, String name, Problems problems, Class<K> keyClass, Class<V> valueClass)
+    private <K, V> Map<K, V> getInjectedMap(AttributeMetadata attribute, InjectionPointMetaData injectionPoint, String name, Problems problems, Class<K> keyClass, Class<V> valueClass)
     {
         final boolean valueIsConfigClass = isConfigClass(valueClass);
 

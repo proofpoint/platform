@@ -15,14 +15,13 @@
  */
 package com.proofpoint.reporting;
 
-import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.proofpoint.reporting.BucketIdProvider.BucketId;
 import jakarta.annotation.Nullable;
 
 import static com.proofpoint.reporting.BucketIdProvider.BucketId.bucketId;
-import static com.proofpoint.reporting.Bucketed.BucketInfo.bucketInfo;
+import static java.util.Objects.requireNonNull;
 
 public abstract class Bucketed<T>
 {
@@ -44,7 +43,7 @@ public abstract class Bucketed<T>
     private synchronized BucketInfo getPreviousBucket()
     {
         rotateBucketIfNeeded();
-        return bucketInfo(previousBucket, currentBucketId);
+        return new BucketInfo(previousBucket, currentBucketId);
     }
 
     @VisibleForTesting
@@ -71,15 +70,11 @@ public abstract class Bucketed<T>
         }
     }
 
-    @AutoValue
-    public abstract static class BucketInfo
+    public record BucketInfo(Object getBucket, BucketId getBucketId)
     {
-        static BucketInfo bucketInfo(Object bucket, BucketId bucketId) {
-            return new AutoValue_Bucketed_BucketInfo(bucket, bucketId);
+        public BucketInfo {
+            requireNonNull(getBucket, "bucket is null");
+            requireNonNull(getBucketId, "bucketId is null");
         }
-
-        public abstract Object getBucket();
-
-        public abstract BucketId getBucketId();
     }
 }

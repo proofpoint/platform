@@ -35,7 +35,6 @@ import java.util.TreeSet;
 
 import static com.google.common.collect.Sets.newConcurrentHashSet;
 import static com.proofpoint.configuration.ConfigurationMetadata.isConfigClass;
-import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.isPublic;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
@@ -282,7 +281,8 @@ public final class ConfigAssertions
                 if (attribute.getInjectionPoint().getProperty() != null) {
                     Object value = invoke(config, attribute.getGetter());
                     attributeValues.put(attribute.getName(), value);
-                } else {
+                }
+                else {
                     setDeprecatedAttributes.add(attribute.getName());
                 }
             }
@@ -436,7 +436,8 @@ public final class ConfigAssertions
     {
         try {
             return configClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new AssertionError(String.format("Exception creating default instance of %s", configClass.getName()), e);
         }
     }

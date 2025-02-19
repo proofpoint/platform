@@ -182,7 +182,8 @@ public class TestConfigurationFactoryBuilder
             createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
 
             fail("Expected an exception in object creation due to unused configuration");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Configuration property 'unused' was not used");
@@ -208,7 +209,8 @@ public class TestConfigurationFactoryBuilder
             createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
 
             fail("Expected an exception in object creation due to unused configuration");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Configuration property 'unused' was not used");
@@ -234,7 +236,8 @@ public class TestConfigurationFactoryBuilder
             createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
 
             fail("Expected an exception in object creation due to unused configuration");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Configuration property 'unused' was not used");
@@ -263,7 +266,8 @@ public class TestConfigurationFactoryBuilder
             createInjector(configurationFactory, binder -> bindConfig(binder).bind(AnnotatedSetter.class));
 
             fail("Expected an exception in object creation due to duplicate configuration");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Duplicate configuration property 'string-value' in file " + file.getAbsolutePath());
@@ -293,7 +297,8 @@ public class TestConfigurationFactoryBuilder
             createInjector(configurationFactory, binder -> bindConfig(binder).bind(StringDotValue.class));
 
             fail("Expected an exception in object creation due to duplicate configuration");
-        } catch (CreationException e) {
+        }
+        catch (CreationException e) {
             monitor.assertNumberOfErrors(1);
             monitor.assertNumberOfWarnings(0);
             monitor.assertMatchingErrorRecorded("Duplicate configuration property 'string.value' in file " + file.getAbsolutePath());

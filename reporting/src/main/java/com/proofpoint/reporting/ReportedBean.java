@@ -132,8 +132,8 @@ class ReportedBean
 
         for (ReportedMethodInfoBuilder methodInfoBuilder : methodInfoBuilders.values()) {
             ReportedMethodInfo methodInfo = methodInfoBuilder.build();
-            attributes.addAll(methodInfo.getAttributes());
-            prometheusAttributes.addAll(methodInfo.getPrometheusAttributes());
+            attributes.addAll(methodInfo.attributes());
+            prometheusAttributes.addAll(methodInfo.prometheusAttributes());
         }
 
         return new ReportedBean(attributes, prometheusAttributes);

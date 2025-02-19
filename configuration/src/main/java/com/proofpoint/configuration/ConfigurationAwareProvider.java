@@ -6,7 +6,7 @@ import jakarta.inject.Provider;
 
 /**
  * A provider with access to the Platform {@link ConfigurationFactory}.
- *
+ * <p>
  * Implementing this interface ensures that the provider gets access to the
  * {@link ConfigurationFactory} before the first
  * call to {@link Provider#get()}.
@@ -28,9 +28,9 @@ public interface ConfigurationAwareProvider<T> extends Provider<T>
      * objects that this provider will need
      *
      * @param modules The application modules. The provider may inspect these
-     * in order to determine which config objects to build.
+     *                in order to determine which config objects to build.
      * @throws ConfigurationException when a programming error prevents
-     * this building.
+     *                                this building.
      */
     default void buildConfigObjects(Iterable<? extends Module> modules)
     {

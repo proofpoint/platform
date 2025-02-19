@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.proofpoint.reporting.FieldHealthBeanAttribute.fieldHealthBeanAttribute;
-import static com.proofpoint.reporting.MethodHealthBeanAttribute.methodHealthBeanAttribute;
 import static com.proofpoint.reporting.ReflectionUtils.isValidGetter;
 import static java.util.Objects.requireNonNull;
 
@@ -98,7 +96,7 @@ class HealthBeanAttributeBuilder
                 type = Type.NORMAL;
             }
 
-            return List.of(fieldHealthBeanAttribute(description, type, target, field));
+            return List.of(new FieldHealthBeanAttribute(description, type, target, field));
         }
         else if (AnnotationUtils.isFlatten(annotatedGetter) || AnnotationUtils.isNested(annotatedGetter)) {
             checkArgument(concreteGetter != null, "Nested/Flattened HealthBeanAttribute must have a concrete getter");
@@ -114,7 +112,7 @@ class HealthBeanAttributeBuilder
                 return Collections.emptySet();
             }
 
-            return HealthBean.forTarget(value).getAttributes();
+            return HealthBean.forTarget(value).attributes();
         }
         else {
             checkArgument (concreteGetter != null, "HealthBeanAttribute must have a concrete getter");
@@ -145,7 +143,7 @@ class HealthBeanAttributeBuilder
                 type = Type.NORMAL;
             }
 
-            return List.of(methodHealthBeanAttribute(description, type, target, concreteGetter));
+            return List.of(new MethodHealthBeanAttribute(description, type, target, concreteGetter));
         }
     }
 }

@@ -22,7 +22,7 @@ import com.google.inject.Scopes;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 
 public class ReportingPrometheusModule
-    implements Module
+        implements Module
 {
     @Override
     public void configure(Binder binder)
