@@ -13,6 +13,10 @@ Platform 3.28
 
   - Remote errors, when detected, are now notified to async applications.
 
+* HTTP Client
+
+  We added 429 to the list of HTTP status codes that allow retrying requests.
+
 Platform 3.27
 
 * Java version support
