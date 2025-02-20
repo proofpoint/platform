@@ -24,4 +24,19 @@ public final class ResponseHandlerUtils
         throwIfUnchecked(exception);
         throw new RuntimeException(exception);
     }
+
+    public static byte[] readResponseBytes(Request request, Response response)
+    {
+        try {
+            return response.getInputStream().readAllBytes();
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException("Failed reading response from server: " + urlFor(request), e);
+        }
+    }
+
+    private static String urlFor(Request request)
+    {
+        return request.getUri().toASCIIString();
+    }
 }

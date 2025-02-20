@@ -6,11 +6,13 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 import static com.google.common.net.MediaType.JSON_UTF_8;
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
 import static com.proofpoint.http.client.HttpStatus.INTERNAL_SERVER_ERROR;
 import static com.proofpoint.http.client.JsonResponseHandler.createJsonResponseHandler;
+import static com.proofpoint.http.client.Request.Builder.prepareGet;
 import static com.proofpoint.http.client.TestFullJsonResponseHandler.User;
 import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;
 import static com.proofpoint.testing.Assertions.assertInstanceOf;
@@ -96,14 +98,14 @@ public class TestJsonResponseHandler
         when(inputStream.read(any(byte[].class), anyInt(), anyInt())).thenThrow(expectedException);
 
         try {
-            handler.handle(null, mockResponse()
+            handler.handle(prepareGet().setUri(URI.create("https://invalid.invalid/test")).build(), mockResponse()
                     .contentType(JSON_UTF_8)
                     .body(inputStream)
                     .build());
             fail("expected exception");
         }
         catch (RuntimeException e) {
-            assertEquals(e.getMessage(), "Error reading JSON response from server");
+            assertEquals(e.getMessage(), "Failed reading response from server: https://invalid.invalid/test");
             assertSame(e.getCause(), expectedException);
         }
     }
