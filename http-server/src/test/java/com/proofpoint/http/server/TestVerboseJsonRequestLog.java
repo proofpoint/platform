@@ -51,7 +51,7 @@ public class TestVerboseJsonRequestLog extends AbstractTestRequestLog
                         "\"tlsProtocolVersion\":\"%s\",\"tlsCipherSuite\":\"%s\"," +
                         "\"timeToDispatch\":\"%d.00ms\",\"timeToRequestEnd\":\"%d.00ms\"," +
                         "\"timeResponseContent\":\"%d.00ms\",\"responseContentChunk\":{\"count\":%d,\"max\":\"%d.00ms\"}," +
-                        "\"timeToLastByte\":\"%d.00ms\"}\n",
+                        "\"timeToLastByte\":\"%3.2fs\"}\n",
                 "2018-09-29T03:41:11.000Z",
                 getCurrentRequestToken(),
                 clientAddr,
@@ -70,6 +70,6 @@ public class TestVerboseJsonRequestLog extends AbstractTestRequestLog
                 timeResponseContent,
                 responseContentChunkCount,
                 responseContentChunkMax,
-                timeToLastByte);
+                timeToLastByte / 1000.0);
     }
 }

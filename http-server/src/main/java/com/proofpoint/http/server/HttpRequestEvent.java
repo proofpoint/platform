@@ -52,7 +52,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import static com.proofpoint.tracetoken.TraceTokenManager.getCurrentTraceToken;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 // todo convert to record
 @JsonPropertyOrder({ "t", "tt", "ip", "m", "u", "user",
@@ -97,11 +96,7 @@ class HttpRequestEvent
                 Request.getContentBytesRead(request),
                 Response.getContentBytesWritten(response),
                 response.getStatus(),
-                timing.timeToCompletion().toMillis(),
-                timing.dispatchToHandling().toMillis(),
-                timing.dispatchToRequestEnd().toMillis(),
-                timing.firstToLastResponseContent().toMillis(),
-                timing.responseContentInterarrivalStats(),
+                timing,
                 request.getConnectionMetaData().getHttpVersion().asString(),
                 sslSession == null ? null : sslSession.getProtocol(),
                 sslSession == null ? null : sslSession.getCipherSuite()
@@ -118,11 +113,7 @@ class HttpRequestEvent
     private final long requestSize;
     private final long responseSize;
     private final int responseCode;
-    private final long timeToCompletion;
-    private final long dispatchToHandlingMillis;
-    private final long dispatchToRequestEndMillis;
-    private final long firstToLastResponseContentMillis;
-    private final DoubleSummaryStats responseContentInterarrivalStats;
+    private final RequestTiming timing;
     private final String protocolVersion;
     private final String tlsProtocolVersion;
     private final String tlsCipherSuite;
@@ -138,11 +129,7 @@ class HttpRequestEvent
             long requestSize,
             long responseSize,
             int responseCode,
-            long timeToCompletion,
-            long dispatchToHandlingMillis,
-            long dispatchToRequestEndMillis,
-            long firstToLastResponseContentMillis,
-            DoubleSummaryStats responseContentInterarrivalStats,
+            RequestTiming timing,
             String protocolVersion,
             String tlsProtocolVersion,
             String tlsCipherSuite)
@@ -157,11 +144,7 @@ class HttpRequestEvent
         this.requestSize = requestSize;
         this.responseSize = responseSize;
         this.responseCode = responseCode;
-        this.timeToCompletion = timeToCompletion;
-        this.dispatchToHandlingMillis = dispatchToHandlingMillis;
-        this.dispatchToRequestEndMillis = dispatchToRequestEndMillis;
-        this.firstToLastResponseContentMillis = firstToLastResponseContentMillis;
-        this.responseContentInterarrivalStats = responseContentInterarrivalStats;
+        this.timing = timing;
         this.protocolVersion = protocolVersion;
         this.tlsProtocolVersion = tlsProtocolVersion;
         this.tlsCipherSuite = tlsCipherSuite;
@@ -237,12 +220,12 @@ class HttpRequestEvent
 
     public long getTimeToLastByte()
     {
-        return timeToCompletion;
+        return timing.timeToCompletion().toMillis();
     }
 
     @JsonProperty("tl")
     public Duration getTimeToLastByteDuration() {
-        return new Duration(timeToCompletion, MILLISECONDS);
+        return timing.timeToCompletion();
     }
 
     // What Jetty 11 called "begin", Jetty 12 calls "dispatch"
@@ -250,30 +233,27 @@ class HttpRequestEvent
     @JsonProperty("td")
     public Duration getTimeToDispatch()
     {
-        return new Duration(dispatchToHandlingMillis, MILLISECONDS);
+        return timing.dispatchToHandling();
     }
 
     @JsonProperty("tq")
     public Duration getTimeToRequestEnd()
     {
-        return new Duration(dispatchToRequestEndMillis, MILLISECONDS);
+        return timing.dispatchToRequestEnd();
     }
 
     @Nullable
     @JsonProperty("tr")
     public Duration getTimeResponseContent()
     {
-        if (firstToLastResponseContentMillis < 0) {
-            return null;
-        }
-        return new Duration(firstToLastResponseContentMillis, MILLISECONDS);
+        return timing.firstToLastResponseContent();
     }
 
     @Nullable
     @JsonProperty("rc")
     public DoubleSummaryStats getResponseContentChunk()
     {
-        return responseContentInterarrivalStats;
+        return timing.responseContentInterarrivalStats();
     }
 
     public String getProtocolVersion()
