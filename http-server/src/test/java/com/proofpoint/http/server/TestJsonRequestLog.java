@@ -57,7 +57,7 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
                         "\"c\":%d,\"qs\":%d,\"rs\":%d," +
                         "\"td\":\"%d.00ms\",\"tq\":\"%d.00ms\"," +
                         "\"tr\":\"%d.00ms\",\"rc\":{\"count\":%d,\"max\":\"%d.00ms\"}," +
-                        "\"tl\":\"%d.00ms\"}\n",
+                        "\"tl\":\"%3.2fs\"}\n",
                 "2018-09-29T03:41:11.000Z",
                 MAP_JSON_CODEC.toJson(ImmutableMap.copyOf(getCurrentTraceToken())),
                 clientAddr,
@@ -72,6 +72,6 @@ public class TestJsonRequestLog extends AbstractTestRequestLog
                 timeResponseContent,
                 responseContentChunkCount,
                 responseContentChunkMax,
-                timeToLastByte);
+                timeToLastByte / 1000.0);
     }
 }
