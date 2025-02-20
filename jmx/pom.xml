@@ -24,7 +24,7 @@
 
         <dependency>
             <groupId>com.proofpoint.platform</groupId>
-            <artifactId>discovery</artifactId>
+            <artifactId>node</artifactId>
         </dependency>
 
         <dependency>

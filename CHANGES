@@ -15,6 +15,11 @@ Platform 3.27
     package private configuration attributes. The configuration classes
     and their configuration getters and setters must be made public.
 
+* Sample and skeleton servers
+
+  We removed discovery and switched from reporting-client to reporting-prometheus
+  in both the sample and skeleton servers.
+
 * Library Upgrades
 
   - ByteBuddy to 1.15.11 (was 1.12.9)
