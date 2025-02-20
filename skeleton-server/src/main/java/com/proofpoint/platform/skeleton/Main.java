@@ -18,7 +18,6 @@ package com.proofpoint.platform.skeleton;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
 import com.proofpoint.audit.AuditLogModule;
-import com.proofpoint.discovery.client.DiscoveryModule;
 import com.proofpoint.discovery.client.announce.Announcer;
 import com.proofpoint.http.server.HttpServerModule;
 import com.proofpoint.jaxrs.JaxrsModule;
@@ -28,8 +27,8 @@ import com.proofpoint.json.JsonModule;
 import com.proofpoint.log.LogJmxModule;
 import com.proofpoint.log.Logger;
 import com.proofpoint.node.NodeModule;
-import com.proofpoint.reporting.ReportingClientModule;
 import com.proofpoint.reporting.ReportingModule;
+import com.proofpoint.reporting.ReportingPrometheusModule;
 import org.weakref.jmx.guice.MBeanModule;
 
 import static com.proofpoint.bootstrap.Bootstrap.bootstrapApplication;
@@ -48,7 +47,6 @@ public final class Main
             Injector injector = bootstrapApplication("skeleton")
                     .withModules(
                             new NodeModule(),
-                            new DiscoveryModule(),
                             new HttpServerModule(),
                             new JsonModule(),
                             new JaxrsModule(),
@@ -58,7 +56,7 @@ public final class Main
                             new LogJmxModule(),
                             new AuditLogModule(),
                             new ReportingModule(),
-                            new ReportingClientModule(),
+                            new ReportingPrometheusModule(),
                             new MainModule()
                     )
                     .withApplicationDefaults(ImmutableMap.<String, String>builder()

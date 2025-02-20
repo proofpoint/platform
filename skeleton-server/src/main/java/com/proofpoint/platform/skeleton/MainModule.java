@@ -18,8 +18,6 @@ package com.proofpoint.platform.skeleton;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 
-import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
-
 public class MainModule
         implements Module
 {
@@ -28,7 +26,5 @@ public class MainModule
     {
         binder.requireExplicitBindings();
         binder.disableCircularProxies();
-
-        discoveryBinder(binder).bindHttpAnnouncement("skeleton");
     }
 }

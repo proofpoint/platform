@@ -22,7 +22,6 @@ import com.google.inject.Provides;
 import com.google.inject.Scopes;
 
 import static com.proofpoint.configuration.ConfigBinder.bindConfig;
-import static com.proofpoint.discovery.client.DiscoveryBinder.discoveryBinder;
 import static com.proofpoint.jaxrs.JaxrsBinder.jaxrsBinder;
 import static com.proofpoint.reporting.HealthBinder.healthBinder;
 import static com.proofpoint.reporting.ReportBinder.reportBinder;
@@ -43,8 +42,6 @@ public class MainModule
         jaxrsBinder(binder).bind(PersonResource.class).withApplicationPrefix();
 
         bindConfig(binder).bind(StoreConfig.class);
-
-        discoveryBinder(binder).bindHttpAnnouncement("person");
     }
 
     @Provides
