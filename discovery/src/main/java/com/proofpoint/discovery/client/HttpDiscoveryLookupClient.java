@@ -15,7 +15,6 @@
  */
 package com.proofpoint.discovery.client;
 
-import com.google.common.io.ByteStreams;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.proofpoint.http.client.CacheControl;
@@ -32,6 +31,7 @@ import jakarta.inject.Inject;
 import org.weakref.jmx.Flatten;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
@@ -128,8 +128,8 @@ public class HttpDiscoveryLookupClient implements DiscoveryLookupClient
                 }
 
                 byte[] json;
-                try {
-                    json = ByteStreams.toByteArray(response.getInputStream());
+                try (InputStream stream = response.getInputStream()) {
+                    json = stream.readAllBytes();
                 }
                 catch (IOException e) {
                     throw new DiscoveryException(format("Lookup of %s failed", type), e);

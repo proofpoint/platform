@@ -17,18 +17,17 @@ package com.proofpoint.http.client;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.io.ByteStreams;
 import com.google.common.net.MediaType;
 import com.proofpoint.http.client.StringResponseHandler.StringResponse;
 import jakarta.annotation.Nullable;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 
-import static com.google.common.io.ByteStreams.toByteArray;
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 import static com.proofpoint.http.client.ResponseHandlerUtils.propagate;
+import static com.proofpoint.http.client.ResponseHandlerUtils.readResponseBytes;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class StringResponseHandler implements ResponseHandler<StringResponse, RuntimeException>
@@ -53,27 +52,18 @@ public class StringResponseHandler implements ResponseHandler<StringResponse, Ru
     @Override
     public StringResponse handle(Request request, Response response)
     {
-        try {
-            String contentType = response.getHeader(CONTENT_TYPE);
+        byte[] bytes = readResponseBytes(request, response);
 
-            if (contentType != null) {
-                MediaType mediaType = MediaType.parse(contentType);
-                return new StringResponse(
-                        response.getStatusCode(),
-                        response.getStatusMessage(),
-                        response.getHeaders(),
-                        new String(ByteStreams.toByteArray(response.getInputStream()), mediaType.charset().or(UTF_8)));
-            }
+        Charset charset = Optional.ofNullable(response.getHeader(CONTENT_TYPE))
+                .map(MediaType::parse)
+                .flatMap(mediaType -> mediaType.charset().toJavaUtil())
+                .orElse(UTF_8);
 
-            return new StringResponse(
-                    response.getStatusCode(),
-                    response.getStatusMessage(),
-                    response.getHeaders(),
-                    new String(toByteArray(response.getInputStream()), UTF_8));
-        }
-        catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        return new StringResponse(
+                response.getStatusCode(),
+                response.getStatusMessage(),
+                response.getHeaders(),
+                new String(bytes, charset));
     }
 
     public static class StringResponse

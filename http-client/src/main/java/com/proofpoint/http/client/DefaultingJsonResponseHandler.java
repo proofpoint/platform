@@ -16,11 +16,11 @@
 package com.proofpoint.http.client;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.io.ByteStreams;
 import com.google.common.net.MediaType;
 import com.google.common.primitives.Ints;
 import com.proofpoint.json.JsonCodec;
 
+import java.io.InputStream;
 import java.util.Set;
 
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
@@ -72,9 +72,9 @@ public class DefaultingJsonResponseHandler<T>
         if (contentType != null && !MediaType.parse(contentType).is(MEDIA_TYPE_JSON)) {
             return defaultValue;
         }
-        try {
-            return jsonCodec.fromJson(ByteStreams.toByteArray(response.getInputStream()));
-        }
+        try (InputStream inputStream = response.getInputStream()) {
+            return jsonCodec.fromJson(inputStream.readAllBytes());
+         }
         catch (Exception e) {
             return defaultValue;
         }

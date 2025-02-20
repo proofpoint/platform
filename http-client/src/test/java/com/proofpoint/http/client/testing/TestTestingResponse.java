@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static com.google.common.io.ByteStreams.toByteArray;
 import static com.proofpoint.http.client.testing.TestingResponse.mockResponse;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.assertEquals;
@@ -218,7 +217,7 @@ public class TestTestingResponse
         }
         assertEquals(response.getHeaders(), builder.build());
         try {
-            assertEquals(toByteArray(response.getInputStream()), body);
+            assertEquals(response.getInputStream().readAllBytes(), body);
         }
         catch (IOException e) {
             throw new UncheckedIOException(e);
