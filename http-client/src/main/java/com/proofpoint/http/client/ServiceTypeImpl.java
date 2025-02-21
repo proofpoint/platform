@@ -39,8 +39,7 @@ class ServiceTypeImpl
     @Override
     public String toString()
     {
-        var isJava11 = System.getProperty("java.version").startsWith("11.");
-        return String.format("@%s(%s\"%s\")", ServiceType.class.getName(), isJava11 ? "value=" : "", value.replaceAll("([\\\\\"])", "\\\\$1"));
+        return String.format("@%s(%s\"%s\")", ServiceType.class.getName(), "", value.replaceAll("([\\\\\"])", "\\\\$1"));
     }
 
     @Override

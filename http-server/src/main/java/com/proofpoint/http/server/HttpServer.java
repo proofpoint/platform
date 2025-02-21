@@ -93,8 +93,7 @@ import static org.eclipse.jetty.security.Constraint.ALLOWED;
 
 public class HttpServer
 {
-    private static final String[] ENABLED_PROTOCOLS = System.getProperty("java.version").matches("11(\\.0\\.[12])?") ?
-            new String[] {"TLSv1.2"} : new String[] {"TLSv1.2", "TLSv1.3"};
+    private static final String[] ENABLED_PROTOCOLS = {"TLSv1.2", "TLSv1.3"};
     private static final String[] ENABLED_CIPHERS = {
             "TLS_AES_128_GCM_SHA256",
             "TLS_AES_256_GCM_SHA384",
@@ -270,8 +269,6 @@ public class HttpServer
     private ServerConnector createHttpsServerConnector(HttpServerConfig config, ServerSocketChannel serverSocketChannel, HttpConfiguration configuration, Executor threadPool, int acceptors, int selectors)
             throws IOException
     {
-        checkState(!System.getProperty("java.version").startsWith("1.8."), "Java 8 is no longer supported");
-
         SecureRequestCustomizer customizer = new SecureRequestCustomizer();
         customizer.setSniHostCheck(false);
         customizer.setSniRequired(false);
