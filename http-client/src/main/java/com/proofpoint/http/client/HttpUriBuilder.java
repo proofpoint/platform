@@ -58,6 +58,13 @@ public class HttpUriBuilder
         params.putAll(parseParams(previous.getRawQuery()));
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     public static HttpUriBuilder uriBuilder()
     {
         return new HttpUriBuilder();

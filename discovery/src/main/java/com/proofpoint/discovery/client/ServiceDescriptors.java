@@ -71,6 +71,13 @@ public class ServiceDescriptors
         }
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     public String getType()
     {
         return type;

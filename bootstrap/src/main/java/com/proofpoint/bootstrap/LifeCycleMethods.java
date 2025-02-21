@@ -37,6 +37,13 @@ class LifeCycleMethods
         addLifeCycleMethods(clazz, new HashSet<>(), new HashSet<>());
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     boolean hasFor(Class<? extends Annotation> annotation)
     {
         Collection<Method> methods = methodMap.get(annotation);

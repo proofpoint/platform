@@ -128,6 +128,13 @@ public class ConfigurationMetadata<T>
         }
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     public static boolean isConfigClass(Class<?> classz)
     {
         for (Method method : classz.getDeclaredMethods()) {

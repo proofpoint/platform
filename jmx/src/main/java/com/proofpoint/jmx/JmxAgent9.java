@@ -100,6 +100,13 @@ class JmxAgent9
         }
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     @Nullable
     @Override
     public JMXServiceURL getUrl()

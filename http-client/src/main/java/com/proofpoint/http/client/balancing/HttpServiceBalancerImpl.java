@@ -76,6 +76,13 @@ public class HttpServiceBalancerImpl
         this.ticker = requireNonNull(ticker, "ticker is null");
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     @Override
     public HttpServiceAttempt createAttempt()
     {

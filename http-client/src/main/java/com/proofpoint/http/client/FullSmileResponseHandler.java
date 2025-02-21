@@ -46,6 +46,13 @@ public class FullSmileResponseHandler<T>
         return new FullSmileResponseHandler<>(jsonCodec);
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     private final JsonCodec<T> jsonCodec;
 
     private FullSmileResponseHandler(JsonCodec<T> jsonCodec)

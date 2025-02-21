@@ -93,6 +93,13 @@ public class MBeanRepresentation
         this.operations = operations.build();
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     @JsonProperty
     public ObjectName getObjectName()
     {

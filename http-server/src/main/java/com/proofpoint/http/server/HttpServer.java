@@ -266,6 +266,13 @@ public class HttpServer
                 .map(date -> ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     private ServerConnector createHttpsServerConnector(HttpServerConfig config, ServerSocketChannel serverSocketChannel, HttpConfiguration configuration, Executor threadPool, int acceptors, int selectors)
             throws IOException
     {

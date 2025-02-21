@@ -112,6 +112,13 @@ public class JmxInspector
         inspectorRecords = builder.build();
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     @Override
     public Iterator<InspectorRecord> iterator()
     {
