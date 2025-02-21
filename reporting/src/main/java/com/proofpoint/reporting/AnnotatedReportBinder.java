@@ -31,8 +31,8 @@ public class AnnotatedReportBinder
     public NamedReportBinder annotatedWith(Annotation annotation)
     {
         StringBuilder builder = new StringBuilder().append(mapping.getKey().getTypeLiteral().getRawType().getSimpleName()).append(".");
-        if (annotation instanceof Named) {
-            builder.append(((Named) annotation).value());
+        if (annotation instanceof Named named) {
+            builder.append(named.value());
         }
         else {
             builder.append(annotation.annotationType().getSimpleName());

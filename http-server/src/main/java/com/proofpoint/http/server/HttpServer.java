@@ -597,8 +597,8 @@ public class HttpServer
                 for (String alias : list(keystore.aliases())) {
                     try {
                         Certificate certificate = keystore.getCertificate(alias);
-                        if (certificate instanceof X509Certificate) {
-                            certificates.add((X509Certificate) certificate);
+                        if (certificate instanceof X509Certificate x509Certificate) {
+                            certificates.add(x509Certificate);
                         }
                     }
                     catch (KeyStoreException ignored) {

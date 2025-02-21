@@ -228,8 +228,8 @@ public class BalancingHttpClient
     @Managed
     public String dump()
     {
-        if (httpClient instanceof JettyHttpClient) {
-            return ((JettyHttpClient) httpClient).dump();
+        if (httpClient instanceof JettyHttpClient jettyHttpClient) {
+            return jettyHttpClient.dump();
         }
         return null;
     }
@@ -237,8 +237,8 @@ public class BalancingHttpClient
     @Managed
     public void dumpStdErr()
     {
-        if (httpClient instanceof JettyHttpClient) {
-            ((JettyHttpClient) httpClient).dumpStdErr();
+        if (httpClient instanceof JettyHttpClient jettyHttpClient) {
+            jettyHttpClient.dumpStdErr();
         }
     }
 
@@ -303,18 +303,17 @@ public class BalancingHttpClient
                 @Override
                 public void onFailure(Throwable t)
                 {
-                    if (t instanceof InnerHandlerException) {
-                        InnerHandlerException innerHandlerException = (InnerHandlerException) t;
+                    if (t instanceof InnerHandlerException innerHandlerException) {
                         attempt.markBad(innerHandlerException.getFailureCategory(), innerHandlerException.getHandlerCategory());
-                        setException(t.getCause());
+                        setException(innerHandlerException.getCause());
                     }
-                    else if (t instanceof FailureStatusException) {
-                        attempt.markBad(((FailureStatusException) t).getFailureCategory());
+                    else if (t instanceof FailureStatusException failureStatusException) {
+                        attempt.markBad(failureStatusException.getFailureCategory());
                         //noinspection unchecked
-                        set((T) ((FailureStatusException) t).result);
+                        set((T) failureStatusException.result);
                     }
-                    else if (t instanceof RetryException) {
-                        attempt.markBad(((RetryException) t).getFailureCategory());
+                    else if (t instanceof RetryException retryException) {
+                        attempt.markBad(retryException.getFailureCategory());
                         TraceToken traceToken = getCurrentTraceToken();
                         synchronized (subFutureLock) {
                             Duration backoff = attemptBackoffPolicy.backoff(previousBackoff);

@@ -52,14 +52,14 @@ public abstract class AbstractHealthBeanTest<T>
     protected SimpleHealthInterface toSimpleHealthInterface(T t)
     {
         SimpleHealthInterface simpleHealthInterface;
-        if (getObject(t) instanceof SimpleHealthInterface) {
-            simpleHealthInterface = (SimpleHealthInterface) getObject(t);
+        if (getObject(t) instanceof SimpleHealthInterface getObject) {
+            simpleHealthInterface = getObject;
         }
-        else if (getObject(t) instanceof FlattenHealthObject) {
-            simpleHealthInterface = ((FlattenHealthObject) getObject(t)).getSimpleHealthObject();
+        else if (getObject(t) instanceof FlattenHealthObject flattenHealthObject) {
+            simpleHealthInterface = flattenHealthObject.getSimpleHealthObject();
         }
-        else if (getObject(t) instanceof NestedHealthObject) {
-            simpleHealthInterface = ((NestedHealthObject) getObject(t)).getSimpleHealthObject();
+        else if (getObject(t) instanceof NestedHealthObject nestedHealthObject) {
+            simpleHealthInterface = nestedHealthObject.getSimpleHealthObject();
         }
         else {
             throw new IllegalArgumentException("Expected objects implementing SimpleHealthInterface or FlattenHealthObject but got " + getObject(t).getClass().getName());

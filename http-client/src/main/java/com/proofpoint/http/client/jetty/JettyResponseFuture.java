@@ -124,12 +124,12 @@ class JettyResponseFuture<T, E extends Exception>
         }
         try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
             // give handler a chance to rewrite the exception or return a value instead
-            if (throwable instanceof Exception) {
+            if (throwable instanceof Exception x) {
                 try {
-                    if (throwable instanceof RejectedExecutionException) {
+                    if (x instanceof RejectedExecutionException) {
                         jettyHttpClient.maybeLogJettyState();
                     }
-                    T value = responseHandler.handleException(request, (Exception) throwable);
+                    T value = responseHandler.handleException(request, x);
                     // handler returned a value, store it in the future
                     state.set(JettyAsyncHttpState.DONE);
                     set(value);

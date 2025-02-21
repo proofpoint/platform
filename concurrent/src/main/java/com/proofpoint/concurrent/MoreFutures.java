@@ -345,8 +345,8 @@ public final class MoreFutures
             future.exceptionally(throwable -> {
                 if (throwable instanceof CancellationException) {
                     for (CompletionStage<? extends V> sourceFuture : futures) {
-                        if (sourceFuture instanceof Future) {
-                            ((Future<?>) sourceFuture).cancel(true);
+                        if (sourceFuture instanceof Future<?> f) {
+                            f.cancel(true);
                         }
                     }
                 }

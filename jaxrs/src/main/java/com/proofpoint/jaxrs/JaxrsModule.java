@@ -135,10 +135,10 @@ public class JaxrsModule
     private static boolean isJaxRsBinding(Key<?> key)
     {
         Type type = key.getTypeLiteral().getType();
-        if (!(type instanceof Class)) {
+        if (!(type instanceof Class<?> clazz)) {
             return false;
         }
-        return isJaxRsType((Class<?>) type);
+        return isJaxRsType(clazz);
     }
 
     private static boolean isJaxRsType(Class<?> type)

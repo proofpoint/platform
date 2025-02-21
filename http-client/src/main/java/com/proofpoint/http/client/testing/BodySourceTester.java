@@ -20,12 +20,12 @@ public class BodySourceTester
     public static void writeBodySourceTo(BodySource bodySource, final OutputStream out)
             throws Exception
     {
-        if (bodySource instanceof StaticBodyGenerator) {
-            out.write(((StaticBodyGenerator) bodySource).getBody());
+        if (bodySource instanceof StaticBodyGenerator staticBodyGenerator) {
+            out.write(staticBodyGenerator.getBody());
         }
-        else if (bodySource instanceof InputStreamBodySource) {
-            InputStream in = ((InputStreamBodySource) bodySource).getInputStream();
-            byte[] buf = new byte[((InputStreamBodySource) bodySource).getBufferSize()];
+        else if (bodySource instanceof InputStreamBodySource inputStreamBodySource) {
+            InputStream in = inputStreamBodySource.getInputStream();
+            byte[] buf = new byte[inputStreamBodySource.getBufferSize()];
             while (true) {
                 int r = in.read(buf);
                 if (r == -1) {
@@ -34,9 +34,9 @@ public class BodySourceTester
                 out.write(buf, 0, r);
             }
         }
-        else if (bodySource instanceof DynamicBodySource) {
+        else if (bodySource instanceof DynamicBodySource dynamicBodySource) {
             final AtomicBoolean closed = new AtomicBoolean(false);
-            Writer writer = ((DynamicBodySource) bodySource).start(new OutputStream()
+            Writer writer = dynamicBodySource.start(new OutputStream()
             {
                 @Override
                 public void write(int b)
@@ -77,8 +77,8 @@ public class BodySourceTester
                 writer.write();
             }
 
-            if (writer instanceof AutoCloseable) {
-                ((AutoCloseable) writer).close();
+            if (writer instanceof AutoCloseable closeable) {
+                closeable.close();
             }
         }
         else {

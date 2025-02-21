@@ -86,8 +86,8 @@ class ReportedBean
         List<ReportedBeanAttribute> attributes = new ArrayList<>();
         List<PrometheusBeanAttribute> prometheusAttributes = new ArrayList<>();
 
-        if (target instanceof Bucketed) {
-            ((Bucketed<?>) target).setBucketIdProvider(bucketIdProvider);
+        if (target instanceof Bucketed<?> bucketed) {
+            bucketed.setBucketIdProvider(bucketIdProvider);
             BucketInfo bucketInfo = null;
             try {
                 bucketInfo = (BucketInfo) GET_PREVIOUS_BUCKET.invoke(target);

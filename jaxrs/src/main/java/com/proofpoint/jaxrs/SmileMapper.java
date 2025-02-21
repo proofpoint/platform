@@ -128,8 +128,8 @@ public class SmileMapper
         }
         catch (Exception e) {
             // we want to return a 400 for bad JSON but not for a real IO exception
-            if (e instanceof IOException && !(e instanceof JsonProcessingException) && !(e instanceof EOFException)) {
-                throw (IOException) e;
+            if (e instanceof IOException ioException && !(e instanceof JsonProcessingException) && !(e instanceof EOFException)) {
+                throw ioException;
             }
 
             log.info("Invalid json for Java type %s: %s", type, e.getMessage());

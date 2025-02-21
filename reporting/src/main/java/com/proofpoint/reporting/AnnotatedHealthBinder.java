@@ -36,8 +36,8 @@ public class AnnotatedHealthBinder
      */
     public NamedHealthBinder annotatedWith(Annotation annotation)
     {
-        if (annotation instanceof Named) {
-            mapping.setNameSuffix(((Named) annotation).value());
+        if (annotation instanceof Named named) {
+            mapping.setNameSuffix(named.value());
         }
         else {
             mapping.setNameSuffix(annotation.annotationType().getSimpleName());

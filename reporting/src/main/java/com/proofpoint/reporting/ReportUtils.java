@@ -30,11 +30,11 @@ public final class ReportUtils
 
     public static boolean isReportable(Object value)
     {
-        if (value instanceof Double) {
-            return !(((Double) value).isNaN() || ((Double) value).isInfinite());
+        if (value instanceof Double aDouble) {
+            return !(aDouble.isNaN() || aDouble.isInfinite());
         }
-        if (value instanceof Float) {
-            return !(((Float) value).isNaN() || ((Float) value).isInfinite());
+        if (value instanceof Float aFloat) {
+            return !(aFloat.isNaN() || aFloat.isInfinite());
         }
         if (value instanceof Long) {
             return !(value.equals(Long.MAX_VALUE) || value.equals(Long.MIN_VALUE));

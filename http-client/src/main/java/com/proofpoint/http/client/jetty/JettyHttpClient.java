@@ -425,8 +425,8 @@ public class JettyHttpClient
             if (cause instanceof RejectedExecutionException || cause instanceof ClosedByInterruptException) {
                 maybeLogJettyState();
             }
-            if (cause instanceof Exception) {
-                return responseHandler.handleException(request, (Exception) cause);
+            if (cause instanceof Exception x) {
+                return responseHandler.handleException(request, x);
             }
             return responseHandler.handleException(request, new RuntimeException(cause));
         }
@@ -517,16 +517,15 @@ public class JettyHttpClient
 
         BodySource bodySource = finalRequest.getBodySource();
         if (bodySource != null) {
-            if (bodySource instanceof StaticBodyGenerator) {
-                StaticBodyGenerator staticBodyGenerator = (StaticBodyGenerator) bodySource;
+            if (bodySource instanceof StaticBodyGenerator staticBodyGenerator) {
                 jettyRequest.body(new BytesRequestContent(staticBodyGenerator.getBody()));
                 bytesWritten.addAndGet(staticBodyGenerator.getBody().length);
             }
-            else if (bodySource instanceof InputStreamBodySource) {
-                jettyRequest.body(new InputStreamBodySourceContentProvider((InputStreamBodySource) bodySource, bytesWritten));
+            else if (bodySource instanceof InputStreamBodySource inputStreamBodySource) {
+                jettyRequest.body(new InputStreamBodySourceContentProvider(inputStreamBodySource, bytesWritten));
             }
-            else if (bodySource instanceof DynamicBodySource) {
-                jettyRequest.body(new DynamicBodySourceContentProvider((DynamicBodySource) bodySource, bytesWritten));
+            else if (bodySource instanceof DynamicBodySource dynamicBodySource) {
+                jettyRequest.body(new DynamicBodySourceContentProvider(dynamicBodySource, bytesWritten));
             }
             else {
                 throw new IllegalArgumentException("Request has unsupported BodySource type");
