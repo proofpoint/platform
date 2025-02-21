@@ -49,7 +49,7 @@ import static org.weakref.jmx.guice.ExportBinder.newExporter;
 /**
  * Binds {@link HttpClient} implementations.
  *
- * <h3>The HttpClient Binding EDSL</h3>
+ * <h2>The HttpClient Binding EDSL</h2>
  *
  * <pre>
  *     httpClientBinder(binder).bindHttpClient("foo", FooClient.class);</pre>

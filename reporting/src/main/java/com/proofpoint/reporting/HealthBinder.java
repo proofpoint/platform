@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Exports Guice-bound objects to the health subsystem.
  *
- * <h3>The Health Binding EDSL</h3>
+ * <h2>The Health Binding EDSL</h2>
  *
  * <pre>
  *     healthBinder(binder).export(Service.class);</pre>

@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Binds JAX-RS resources, providers, and features.
  *
- * <h3>The JAX-RS Binding EDSL</h3>
+ * <h2>The JAX-RS Binding EDSL</h2>
  *
  * <pre>
  *     jaxrsBinder(binder).bind(Singleton.class);</pre>
