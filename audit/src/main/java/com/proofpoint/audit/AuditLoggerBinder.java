@@ -24,7 +24,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Binds {@link AuditLogger} implementations.
  *
- * <h3>The AuditLogger Binding EDSL</h3>
+ * <h2>The AuditLogger Binding EDSL</h2>
  *
  * <pre>
  *     auditLoggerBinder(binder).bind(RecordClass.class);</pre>

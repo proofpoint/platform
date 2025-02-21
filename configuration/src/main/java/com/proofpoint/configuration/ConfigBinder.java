@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Binds configuration classes.
  *
- * <h3>The ConfigBinder EDSL</h3>
+ * <h2>The ConfigBinder EDSL</h2>
  *
  * <pre>
  *     configBinder(binder).bind(FooConfig.class);</pre>

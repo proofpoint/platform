@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Exports Guice-bound objects to the reporting subsystem.
  *
- * <h3>The Report Binding EDSL</h3>
+ * <h2>The Report Binding EDSL</h2>
  *
  * <pre>
  *     reportBinder(binder).export(Service.class);</pre>
