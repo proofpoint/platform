@@ -36,10 +36,12 @@ Platform 3.27
   - Objenesis to 3.3 (was 3.2)
   - servlet-api to 6.0.0 (was 5.0.0)
   - slf4j to 2.0.16 (was 2.0.9)
+  - spotbugs-annotations to 4.9.1 (was 4.7.0)
 
 * Maven plugin upgrades
 
   - JaCoCo to 0.8.12 (was 0.8.8)
+  - spotbugs-maven-plugin to 4.9.1.0 (was 4.8.6.6)
 
 Platform 3.24
 
