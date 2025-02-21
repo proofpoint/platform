@@ -111,11 +111,11 @@ class GuiceInjectorIterator implements Iterator<Class<?>>, Iterable<Class<?>>
 
         Class<?> clazz;
         Type type = key.getTypeLiteral().getType();
-        if (type instanceof GenericArrayType) {
-            type = ((GenericArrayType) type).getGenericComponentType();
+        if (type instanceof GenericArrayType genericArrayType) {
+            type = genericArrayType.getGenericComponentType();
         }
-        if (type instanceof Class) {
-            clazz = (Class<?>) type;
+        if (type instanceof Class<?> keyClass) {
+            clazz = keyClass;
         }
         else {
             clazz = key.getTypeLiteral().getRawType();

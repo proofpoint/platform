@@ -448,8 +448,8 @@ public class Logging
     public static void addShutdownLatchToWaitFor(CountDownLatch latch)
     {
         LogManager logManager = LogManager.getLogManager();
-        if (logManager instanceof ShutdownWaitingLogManager) {
-            ((ShutdownWaitingLogManager) logManager).addWaitFor(latch);
+        if (logManager instanceof ShutdownWaitingLogManager shutdownWaitingLogManager) {
+            shutdownWaitingLogManager.addWaitFor(latch);
         } else {
             log.warn("LogManager is not a ShutdownWaitingLogManager, so shutdown hooks might not be able to log. Please run java with -Djava.util.logging.manager=%s",
                     ShutdownWaitingLogManager.class.getTypeName());

@@ -326,8 +326,7 @@ public class SerialScheduledExecutorService
         @Override
         public int compareTo(Delayed delayed)
         {
-            if (delayed instanceof SerialScheduledFuture) {
-                SerialScheduledFuture other = (SerialScheduledFuture) delayed;
+            if (delayed instanceof SerialScheduledFuture other) {
                 return Long.compare(this.remainingDelayNanos, other.remainingDelayNanos);
             }
             return Long.compare(remainingDelayNanos, delayed.getDelay(NANOSECONDS));

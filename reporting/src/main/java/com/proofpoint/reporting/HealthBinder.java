@@ -105,8 +105,8 @@ public class HealthBinder
     {
         HealthMapping mapping;
         if (key.getAnnotation() != null) {
-            if (key.getAnnotation() instanceof Named) {
-                mapping = new HealthMapping(((Named) key.getAnnotation()).value(), key);
+            if (key.getAnnotation() instanceof Named named) {
+                mapping = new HealthMapping(named.value(), key);
             }
             else {
                 mapping = new HealthMapping(key.getAnnotation().annotationType().getSimpleName(), key);

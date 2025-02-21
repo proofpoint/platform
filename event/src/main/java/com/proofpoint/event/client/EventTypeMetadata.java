@@ -237,15 +237,15 @@ final class EventTypeMetadata<T>
             return null;
         }
         Type type = types[0];
-        if (!(type instanceof Class)) {
+        if (!(type instanceof Class<?> clazz)) {
             addMethodError("Iterable type parameter [%s] must be an exact type", method, type);
             return null;
         }
-        if (isIterable((Class<?>) type)) {
+        if (isIterable(clazz)) {
             addMethodError("Iterable of iterable is not supported", method);
             return null;
         }
-        return (Class<?>) type;
+        return clazz;
     }
 
     private Class<?> extractMapType(Method method, Class<?> mapClass)
@@ -258,22 +258,22 @@ final class EventTypeMetadata<T>
         }
         Type keyType = types[0];
         Type valueType = types[1];
-        if (!(keyType instanceof Class)) {
+        if (!(keyType instanceof Class<?> keyClass)) {
             addMethodError("%s key type parameter [%s] must be an exact type", method, className, keyType);
             return null;
         }
-        if (!(valueType instanceof Class)) {
+        if (!(valueType instanceof Class<?> valueClass)) {
             addMethodError("%s value type parameter [%s] must be an exact type", method, className, valueType);
             return null;
         }
-        if (!isString((Class<?>) keyType)) {
+        if (!isString(keyClass)) {
             addMethodError("%s key type parameter [%s] must be a String", method, className, keyType);
         }
-        if (isIterable((Class<?>) valueType)) {
+        if (isIterable(valueClass)) {
             addMethodError("%s value type parameter [%s] cannot be iterable", method, className, valueType);
             return null;
         }
-        return (Class<?>) valueType;
+        return valueClass;
     }
 
     @SuppressWarnings("unchecked")

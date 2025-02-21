@@ -110,9 +110,9 @@ class DynamicBodySourceContentProvider
         try (AutoLock ignored = lock.lock()) {
             closed = true;
         }
-        if (writer instanceof AutoCloseable) {
+        if (writer instanceof AutoCloseable closeableWriter) {
             try (TraceTokenScope ignored = registerTraceToken(traceToken)) {
-                ((AutoCloseable) writer).close();
+                closeableWriter.close();
             }
             catch (Throwable x) {
                 try (AutoLock ignored = lock.lock()) {

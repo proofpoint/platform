@@ -69,10 +69,10 @@ record TaggedValue(
     @Override
     public boolean equals(Object o)
     {
-        if (!(o instanceof TaggedValue)) {
+        if (!(o instanceof TaggedValue taggedValue)) {
             return false;
         }
-        return compareTo((TaggedValue) o) == 0;
+        return compareTo(taggedValue) == 0;
     }
 
     @Override

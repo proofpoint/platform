@@ -225,14 +225,14 @@ public class TestReportedBean
     private static SimpleInterface toSimpleInterface(Object t)
     {
         SimpleInterface simpleInterface;
-        if (t instanceof SimpleInterface) {
-            simpleInterface = (SimpleInterface) t;
+        if (t instanceof SimpleInterface tSimpleInterface) {
+            simpleInterface = tSimpleInterface;
         }
-        else if (t instanceof FlattenObject) {
-            simpleInterface = ((FlattenObject) t).getSimpleObject();
+        else if (t instanceof FlattenObject flattenObject) {
+            simpleInterface = flattenObject.getSimpleObject();
         }
-        else if (t instanceof NestedObject) {
-            simpleInterface = ((NestedObject) t).getSimpleObject();
+        else if (t instanceof NestedObject nestedObject) {
+            simpleInterface = nestedObject.getSimpleObject();
         }
         else {
             throw new IllegalArgumentException("Expected objects implementing SimpleInterface or FlattenObject but got " + t.getClass().getName());

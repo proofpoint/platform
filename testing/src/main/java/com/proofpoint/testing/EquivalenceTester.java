@@ -122,9 +122,9 @@ public final class EquivalenceTester
                     }
 
                     // if a class implements comparable, object.compareTo(null) must throw NPE
-                    if (element instanceof Comparable) {
+                    if (element instanceof Comparable<?> comparable) {
                         try {
-                            ((Comparable<?>) element).compareTo(null);
+                            comparable.compareTo(null);
                             errors.add(new ElementCheckFailure(COMPARE_EQUAL_TO_NULL, classNumber, elementNumber, element));
                         }
                         catch (NullPointerException e) {

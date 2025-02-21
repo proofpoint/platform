@@ -307,8 +307,7 @@ public class Bootstrap
         Map<String, ConfigurationDefaultingModule> moduleDefaultSource = new HashMap<>();
         List<Message> moduleDefaultErrors = new ArrayList<>();
         for (Module module : modules) {
-            if (module instanceof ConfigurationDefaultingModule) {
-                ConfigurationDefaultingModule configurationDefaultingModule = (ConfigurationDefaultingModule) module;
+            if (module instanceof ConfigurationDefaultingModule configurationDefaultingModule) {
                 Map<String, String> defaults = configurationDefaultingModule.getConfigurationDefaults();
                 for (Entry<String, String> entry : defaults.entrySet()) {
                     ConfigurationDefaultingModule oldModule = moduleDefaultSource.put(entry.getKey(), configurationDefaultingModule);

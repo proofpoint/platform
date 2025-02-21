@@ -174,8 +174,8 @@ public class TestBalancingHttpClient
             }
 
             Object response = responses.remove(0);
-            if (response instanceof Exception) {
-                return responseHandler.handleException(request, (Exception) response);
+            if (response instanceof Exception x) {
+                return responseHandler.handleException(request, x);
             }
             return responseHandler.handle(request, (Response) response);
         }

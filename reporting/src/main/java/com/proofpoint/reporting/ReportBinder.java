@@ -201,8 +201,8 @@ public class ReportBinder
     {
         String namePrefix;
         if (key.getAnnotation() != null) {
-            if (key.getAnnotation() instanceof Named) {
-                namePrefix = key.getTypeLiteral().getRawType().getSimpleName() + "." + ((Named) key.getAnnotation()).value();
+            if (key.getAnnotation() instanceof Named named) {
+                namePrefix = key.getTypeLiteral().getRawType().getSimpleName() + "." + named.value();
             }
             else {
                 namePrefix = key.getTypeLiteral().getRawType().getSimpleName() + "." + key.getAnnotation().annotationType().getSimpleName();

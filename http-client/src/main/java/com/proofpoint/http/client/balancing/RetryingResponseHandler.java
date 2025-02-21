@@ -113,6 +113,6 @@ final class RetryingResponseHandler<T, E extends Exception>
     private static boolean bodySourceRetryable(Request request)
     {
         BodySource bodySource = request.getBodySource();
-        return !(bodySource instanceof LimitedRetryable) || ((LimitedRetryable) bodySource).isRetryable();
+        return !(bodySource instanceof LimitedRetryable limitedRetryable) || limitedRetryable.isRetryable();
     }
 }

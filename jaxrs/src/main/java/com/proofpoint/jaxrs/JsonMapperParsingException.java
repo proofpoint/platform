@@ -37,8 +37,8 @@ public class JsonMapperParsingException extends ParsingException
     {
         StringBuilder sb = new StringBuilder("Invalid json");
         JsonLocation location = null;
-        if (cause instanceof JsonProcessingException) {
-            location = ((JsonProcessingException) cause).getLocation();
+        if (cause instanceof JsonProcessingException jsonProcessingException) {
+            location = jsonProcessingException.getLocation();
         }
         if (location != null) {
             sb.append(" line ")
@@ -47,10 +47,10 @@ public class JsonMapperParsingException extends ParsingException
                     .append(location.getColumnNr());
         }
 
-        if (cause instanceof JsonMappingException) {
+        if (cause instanceof JsonMappingException jsonMappingException) {
             sb.append(" field ");
             boolean appendDot = false;
-            for (Reference reference : ((JsonMappingException) cause).getPath()) {
+            for (Reference reference : jsonMappingException.getPath()) {
                 if (appendDot) {
                     sb.append('.');
                 }

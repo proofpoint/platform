@@ -189,9 +189,9 @@ public class TestAsyncBalancingHttpClient
 
             Object response = responses.remove(0);
             // TODO: defer availability of return values ?
-            if (response instanceof Exception) {
+            if (response instanceof Exception x) {
                 try {
-                    return new ImmediateAsyncHttpFuture<>(responseHandler.handleException(request, (Exception) response));
+                    return new ImmediateAsyncHttpFuture<>(responseHandler.handleException(request, x));
                 }
                 catch (Exception e) {
                     return new ImmediateFailedAsyncHttpFuture<>((E) e);

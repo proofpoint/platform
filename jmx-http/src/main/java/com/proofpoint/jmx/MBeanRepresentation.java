@@ -329,8 +329,8 @@ public class MBeanRepresentation
         for (String fieldName : descriptor.getFieldNames()) {
             Object fieldValue = descriptor.getFieldValue(fieldName);
             if (fieldValue != null) {
-                if (fieldValue instanceof Descriptor) {
-                    fieldValue = toMap((Descriptor) fieldValue);
+                if (fieldValue instanceof Descriptor fieldValueDescriptor) {
+                    fieldValue = toMap(fieldValueDescriptor);
                 }
                 builder.put(fieldName, fieldValue);
             }

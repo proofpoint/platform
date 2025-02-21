@@ -66,11 +66,9 @@ public class ConfigurationValidator
                 public <T> Void visit(Binding<T> binding)
                 {
                     // look for ConfigurationAwareProviders...
-                    if (binding instanceof ProviderInstanceBinding) {
-                        ProviderInstanceBinding<?> providerInstanceBinding = (ProviderInstanceBinding<?>) binding;
+                    if (binding instanceof ProviderInstanceBinding<?> providerInstanceBinding) {
                         Provider<?> provider = providerInstanceBinding.getUserSuppliedProvider();
-                        if (provider instanceof ConfigurationAwareProvider) {
-                            ConfigurationAwareProvider<?> configurationProvider = (ConfigurationAwareProvider<?>) provider;
+                        if (provider instanceof ConfigurationAwareProvider<?> configurationProvider) {
                             // give the provider the configuration factory
                             configurationProvider.setConfigurationFactory(configurationFactory);
                             try {

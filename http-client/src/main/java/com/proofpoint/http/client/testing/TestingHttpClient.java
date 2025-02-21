@@ -91,12 +91,12 @@ public class TestingHttpClient
             state.set("FAILED");
             long responseStart = System.nanoTime();
             Duration requestProcessingTime = new Duration(responseStart - requestStart, TimeUnit.NANOSECONDS);
-            if (e instanceof Exception) {
+            if (e instanceof Exception x) {
                 if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                 }
                 try {
-                    return responseHandler.handleException(request, (Exception) e);
+                    return responseHandler.handleException(request, x);
                 }
                 finally {
                     stats.record(request.getMethod(),
