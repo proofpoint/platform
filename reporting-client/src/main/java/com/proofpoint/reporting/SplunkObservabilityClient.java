@@ -96,7 +96,7 @@ public class SplunkObservabilityClient
         //Reporting events
         reportEach(systemTimeMillis, collectedData.cellSet().stream()
                 .filter(cell -> !(cell.getValue() instanceof Number))
-                .filter(cell -> cell.getValue() != "")
+                .filter(cell -> !cell.getValue().equals(""))
                 .collect(ImmutableTable.toImmutableTable(
                         Table.Cell::getRowKey,
                         Table.Cell::getColumnKey,

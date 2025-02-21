@@ -99,7 +99,7 @@ public final class EquivalenceTester
         }
 
         @SuppressWarnings({"ObjectEqualsNull", "SelfEquals"})
-        @SuppressFBWarnings({"EC_NULL_ARG","RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"})
+        @SuppressFBWarnings({"DCN_NULLPOINTER_EXCEPTION","EC_NULL_ARG","RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"})
         private List<ElementCheckFailure> checkEquivalence()
         {
             ImmutableList.Builder<ElementCheckFailure> errors = new ImmutableList.Builder<>();
