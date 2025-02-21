@@ -63,6 +63,13 @@ class EventJsonSerializer<T>
         }
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     @Override
     public Class<T> handledType()
     {

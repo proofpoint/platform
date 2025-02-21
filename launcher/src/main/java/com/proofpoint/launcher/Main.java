@@ -76,6 +76,13 @@ public final class Main
     {
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     public static void main(String[] args)
     {
         Cli<Runnable> cli = Cli.<Runnable>builder("launcher")

@@ -76,6 +76,13 @@ class PidFile implements PidStatusSource
         }
     }
 
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
+    }
+
     void indicateStarting()
             throws AlreadyRunningError
     {

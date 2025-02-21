@@ -133,7 +133,8 @@ public class JettyHttpClient
     public JettyHttpClient(
         String name,
         HttpClientConfig config,
-        Iterable<? extends HttpRequestFilter> requestFilters) {
+        Iterable<? extends HttpRequestFilter> requestFilters)
+    {
         this(name, config, DEFAULT_CLIENT_OPTIONS, requestFilters);
     }
 
@@ -329,6 +330,13 @@ public class JettyHttpClient
              }
              distribution.add(NANOSECONDS.toMillis(finished - responseStarted));
          });
+    }
+
+    // Protect against finalizer attacks, as constructor can throw exception.
+    @SuppressWarnings("deprecation")
+    @Override
+    protected final void finalize()
+    {
     }
 
     private static QueuedThreadPool createExecutor(String name, int minThreads, int maxThreads)
