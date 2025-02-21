@@ -6,6 +6,10 @@ Platform 3.27
 
   - We now support Java 21.
 
+* Maven
+
+  We increased the minimum Maven version to 3.6.3
+
 * HTTP and JAX-RS
 
   We have upgraded to Jetty 12, Jakarta EE 10, and JAX-RS 3.1.0
