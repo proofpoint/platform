@@ -31,6 +31,7 @@ import com.google.errorprone.annotations.concurrent.GuardedBy;
 import com.proofpoint.configuration.PropertiesBuilder;
 import com.proofpoint.units.DataSize;
 import com.proofpoint.units.Duration;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -98,6 +99,7 @@ public class Logging
      *
      * @return the logging system singleton
      */
+    @SuppressFBWarnings("MS_EXPOSE_REP")
     public static synchronized Logging initialize()
     {
         if (instance == null) {

@@ -27,6 +27,12 @@
             <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- for testing -->
         <dependency>
             <groupId>org.testng</groupId>
