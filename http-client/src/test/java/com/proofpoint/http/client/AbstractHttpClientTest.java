@@ -12,6 +12,8 @@ import com.proofpoint.testing.Closeables;
 import com.proofpoint.tracetoken.TraceToken;
 import com.proofpoint.units.Duration;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -23,8 +25,6 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
-import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.testng.Assert;
 import org.testng.SkipException;
@@ -1292,7 +1292,15 @@ public abstract class AbstractHttpClientTest
     public void testDynamicBodySourceConnectWriteRequestClose()
             throws Exception
     {
-        try (FakeServer fakeServer = new FakeServer(scheme, host, 1024, null, true)) {
+        int bodySize;
+        if (createClientConfig().isHttp2Enabled()) {
+            // HTTP/2 over TLS has smaller buffers for this
+            bodySize = 256;
+        } else {
+            bodySize = 1024;
+        }
+
+        try (FakeServer fakeServer = new FakeServer(scheme, host, bodySize, null, true)) {
             HttpClientConfig config = createClientConfig();
             config.setConnectTimeout(new Duration(5, SECONDS));
             config.setIdleTimeout(new Duration(5, SECONDS));
@@ -1308,7 +1316,7 @@ public abstract class AbstractHttpClientTest
                         .setUri(fakeServer.getUri())
                         .setBodySource((DynamicBodySource) out -> () -> {
                             if (invocation.getAndIncrement() < 100) {
-                                out.write(new byte[1024]);
+                                out.write(new byte[bodySize]);
                             }
                             else {
                                 out.close();
