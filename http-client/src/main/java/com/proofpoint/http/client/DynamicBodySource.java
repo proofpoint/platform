@@ -17,7 +17,8 @@ package com.proofpoint.http.client;
 
 import java.io.OutputStream;
 
-public interface DynamicBodySource extends BodySource
+public non-sealed interface DynamicBodySource
+        extends BodySource
 {
     /**
      * Start writing the request body.

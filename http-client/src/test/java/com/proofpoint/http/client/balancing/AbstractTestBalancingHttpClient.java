@@ -16,6 +16,7 @@
 package com.proofpoint.http.client.balancing;
 
 import com.proofpoint.http.client.BodySource;
+import com.proofpoint.http.client.DynamicBodySource;
 import com.proofpoint.http.client.HttpClient;
 import com.proofpoint.http.client.LimitedRetryable;
 import com.proofpoint.http.client.Request;
@@ -108,7 +109,7 @@ public abstract class AbstractTestBalancingHttpClient<T extends HttpClient>
                 .setMinBackoff(new Duration(1, TimeUnit.MILLISECONDS))
                 .setMaxBackoff(new Duration(2, TimeUnit.MILLISECONDS));
         balancingHttpClient = createBalancingHttpClient();
-        bodySource = mock(BodySource.class);
+        bodySource = mock(DynamicBodySource.class);
         request = preparePut().setUri(URI.create("v1/service")).setBodySource(bodySource).build();
         requestArgumentCaptor = ArgumentCaptor.forClass(Request.class);
         response = mock(Response.class);

@@ -18,6 +18,7 @@ package com.proofpoint.http.client;
 import com.google.common.collect.ImmutableListMultimap;
 import org.testng.annotations.Test;
 
+import java.io.OutputStream;
 import java.net.URI;
 
 import static com.proofpoint.http.client.Request.Builder.fromRequest;
@@ -30,8 +31,8 @@ import static org.testng.Assert.assertTrue;
 
 public class TestRequestBuilder
 {
-    public static final BodySource NULL_BODY_SOURCE = new BodySource()
-    {
+    public static final BodySource NULL_BODY_SOURCE = (DynamicBodySource) out -> {
+        throw new UnsupportedOperationException();
     };
 
     @Test
