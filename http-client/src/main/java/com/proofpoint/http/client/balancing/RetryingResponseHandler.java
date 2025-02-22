@@ -22,10 +22,16 @@ import com.proofpoint.http.client.Request;
 import com.proofpoint.http.client.Response;
 import com.proofpoint.http.client.ResponseHandler;
 import com.proofpoint.log.Logger;
+import com.proofpoint.units.Duration;
 
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.proofpoint.http.client.balancing.RetryException.NO_SUGGESTED_BACKOFF;
+import static java.lang.Integer.parseInt;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 final class RetryingResponseHandler<T, E extends Exception>
         implements ResponseHandler<T, RetryException>
@@ -89,7 +95,19 @@ final class RetryingResponseHandler<T, E extends Exception>
             log.warn("%d response querying %s",
                     response.getStatusCode(), request.getUri().resolve("/"));
             if (!("no".equalsIgnoreCase(retryHeader)) && bodySourceRetryable(request) && retryBudget.canRetry()) {
-                throw new RetryException(failureCategory);
+                Duration suggestedBackoff = NO_SUGGESTED_BACKOFF;
+                if (response.getStatusCode() == 429) {
+                    String retryAfterHeader = response.getHeader("Retry-After");
+                    if (retryAfterHeader != null) {
+                        try {
+                            suggestedBackoff = new Duration(parseInt(retryAfterHeader), SECONDS);
+                        }
+                        catch (NumberFormatException e) {
+                            // ignore
+                        }
+                    }
+                }
+                throw new RetryException(failureCategory, suggestedBackoff);
             }
 
             Object result;

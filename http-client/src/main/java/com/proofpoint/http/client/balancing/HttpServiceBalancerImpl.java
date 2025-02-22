@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.proofpoint.http.client.balancing.RetryException.NO_SUGGESTED_BACKOFF;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -289,7 +290,7 @@ public class HttpServiceBalancerImpl
                     if (++uriState.numFailures >= balancer.consecutiveFailures) {
                         uriState.liveness = DEAD;
                         uriState.backoffPolicy = balancer.backoffPolicy;
-                        uriState.lastBackoff = uriState.backoffPolicy.backoff(ZERO_DURATION);
+                        uriState.lastBackoff = uriState.backoffPolicy.backoff(ZERO_DURATION, NO_SUGGESTED_BACKOFF);
                         uriState.deadUntil = balancer.ticker.read() + uriState.lastBackoff.roundTo(NANOSECONDS);
                         balancer.httpServiceBalancerStats.removal(attempt.uri).add(uriState.lastBackoff);
                     }
@@ -321,7 +322,7 @@ public class HttpServiceBalancerImpl
                 if (isFailure) {
                     uriState.liveness = DEAD;
                     uriState.backoffPolicy = uriState.backoffPolicy.nextAttempt();
-                    uriState.lastBackoff = uriState.backoffPolicy.backoff(uriState.lastBackoff);
+                    uriState.lastBackoff = uriState.backoffPolicy.backoff(uriState.lastBackoff, NO_SUGGESTED_BACKOFF);
                     uriState.deadUntil = balancer.ticker.read() + uriState.lastBackoff.roundTo(NANOSECONDS);
                     balancer.httpServiceBalancerStats.removal(attempt.uri).add(uriState.lastBackoff);
                 }

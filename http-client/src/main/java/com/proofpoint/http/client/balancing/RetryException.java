@@ -15,35 +15,52 @@
  */
 package com.proofpoint.http.client.balancing;
 
+import com.proofpoint.units.Duration;
+
+import java.util.concurrent.TimeUnit;
+
 class RetryException extends Exception
 {
+    static final Duration NO_SUGGESTED_BACKOFF = new Duration(0, TimeUnit.MILLISECONDS);
     private final String failureCategory;
+    private final Duration suggestedBackoff;
 
     RetryException(String failureCategory)
     {
+        this(failureCategory, NO_SUGGESTED_BACKOFF);
+    }
+
+    RetryException(String failureCategory, Duration suggestedBackoff)
+    {
         this.failureCategory = failureCategory;
+        this.suggestedBackoff = suggestedBackoff;
     }
 
     RetryException(Exception cause)
     {
         super(cause);
         failureCategory = cause.getClass().getSimpleName();
+        suggestedBackoff = NO_SUGGESTED_BACKOFF;
     }
 
     RetryException(Exception cause, String failureCategory)
     {
         super(cause);
         this.failureCategory = failureCategory;
+        suggestedBackoff = NO_SUGGESTED_BACKOFF;
     }
 
     RetryException(Exception cause, Exception failureException)
     {
         super(cause);
         failureCategory = failureException.getClass().getSimpleName();
+        suggestedBackoff = NO_SUGGESTED_BACKOFF;
     }
 
     String getFailureCategory()
     {
         return failureCategory;
     }
+
+    Duration getSuggestedBackoff() { return suggestedBackoff; }
 }

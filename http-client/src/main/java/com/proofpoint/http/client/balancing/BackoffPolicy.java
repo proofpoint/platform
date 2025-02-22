@@ -21,5 +21,5 @@ interface BackoffPolicy
 {
     BackoffPolicy nextAttempt();
 
-    Duration backoff(Duration previousBackoff);
+    Duration backoff(Duration previousBackoff, Duration suggestedBackoff);
 }

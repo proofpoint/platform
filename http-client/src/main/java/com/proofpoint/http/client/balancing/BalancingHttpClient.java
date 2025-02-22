@@ -143,7 +143,7 @@ public class BalancingHttpClient
             }
             catch (RetryException e) {
                 attempt.markBad(e.getFailureCategory());
-                Duration backoff = attemptBackoffPolicy.backoff(previousBackoff);
+                Duration backoff = attemptBackoffPolicy.backoff(previousBackoff, e.getSuggestedBackoff());
                 long millis = backoff.roundTo(MILLISECONDS);
                 try {
                     Thread.sleep(millis);
@@ -316,7 +316,7 @@ public class BalancingHttpClient
                         attempt.markBad(retryException.getFailureCategory());
                         TraceToken traceToken = getCurrentTraceToken();
                         synchronized (subFutureLock) {
-                            Duration backoff = attemptBackoffPolicy.backoff(previousBackoff);
+                            Duration backoff = attemptBackoffPolicy.backoff(previousBackoff, retryException.getSuggestedBackoff());
                             ScheduledFuture<?> scheduledFuture = retryExecutor.schedule(() -> {
                                 try (TraceTokenScope scope = registerTraceToken(traceToken)){
                                     synchronized (subFutureLock) {
