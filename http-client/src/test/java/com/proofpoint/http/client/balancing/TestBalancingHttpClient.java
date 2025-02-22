@@ -100,7 +100,7 @@ public class TestBalancingHttpClient
         private String method;
         private List<URI> uris = new ArrayList<>();
         private List<Object> responses = new ArrayList<>();
-        private boolean skipBodyGenerator = false;
+        private boolean skipBodySource = false;
 
         TestingHttpClient(String method)
         {
@@ -130,7 +130,7 @@ public class TestBalancingHttpClient
         @Override
         public  TestingClient firstCallNoBodyGenerator()
         {
-            skipBodyGenerator = true;
+            skipBodySource = true;
             return this;
         }
 
@@ -155,8 +155,8 @@ public class TestBalancingHttpClient
             assertEquals(request.getUri(), uris.remove(0), "request uri");
             assertEquals(request.getBodySource(), bodySource, "request body generator");
 
-            if (skipBodyGenerator) {
-                skipBodyGenerator = false;
+            if (skipBodySource) {
+                skipBodySource = false;
             }
             else if (bodySource instanceof LimitedRetryable) {
                 try {

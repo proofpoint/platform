@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.testng.annotations.Test;
 
+import java.io.OutputStream;
 import java.net.URI;
 
 import static com.proofpoint.http.client.Request.Builder.prepareGet;
@@ -115,8 +116,13 @@ public class TestRequest
 
     public static BodySource createBodySource()
     {
-        return new BodySource()
+        return new DynamicBodySource()
         {
+            @Override
+            public Writer start(OutputStream out) throws Exception
+            {
+                throw new UnsupportedOperationException();
+            }
         };
     }
 }

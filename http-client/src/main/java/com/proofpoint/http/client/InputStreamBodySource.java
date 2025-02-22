@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkState;
 
-public class InputStreamBodySource
+public non-sealed class InputStreamBodySource
     implements BodySource, LimitedRetryable
 {
     private final InputStream inputStream;

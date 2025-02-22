@@ -15,7 +15,8 @@
  */
 package com.proofpoint.http.client;
 
-public interface BodySource
+public sealed interface BodySource
+    permits DynamicBodySource, InputStreamBodySource, StaticBodyGenerator
 {
     /**
      * @return the content length, if known, or -1 if the content length is unknown
