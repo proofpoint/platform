@@ -28,6 +28,7 @@ Platform 3.28
   - maven-enforcer-plugin to 3.5.0 (was 3.0.0-M1)
   - maven-compiler-plugin to 3.14.0 (was 3.8.1)
   - maven-resources-plugin to 3.3.1 (was 3.2.0)
+  - maven-assembly-plugin to 3.7.1 (was 3.3.0)
 
 Platform 3.27
 
