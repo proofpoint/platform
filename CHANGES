@@ -19,6 +19,10 @@ Platform 3.28
 
   We now handle the Retry-After: header of 429 HTTP status codes.
 
+* Maven plugin upgrades
+
+  - maven-deploy-plugin to 3.1.3 (was 2.8.2)
+
 Platform 3.27
 
 * Java version support
