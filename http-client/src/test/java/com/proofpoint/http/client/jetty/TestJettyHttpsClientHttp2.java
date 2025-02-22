@@ -13,9 +13,4 @@ public class TestJettyHttpsClientHttp2
         return super.createClientConfig()
                 .setHttp2Enabled(true);
     }
-
-    @BeforeMethod
-    public void checkValidConfiguration(){
-        throw new SkipException("Https is not supported for Http/2");
-    }
 }
