@@ -19,7 +19,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.nio.charset.Charset;
 
-public class StaticBodyGenerator implements BodySource
+public non-sealed class StaticBodyGenerator implements BodySource
 {
     public static StaticBodyGenerator createStaticBodyGenerator(String body, Charset charset)
     {
