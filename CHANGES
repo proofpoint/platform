@@ -17,6 +17,8 @@ Platform 3.28
 
   We added 429 to the list of HTTP status codes that allow retrying requests.
 
+  We now handle the Retry-After: header of 429 HTTP status codes.
+
 Platform 3.27
 
 * Java version support

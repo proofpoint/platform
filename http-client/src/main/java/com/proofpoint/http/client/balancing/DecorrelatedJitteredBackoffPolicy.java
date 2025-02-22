@@ -42,7 +42,7 @@ class DecorrelatedJitteredBackoffPolicy
     }
 
     @Override
-    public Duration backoff(Duration previousBackoff)
+    public Duration backoff(Duration previousBackoff, Duration suggestedBackoff)
     {
         long prev = previousBackoff.roundTo(TimeUnit.NANOSECONDS);
         long range = Math.abs(prev * 3 - min);
@@ -52,7 +52,7 @@ class DecorrelatedJitteredBackoffPolicy
         } else {
             randBackoff = min + ThreadLocalRandom.current().nextLong(range);
         }
-        long backoff = Math.min(max, randBackoff);
+        long backoff = Math.min(max, Math.max(randBackoff, suggestedBackoff.roundTo(TimeUnit.NANOSECONDS)));
 
         return new Duration(backoff, TimeUnit.NANOSECONDS);
     }
