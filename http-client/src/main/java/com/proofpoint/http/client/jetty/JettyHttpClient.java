@@ -470,7 +470,12 @@ public class JettyHttpClient
         requireNonNull(responseHandler, "responseHandler is null");
         AtomicLong bytesWritten = new AtomicLong(0);
 
-        request = applyRequestFilters(request);
+        try {
+            request = applyRequestFilters(request);
+        }
+        catch (RuntimeException e) {
+            return new FailedHttpResponseFuture<>(e);
+        }
 
         HttpRequest jettyRequest = buildJettyRequest(request, bytesWritten);
 
