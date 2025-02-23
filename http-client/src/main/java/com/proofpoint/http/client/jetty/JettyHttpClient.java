@@ -41,7 +41,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
 import org.eclipse.jetty.util.thread.Scheduler;
-import org.eclipse.jetty.util.thread.Sweeper;
 import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 import org.weakref.jmx.Nested;
@@ -88,7 +87,6 @@ public class JettyHttpClient
     };
 
     private static final String PLATFORM_STATS_KEY = "platform_stats";
-    private static final long SWEEP_PERIOD_MILLIS = 5000;
 
     private static final AtomicLong NAME_COUNTER = new AtomicLong();
     private static final JettyHttpClientOptions DEFAULT_CLIENT_OPTIONS =
@@ -248,12 +246,6 @@ public class JettyHttpClient
                 httpClient.getExecutor(),
                 httpClient.getScheduler(),
                 config.getConnectTimeout().toMillis()));
-
-        // Jetty client connections can sometimes get stuck while closing which reduces
-        // the available connections.  The Jetty Sweeper periodically scans the active
-        // connection pool looking for connections in the closed state, and if a connection
-        // is observed in the closed state multiple times, it logs, and destroys the connection.
-        httpClient.addBean(new Sweeper(httpClient.getScheduler(), SWEEP_PERIOD_MILLIS), true);
 
         try {
             this.httpClient.start();
