@@ -6,6 +6,7 @@ Platform 3.29
   - duplicate-finder-maven-plugin to 2.0.1 (was 1.5.0)
   - maven-site-plugin to 3.21.0 (was 3.9.1)
   - maven-gpg-plugin to 3.2.7 (was 1.6)
+  - docker-maven-plugin to 0.45.1 (was 0.43.0)
 
 Platform 3.28
 
