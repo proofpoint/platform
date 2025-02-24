@@ -3,6 +3,7 @@ Platform 3.29
 * Maven plugin upgrades
 
   - maven-surefire-plugin to 3.5.2 (was 2.22.2)
+  - duplicate-finder-maven-plugin to 2.0.1 (was 1.5.0)
 
 Platform 3.28
 
