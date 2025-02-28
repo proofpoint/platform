@@ -1,5 +1,9 @@
 Platform 3.29
 
+* Maven duplicate finder
+
+  We suppressed a harmless maven-duplicate-finder error caused by byte-buddy.
+
 * Library upgrades
 
   - Guava to 33.4.0-jre (was 32.1.2-jre)
