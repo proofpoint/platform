@@ -381,6 +381,8 @@
                             <ignoredResource>.*\.java</ignoredResource>
                             <ignoredResource>THIRD-PARTY</ignoredResource>
                             <ignoredResource>javac.sh</ignoredResource>
+                            <!-- byte-buddy -->
+                            <ignoredResource>META-INF\..*</ignoredResource>
                         </ignoredResourcePatterns>
 
                         <ignoredClassPatterns>
