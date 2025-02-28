@@ -1,5 +1,11 @@
 Platform 3.29
 
+* Library upgrades
+
+  - error_prone_annotations to 2.36.0 (was 2.25.0)
+  - error_prone_core to 2.36.0 (was 2.3.4)
+  - plexus-compiler-javac-errorprone to 2.15.0 (was 2.8.6)
+
 * Maven plugin upgrades
 
   - maven-surefire-plugin to 3.5.2 (was 2.22.2)
