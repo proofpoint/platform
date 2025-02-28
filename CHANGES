@@ -3,6 +3,7 @@ Platform 3.29
 * Library upgrades
 
   - Guava to 33.4.0-jre (was 32.1.2-jre)
+  - slf4j to 2.0.17 (was 2.0.16)
   - error_prone_annotations to 2.36.0 (was 2.25.0)
   - error_prone_core to 2.36.0 (was 2.3.4)
   - plexus-compiler-javac-errorprone to 2.15.0 (was 2.8.6)
